@@ -1,0 +1,110 @@
+// ==================================== Roulette passives ====================================
+// TODO: MAKE THE NPCS SPIN BABY SPIN
+
+// 6th level Warlock spell from Mystic Arcanum
+new entry "Goon_NPC_Roulette_Warlock_Mystic_Arcanum_Level_11"
+type "PassiveData"
+data "Properties" "IsHidden"
+
+// 7th level Warlock spell from Mystic Arcanum
+new entry "Goon_NPC_Roulette_Warlock_Mystic_Arcanum_Level_13"
+type "PassiveData"
+data "Properties" "IsHidden"
+
+// 8th level Warlock spell from Mystic Arcanum
+new entry "Goon_NPC_Roulette_Warlock_Mystic_Arcanum_Level_15"
+type "PassiveData"
+data "Properties" "IsHidden"
+
+// Warlock Invocation selection
+new entry "Goon_NPC_Roulette_Warlock_Invocations_Level_15"
+type "PassiveData"
+data "Properties" "IsHidden"
+
+// 9th level Warlock spell from Mystic Arcanum
+new entry "Goon_NPC_Roulette_Warlock_Mystic_Arcanum_Level_17"
+type "PassiveData"
+data "Properties" "IsHidden"
+
+// ==================================== Template ====================================
+
+new entry "Goon_NPC_Progressions_Template"
+type "PassiveData"
+// This character is using class progressions.
+data "Description" "h22e51f36g68a9g4b6aga433g694b75975e4d;1"
+data "Properties" "Highlighted"
+data "Icon" "GenericIcon_Intent_Buff"
+
+// ==================================== Main class progressions ====================================
+
+new entry "Goon_Barbarian_NPC_Progressions"
+type "PassiveData"
+using "Goon_NPC_Progressions_Template"
+// Barbarian Progressions
+data "DisplayName" "he67b6a65g03fcg431dga01cg0f2685168030;1"
+
+new entry "Goon_Bard_NPC_Progressions"
+type "PassiveData"
+using "Goon_NPC_Progressions_Template"
+// Bard Progressions
+data "DisplayName" "h3b2a32d0gf5bdg4994g8a0agbc545ff76f16;1"
+
+new entry "Goon_Cleric_NPC_Progressions"
+type "PassiveData"
+using "Goon_NPC_Progressions_Template"
+// Cleric Progressions
+data "DisplayName" "he6acc5c5gd23bg4c8dgb60cg3de3da611c9f;1"
+
+new entry "Goon_Druid_NPC_Progressions"
+type "PassiveData"
+using "Goon_NPC_Progressions_Template"
+// Druid Progressions
+data "DisplayName" "h215206fcg60f6g4af5g94f2gd3c61fc2399b;1"
+
+new entry "Goon_Fighter_NPC_Progressions"
+type "PassiveData"
+using "Goon_NPC_Progressions_Template"
+// Fighter Progressions
+data "DisplayName" "h6d12a72egfab9g4f45gae31g5d4491dd2b6b;1"
+
+new entry "Goon_Monk_NPC_Progressions"
+type "PassiveData"
+using "Goon_NPC_Progressions_Template"
+// Monk Progressions
+data "DisplayName" "h5f6db4dfgb3b4g4289g937bg039af3d0b1f8;1"
+
+new entry "Goon_Paladin_NPC_Progressions"
+type "PassiveData"
+using "Goon_NPC_Progressions_Template"
+// Paladin Progressions
+data "DisplayName" "hbd9fca0cg8eddg405cga457g81f619e965fe;1"
+
+new entry "Goon_Ranger_NPC_Progressions"
+type "PassiveData"
+using "Goon_NPC_Progressions_Template"
+// Ranger Progressions
+data "DisplayName" "haf18a871g8e0fg46b0gb05eg2ea8ca538b80;1"
+
+new entry "Goon_Rogue_NPC_Progressions"
+type "PassiveData"
+using "Goon_NPC_Progressions_Template"
+// Rogue Progressions
+data "DisplayName" "h8ac0402fgb1fbg439bgb720g741bc0484c6a;1"
+
+new entry "Goon_Sorcerer_NPC_Progressions"
+type "PassiveData"
+using "Goon_NPC_Progressions_Template"
+// Sorcerer Progressions
+data "DisplayName" "h9987ac52g08b3g40e0gac8eg056b928b8d4b;1"
+
+new entry "Goon_Warlock_NPC_Progressions"
+type "PassiveData"
+using "Goon_NPC_Progressions_Template"
+// Warlock Progressions
+data "DisplayName" "h286630c6gcd5bg4f56g84edg9ede6b7fc8cb;1"
+
+new entry "Goon_Wizard_NPC_Progressions"
+type "PassiveData"
+using "Goon_NPC_Progressions_Template"
+// Wizard Progressions
+data "DisplayName" "hda3c8533gc225g4f6cgb65fg22e6f4ea9deb;1"
