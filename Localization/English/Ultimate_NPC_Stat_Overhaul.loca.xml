@@ -1,5 +1,67 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <contentList>
-	<!-- tnrtymwevwevwtbtrb -->
-	<content contentuid="hd0ef4fa4gbe7dg4f27g9ebcg0e8452a136bc" version="1">yumjrtymrnertn</content>
+
+	<!-- Progressions -->
+	<content contentuid="h71edd856g0302g4520gb950gc6f3298da47c" version="1">yumjrtymrnertn</content>
+
+	<!-- New CX Passives -->
+	<content contentuid="h83a9e22egdf4eg4197g9624g6ca6a935f37d" version="1">Combat Extender: Boss Boost</content>
+	<content contentuid="h69e24731g49c5g41dfg875agfff36fa8535b" version="1">A being of large import They gain boss boosts from configuration.</content>
+	<content contentuid="hd1b17909ga0adg44c2ga6c7g6cd26b2fa192" version="1">Combat Extender: Mini-Boss Boost</content>
+	<content contentuid="ha444da0ag7d30g4e9fg97d0g393888ffebe6" version="1">A being of some import. They gain mini-boss boosts from configuration.</content>
+	
+	<content contentuid="h2ac56c95gc30cg46e3gba36g4efd11b7884a" version="1">Combat Extender: Martial Boost</content>
+	<content contentuid="hd5818987ga072g4e8dgb314g97ab96f230cd" version="1">A character with experience in martial combat. They gain &lt;LSTag Tooltip="Proficiency"&gt;Proficient&lt;/LSTag&gt; with Martial Weapons, in addition to boosts from configuration.</content>
+	<content contentuid="h54aa6df3g3e46g4c2cg85bdga5d196c4f97e" version="1">Combat Extender: Bard Boost</content>
+	<content contentuid="h97a23da3gd2c1g4b07gb187g9f8696856259" version="1">A character with a versatile skillset, who blends artistry, trickery, and spellcraft. They gain Bard boosts from configuration.</content>
+	<content contentuid="he38308dag9418g482fg8ca1g980cc98ff64a" version="1">Combat Extender: Druid Boost</content>
+	<content contentuid="hc19cb29fgce35g4253g810fge4b35ebb2168" version="1">This character commands the forces of nature, shaping the world with primal magic. They gain Druid boosts from configuration.</content>
+	<content contentuid="hb9ff98d2g22d8g48efgb462g147c72a602d7" version="1">Combat Extender: Sorcerer Boost</content>
+	<content contentuid="hf8533079gfd16g4590g9754g99a81d9cd95f" version="1">A character with raw arcane power, shaping magic through will alone. They gain Sorcerer boosts from configuration.</content>
+	<content contentuid="hbeb3c7c1g30ddg4b0ega936g02439e04c829" version="1">Combat Extender: Warlock Boost</content>
+	<content contentuid="h45452726ge3a8g4311g98adg1853a70ff4a6" version="1">A character who wields eldritch magic granted by a supernatural patron. They gain Warlock boosts from configuration.</content>
+	<content contentuid="h90218be8gf884g45e3g9024g6747c175e952" version="1">Combat Extender: Wizard Boost</content>
+	<content contentuid="he480cbbbg8bbeg4bb9gb3c2g8929f117fd2b" version="1">A character who masters the weave through study and intellect. They gain Wizard boosts from configuration.</content>
+
+	<!-- OG CX Passives -->
+	<content contentuid="h190c1d80g4bf9g4835ga98egba6610cb8473" version="1">Combat Extender: Magic Boost</content>
+	<content contentuid="he62bca3bg089ag4600gbcc7g67dec88d0ace" version="1">A character with experience in spellcasting. They gain a 30% increase to their spell's range, in addition to Magic boosts from configuration.</content>
+	<content contentuid="h80bfa73fg650cg4f93g9fcag07342fa68ece" version="1">Combat Extender: Barbarian Boost</content>
+	<content contentuid="h59b5144dgff16g41edg9da8gc79e81e92b69" version="1">A character who harnesses their fury to punish foes. They gain &lt;LSTag Type="Spell" Tooltip="Interrupt_RecklessAttack"&gt;Reckless Attack&lt;/LSTag&gt;, in addition to Barbarian boosts from configuration.</content>
+	<content contentuid="hf9960aa3g25a4g44e7ga5d6g3f7f254ec53b" version="1">Combat Extender: Cleric Boost</content>
+	<content contentuid="hacdccdb0ge6c6g454bga598g6df082810262" version="1">A character of faith, channeling divine magic both to aid and harm. They gain Cleric boosts from configuration.</content>
+	<content contentuid="h9bbf1a66g5136g4de6gb0f1g8e48e853d2ad" version="1">Combat Extender: Fighter Boost</content>
+	<content contentuid="h2bc8ef1agcebbg4fdagad50gbce9cfbec66f" version="1">A character who has mastered weapons and tactics, excelling in martial combat. They gain [1] &lt;LSTag Type="ActionResource" Tooltip="SuperiorityDie"&gt;Superiority Dice&lt;/LSTag&gt;, in addition to Fighter boosts from configuration.</content>
+	<content contentuid="h39b8a7b9g1718g4ee9ga92cgda8d8ede2808" version="1">Combat Extender: Monk Boost</content>
+	<content contentuid="h705db622g0893g4d79gae8age3f4ebeca536" version="1">A character who has mastered body, mind and the art of combat. They gain Monk boosts from configuration.</content>
+	<content contentuid="h100e7a9bg3c26g4035g86d9g0762e657c372" version="1">Combat Extender: Paladin Boost</content>
+	<content contentuid="h5ee949eegd3a6g46dbgbf07g91727440a141" version="1">A character who upholds or neglects a sacred oath, a warrior of divinity or demise. They gain Paladin boosts from configuration.</content>
+	<content contentuid="hb61a7161gc0d5g473eg9097g796ae5a0900b" version="1">Combat Extender: Ranger Boost</content>
+	<content contentuid="hab036a9fg5928g4633ga2d4g9e5fc1483425" version="1">A character who blends martial prowess with nature's magic. They gain Ranger boosts from configuration.</content>
+	<content contentuid="h27b20f1eg064cg46f7ga4b0gcb11492a810b" version="1">Combat Extender: Rogue Boost</content>
+	<content contentuid="h42db1062gb882g467fgb8cdgba975ea87ffd" version="1">A character who excels in stealth, strategy, and quick thinking. They gain &lt;LSTag Type="Spell" Tooltip="Target_SneakAttack"&gt;Sneak Attack&lt;/LSTag&gt;, in addition to Rogue boosts from configuration.</content>
+	<!-- <content contentuid="hfca3023ag0cf5g4fd5g9184g5bf278b72681" version="1">Level 1 Spells</content>
+	<content contentuid="h3f736013g350cg463ega8e5g318275eb90fa" version="1">Adds various level 1 spells along with level 1 spell slots.</content>
+	<content contentuid="h5d24b016g42feg4cc4g8b5agccc0a341f4c8" version="1">Level 2 Spells</content>
+	<content contentuid="h906a1570gb4b0g4c51gbd4cgc687d645af1d" version="1">Adds various level 2 spells along with level 2 spell slots.</content>
+	<content contentuid="h72f00e33g1f60g4130g9525gc09d6d498094" version="1">Level 3 Spells</content>
+	<content contentuid="h39c9286bg3f3dg4f05gbaa3g13f6167f12ff" version="1">Adds various level 3 spells along with level 3 spell slots.</content>
+	<content contentuid="h0dd5b94eg8169g420dgac95gc9ab1c3f0bb8" version="1">Level 4 Spells</content>
+	<content contentuid="hb4858180g59abg40c5gaaf2g16a8ad01ace1" version="1">Adds various level 4 spells along with level 4 spell slots.</content>
+	<content contentuid="h9e896e6eg9c94g4e81gba61gf63a7602eb52" version="1">Level 5 Spells</content>
+	<content contentuid="h2c0834f7g7681g44e1g80f6g91c6a3274600" version="1">Adds various level 5 spells along with level 5 spell slots.</content>
+	<content contentuid="h9334db5eg37aeg4b9bgabf8g41bdb1720bf0" version="1">Level 6 Spells</content>
+	<content contentuid="h4cae8b24g58b9g4805ga8e5gfe242ba99e04" version="1">Adds various level 6 spells along with level 6 spell slots.</content>
+	<content contentuid="hf10cc79ag31f9g4341g9b6cg001bcba74650" version="1">Level 1 Spells (Control)</content>
+	<content contentuid="h57451831gc640g47f6g810fg69e0480141ad" version="1">Adds various level 1 control spells.</content>
+	<content contentuid="h9aae37c9gfcc1g417cg923bgdf59716077dc" version="1">Level 2 Spells (Control)</content>
+	<content contentuid="h4ac52b6dgae3bg44e0ga40bgab61899e81c7" version="1">Adds various level 2 control spells.</content>
+	<content contentuid="hca0e4b9bg762fg4766gbaf4g939975542c78" version="1">Level 3 Spells (Control)</content>
+	<content contentuid="h6341c73eg117dg4d29g9fb5g20d2071a632e" version="1">Adds various level 3 control spells.</content>
+	<content contentuid="hc2fd750fgceedg46ccga52fg525d7356414f" version="1">Level 4 Spells (Control)</content>
+	<content contentuid="h04e9c320gaa44g4656g9ed3ga61666e86fc0" version="1">Adds various level 4 control spells.</content>
+	<content contentuid="ha55c504bg48dbg4d8dg9c60g04ac301a2607" version="1">Level 5 Spells (Control)</content>
+	<content contentuid="hd6e5cd69g095eg4956gbc66g9a0593ad1b25" version="1">Adds various level 5 control spells.</content>
+	<content contentuid="h9b4bf927g729bg44adgb88fg7f9d23e51acb" version="1">Level 6 Spells (Control)</content>
+	<content contentuid="h5d3be2cdgdbdcg4c9cg9411gba70fc9b2f81" version="1">Adds various level 6 control spells.</content> -->
 </contentList>
