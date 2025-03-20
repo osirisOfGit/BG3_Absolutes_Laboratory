@@ -15,7 +15,7 @@
 	<content contentuid="h54aa6df3g3e46g4c2cg85bdga5d196c4f97e" version="1">Combat Extender: Bard Boost</content>
 	<content contentuid="h97a23da3gd2c1g4b07gb187g9f8696856259" version="1">A character with a versatile skillset, who blends artistry, trickery, and spellcraft. They gain Bard boosts from configuration.</content>
 	<content contentuid="he38308dag9418g482fg8ca1g980cc98ff64a" version="1">Combat Extender: Druid Boost</content>
-	<content contentuid="hc19cb29fgce35g4253g810fge4b35ebb2168" version="1">This character commands the forces of nature, shaping the world with primal magic. They gain Druid boosts from configuration.</content>
+	<content contentuid="hc19cb29fgce35g4253g810fge4b35ebb2168" version="1">A character who commands the forces of nature, shaping the world with primal magic. They gain Druid boosts from configuration.</content>
 	<content contentuid="hb9ff98d2g22d8g48efgb462g147c72a602d7" version="1">Combat Extender: Sorcerer Boost</content>
 	<content contentuid="hf8533079gfd16g4590g9754g99a81d9cd95f" version="1">A character with raw arcane power, shaping magic through will alone. They gain Sorcerer boosts from configuration.</content>
 	<content contentuid="hbeb3c7c1g30ddg4b0ega936g02439e04c829" version="1">Combat Extender: Warlock Boost</content>
@@ -40,28 +40,40 @@
 	<content contentuid="hab036a9fg5928g4633ga2d4g9e5fc1483425" version="1">A character who blends martial prowess with nature's magic. They gain Ranger boosts from configuration.</content>
 	<content contentuid="h27b20f1eg064cg46f7ga4b0gcb11492a810b" version="1">Combat Extender: Rogue Boost</content>
 	<content contentuid="h42db1062gb882g467fgb8cdgba975ea87ffd" version="1">A character who excels in stealth, strategy, and quick thinking. They gain &lt;LSTag Type="Spell" Tooltip="Target_SneakAttack"&gt;Sneak Attack&lt;/LSTag&gt;, in addition to Rogue boosts from configuration.</content>
-	<!-- <content contentuid="hfca3023ag0cf5g4fd5g9184g5bf278b72681" version="1">Level 1 Spells</content>
-	<content contentuid="h3f736013g350cg463ega8e5g318275eb90fa" version="1">Adds various level 1 spells along with level 1 spell slots.</content>
-	<content contentuid="h5d24b016g42feg4cc4g8b5agccc0a341f4c8" version="1">Level 2 Spells</content>
-	<content contentuid="h906a1570gb4b0g4c51gbd4cgc687d645af1d" version="1">Adds various level 2 spells along with level 2 spell slots.</content>
-	<content contentuid="h72f00e33g1f60g4130g9525gc09d6d498094" version="1">Level 3 Spells</content>
-	<content contentuid="h39c9286bg3f3dg4f05gbaa3g13f6167f12ff" version="1">Adds various level 3 spells along with level 3 spell slots.</content>
-	<content contentuid="h0dd5b94eg8169g420dgac95gc9ab1c3f0bb8" version="1">Level 4 Spells</content>
-	<content contentuid="hb4858180g59abg40c5gaaf2g16a8ad01ace1" version="1">Adds various level 4 spells along with level 4 spell slots.</content>
-	<content contentuid="h9e896e6eg9c94g4e81gba61gf63a7602eb52" version="1">Level 5 Spells</content>
-	<content contentuid="h2c0834f7g7681g44e1g80f6g91c6a3274600" version="1">Adds various level 5 spells along with level 5 spell slots.</content>
-	<content contentuid="h9334db5eg37aeg4b9bgabf8g41bdb1720bf0" version="1">Level 6 Spells</content>
-	<content contentuid="h4cae8b24g58b9g4805ga8e5gfe242ba99e04" version="1">Adds various level 6 spells along with level 6 spell slots.</content>
-	<content contentuid="hf10cc79ag31f9g4341g9b6cg001bcba74650" version="1">Level 1 Spells (Control)</content>
-	<content contentuid="h57451831gc640g47f6g810fg69e0480141ad" version="1">Adds various level 1 control spells.</content>
-	<content contentuid="h9aae37c9gfcc1g417cg923bgdf59716077dc" version="1">Level 2 Spells (Control)</content>
-	<content contentuid="h4ac52b6dgae3bg44e0ga40bgab61899e81c7" version="1">Adds various level 2 control spells.</content>
-	<content contentuid="hca0e4b9bg762fg4766gbaf4g939975542c78" version="1">Level 3 Spells (Control)</content>
-	<content contentuid="h6341c73eg117dg4d29g9fb5g20d2071a632e" version="1">Adds various level 3 control spells.</content>
-	<content contentuid="hc2fd750fgceedg46ccga52fg525d7356414f" version="1">Level 4 Spells (Control)</content>
-	<content contentuid="h04e9c320gaa44g4656g9ed3ga61666e86fc0" version="1">Adds various level 4 control spells.</content>
-	<content contentuid="ha55c504bg48dbg4d8dg9c60g04ac301a2607" version="1">Level 5 Spells (Control)</content>
-	<content contentuid="hd6e5cd69g095eg4956gbc66g9a0593ad1b25" version="1">Adds various level 5 control spells.</content>
-	<content contentuid="h9b4bf927g729bg44adgb88fg7f9d23e51acb" version="1">Level 6 Spells (Control)</content>
-	<content contentuid="h5d3be2cdgdbdcg4c9cg9411gba70fc9b2f81" version="1">Adds various level 6 control spells.</content> -->
+
+	<content contentuid="h876cadd9g86d3g4078gad9dga0a479bc4687" version="1">Combat Extender: Level 1 Spells</content>
+	<content contentuid="hd0427899g0f87g48d6g83ecg40863f815d3b" version="1">A character with experience in spellcasting. They gain access to spellslots, and a variety of spells from configuration.</content>
+
+	<content contentuid="h61f97ac3gee27g4f41g968eg84c8d6736cbe" version="1">Combat Extender: Level 2 Spells</content>
+	<content contentuid="h45b83debg1a56g44e8g8c6aga84f04821faf" version="1">A character with experience in spellcasting. They gain access to spellslots, and a variety of spells from configuration.</content>
+
+	<content contentuid="hca174c54gf958g4428gbca2gdb91dd148350" version="1">Combat Extender: Level 3 Spells</content>
+	<content contentuid="hcbb4aa9dgdb85g42e7g88f5g4eedab1aeb82" version="1">A character with experience in spellcasting. They gain access to spellslots, and a variety of spells from configuration.</content>
+
+	<content contentuid="h3b5a92b5g7c32g44e9ga444g516af28ccc8e" version="1">Combat Extender: Level 4 Spells</content>
+	<content contentuid="hae2bab40g7c67g444cgabe9g2c569d3bf3fe" version="1">A character with experience in spellcasting. They gain access to spellslots, and a variety of spells from configuration.</content>
+
+	<content contentuid="h4705faf3g23c1g437eg8c75g4475e4baa03b" version="1">Combat Extender: Level 5 Spells</content>
+	<content contentuid="hf14cc925g5c0ag4194gbbe2g492e88ed2573" version="1">A character with experience in spellcasting. They gain access to spellslots, and a variety of spells from configuration.</content>
+
+	<content contentuid="h2893266fgc5dag4a11g9a4fg865c4de3ddad" version="1">Combat Extender: Level 6 Spells</content>
+	<content contentuid="h067d3642g05dcg4b59g8497g6961a7684d35" version="1">A character with experience in spellcasting. They gain access to spellslots, and a variety of spells from configuration.</content>
+
+	<content contentuid="h7c228fcegf1f9g4056g8d95gae4927bb065b" version="1">Combat Extender: Level 1 Spells - Control</content>
+	<content contentuid="ha4c22508gfbf9g4fbbg82e4g874ba8b8a84c" version="1">They gain access to spells from configuration.</content>
+
+	<content contentuid="h5bd0fe2cg4694g493bg96d9gd4102030c036" version="1">Combat Extender: Level 2 Spells - Control</content>
+	<content contentuid="ha4656768geeadg438dgba5cgf1f5228decc9" version="1">They gain access to spells from configuration.</content>
+
+	<content contentuid="h352bbd60g1affg4abcg973fgb04e5c18691c" version="1">Combat Extender: Level 3 Spells - Control</content>
+	<content contentuid="h49d4b2adg62b6g4369g8902g3ed6f2a87fdd" version="1">They gain access to spells from configuration.</content>
+
+	<content contentuid="h2cfc2c9bgedabg43adg93a6g1f19884706cb" version="1">Combat Extender: Level 4 Spells - Control</content>
+	<content contentuid="h96fa4a41g4640g439dg86f6g5f402b947888" version="1">They gain access to spells from configuration.</content>
+
+	<content contentuid="h2c49ba4eg89e7g402fg92d6g4255701e3048" version="1">Combat Extender: Level 5 Spells - Control</content>
+	<content contentuid="hfe84b1d9g6521g4934g8c2dg0f4b842848c0" version="1">They gain access to spells from configuration.</content>
+
+	<content contentuid="hcb41b89eg4155g44bfg8474g32fb031bdd15" version="1">Combat Extender: Level 6 Spells - Control</content>
+	<content contentuid="hfcd2e6c0g291fg4e62gaaccg48073db379de" version="1">They gain access to spells from configuration.</content>
 </contentList>
