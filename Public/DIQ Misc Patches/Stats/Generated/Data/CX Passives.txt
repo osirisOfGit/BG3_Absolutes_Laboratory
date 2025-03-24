@@ -127,7 +127,6 @@ data "Boosts" ""
 
 new entry "CX_Paladin_Boost"
 type "PassiveData"
-using ""
 // data "DisplayName" "h1517365cgc118g4686g8ecbg2ad846d80053"
 data "DisplayName" "h100e7a9bg3c26g4035g86d9g0762e657c372"
 // data "Description" "he95e16a1gc3a2g44a1gbd19g924de26c78c8"
@@ -155,7 +154,7 @@ data "Description" "h42db1062gb882g467fgb8cdgba975ea87ffd"
 // data "Icon" "PassiveFeature_AttackOfOpportunity"
 data "Icon" "Action_SneakAttack_Melee"
 // data "Boosts" "ActionResource(SneakAttack_Charge,3,0);UnlockInterrupt(Interrupt_SneakAttack);UnlockInterrupt(Interrupt_SneakAttack_Critical)"
-data "Boosts" "ActionResource(SneakAttack_Charge,1,0);UnlockInterrupt(Interrupt_SneakAttack);UnlockInterrupt(Interrupt_SneakAttack_Critical)"
+data "Boosts" "IF(not HasActionResource('SneakAttack_Charge', 1, 0, false, true, context.Source)):ActionResource(SneakAttack_Charge,1,0);UnlockInterrupt(Interrupt_SneakAttack);UnlockInterrupt(Interrupt_SneakAttack_Critical)"
 
 // ==================================== Original CX Spell Passives ====================================
 

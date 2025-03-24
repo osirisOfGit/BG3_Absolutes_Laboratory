@@ -1,8 +1,28 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <contentList>
+	<content contentuid="" version="1"></content>
 
 	<!-- Progressions -->
-	<content contentuid="h71edd856g0302g4520gb950gc6f3298da47c" version="1">yumjrtymrnertn</content>
+	<content contentuid="h22e51f36g68a9g4b6aga433g694b75975e4d" version="1">This character is using class progressions.</content>
+
+	<content contentuid="he67b6a65g03fcg431dga01cg0f2685168030" version="1">Class Progressions: Barbarian</content>
+	<content contentuid="h3b2a32d0gf5bdg4994g8a0agbc545ff76f16" version="1">Class Progressions: Bard</content>
+	<content contentuid="he6acc5c5gd23bg4c8dgb60cg3de3da611c9f" version="1">Class Progressions: Cleric</content>
+	<content contentuid="h215206fcg60f6g4af5g94f2gd3c61fc2399b" version="1">Class Progressions: Druid</content>
+	<content contentuid="h6d12a72egfab9g4f45gae31g5d4491dd2b6b" version="1">Class Progressions: Fighter</content>
+	<content contentuid="h5f6db4dfgb3b4g4289g937bg039af3d0b1f8" version="1">Class Progressions: Monk</content>
+	<content contentuid="hbd9fca0cg8eddg405cga457g81f619e965fe" version="1">Class Progressions: Paladin</content>
+	<content contentuid="haf18a871g8e0fg46b0gb05eg2ea8ca538b80" version="1">Class Progressions: Ranger</content>
+	<content contentuid="h8ac0402fgb1fbg439bgb720g741bc0484c6a" version="1">Class Progressions: Rogue</content>
+	<content contentuid="h9987ac52g08b3g40e0gac8eg056b928b8d4b" version="1">Class Progressions: Sorcerer</content>
+	<content contentuid="h286630c6gcd5bg4f56g84edg9ede6b7fc8cb" version="1">Class Progressions: Warlock</content>
+	<content contentuid="hda3c8533gc225g4f6cgb65fg22e6f4ea9deb" version="1">Class Progressions: Wizard</content>
+
+	<content contentuid="he9867dbag731dg4a5bg9830g1f6373160874" version="1">Class Progressions: Flaming Fist Melee Attacker</content>
+	<content contentuid="h908ea70fgf333g4ec0ga7a6g8a7e92ff10ad" version="1">Class Progressions: Flaming Fist Melee Defender</content>
+	<content contentuid="he50c053cg4e2dg479fg88c9g0d84fed9bde6" version="1">Class Progressions: Flaming Fist Ranger</content>
+	<content contentuid="h07007e35g6fbdg444fga1c2gf8dfc9258269" version="1">Class Progressions: Flaming Fist Cleric</content>
+	<content contentuid="h19a9f0e8g94bcg4f42g9fa2g6d4b95bc6e2e" version="1">Class Progressions: Flaming Fist Caster</content>
 
 	<!-- New CX Passives -->
 	<content contentuid="h83a9e22egdf4eg4197g9624g6ca6a935f37d" version="1">Combat Extender: Boss Boost</content>

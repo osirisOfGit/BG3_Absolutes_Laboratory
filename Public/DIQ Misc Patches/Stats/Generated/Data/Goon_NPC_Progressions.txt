@@ -35,76 +35,108 @@ data "Description" "h22e51f36g68a9g4b6aga433g694b75975e4d;1"
 data "Properties" "Highlighted"
 data "Icon" "GenericIcon_Intent_Buff"
 
+// ==================================== Flaming Fist progressions ====================================
+
+new entry "Goon_Flaming_Fist_Melee_Attacker_NPC_Progressions"
+type "PassiveData"
+using "Goon_NPC_Progressions_Template"
+// Class Progressions: Flaming Fist Melee Attacker
+data "DisplayName" "he9867dbag731dg4a5bg9830g1f6373160874;1"
+
+new entry "Goon_Flaming_Fist_Melee_Defender_NPC_Progressions"
+type "PassiveData"
+using "Goon_NPC_Progressions_Template"
+// Class Progressions: Flaming Fist Melee Defender
+data "DisplayName" "h908ea70fgf333g4ec0ga7a6g8a7e92ff10ad;1"
+
+new entry "Goon_Flaming_Fist_Melee_Ranger_NPC_Progressions"
+type "PassiveData"
+using "Goon_NPC_Progressions_Template"
+// Class Progressions: Flaming Fist Ranger
+data "DisplayName" "he50c053cg4e2dg479fg88c9g0d84fed9bde6;1"
+
+new entry "Goon_Flaming_Fist_Melee_Cleric_NPC_Progressions"
+type "PassiveData"
+using "Goon_NPC_Progressions_Template"
+// Class Progressions: Flaming Fist Cleric
+data "DisplayName" "h07007e35g6fbdg444fga1c2gf8dfc9258269;1"
+
+new entry "Goon_Flaming_Fist_Melee_Caster_NPC_Progressions"
+type "PassiveData"
+using "Goon_NPC_Progressions_Template"
+// Class Progressions: Flaming Fist Caster
+data "DisplayName" "h19a9f0e8g94bcg4f42g9fa2g6d4b95bc6e2e;1"
+
 // ==================================== Main class progressions ====================================
 
 new entry "Goon_Barbarian_NPC_Progressions"
 type "PassiveData"
 using "Goon_NPC_Progressions_Template"
-// Barbarian Progressions
+// Class Progressions: Barbarian
 data "DisplayName" "he67b6a65g03fcg431dga01cg0f2685168030;1"
 
 new entry "Goon_Bard_NPC_Progressions"
 type "PassiveData"
 using "Goon_NPC_Progressions_Template"
-// Bard Progressions
+// Class Progressions: Bard
 data "DisplayName" "h3b2a32d0gf5bdg4994g8a0agbc545ff76f16;1"
 
 new entry "Goon_Cleric_NPC_Progressions"
 type "PassiveData"
 using "Goon_NPC_Progressions_Template"
-// Cleric Progressions
+// Class Progressions: Cleric
 data "DisplayName" "he6acc5c5gd23bg4c8dgb60cg3de3da611c9f;1"
 
 new entry "Goon_Druid_NPC_Progressions"
 type "PassiveData"
 using "Goon_NPC_Progressions_Template"
-// Druid Progressions
+// Class Progressions: Druid
 data "DisplayName" "h215206fcg60f6g4af5g94f2gd3c61fc2399b;1"
 
 new entry "Goon_Fighter_NPC_Progressions"
 type "PassiveData"
 using "Goon_NPC_Progressions_Template"
-// Fighter Progressions
+// Class Progressions: Fighter
 data "DisplayName" "h6d12a72egfab9g4f45gae31g5d4491dd2b6b;1"
 
 new entry "Goon_Monk_NPC_Progressions"
 type "PassiveData"
 using "Goon_NPC_Progressions_Template"
-// Monk Progressions
+// Class Progressions: Monk
 data "DisplayName" "h5f6db4dfgb3b4g4289g937bg039af3d0b1f8;1"
 
 new entry "Goon_Paladin_NPC_Progressions"
 type "PassiveData"
 using "Goon_NPC_Progressions_Template"
-// Paladin Progressions
+// Class Progressions: Paladin
 data "DisplayName" "hbd9fca0cg8eddg405cga457g81f619e965fe;1"
 
 new entry "Goon_Ranger_NPC_Progressions"
 type "PassiveData"
 using "Goon_NPC_Progressions_Template"
-// Ranger Progressions
+// Class Progressions: Ranger
 data "DisplayName" "haf18a871g8e0fg46b0gb05eg2ea8ca538b80;1"
 
 new entry "Goon_Rogue_NPC_Progressions"
 type "PassiveData"
 using "Goon_NPC_Progressions_Template"
-// Rogue Progressions
+// Class Progressions: Rogue
 data "DisplayName" "h8ac0402fgb1fbg439bgb720g741bc0484c6a;1"
 
 new entry "Goon_Sorcerer_NPC_Progressions"
 type "PassiveData"
 using "Goon_NPC_Progressions_Template"
-// Sorcerer Progressions
+// Class Progressions: Sorcerer
 data "DisplayName" "h9987ac52g08b3g40e0gac8eg056b928b8d4b;1"
 
 new entry "Goon_Warlock_NPC_Progressions"
 type "PassiveData"
 using "Goon_NPC_Progressions_Template"
-// Warlock Progressions
+// Class Progressions: Warlock
 data "DisplayName" "h286630c6gcd5bg4f56g84edg9ede6b7fc8cb;1"
 
 new entry "Goon_Wizard_NPC_Progressions"
 type "PassiveData"
 using "Goon_NPC_Progressions_Template"
-// Wizard Progressions
+// Class Progressions: Wizard
 data "DisplayName" "hda3c8533gc225g4f6cgb65fg22e6f4ea9deb;1"
