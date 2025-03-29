@@ -14,52 +14,7 @@ data "Description" "ha444da0ag7d30g4e9fg97d0g393888ffebe6"
 data "Icon" "PassiveFeature_Generic_Threat"
 data "Boosts" ""
 
-// ==================================== New Class Passives ====================================
-
-// Martial passive to compliment Magic passive, both intended to be widespread and generic
-new entry "CX_Martial_Boost"
-type "PassiveData"
-data "DisplayName" "h2ac56c95gc30cg46e3gba36g4efd11b7884a"
-data "Description" "hd5818987ga072g4e8dgb314g97ab96f230cd"
-data "Boosts" "Proficiency(MartialWeapons)"
-data "Icon" "Spell_Abjuration_WardingBond"
-
-new entry "CX_Bard_Boost"
-type "PassiveData"
-data "DisplayName" "h54aa6df3g3e46g4c2cg85bdga5d196c4f97e"
-data "Description" "h97a23da3gd2c1g4b07gb187g9f8696856259"
-data "Icon" "Action_Bard_GrantBardicInspiration"
-data "Boosts" ""
-
-new entry "CX_Druid_Boost"
-type "PassiveData"
-data "DisplayName" "he38308dag9418g482fg8ca1g980cc98ff64a"
-data "Description" "hc19cb29fgce35g4253g810fge4b35ebb2168"
-data "Icon" "Action_Barbarian_Rage"
-data "Boosts" ""
-
-new entry "CX_Sorcerer_Boost"
-type "PassiveData"
-data "DisplayName" "hb9ff98d2g22d8g48efgb462g147c72a602d7"
-data "Description" "hf8533079gfd16g4590g9754g99a81d9cd95f"
-data "Icon" "Skill_Sorcerer_Passive_Metamagic_CarefulSpell"
-data "Boosts" ""
-
-new entry "CX_Warlock_Boost"
-type "PassiveData"
-data "DisplayName" "hbeb3c7c1g30ddg4b0ega936g02439e04c829"
-data "Description" "h45452726ge3a8g4311g98adg1853a70ff4a6"
-data "Icon" "Spell_Necromancy_BestowCurse"
-data "Boosts" ""
-
-new entry "CX_Wizard_Boost"
-type "PassiveData"
-data "DisplayName" "h90218be8gf884g45e3g9024g6747c175e952"
-data "Description" "he480cbbbg8bbeg4bb9gb3c2g8929f117fd2b"
-data "Icon" "PassiveFeature_ImprovedAbjuration"
-data "Boosts" ""
-
-// ==================================== Original CX passives ====================================
+// ==================================== Main passives ====================================
 
 // Main passive, no real reason to be visible
 new entry "CX_PASSIVE"
@@ -84,6 +39,16 @@ data "ToggleOnEffect" ""
 data "ToggleOffContext" ""
 data "ToggleGroup" "Metamagic"
 
+// Martial passive to compliment Magic passive, both intended to be widespread and generic
+new entry "CX_Martial_Boost"
+type "PassiveData"
+data "DisplayName" "h2ac56c95gc30cg46e3gba36g4efd11b7884a"
+data "Description" "hd5818987ga072g4e8dgb314g97ab96f230cd"
+data "Boosts" "Proficiency(MartialWeapons)"
+data "Icon" "Spell_Abjuration_WardingBond"
+
+// =================== Barbarian ===================
+
 new entry "CX_Barbarian_Boost"
 type "PassiveData"
 // data "DisplayName" "h21ea4ac1gf6ffg42cbg94aeg9281460855d6"
@@ -93,6 +58,31 @@ data "Description" "h59b5144dgff16g41edg9da8gc79e81e92b69"
 // data "Icon" "Action_Barbarian_DivingStrike"
 data "Icon" "Action_Barbarian_Rage"
 data "Boosts" "UnlockInterrupt(Interrupt_RecklessAttack)"
+
+new entry "CX_Barbarian_Berserker_Boost"
+type "PassiveData"
+data "DisplayName" "h7fb10ed8gcd0ag4e02g909fg5a9433f5cebc"
+data "Description" "h28f5bbd1ge7ddg492egb781gbf7d0d1b0be7"
+data "Icon" "Action_Barbarian_Frenzy"
+data "Boosts" ""
+
+new entry "CX_Barbarian_WildMagic_Boost"
+type "PassiveData"
+data "DisplayName" "h3b4ca2edgd773g4765ga420gf434555cc1f1"
+data "Description" "h344dfc77g19d4g4999g87a7g6b27338790d7"
+data "Icon" "Action_Barbarian_Rage_WildMagic"
+data "Boosts" ""
+
+// =================== Bard ===================
+
+new entry "CX_Bard_Boost"
+type "PassiveData"
+data "DisplayName" "h54aa6df3g3e46g4c2cg85bdga5d196c4f97e"
+data "Description" "h97a23da3gd2c1g4b07gb187g9f8696856259"
+data "Icon" "Action_Bard_GrantBardicInspiration"
+data "Boosts" ""
+
+// =================== Cleric ===================
 
 new entry "CX_Cleric_Boost"
 type "PassiveData"
@@ -104,16 +94,56 @@ data "Description" "hacdccdb0ge6c6g454bga598g6df082810262"
 data "Icon" "Action_DivineIntervention_Attack"
 data "Boosts" ""
 
+// =================== Druid ===================
+
+new entry "CX_Druid_Boost"
+type "PassiveData"
+data "DisplayName" "he38308dag9418g482fg8ca1g980cc98ff64a"
+data "Description" "hc19cb29fgce35g4253g810fge4b35ebb2168"
+data "Icon" "Action_Barbarian_Rage"
+data "Boosts" ""
+
+new entry "CX_Druid_Moon_Boost"
+type "PassiveData"
+data "DisplayName" "hb7785d94g8723g45b8gb252g11f0270642c1"
+data "Description" "h654778cegbf88g49adgb407gcb0cc8299dc0"
+data "Icon" "Skill_Druid_WildShape"
+data "Boosts" ""
+
+new entry "CX_Druid_Spores_Boost"
+type "PassiveData"
+data "DisplayName" "h407e27feg0d73g483dgbed5gb58542ff0cca"
+data "Description" "h5872faaag78ffg4f03g99cbgcda17b06d423"
+data "Icon" "Action_SymbioticEntity"
+data "Boosts" ""
+// =================== Fighter ===================
+
 new entry "CX_Fighter_Boost"
 type "PassiveData"
 // data "DisplayName" "hd382954ege821g4920gb1c0g588794653928"
 data "DisplayName" "h9bbf1a66g5136g4de6gb0f1g8e48e853d2ad"
 // data "Description" "h914310b1ga5dbg4fcdg9123g9980b7508d4e"
-data "Description" "h2bc8ef1agcebbg4fdagad50gbce9cfbec66f"
-data "DescriptionParams" "4"
+data "Description" "hbf3404a9g766dg4d85gbf2egca83383094c6"
+// data "DescriptionParams" "4"
 // data "Icon" "Action_CommandersStrike"
 data "Icon" "Skill_Fighter_ActionSurge"
+
+new entry "CX_Fighter_BM_Boost"
+type "PassiveData"
+data "DisplayName" "hefce9befgc089g4b04g9393g1ec534347dea"
+data "Description" "hdbe7301eg8093g461fgaa19g99bf294c1819"
+data "Icon" "Action_GoadingAttack_Melee"
 data "Boosts" "ActionResource(SuperiorityDie,4,0)"
+
+// Using EK progression from chizfreak's Eldritch Knight Plus mod
+new entry "CX_Fighter_EK_Boost"
+type "PassiveData"
+data "DisplayName" "h56b56a6ag0de5g45e9g8845g97dae05491b3"
+data "Description" "h5c580e8ag700cg4159gbc2dg145ea47b7f8b"
+data "Icon" "PassiveFeature_EldritchStrike"
+data "Boosts" ""
+
+// =================== Monk ===================
 
 new entry "CX_Monk_Boost"
 type "PassiveData"
@@ -125,6 +155,22 @@ data "Description" "h705db622g0893g4d79gae8age3f4ebeca536"
 data "Icon" "Action_Monk_FlurryOfBlows"
 data "Boosts" ""
 
+new entry "CX_Monk_OpenHand_Boost"
+type "PassiveData"
+data "DisplayName" "h07a62781gfb0fg4225g92f8g8ca347236ec5"
+data "Description" "hb571273dga181g4630g98a1g8e7bf5b83102"
+data "Icon" "Action_KiResonation_Punch"
+data "Boosts" ""
+
+new entry "CX_Monk_FourElements_Boost"
+type "PassiveData"
+data "DisplayName" "h9d7e8339ga648g4afeg8e86gc903fd093317"
+data "Description" "hc901b2c6gb064g43d7g899cg1638fa8453b3"
+data "Icon" "Action_Monk_FangsOfTheFireSnake"
+data "Boosts" ""
+
+// =================== Paladin ===================
+
 new entry "CX_Paladin_Boost"
 type "PassiveData"
 // data "DisplayName" "h1517365cgc118g4686g8ecbg2ad846d80053"
@@ -135,6 +181,29 @@ data "Description" "h5ee949eegd3a6g46dbgbf07g91727440a141"
 data "Icon" "PassiveFeature_ImprovedDivineSmite"
 data "Boosts" ""
 
+new entry "CX_Paladin_Devotion_Boost"
+type "PassiveData"
+data "DisplayName" "h08fb1797g13bfg412dga764gc3087601ba95"
+data "Description" "hd41ebf55g11bfg459egbda2g7af1996ef3cf"
+data "Icon" "Action_Paladin_SacredWeapon"
+data "Boosts" ""
+
+new entry "CX_Paladin_Vengeance_Boost"
+type "PassiveData"
+data "DisplayName" "h63d656a0g451cg4061gbee8g6e0ae8814137"
+data "Description" "hcedd322eg85bdg4ba6gae85gd39a68f4caa0"
+data "Icon" "Action_Paladin_InquisitorsMight"
+data "Boosts" ""
+
+new entry "CX_Paladin_Oathbreaker_Boost"
+type "PassiveData"
+data "DisplayName" "h727a7017g43e3g42f2g90aage79f5e4b6513"
+data "Description" "h529feb44gb9e2g445dg988cg1311742dc8bc"
+data "Icon" "Action_Paladin_DreadfulAspect"
+data "Boosts" ""
+
+// =================== Ranger ===================
+
 new entry "CX_Ranger_Boost"
 type "PassiveData"
 // data "DisplayName" "h6a354791gc025g45bega17bg12b0faa6757d"
@@ -143,6 +212,22 @@ data "DisplayName" "hb61a7161gc0d5g473eg9097g796ae5a0900b"
 data "Description" "hab036a9fg5928g4633ga2d4g9e5fc1483425"
 data "Icon" "Action_DreadAmbusher_Ranged"
 data "Boosts" ""
+
+new entry "CX_Ranger_BeastMaster_Boost"
+type "PassiveData"
+data "DisplayName" "hc4337b0ag116ag40f0gbc8fgfcbcb9713b9c"
+data "Description" "h47156914gd0afg4844g90adg35868a3b342e"
+data "Icon" "Skill_Ranger_RangersCompanion"
+data "Boosts" ""
+
+new entry "CX_Ranger_Hunter_Boost"
+type "PassiveData"
+data "DisplayName" "h54d41724g9946g4399gadd8gd5aeb1490f44"
+data "Description" "hf1e55b72g2b2cg44fagaa04g147842765b7c"
+data "Icon" "Action_Multiattack_Volley"
+data "Boosts" ""
+
+// =================== Rogue ===================
 
 // 3 Sneak Attacks? It's all hardcoded to have only one usable IIRC
 new entry "CX_Rogue_Boost"
@@ -155,6 +240,47 @@ data "Description" "h42db1062gb882g467fgb8cdgba975ea87ffd"
 data "Icon" "Action_SneakAttack_Melee"
 // data "Boosts" "ActionResource(SneakAttack_Charge,3,0);UnlockInterrupt(Interrupt_SneakAttack);UnlockInterrupt(Interrupt_SneakAttack_Critical)"
 data "Boosts" "IF(not HasActionResource('SneakAttack_Charge', 1, 0, false, true, context.Source)):ActionResource(SneakAttack_Charge,1,0);UnlockInterrupt(Interrupt_SneakAttack);UnlockInterrupt(Interrupt_SneakAttack_Critical)"
+
+// =================== Sorcerer ===================
+
+new entry "CX_Sorcerer_Boost"
+type "PassiveData"
+data "DisplayName" "hb9ff98d2g22d8g48efgb462g147c72a602d7"
+data "Description" "hf8533079gfd16g4590g9754g99a81d9cd95f"
+data "Icon" "Skill_Sorcerer_Passive_Metamagic_CarefulSpell"
+data "Boosts" ""
+
+// =================== Warlock ===================
+
+new entry "CX_Warlock_Boost"
+type "PassiveData"
+data "DisplayName" "hbeb3c7c1g30ddg4b0ega936g02439e04c829"
+data "Description" "h45452726ge3a8g4311g98adg1853a70ff4a6"
+data "Icon" "Spell_Necromancy_BestowCurse"
+data "Boosts" ""
+
+// =================== Wizard ===================
+
+new entry "CX_Wizard_Boost"
+type "PassiveData"
+data "DisplayName" "h90218be8gf884g45e3g9024g6747c175e952"
+data "Description" "he480cbbbg8bbeg4bb9gb3c2g8929f117fd2b"
+data "Icon" "PassiveFeature_ImprovedAbjuration"
+data "Boosts" ""
+
+new entry "CX_Wizard_Evocation_Boost"
+type "PassiveData"
+data "DisplayName" "h6104d86ag1a48g4f23gbf22gda76864a6a14"
+data "Description" "h2fa7fcd1g44dfg4020g867fgbaa7d958bc92"
+data "Icon" "PassiveFeature_SculptSpells"
+data "Boosts" ""
+
+new entry "CX_Wizard_Necromancy_Boost"
+type "PassiveData"
+data "DisplayName" "h46e43d67gf9f1g48f7g8ce0g14ef160309c2"
+data "Description" "hcffab35fg6567g4cd3ga4eeg568c65b1bbd7"
+data "Icon" "PassiveFeature_UndeadThralls_ExtraSummon"
+data "Boosts" ""
 
 // ==================================== Original CX Spell Passives ====================================
 

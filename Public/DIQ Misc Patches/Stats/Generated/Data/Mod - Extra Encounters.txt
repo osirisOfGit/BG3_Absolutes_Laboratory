@@ -1,0 +1,163 @@
+// ==================================== Extra Encounters and Minibosses ====================================
+
+new entry "Ilyn_Toth"
+type "Character"
+using "Ilyn_Toth"
+// data "Passives" "AttackOfOpportunity;DarknessRules;MagicResistance;TurnResistance;Darkvision;DispelEvilAndGood_Charm_Check;DispelEvilAndGood_Frightened_Check;DispelEvilAndGood_Possessed_Check"
+data "Passives" "CX_Wizard_Boost;CX_Wizard_Necromancy_Boost;CX_Magic_Boost;AttackOfOpportunity;DarknessRules;MagicResistance;TurnResistance;Darkvision;DispelEvilAndGood_Charm_Check;DispelEvilAndGood_Frightened_Check;DispelEvilAndGood_Possessed_Check"
+
+// NPC_Fighter
+new entry "Drow_raider"
+type "Character"
+using "Drow_raider"
+// data "Passives" "DarknessRules;DualWielder_BonusAC;DualWielder_PassiveBonuses;FeyAncestry;SunlightSensitivity;AttackOfOpportunity;Darkvision;ExtraAttack"
+data "Passives" "CX_Fighter_Boost;CX_Martial_Boost;FeyAncestry;AttackOfOpportunity;DarknessRules;SuperiorDarkvision;SunlightSensitivity;ExtraAttack;DualWielder_BonusAC;DualWielder_PassiveBonuses;"
+
+new entry "Ogre_Elite"
+type "Character"
+using "Ogre_Elite"
+// data "Passives" "OgreCurse;AttackOfOpportunity;Darkvision;DarknessRules;ExtraAttack"
+data "Passives" "CX_Barbarian_Boost;CX_Barbarian_Berserker_Boost;CX_Martial_Boost;OgreCurse;AttackOfOpportunity;Darkvision;DarknessRules;ExtraAttack"
+
+// NPC_Paladin
+new entry "Champion_of_Lath"
+type "Character"
+using "Champion_of_Lath"
+// data "Passives" "AttackOfOpportunity;DarknessRules;Darkvision;ExtraAttack;DispelEvilAndGood_Charm_Check;DispelEvilAndGood_Frightened_Check;DispelEvilAndGood_Possessed_Check;ImmuneToDisarm;"
+data "Passives" "CX_Paladin_Boost;CX_Paladin_Devotion_Boost;CX_Martial_Boost;AttackOfOpportunity;DarknessRules;Darkvision;ExtraAttack;DispelEvilAndGood_Charm_Check;DispelEvilAndGood_Frightened_Check;DispelEvilAndGood_Possessed_Check;ImmuneToDisarm;"
+
+new entry "Redcap_Melee_under"
+type "Character"
+using "Redcap_Melee_under"
+// data "Passives" "AttackOfOpportunity;BloodThirsty_Redcap;DarknessRules;Darkvision;Multiattack_Redcap;LOW_BlushingMermaid_Redcap_Alcohol;DispelEvilAndGood_Charm_Check;DispelEvilAndGood_Frightened_Check;DispelEvilAndGood_Possessed_Check"
+data "Passives" "CX_Fighter_Boost;CX_Martial_Boost;AttackOfOpportunity;DarknessRules;Darkvision;BloodThirsty_Redcap;Multiattack_Redcap;LOW_BlushingMermaid_Redcap_Alcohol;DispelEvilAndGood_Charm_Check;DispelEvilAndGood_Frightened_Check;DispelEvilAndGood_Possessed_Check"
+
+new entry "Redcap_Caster_under"
+type "Character"
+using "Redcap_Caster_under"
+// data "Passives" "AttackOfOpportunity;DarknessRules;Darkvision;DispelEvilAndGood_Charm_Check;DispelEvilAndGood_Frightened_Check;DispelEvilAndGood_Possessed_Check"
+data "Passives" "CX_Wizard_Boost;CX_Wizard_Evocation_Boost;CX_Magic_Boost;AttackOfOpportunity;DarknessRules;Darkvision;DispelEvilAndGood_Charm_Check;DispelEvilAndGood_Frightened_Check;DispelEvilAndGood_Possessed_Check"
+
+// NPC_Wizard
+new entry "Aurelio_wild"
+type "Character"
+using "Aurelio_wild"
+data "Passives" "CX_Sorcerer_Boost;CX_Magic_Boost;HumanMilitia;HumanVersatility;AttackOfOpportunity;DarknessRules;WildMagic_Boss;ControlledChaos_Boss;WildMagic_Guarantee;Conduit_Absolute"
+
+// NPC_Paladin
+new entry "KillerReplica_WLD"
+type "Character"
+using "KillerReplica_WLD"
+// data "Passives" "AttackOfOpportunity;DarknessRules;ExtraAttack"
+data "Passives" "CX_Paladin_Boost;CX_Paladin_Vengeance_Boost;CX_Martial_Boost;AttackOfOpportunity;DarknessRules;ExtraAttack"
+
+new entry "SHA_Shar"
+type "Character"
+using "SHA_Shar"
+// data "Passives" "ExtraAttack;SHA_DarkVengeance;SHA_VisionOfShar;LivingShadow;SunlightSensitivity;AttackOfOpportunity;Darkvision;DarknessRules"
+data "Passives" "CX_Cleric_Boost;CX_Magic_Boost;AttackOfOpportunity;Darkvision;DarknessRules;ExtraAttack;SHA_DarkVengeance;SHA_VisionOfShar;LivingShadow;SunlightSensitivity;"
+
+new entry "Vlaakith_manifest"
+type "Character"
+using "Vlaakith_manifest"
+// data "Passives" "AttackOfOpportunity;DarknessRules;PsychicStrikes_Githyanki;Parry_Githyanki_Supreme;Parry_Githyanki_Supreme_EquipTrigger;ExtraAttack;Vlaakith_immovable;UndeadFortitude_Vlaakith;TurnResistance;ImmuneToDisarm;Vlaakith_counter"
+data "Passives" "CX_Martial_Boost;CX_Magic_Boost;AttackOfOpportunity;DarknessRules;PsychicStrikes_Githyanki;Parry_Githyanki_Supreme;Parry_Githyanki_Supreme_EquipTrigger;ExtraAttack;Vlaakith_immovable;UndeadFortitude_Vlaakith;TurnResistance;ImmuneToDisarm;Vlaakith_counter"
+
+// NPC_Fighter  
+new entry "Human_Drunk_Filli"
+type "Character"
+using "Human_Drunk_Filli"
+// data "Passives" "AttackOfOpportunity;DarknessRules;Drunk_inluln_filli"
+data "Passives" "CX_Fighter_Boost;CX_Martial_Boost;HumanMilitia;HumanVersatility;AttackOfOpportunity;DarknessRules;Drunk_inluln_filli"
+
+new entry "Doppelganger_crowd_ambush"
+type "Character"
+using "Doppelganger_crowd_ambush"
+// data "Passives" "Multiattack_Doppelganger;AttackOfOpportunity;Darkvision;DarknessRules;Doppel_remove"
+data "Passives" "CX_Rogue_Boost;CX_Martial_Boost;AttackOfOpportunity;Darkvision;DarknessRules;Doppel_remove;Multiattack_Doppelganger"
+
+// NPC_Rogue
+new entry "Drow_Pirate"
+type "Character"
+using "Drow_Pirate"
+// data "Passives" "DarknessRules;DualWielder_BonusAC;DualWielder_PassiveBonuses;FeyAncestry;SunlightSensitivity;AttackOfOpportunity;Darkvision;ExtraAttack;Drow_balance"
+data "Passives" "CX_Rogue_Boost;CX_Martial_Boost;FeyAncestry;AttackOfOpportunity;DarknessRules;SuperiorDarkvision;SunlightSensitivity;DualWielder_BonusAC;DualWielder_PassiveBonuses;ExtraAttack;Drow_balance"
+
+// NPC_Fighter
+new entry "Drow_Pirate_bodyguard"
+type "Character"
+using "Drow_Pirate_bodyguard"
+// data "Passives" "DarknessRules;DualWielder_BonusAC;DualWielder_PassiveBonuses;FeyAncestry;SunlightSensitivity;AttackOfOpportunity;Darkvision;ExtraAttack;Drow_balance"
+data "Passives" "CX_Fighter_Boost;CX_Martial_Boost;FeyAncestry;AttackOfOpportunity;DarknessRules;SuperiorDarkvision;SunlightSensitivity;DualWielder_BonusAC;DualWielder_PassiveBonuses;ExtraAttack;Drow_balance"
+
+// NPC_Wizard
+new entry "Drow_Pirate_boss"
+type "Character"
+using "Drow_Pirate_boss"
+// data "Passives" "DarknessRules;DualWielder_BonusAC;DualWielder_PassiveBonuses;FeyAncestry;SunlightSensitivity;AttackOfOpportunity;Darkvision;Drow_Bounty;Drow_balance"
+data "Passives" "CX_Wizard_Boost;CX_Magic_Boost;CX_Spells_L5;CX_Spells_L6;CX_Spells_L6C;FeyAncestry;AttackOfOpportunity;DarknessRules;SuperiorDarkvision;SunlightSensitivity;DualWielder_BonusAC;DualWielder_PassiveBonuses;ExtraAttack;Drow_balance;Drow_Bounty"
+
+// NPC_Wizard
+new entry "Thay_Caster"
+type "Character"
+using "Thay_Caster"
+// data "Passives" "AttackOfOpportunity;DarknessRules;Darkvision;DispelEvilAndGood_Charm_Check;DispelEvilAndGood_Frightened_Check;DispelEvilAndGood_Possessed_Check;"
+data "Passives" "CX_Wizard_Boost;CX_Wizard_Evocation_Boost;CX_Magic_Boost;AttackOfOpportunity;DarknessRules;Darkvision;DispelEvilAndGood_Charm_Check;DispelEvilAndGood_Frightened_Check;DispelEvilAndGood_Possessed_Check;"
+
+new entry "Thay_Knight"
+type "Character"
+using "Thay_Knight"
+// data "Passives" "BlockVerbalSpellcasting;SkeletonDeath_Check;AttackOfOpportunity;DarknessRules;DispelEvilAndGood_Charm_Check;DispelEvilAndGood_Frightened_Check;DispelEvilAndGood_Possessed_Check;ExtraAttack;"
+data "Passives" "CX_Fighter_Boost;CX_Martial_Boost;AttackOfOpportunity;DarknessRules;DispelEvilAndGood_Charm_Check;DispelEvilAndGood_Frightened_Check;DispelEvilAndGood_Possessed_Check;ExtraAttack;BlockVerbalSpellcasting;SkeletonDeath_Check"
+
+new entry "Thay_Caster_Skel"
+type "Character"
+using "Thay_Caster_Skel"
+// data "Passives" "AttackOfOpportunity;DarknessRules;DispelEvilAndGood_Charm_Check;DispelEvilAndGood_Frightened_Check;DispelEvilAndGood_Possessed_Check"
+data "Passives" "CX_Wizard_Boost;CX_Wizard_Necromancy_Boost;CX_Magic_Boost;AttackOfOpportunity;DarknessRules;DispelEvilAndGood_Charm_Check;DispelEvilAndGood_Frightened_Check;DispelEvilAndGood_Possessed_Check"
+
+new entry "Githyanki_Raider_Lich_Strong"
+type "Character"
+using "Githyanki_Raider_Lich_Strong"
+// data "Passives" "ExtraAttack;CrossbowExpert_PointBlank;CrossbowExpert_Wounding;AttackOfOpportunity;DarknessRules;Sharpshooter_AllIn;Sharpshooter_Bonuses;InuredtoUndeath;Blessing_Vlaa;Alert;SteelWill;"
+data "Passives" "CX_Fighter_Boost;CX_Martial_BoostAttackOfOpportunity;DarknessRules;ExtraAttack;CrossbowExpert_PointBlank;CrossbowExpert_Wounding;Sharpshooter_AllIn;Sharpshooter_Bonuses;InuredtoUndeath;Blessing_Vlaa;Alert;SteelWill;"
+
+new entry "Githyanki_Gish_Lich_Strong"
+type "Character"
+using "Githyanki_Gish_Lich_Strong"
+// data "Passives" "WarMagic_Githyanki;AttackOfOpportunity;DarknessRules;WarCaster_Bonuses;GreatWeaponMaster_BonusAttack;GreatWeaponMaster_BonusDamage;InuredtoUndeath;Blessing_Vlaa;Alert;SteelWill;"
+data "Passives" "CX_Martial_Boost;CX_Magic_Boost;AttackOfOpportunity;DarknessRules;WarMagic_Githyanki;WarCaster_Bonuses;GreatWeaponMaster_BonusAttack;GreatWeaponMaster_BonusDamage;InuredtoUndeath;Blessing_Vlaa;Alert;SteelWill;"
+
+new entry "Redcap_caster_well"
+type "Character"
+using "Redcap_caster_well"
+// data "Passives" "AttackOfOpportunity;DarknessRules;Darkvision;DispelEvilAndGood_Charm_Check;DispelEvilAndGood_Frightened_Check;DispelEvilAndGood_Possessed_Check;Redcap_Buff_Well"
+data "Passives" "CX_Wizard_Boost;CX_Wizard_Evocation_Boost;CX_Magic_Boost;AttackOfOpportunity;DarknessRules;Darkvision;DispelEvilAndGood_Charm_Check;DispelEvilAndGood_Frightened_Check;DispelEvilAndGood_Possessed_Check;Redcap_Buff_Well"
+
+new entry "Redcap_melee_well"
+type "Character"
+using "Redcap_melee_well"
+// data "Passives" "AttackOfOpportunity;BloodThirsty_Redcap;DarknessRules;Darkvision;Multiattack_Redcap;DispelEvilAndGood_Charm_Check;DispelEvilAndGood_Frightened_Check;DispelEvilAndGood_Possessed_Check;Redcap_Buff_Well"
+data "Passives" "CX_Fighter_Boost;AttackOfOpportunity;DarknessRules;Darkvision;BloodThirsty_Redcap;Multiattack_Redcap;DispelEvilAndGood_Charm_Check;DispelEvilAndGood_Frightened_Check;DispelEvilAndGood_Possessed_Check;Redcap_Buff_Well"
+
+// NPC_Cleric
+new entry "Bane_Master"
+type "Character"
+using "Bane_Master"
+// data "Passives" "ExtraAttack;Tactical_Discipline;AttackOfOpportunity;DarknessRules;MAG_FrightenedDisadvantage_Passive;MAG_Poison_PoisonExposure_Gloves_Passive"
+data "Passives" "CX_Cleric_Boost;CX_Magic_Boost;AttackOfOpportunity;DarknessRules;ExtraAttack;Tactical_Discipline;MAG_FrightenedDisadvantage_Passive;MAG_Poison_PoisonExposure_Gloves_Passive"
+
+new entry "Bhaal_Deathstalker"
+type "Character"
+using "Bhaal_Deathstalker"
+// data "Passives" "ExtraAttack;AttackOfOpportunity;DarknessRules;Darkvision;SneakAttack_Unlock;LOW_BhaalAmulet_Passive"
+data "Passives" "CX_Rogue_Boost;CX_Martial_Boost;AttackOfOpportunity;DarknessRules;Darkvision;ExtraAttack;SneakAttack_Unlock;LOW_BhaalAmulet_Passive"
+
+new entry "Human_Cultist_Bhaal_Rager"
+type "Character"
+using "Human_Cultist_Bhaal_Rager"
+// data "Passives" "AttackOfOpportunity;Darkvision;DarknessRules;UnarmouredDefence_Barbarian;ExtraAttack;LOW_BhaalAmulet_Passive"
+data "Passives" "CX_Barbarian_Boost;CX_Barbarian_Berserker_Boost;CX_Martial_Boost;AttackOfOpportunity;Darkvision;DarknessRules;UnarmouredDefence_Barbarian;ExtraAttack;LOW_BhaalAmulet_Passive"
+// Giving NPC_Barbarian progression
+// data "Progressions" ""
+data "Progressions" "56db8107-e04c-4fe3-94f3-fd4acd44cd4a"

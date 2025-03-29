@@ -24,7 +24,7 @@
 	<content contentuid="h07007e35g6fbdg444fga1c2gf8dfc9258269" version="1">Class Progressions: Flaming Fist Cleric</content>
 	<content contentuid="h19a9f0e8g94bcg4f42g9fa2g6d4b95bc6e2e" version="1">Class Progressions: Flaming Fist Caster</content>
 
-	<!-- New CX Passives -->
+	<!-- CX Other Passives -->
 	<content contentuid="h83a9e22egdf4eg4197g9624g6ca6a935f37d" version="1">Combat Extender: Boss Boost</content>
 	<content contentuid="h69e24731g49c5g41dfg875agfff36fa8535b" version="1">A being of large import They gain boss boosts from configuration.</content>
 	<content contentuid="hd1b17909ga0adg44c2ga6c7g6cd26b2fa192" version="1">Combat Extender: Mini-Boss Boost</content>
@@ -32,34 +32,66 @@
 	
 	<content contentuid="h2ac56c95gc30cg46e3gba36g4efd11b7884a" version="1">Combat Extender: Martial Boost</content>
 	<content contentuid="hd5818987ga072g4e8dgb314g97ab96f230cd" version="1">A character with experience in martial combat. They gain &lt;LSTag Tooltip="Proficiency"&gt;Proficient&lt;/LSTag&gt; with Martial Weapons, in addition to boosts from configuration.</content>
+	<content contentuid="h190c1d80g4bf9g4835ga98egba6610cb8473" version="1">Combat Extender: Magic Boost</content>
+	<content contentuid="he62bca3bg089ag4600gbcc7g67dec88d0ace" version="1">A character with experience in spellcasting. They gain a 30% increase to their spell's range, in addition to Magic boosts from configuration.</content>
+
+	<!-- CX Class Passives -->
+	<content contentuid="h80bfa73fg650cg4f93g9fcag07342fa68ece" version="1">Combat Extender: Barbarian Boost</content>
+	<content contentuid="h59b5144dgff16g41edg9da8gc79e81e92b69" version="1">A character who harnesses their fury to punish foes. They gain &lt;LSTag Type="Spell" Tooltip="Interrupt_RecklessAttack"&gt;Reckless Attack&lt;/LSTag&gt;, in addition to Barbarian boosts from configuration.</content>
+	<content contentuid="h7fb10ed8gcd0ag4e02g909fg5a9433f5cebc" version="1">Combat Extender: Berserker Barbarian Boost</content>
+	<content contentuid="h28f5bbd1ge7ddg492egb781gbf7d0d1b0be7" version="1">A Barbarian who follows a path of untrammelled fury and thrills in the chaos of battle, regardless of their own well-being. They gain Berserker subclass boosts from configuration.</content>
+	<content contentuid="h3b4ca2edgd773g4765ga420gf434555cc1f1" version="1">Combat Extender: Barbarian Boost</content>
+	<content contentuid="h344dfc77g19d4g4999g87a7g6b27338790d7" version="1">A Barbarian suffused with the wild influence of arcane power waiting to be released. They gain Wild Magic subclass boosts from configuration.</content>
 	<content contentuid="h54aa6df3g3e46g4c2cg85bdga5d196c4f97e" version="1">Combat Extender: Bard Boost</content>
 	<content contentuid="h97a23da3gd2c1g4b07gb187g9f8696856259" version="1">A character with a versatile skillset, who blends artistry, trickery, and spellcraft. They gain Bard boosts from configuration.</content>
 	<content contentuid="he38308dag9418g482fg8ca1g980cc98ff64a" version="1">Combat Extender: Druid Boost</content>
 	<content contentuid="hc19cb29fgce35g4253g810fge4b35ebb2168" version="1">A character who commands the forces of nature, shaping the world with primal magic. They gain Druid boosts from configuration.</content>
+	<content contentuid="hb7785d94g8723g45b8gb252g11f0270642c1" version="1">Combat Extender: Circle of the Moon Druid Boost</content>
+	<content contentuid="h654778cegbf88g49adgb407gcb0cc8299dc0" version="1">A Druid who specializes in Wild Shaping into massive beasts or even primal elementals. They gain Circle of the Moon subclass boosts from configuration.</content>
+	<content contentuid="h407e27feg0d73g483dgbed5gb58542ff0cca" version="1">Combat Extender: Circle of the Spores Druid Boost</content>
+	<content contentuid="h5872faaag78ffg4f03g99cbgcda17b06d423" version="1">A Druid who uses fungal growth and decay to augment themselves and harm their foes. They gain Circle of the Spores subclass boosts from configuration.</content>
+	<content contentuid="hf9960aa3g25a4g44e7ga5d6g3f7f254ec53b" version="1">Combat Extender: Cleric Boost</content>
+	<content contentuid="hacdccdb0ge6c6g454bga598g6df082810262" version="1">A character of faith, channeling divine magic both to aid and harm. They gain Cleric boosts from configuration.</content>
+	<content contentuid="h9bbf1a66g5136g4de6gb0f1g8e48e853d2ad" version="1">Combat Extender: Fighter Boost</content>
+	<content contentuid="hbf3404a9g766dg4d85gbf2egca83383094c6" version="1">A character who has mastered weapons and tactics, excelling in martial combat. They gain Fighter boosts from configuration.</content>
+	<content contentuid="hefce9befgc089g4b04g9393g1ec534347dea" version="1">Combat Extender: Battle Master Fighter Boost</content>
+	<content contentuid="hdbe7301eg8093g461fgaa19g99bf294c1819" version="1">A paragon of tactical superiority, who can employ a wide array of combat manoeuvres to dominate every fight. They gain Battle Master subclass boosts from configuration.</content>
+	<content contentuid="h56b56a6ag0de5g45e9g8845g97dae05491b3" version="1">Combat Extender: Eldritch Knight Fighter Boost</content>
+	<content contentuid="h5c580e8ag700cg4159gbc2dg145ea47b7f8b" version="1">A warrior of spell and sword who weaves incantations to supplement their martial expertise. They gain Eldritch Knight subclass boosts from configuration.</content>
+	<content contentuid="h39b8a7b9g1718g4ee9ga92cgda8d8ede2808" version="1">Combat Extender: Monk Boost</content>
+	<content contentuid="h705db622g0893g4d79gae8age3f4ebeca536" version="1">A character who has mastered body, mind and the art of combat. They gain Monk boosts from configuration.</content>
+	<content contentuid="h07a62781gfb0fg4225g92f8g8ca347236ec5" version="1">Combat Extender: Way of the Open Hand Monk Boost</content>
+	<content contentuid="hb571273dga181g4630g98a1g8e7bf5b83102" version="1">A Monk who specializes in unarmed combat. They gain Way of the Open Hand subclass boosts from configuration.</content>	
+	<content contentuid="h9d7e8339ga648g4afeg8e86gc903fd093317" version="1">Combat Extender: Way of the Four Elements Monk Boost</content>
+	<content contentuid="hc901b2c6gb064g43d7g899cg1638fa8453b3" version="1">A Monk who uses their ki to bend the elements to their will. They gain Way of the Four Elements subclass boosts from configuration.</content>		
+	<content contentuid="h100e7a9bg3c26g4035g86d9g0762e657c372" version="1">Combat Extender: Paladin Boost</content>
+	<content contentuid="h5ee949eegd3a6g46dbgbf07g91727440a141" version="1">A character who upholds or neglects a sacred oath, a warrior of divinity or demise. They gain Paladin boosts from configuration.</content>
+	<content contentuid="h08fb1797g13bfg412dga764gc3087601ba95" version="1">Combat Extender: Oath of Devotion Paladin Boost</content>
+	<content contentuid="hd41ebf55g11bfg459egbda2g7af1996ef3cf" version="1">A Paladin who acts with honour and virtue to protect the weak and pursue the greater good. They gain Oath of Devotion subclass boosts from configuration.</content>
+	<content contentuid="h63d656a0g451cg4061gbee8g6e0ae8814137" version="1">Combat Extender: Oath of Vengeance Paladin Boost</content>
+	<content contentuid="hcedd322eg85bdg4ba6gae85gd39a68f4caa0" version="1">A Paladin who set aside their own purity to right wrongs and deliver justice by any means necessary. They gain Oath of Vengeance subclass boosts from configuration.</content>
+	<content contentuid="h727a7017g43e3g42f2g90aage79f5e4b6513" version="1">Combat Extender: Oathbreaker Paladin Boost</content>
+	<content contentuid="h529feb44gb9e2g445dg988cg1311742dc8bc" version="1">A Paladin who broke their Oath in pursuit of power and ambition. They gain Oathbreaker subclass boosts from configuration.</content>
+	<content contentuid="hb61a7161gc0d5g473eg9097g796ae5a0900b" version="1">Combat Extender: Ranger Boost</content>
+	<content contentuid="hab036a9fg5928g4633ga2d4g9e5fc1483425" version="1">A character who blends martial prowess with nature's magic. They gain Ranger boosts from configuration.</content>
+	<content contentuid="hc4337b0ag116ag40f0gbc8fgfcbcb9713b9c" version="1">Combat Extender: Beast Master Ranger Boost</content>
+	<content contentuid="h47156914gd0afg4844g90adg35868a3b342e" version="1">A Ranger who can summon an animal companion to aid them in combat. They gain Beast Master subclass boosts from configuration.</content>
+	<content contentuid="h54d41724g9946g4399gadd8gd5aeb1490f44" version="1">Combat Extender: Hunter Ranger Boost</content>
+	<content contentuid="hf1e55b72g2b2cg44fagaa04g147842765b7c" version="1">A Ranger who excels at slaying the most dangerous prey. They gain Hunter subclass boosts from configuration.</content>	
+	<content contentuid="h27b20f1eg064cg46f7ga4b0gcb11492a810b" version="1">Combat Extender: Rogue Boost</content>
+	<content contentuid="h42db1062gb882g467fgb8cdgba975ea87ffd" version="1">A character who excels in stealth, strategy, and quick thinking. They gain &lt;LSTag Type="Spell" Tooltip="Target_SneakAttack"&gt;Sneak Attack&lt;/LSTag&gt;, in addition to Rogue boosts from configuration.</content>
 	<content contentuid="hb9ff98d2g22d8g48efgb462g147c72a602d7" version="1">Combat Extender: Sorcerer Boost</content>
 	<content contentuid="hf8533079gfd16g4590g9754g99a81d9cd95f" version="1">A character with raw arcane power, shaping magic through will alone. They gain Sorcerer boosts from configuration.</content>
 	<content contentuid="hbeb3c7c1g30ddg4b0ega936g02439e04c829" version="1">Combat Extender: Warlock Boost</content>
 	<content contentuid="h45452726ge3a8g4311g98adg1853a70ff4a6" version="1">A character who wields eldritch magic granted by a supernatural patron. They gain Warlock boosts from configuration.</content>
 	<content contentuid="h90218be8gf884g45e3g9024g6747c175e952" version="1">Combat Extender: Wizard Boost</content>
 	<content contentuid="he480cbbbg8bbeg4bb9gb3c2g8929f117fd2b" version="1">A character who masters the weave through study and intellect. They gain Wizard boosts from configuration.</content>
+	<content contentuid="h6104d86ag1a48g4f23gbf22gda76864a6a14" version="1">Combat Extender: Evocation Wizard Boost</content>
+	<content contentuid="h2fa7fcd1g44dfg4020g867fgbaa7d958bc92" version="1">A Wizard who specializes in offensive magic. They gain Evocation School subclass boosts from configuration.</content>	
+	<content contentuid="h46e43d67gf9f1g48f7g8ce0g14ef160309c2" version="1">Combat Extender: Necromancy Wizard Boost</content>
+	<content contentuid="hcffab35fg6567g4cd3ga4eeg568c65b1bbd7" version="1">A Ranger who specializes in the powers of death. They gain Necromancy School subclass boosts from configuration.</content>	
 
-	<!-- OG CX Passives -->
-	<content contentuid="h190c1d80g4bf9g4835ga98egba6610cb8473" version="1">Combat Extender: Magic Boost</content>
-	<content contentuid="he62bca3bg089ag4600gbcc7g67dec88d0ace" version="1">A character with experience in spellcasting. They gain a 30% increase to their spell's range, in addition to Magic boosts from configuration.</content>
-	<content contentuid="h80bfa73fg650cg4f93g9fcag07342fa68ece" version="1">Combat Extender: Barbarian Boost</content>
-	<content contentuid="h59b5144dgff16g41edg9da8gc79e81e92b69" version="1">A character who harnesses their fury to punish foes. They gain &lt;LSTag Type="Spell" Tooltip="Interrupt_RecklessAttack"&gt;Reckless Attack&lt;/LSTag&gt;, in addition to Barbarian boosts from configuration.</content>
-	<content contentuid="hf9960aa3g25a4g44e7ga5d6g3f7f254ec53b" version="1">Combat Extender: Cleric Boost</content>
-	<content contentuid="hacdccdb0ge6c6g454bga598g6df082810262" version="1">A character of faith, channeling divine magic both to aid and harm. They gain Cleric boosts from configuration.</content>
-	<content contentuid="h9bbf1a66g5136g4de6gb0f1g8e48e853d2ad" version="1">Combat Extender: Fighter Boost</content>
-	<content contentuid="h2bc8ef1agcebbg4fdagad50gbce9cfbec66f" version="1">A character who has mastered weapons and tactics, excelling in martial combat. They gain [1] &lt;LSTag Type="ActionResource" Tooltip="SuperiorityDie"&gt;Superiority Dice&lt;/LSTag&gt;, in addition to Fighter boosts from configuration.</content>
-	<content contentuid="h39b8a7b9g1718g4ee9ga92cgda8d8ede2808" version="1">Combat Extender: Monk Boost</content>
-	<content contentuid="h705db622g0893g4d79gae8age3f4ebeca536" version="1">A character who has mastered body, mind and the art of combat. They gain Monk boosts from configuration.</content>
-	<content contentuid="h100e7a9bg3c26g4035g86d9g0762e657c372" version="1">Combat Extender: Paladin Boost</content>
-	<content contentuid="h5ee949eegd3a6g46dbgbf07g91727440a141" version="1">A character who upholds or neglects a sacred oath, a warrior of divinity or demise. They gain Paladin boosts from configuration.</content>
-	<content contentuid="hb61a7161gc0d5g473eg9097g796ae5a0900b" version="1">Combat Extender: Ranger Boost</content>
-	<content contentuid="hab036a9fg5928g4633ga2d4g9e5fc1483425" version="1">A character who blends martial prowess with nature's magic. They gain Ranger boosts from configuration.</content>
-	<content contentuid="h27b20f1eg064cg46f7ga4b0gcb11492a810b" version="1">Combat Extender: Rogue Boost</content>
-	<content contentuid="h42db1062gb882g467fgb8cdgba975ea87ffd" version="1">A character who excels in stealth, strategy, and quick thinking. They gain &lt;LSTag Type="Spell" Tooltip="Target_SneakAttack"&gt;Sneak Attack&lt;/LSTag&gt;, in addition to Rogue boosts from configuration.</content>
+	<!-- CX Spells -->
 
 	<content contentuid="h876cadd9g86d3g4078gad9dga0a479bc4687" version="1">Combat Extender: Level 1 Spells</content>
 	<content contentuid="hd0427899g0f87g48d6g83ecg40863f815d3b" version="1">A character with experience in spellcasting. They gain access to spellslots, and a variety of spells from configuration.</content>
