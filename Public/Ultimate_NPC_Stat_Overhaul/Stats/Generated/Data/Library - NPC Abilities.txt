@@ -1,3 +1,115 @@
+// ==================================== Barbarian - Rage ====================================
+// In the progressions the origninal rage is remove and replaced with "Shout_Rage_Frenzy". We can replicate this via "CombatAIOverrideSpell", to force the AI to use the coolest Rage they have. We also prevent them from rage spamming, by checking if they already have an active rage. This is important when using mods such as "Dynamic Wildheart Barbarian" by Armarui.
+
+// Basic Rage
+new entry "Shout_Rage"
+type "SpellData"
+data "SpellType" "Shout"
+using "Shout_Rage"
+data "CombatAIOverrideSpell" "NPC_Shout_Rage"
+
+new entry "NPC_Shout_Rage"
+type "SpellData"
+data "SpellType" "Shout"
+using "Shout_Rage"
+data "CombatAIOverrideSpell" ""
+// data "RequirementConditions" "not HasStatus('RAGE') and not HasStatus('CALM_EMOTIONS')"
+data "RequirementConditions" "not HasStatus('RAGE') and not HasStatus('CALM_EMOTIONS') and not HasPassive('RageFrenzyUnlock') and not HasPassive('WildMagicRage') and not HasPassive('TotemSpirit_Bear') and not HasPassive('TotemSpirit_Eagle') and not HasPassive('TotemSpirit_Elk') and not HasPassive('TotemSpirit_Tiger') and not HasPassive('TotemSpirit_Wolf')"
+
+// Berserker
+new entry "Shout_Rage_Frenzy"
+type "SpellData"
+data "SpellType" "Shout"
+using "Shout_Rage_Frenzy"
+data "CombatAIOverrideSpell" "NPC_Shout_Rage_Frenzy"
+
+new entry "NPC_Shout_Rage_Frenzy"
+type "SpellData"
+data "SpellType" "Shout"
+using "Shout_Rage_Frenzy"
+data "CombatAIOverrideSpell" ""
+data "RequirementConditions" "not HasStats('SG_Rage') and not HasStatus('CALM_EMOTIONS')"
+
+// Wild Magic
+new entry "Shout_Rage_WildMagic"
+type "SpellData"
+data "SpellType" "Shout"
+using "Shout_Rage_WildMagic"
+data "CombatAIOverrideSpell" "NPC_Shout_Rage_WildMagic"
+
+new entry "NPC_Shout_Rage_WildMagic"
+type "SpellData"
+data "SpellType" "Shout"
+using "Shout_Rage_WildMagic"
+data "CombatAIOverrideSpell" ""
+data "RequirementConditions" "not HasStats('SG_Rage') and not HasStatus('CALM_EMOTIONS')"
+
+// Wildheart
+new entry "Shout_Rage_Totem_Bear"
+type "SpellData"
+data "SpellType" "Shout"
+using "Shout_Rage_Totem_Bear"
+data "CombatAIOverrideSpell" "NPC_Shout_Rage_Totem_Bear"
+
+new entry "NPC_Shout_Rage_Totem_Bear"
+type "SpellData"
+data "SpellType" "Shout"
+using "Shout_Rage_Totem_Bear"
+data "CombatAIOverrideSpell" ""
+data "RequirementConditions" "not HasStats('SG_Rage') and not HasStatus('CALM_EMOTIONS')"
+
+new entry "Shout_Rage_Totem_Eagle"
+type "SpellData"
+data "SpellType" "Shout"
+using "Shout_Rage_Totem_Eagle"
+data "CombatAIOverrideSpell" "NPC_Shout_Rage_Totem_Eagle"
+
+new entry "NPC_Shout_Rage_Totem_Eagle"
+type "SpellData"
+data "SpellType" "Shout"
+using "Shout_Rage_Totem_Eagle"
+data "CombatAIOverrideSpell" ""
+data "RequirementConditions" "not HasStats('SG_Rage') and not HasStatus('CALM_EMOTIONS')"
+
+new entry "Shout_Rage_Totem_Elk"
+type "SpellData"
+data "SpellType" "Shout"
+using "Shout_Rage_Totem_Elk"
+data "CombatAIOverrideSpell" "NPC_Shout_Rage_Totem_Elk"
+
+new entry "NPC_Shout_Rage_Totem_Elk"
+type "SpellData"
+data "SpellType" "Shout"
+using "Shout_Rage_Totem_Elk"
+data "CombatAIOverrideSpell" ""
+data "RequirementConditions" "not HasStats('SG_Rage') and not HasStatus('CALM_EMOTIONS')"
+
+new entry "Shout_Rage_Totem_Tiger"
+type "SpellData"
+data "SpellType" "Shout"
+using "Shout_Rage_Totem_Tiger"
+data "CombatAIOverrideSpell" "NPC_Shout_Rage_Totem_Tiger"
+
+new entry "NPC_Shout_Rage_Totem_Tiger"
+type "SpellData"
+data "SpellType" "Shout"
+using "Shout_Rage_Totem_Tiger"
+data "CombatAIOverrideSpell" ""
+data "RequirementConditions" "not HasStats('SG_Rage') and not HasStatus('CALM_EMOTIONS')"
+
+new entry "Shout_Rage_Totem_Wolf"
+type "SpellData"
+data "SpellType" "Shout"
+using "Shout_Rage_Totem_Wolf"
+data "CombatAIOverrideSpell" "NPC_Shout_Rage_Totem_Wolf"
+
+new entry "NPC_Shout_Rage_Totem_Wolf"
+type "SpellData"
+data "SpellType" "Shout"
+using "Shout_Rage_Totem_Wolf"
+data "CombatAIOverrideSpell" ""
+data "RequirementConditions" "not HasStats('SG_Rage') and not HasStatus('CALM_EMOTIONS')"
+
 // ==================================== Barbarian - Intimidating Presence ====================================
 
 // Giving Intimidating Presence a bonus action cost (since it's not worth the action) and per battle cooldown (so NPCs don't just spam it)
