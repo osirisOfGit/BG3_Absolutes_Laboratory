@@ -11,7 +11,7 @@
                     <attribute id="Level" type="uint8" value="1"/>
                     <attribute id="Name" type="LSString" value="NPC_Barbarian"/>
                     <!-- <attribute id="PassivesAdded" type="LSString" value="UnarmouredDefence_Barbarian"/> -->
-                    <attribute id="PassivesAdded" type="LSString" value="RageUnlock;UnarmouredDefence_Barbarian;Rage_NoHeavyArmour_VFX;Goon_Barbarian_NPC_Progressions"/>
+                    <attribute id="PassivesAdded" type="LSString" value="RageUnlock;UnarmouredDefence_Barbarian;Rage_NoHeavyArmour_VFX;Goon_Barbarian_NPC_Progressions";"CX_Barbarian_Boost";"CX_Martial_Boost"/>
                     <attribute id="ProgressionType" type="uint8" value="0"/>
                     <!-- TODO: Selectors Roulette -->
                     <!-- <attribute id="Selectors" type="LSString" value="SelectSkills(233793b3-838a-4d4e-9d68-1e0a1089aba5,2);SelectAbilityBonus(b9149c8e-52c8-46e5-9cb6-fc39301c05fe,AbilityBonus,2,1)"/> -->
