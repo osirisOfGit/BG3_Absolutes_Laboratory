@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<save>
+    <version major="4" minor="6" revision="0" build="1"/>
+    <region id="Progressions">
+        <node id="root">
+            <children>
+                <!-- BARBARIAN -->
+                <node id="Progression">
+                    <!-- <attribute id="Boosts" type="LSString" value="ActionResource(Rage,2,0);ProficiencyBonus(SavingThrow,Strength);ProficiencyBonus(SavingThrow,Constitution);"/> -->
+                    <attribute id="Boosts" type="LSString" value="ProficiencyBonus(SavingThrow,Strength);ProficiencyBonus(SavingThrow,Constitution);Proficiency(LightArmor);Proficiency(MediumArmor);Proficiency(Shields);Proficiency(SimpleWeapons);Proficiency(MartialWeapons);ActionResource(Rage,2,0)"/>
+                    <attribute id="Level" type="uint8" value="1"/>
+                    <attribute id="Name" type="LSString" value="NPC_Barbarian"/>
+                    <!-- <attribute id="PassivesAdded" type="LSString" value="UnarmouredDefence_Barbarian"/> -->
+                    <attribute id="PassivesAdded" type="LSString" value="RageUnlock;UnarmouredDefence_Barbarian;Rage_NoHeavyArmour_VFX;Goon_Barbarian_NPC_Progressions"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <!-- TODO: Selectors Roulette -->
+                    <!-- <attribute id="Selectors" type="LSString" value="SelectSkills(233793b3-838a-4d4e-9d68-1e0a1089aba5,2);SelectAbilityBonus(b9149c8e-52c8-46e5-9cb6-fc39301c05fe,AbilityBonus,2,1)"/> -->
+                    <attribute id="TableUUID" type="guid" value="56db8107-e04c-4fe3-94f3-fd4acd44cd4a"/>
+                    <attribute id="UUID" type="guid" value="b695c31f-9bdb-47bb-b9c9-ceda68369783"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="2"/>
+                    <attribute id="Name" type="LSString" value="NPC_Barbarian"/>
+                    <!-- <attribute id="PassivesAdded" type="LSString" value="DangerSense"/> -->
+                    <attribute id="PassivesAdded" type="LSString" value="DangerSense;RecklessAttack"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="56db8107-e04c-4fe3-94f3-fd4acd44cd4a"/>
+                    <attribute id="UUID" type="guid" value="3d568fee-41cd-48cd-9496-267f814dd5f0"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(Rage,1,0)"/>
+                    <attribute id="Level" type="uint8" value="3"/>
+                    <attribute id="Name" type="LSString" value="NPC_Barbarian"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="56db8107-e04c-4fe3-94f3-fd4acd44cd4a"/>
+                    <attribute id="UUID" type="guid" value="7c9136a0-925b-4959-ae3c-3683e6d7eaee"/>
+                    <!-- TODO: Subclass Roulette -->
+                    <!-- <children>
+                        <node id="SubClasses">
+                            <children>
+                                <node id="SubClass">
+                                    <attribute id="Object" type="guid" value="2e585948-d775-451d-b58b-15b75321d11e"/>
+                                </node>
+                                <node id="SubClass">
+                                    <attribute id="Object" type="guid" value="32eee7d8-1b2f-4de5-b9ee-78fbd286c6ef"/>
+                                </node>
+                                <node id="SubClass">
+                                    <attribute id="Object" type="guid" value="d6bf00fc-3518-4d63-ba8b-03532c1abc4d"/>
+                                </node>
+                            </children>
+                        </node>
+                    </children> -->
+                <!-- </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="3"/>
+                    <attribute id="Name" type="LSString" value="BerserkerPath"/>
+                    <attribute id="PassivesAdded" type="LSString" value="RageFrenzyUnlock"/>
+                    <attribute id="PassivesRemoved" type="LSString" value="RageUnlock"/>
+                    <attribute id="ProgressionType" type="uint8" value="1"/>
+                    <attribute id="Selectors" type="LSString" value="AddSpells(17803035-4762-4143-8f2f-1143d47e4f40)"/>
+                    <attribute id="TableUUID" type="guid" value="b2a03b63-809f-4df9-a179-bf5b899082ef"/>
+                    <attribute id="UUID" type="guid" value="5ce67263-04f2-4ede-b30a-2eb962d828f2"/> -->
+                <!-- </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="3"/>
+                    <attribute id="Name" type="LSString" value="WildMagicPath"/>
+                    <attribute id="PassivesAdded" type="LSString" value="WildMagicRage"/>
+                    <attribute id="PassivesRemoved" type="LSString" value="RageUnlock"/>
+                    <attribute id="ProgressionType" type="uint8" value="1"/>
+                    <attribute id="Selectors" type="LSString" value="AddSpells(6a27ea3e-ed94-4d90-9a27-109a902dd049)"/>
+                    <attribute id="TableUUID" type="guid" value="7d5237b0-9ac6-4344-8171-43fa2f553e2f"/>
+                    <attribute id="UUID" type="guid" value="9026e0b6-52a7-46b9-a318-d85b6a2a81c5"/> -->
+                <!-- </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="3"/>
+                    <attribute id="Name" type="LSString" value="TotemWarriorPath"/>
+                    <attribute id="PassivesRemoved" type="LSString" value="RageUnlock"/>
+                    <attribute id="ProgressionType" type="uint8" value="1"/>
+                    <attribute id="Selectors" type="LSString" value="AddSpells(4acd9ef6-719d-4248-90ae-0cb66da87c6a);SelectPassives(7f7340a0-faf3-4122-bd3f-37a5434dd6cf,1,TotemWarriorPassive)"/>
+                    <attribute id="TableUUID" type="guid" value="48f1760f-86e7-401c-ad52-633fffbae49e"/>
+                    <attribute id="UUID" type="guid" value="42329ce3-0fb3-43a3-a0b4-79584c6877e7"/> -->
+                </node>
+                <!-- TODO: Feat roulette -->
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="4"/>
+                    <attribute id="Name" type="LSString" value="NPC_Barbarian"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="56db8107-e04c-4fe3-94f3-fd4acd44cd4a"/>
+                    <attribute id="UUID" type="guid" value="a009f902-a401-45f1-806f-1552bb22cc70"/>
+                <!-- </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="4"/>
+                    <attribute id="Name" type="LSString" value="TotemWarriorPath"/>
+                    <attribute id="ProgressionType" type="uint8" value="1"/>
+                    <attribute id="Selectors" type="LSString" value="ReplacePassives(7f7340a0-faf3-4122-bd3f-37a5434dd6cf,1,TotemWarriorPassiveReplace)"/>
+                    <attribute id="TableUUID" type="guid" value="48f1760f-86e7-401c-ad52-633fffbae49e"/>
+                    <attribute id="UUID" type="guid" value="6777c3c3-5f17-4d49-8da7-0f0b8b380d06"/> -->
+                </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="5"/>
+                    <attribute id="Name" type="LSString" value="NPC_Barbarian"/>
+                    <attribute id="PassivesAdded" type="LSString" value="ExtraAttack;FastMovement"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="56db8107-e04c-4fe3-94f3-fd4acd44cd4a"/>
+                    <attribute id="UUID" type="guid" value="9ed3d1f0-0fdb-4981-8214-2307cafed934"/>
+                <!-- </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="5"/>
+                    <attribute id="Name" type="LSString" value="TotemWarriorPath"/>
+                    <attribute id="ProgressionType" type="uint8" value="1"/>
+                    <attribute id="Selectors" type="LSString" value="ReplacePassives(7f7340a0-faf3-4122-bd3f-37a5434dd6cf,1,TotemWarriorPassiveReplace)"/>
+                    <attribute id="TableUUID" type="guid" value="48f1760f-86e7-401c-ad52-633fffbae49e"/>
+                    <attribute id="UUID" type="guid" value="0fe6f4ec-8601-462d-a233-53fc0ad62513"/> -->
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(Rage,1,0)"/>
+                    <attribute id="Level" type="uint8" value="6"/>
+                    <attribute id="Name" type="LSString" value="NPC_Barbarian"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="56db8107-e04c-4fe3-94f3-fd4acd44cd4a"/>
+                    <attribute id="UUID" type="guid" value="a426970c-855f-45fd-979a-d3591ea87988"/>
+                <!-- </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="6"/>
+                    <attribute id="Name" type="LSString" value="BerserkerPath"/>
+                    <attribute id="PassivesAdded" type="LSString" value="MindlessRage"/>
+                    <attribute id="ProgressionType" type="uint8" value="1"/>
+                    <attribute id="TableUUID" type="guid" value="b2a03b63-809f-4df9-a179-bf5b899082ef"/>
+                    <attribute id="UUID" type="guid" value="27a1114c-3f84-4f47-8544-865e91db8d0f"/> -->
+                <!-- </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="6"/>
+                    <attribute id="Name" type="LSString" value="WildMagicPath"/>
+                    <attribute id="ProgressionType" type="uint8" value="1"/>
+                    <attribute id="Selectors" type="LSString" value="AddSpells(9e604f0f-ec60-402d-b8c8-7707a1caefd8)"/>
+                    <attribute id="TableUUID" type="guid" value="7d5237b0-9ac6-4344-8171-43fa2f553e2f"/>
+                    <attribute id="UUID" type="guid" value="7509026b-0ea3-40cb-a106-95977a40a3b7"/> -->
+                <!-- </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="6"/>
+                    <attribute id="Name" type="LSString" value="TotemWarriorPath"/>
+                    <attribute id="ProgressionType" type="uint8" value="1"/>
+                    <attribute id="Selectors" type="LSString" value="ReplacePassives(7f7340a0-faf3-4122-bd3f-37a5434dd6cf,1,TotemWarriorPassiveReplace);SelectPassives(fb9ea4a2-a1ce-4242-a893-84a088ac1145,1,AspectOfTheBeast)"/>
+                    <attribute id="TableUUID" type="guid" value="48f1760f-86e7-401c-ad52-633fffbae49e"/>
+                    <attribute id="UUID" type="guid" value="0b05af61-85e4-4183-8422-6c8ced307d7a"/> -->
+                </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="7"/>
+                    <attribute id="Name" type="LSString" value="NPC_Barbarian"/>
+                    <attribute id="PassivesAdded" type="LSString" value="FeralInstinct"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="56db8107-e04c-4fe3-94f3-fd4acd44cd4a"/>
+                    <attribute id="UUID" type="guid" value="cef40504-f10b-4f96-9a6b-0afd63e6189a"/>
+                <!-- </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="7"/>
+                    <attribute id="Name" type="LSString" value="TotemWarriorPath"/>
+                    <attribute id="ProgressionType" type="uint8" value="1"/>
+                    <attribute id="Selectors" type="LSString" value="ReplacePassives(7f7340a0-faf3-4122-bd3f-37a5434dd6cf,1,TotemWarriorPassiveReplace)"/>
+                    <attribute id="TableUUID" type="guid" value="48f1760f-86e7-401c-ad52-633fffbae49e"/>
+                    <attribute id="UUID" type="guid" value="bbc1564b-4688-484f-84f3-1b3b02173bab"/> -->
+                </node>
+                <!-- TODO: Feat Roulette -->
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="NPC_Barbarian"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="56db8107-e04c-4fe3-94f3-fd4acd44cd4a"/>
+                    <attribute id="UUID" type="guid" value="d13b2f8e-ee7e-4fda-a912-c68ccdec3458"/>
+                <!-- </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="TotemWarriorPath"/>
+                    <attribute id="PassivesAdded" type="LSString" value="LandsStride_DifficultTerrain;LandsStride_Surfaces;LandsStride_Advantage"/>
+                    <attribute id="ProgressionType" type="uint8" value="1"/>
+                    <attribute id="Selectors" type="LSString" value="ReplacePassives(7f7340a0-faf3-4122-bd3f-37a5434dd6cf,1,TotemWarriorPassiveReplace)"/>
+                    <attribute id="TableUUID" type="guid" value="48f1760f-86e7-401c-ad52-633fffbae49e"/>
+                    <attribute id="UUID" type="guid" value="6de45010-ac1e-420d-ab84-31146c14dada"/> -->
+                </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="9"/>
+                    <attribute id="Name" type="LSString" value="NPC_Barbarian"/>
+                    <attribute id="PassivesAdded" type="LSString" value="BrutalCritical"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="56db8107-e04c-4fe3-94f3-fd4acd44cd4a"/>
+                    <attribute id="UUID" type="guid" value="9f81f0a7-6165-4b30-8809-75ee423fa404"/>
+                <!-- </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="9"/>
+                    <attribute id="Name" type="LSString" value="WildMagicPath"/>
+                    <attribute id="ProgressionType" type="uint8" value="1"/>
+                    <attribute id="Selectors" type="LSString" value="AddSpells(4e7b517a-2eca-4463-99a6-a5ffa5036216)"/>
+                    <attribute id="TableUUID" type="guid" value="7d5237b0-9ac6-4344-8171-43fa2f553e2f"/>
+                    <attribute id="UUID" type="guid" value="c6894048-1489-406d-b601-e3c8c96f4e42"/> -->
+                <!-- </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="9"/>
+                    <attribute id="Name" type="LSString" value="TotemWarriorPath"/>
+                    <attribute id="ProgressionType" type="uint8" value="1"/>
+                    <attribute id="Selectors" type="LSString" value="ReplacePassives(7f7340a0-faf3-4122-bd3f-37a5434dd6cf,1,TotemWarriorPassiveReplace)"/>
+                    <attribute id="TableUUID" type="guid" value="48f1760f-86e7-401c-ad52-633fffbae49e"/>
+                    <attribute id="UUID" type="guid" value="dfb1038e-9178-475e-abdc-19f0cba244cb"/> -->
+                </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="10"/>
+                    <attribute id="Name" type="LSString" value="NPC_Barbarian"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="56db8107-e04c-4fe3-94f3-fd4acd44cd4a"/>
+                    <attribute id="UUID" type="guid" value="48d44a16-1a8b-4ce5-aa97-14c6dccb7ba9"/>
+                <!-- </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="10"/>
+                    <attribute id="Name" type="LSString" value="BerserkerPath"/>
+                    <attribute id="ProgressionType" type="uint8" value="1"/>
+                    <attribute id="Selectors" type="LSString" value="AddSpells(38191b4b-743a-4d82-800b-c0903baece24)"/>
+                    <attribute id="TableUUID" type="guid" value="b2a03b63-809f-4df9-a179-bf5b899082ef"/>
+                    <attribute id="UUID" type="guid" value="ad9a37aa-bc2d-4024-9b5f-5aaf330cb25c"/> -->
+                <!-- </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="10"/>
+                    <attribute id="Name" type="LSString" value="WildMagicPath"/>
+                    <attribute id="PassivesAdded" type="LSString" value="Unstable_Backlash"/>
+                    <attribute id="ProgressionType" type="uint8" value="1"/>
+                    <attribute id="TableUUID" type="guid" value="7d5237b0-9ac6-4344-8171-43fa2f553e2f"/>
+                    <attribute id="UUID" type="guid" value="3782ea9f-917b-4823-ba34-b619c76a4429"/> -->
+                <!-- </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="10"/>
+                    <attribute id="Name" type="LSString" value="TotemWarriorPath"/>
+                    <attribute id="ProgressionType" type="uint8" value="1"/>
+                    <attribute id="Selectors" type="LSString" value="ReplacePassives(7f7340a0-faf3-4122-bd3f-37a5434dd6cf,1,TotemWarriorPassiveReplace);SelectPassives(fb9ea4a2-a1ce-4242-a893-84a088ac1145,1,AspectOfTheBeast)"/>
+                    <attribute id="TableUUID" type="guid" value="48f1760f-86e7-401c-ad52-633fffbae49e"/>
+                    <attribute id="UUID" type="guid" value="8013e565-55a5-4847-8ebc-e2971e25151e"/> -->
+                </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="11"/>
+                    <attribute id="Name" type="LSString" value="NPC_Barbarian"/>
+                    <attribute id="PassivesAdded" type="LSString" value="RelentlessRage"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="56db8107-e04c-4fe3-94f3-fd4acd44cd4a"/>
+                    <attribute id="UUID" type="guid" value="ab7dd620-39c4-4187-a9bf-228e25629daa"/>
+                <!-- </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="11"/>
+                    <attribute id="Name" type="LSString" value="TotemWarriorPath"/>
+                    <attribute id="ProgressionType" type="uint8" value="1"/>
+                    <attribute id="Selectors" type="LSString" value="ReplacePassives(7f7340a0-faf3-4122-bd3f-37a5434dd6cf,1,TotemWarriorPassiveReplace)"/>
+                    <attribute id="TableUUID" type="guid" value="48f1760f-86e7-401c-ad52-633fffbae49e"/>
+                    <attribute id="UUID" type="guid" value="55fd65cf-928d-4ed6-b35e-76422bb0d196"/> -->
+                </node>
+                <!-- TODO: Feat Roulette -->
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(Rage,1,0)"/>
+                    <attribute id="Level" type="uint8" value="12"/>
+                    <attribute id="Name" type="LSString" value="NPC_Barbarian"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="56db8107-e04c-4fe3-94f3-fd4acd44cd4a"/>
+                    <attribute id="UUID" type="guid" value="de09d648-138e-4f99-945b-f93c149f9d60"/>
+                <!-- </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="12"/>
+                    <attribute id="Name" type="LSString" value="TotemWarriorPath"/>
+                    <attribute id="ProgressionType" type="uint8" value="1"/>
+                    <attribute id="Selectors" type="LSString" value="ReplacePassives(7f7340a0-faf3-4122-bd3f-37a5434dd6cf,1,TotemWarriorPassiveReplace)"/>
+                    <attribute id="TableUUID" type="guid" value="48f1760f-86e7-401c-ad52-633fffbae49e"/>
+                    <attribute id="UUID" type="guid" value="7521f3eb-efa9-4d40-9f65-e6ff247a9ee8"/> -->
+                </node>
+            </children>
+        </node>
+    </region>
+</save>
