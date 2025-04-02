@@ -57,7 +57,37 @@ data "DisplayName" "h80bfa73fg650cg4f93g9fcag07342fa68ece"
 data "Description" "h59b5144dgff16g41edg9da8gc79e81e92b69"
 // data "Icon" "Action_Barbarian_DivingStrike"
 data "Icon" "Action_Barbarian_Rage"
-data "Boosts" "UnlockInterrupt(Interrupt_RecklessAttack)"
+// data "Boosts" "UnlockInterrupt(Interrupt_RecklessAttack)"
+data "StatsFunctorContext" "OnCreate;OnStatusApplied;OnStatusRemoved"
+data "Conditions" "not HasPassive('Goon_Barbarian_NPC_Progressions')"
+data "StatsFunctors" "ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_1,100,-1);IF(CharacterLevelGreaterThan(2,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_2,100,-1);IF(CharacterLevelGreaterThan(3,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_3,100,-1)"
+
+new entry "GOON_NPC_BARBARIAN_LEVEL_1"
+type "StatusData"
+data "StatusType" "BOOST"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator"
+data "Passives" "RageUnlock;UnarmouredDefence_Barbarian;Rage_Armour_Message;Rage_NoHeavyArmour_VFX"
+data "Boosts" "ProficiencyBonus(SavingThrow,Strength);ProficiencyBonus(SavingThrow,Constitution);Proficiency(LightArmor);Proficiency(MediumArmor);Proficiency(Shields);Proficiency(SimpleWeapons);Proficiency(MartialWeapons);ActionResource(Rage,2,0)"
+data "RemoveConditions" "not HasPassive('CX_Barbarian_Boost')"
+data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
+
+new entry "GOON_NPC_BARBARIAN_LEVEL_2"
+type "StatusData"
+data "StatusType" "BOOST"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator"
+data "Passives" "DangerSense;RecklessAttack"
+data "Boosts" ""
+data "RemoveConditions" "not HasPassive('CX_Barbarian_Boost')"
+data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
+
+new entry "GOON_NPC_BARBARIAN_LEVEL_3"
+type "StatusData"
+data "StatusType" "BOOST"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator"
+data "Passives" ""
+data "Boosts" "ActionResource(Rage,1,0)"
+data "RemoveConditions" "not HasPassive('CX_Barbarian_Boost')"
+data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
 
 new entry "CX_Barbarian_Berserker_Boost"
 type "PassiveData"
@@ -66,12 +96,16 @@ data "Description" "h28f5bbd1ge7ddg492egb781gbf7d0d1b0be7"
 data "Icon" "Action_Barbarian_Frenzy"
 data "Boosts" ""
 
+
+
 new entry "CX_Barbarian_WildMagic_Boost"
 type "PassiveData"
 data "DisplayName" "h3b4ca2edgd773g4765ga420gf434555cc1f1"
 data "Description" "h344dfc77g19d4g4999g87a7g6b27338790d7"
 data "Icon" "Action_Barbarian_Rage_WildMagic"
 data "Boosts" ""
+
+
 
 // =================== Bard ===================
 
