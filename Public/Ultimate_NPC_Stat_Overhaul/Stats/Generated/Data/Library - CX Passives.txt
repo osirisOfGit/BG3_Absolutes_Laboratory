@@ -1,4 +1,4 @@
-// ==================================== New Boss Passives ====================================
+// ===================================================== New Boss Passives =====================================================
 
 new entry "CX_Boss_Boost"
 type "PassiveData"
@@ -14,7 +14,7 @@ data "Description" "ha444da0ag7d30g4e9fg97d0g393888ffebe6"
 data "Icon" "PassiveFeature_Generic_Threat"
 data "Boosts" ""
 
-// ==================================== Main passives ====================================
+// ===================================================== Main passives =====================================================
 
 // Main passive, no real reason to be visible
 new entry "CX_PASSIVE"
@@ -44,11 +44,12 @@ new entry "CX_Martial_Boost"
 type "PassiveData"
 data "DisplayName" "h2ac56c95gc30cg46e3gba36g4efd11b7884a"
 data "Description" "hd5818987ga072g4e8dgb314g97ab96f230cd"
-data "Boosts" "Proficiency(MartialWeapons)"
+data "Boosts" "Proficiency(SimpleWeapons);Proficiency(MartialWeapons)"
 data "Icon" "Spell_Abjuration_WardingBond"
 
-// =================== Barbarian ===================
+// ===================================================== Barbarian =====================================================
 
+// Main passive
 new entry "CX_Barbarian_Boost"
 type "PassiveData"
 // data "DisplayName" "h21ea4ac1gf6ffg42cbg94aeg9281460855d6"
@@ -60,13 +61,14 @@ data "Icon" "Action_Barbarian_Rage"
 // data "Boosts" "UnlockInterrupt(Interrupt_RecklessAttack)"
 data "StatsFunctorContext" "OnCreate;OnStatusApplied;OnStatusRemoved"
 data "Conditions" "not HasPassive('Goon_Barbarian_NPC_Progressions')"
-data "StatsFunctors" "ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_1,100,-1);IF(CharacterLevelGreaterThan(2,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_2,100,-1);IF(CharacterLevelGreaterThan(3,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_3,100,-1)"
+data "StatsFunctors" "ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_1,100,-1);IF(CharacterLevelGreaterThan(1,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_2,100,-1);IF(CharacterLevelGreaterThan(2,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_3,100,-1);IF(CharacterLevelGreaterThan(3,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_4,100,-1);IF(CharacterLevelGreaterThan(4,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_5,100,-1);IF(CharacterLevelGreaterThan(5,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_6,100,-1);IF(CharacterLevelGreaterThan(6,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_7,100,-1);IF(CharacterLevelGreaterThan(7,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_8,100,-1);IF(CharacterLevelGreaterThan(8,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_9,100,-1);IF(CharacterLevelGreaterThan(9,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_10,100,-1);IF(CharacterLevelGreaterThan(10,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_11,100,-1);IF(CharacterLevelGreaterThan(11,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_12,100,-1)"
 
+// Progression statuses
 new entry "GOON_NPC_BARBARIAN_LEVEL_1"
 type "StatusData"
 data "StatusType" "BOOST"
-data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator"
-data "Passives" "RageUnlock;UnarmouredDefence_Barbarian;Rage_Armour_Message;Rage_NoHeavyArmour_VFX"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
+data "Passives" "RageUnlock;UnarmouredDefence_Barbarian;Rage_Armour_Message;Rage_NoHeavyArmour_VFX;Goon_NPC_Roulette_Barbarian_Level_1_Selectors;CX_Martial_Boost"
 data "Boosts" "ProficiencyBonus(SavingThrow,Strength);ProficiencyBonus(SavingThrow,Constitution);Proficiency(LightArmor);Proficiency(MediumArmor);Proficiency(Shields);Proficiency(SimpleWeapons);Proficiency(MartialWeapons);ActionResource(Rage,2,0)"
 data "RemoveConditions" "not HasPassive('CX_Barbarian_Boost')"
 data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
@@ -74,7 +76,7 @@ data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
 new entry "GOON_NPC_BARBARIAN_LEVEL_2"
 type "StatusData"
 data "StatusType" "BOOST"
-data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
 data "Passives" "DangerSense;RecklessAttack"
 data "Boosts" ""
 data "RemoveConditions" "not HasPassive('CX_Barbarian_Boost')"
@@ -83,20 +85,130 @@ data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
 new entry "GOON_NPC_BARBARIAN_LEVEL_3"
 type "StatusData"
 data "StatusType" "BOOST"
-data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
+data "Passives" "Goon_NPC_Roulette_Barbarian_Level_3_Subclass"
+data "Boosts" "ActionResource(Rage,1,0)"
+data "RemoveConditions" "not HasPassive('CX_Barbarian_Boost')"
+data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
+
+new entry "GOON_NPC_BARBARIAN_LEVEL_4"
+type "StatusData"
+data "StatusType" "BOOST"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
+data "Passives" "Goon_NPC_Roulette_Barbarian_Level_3_Subclass"
+data "Boosts" "ActionResource(Rage,1,0)"
+data "RemoveConditions" "not HasPassive('CX_Barbarian_Boost')"
+data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
+
+new entry "GOON_NPC_BARBARIAN_LEVEL_5"
+type "StatusData"
+data "StatusType" "BOOST"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
+data "Passives" "ExtraAttack;FastMovement"
+data "Boosts" ""
+data "RemoveConditions" "not HasPassive('CX_Barbarian_Boost')"
+data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
+
+new entry "GOON_NPC_BARBARIAN_LEVEL_6"
+type "StatusData"
+data "StatusType" "BOOST"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
 data "Passives" ""
 data "Boosts" "ActionResource(Rage,1,0)"
 data "RemoveConditions" "not HasPassive('CX_Barbarian_Boost')"
 data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
 
+new entry "GOON_NPC_BARBARIAN_LEVEL_7"
+type "StatusData"
+data "StatusType" "BOOST"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
+data "Passives" "FeralInstinct"
+data "Boosts" ""
+data "RemoveConditions" "not HasPassive('CX_Barbarian_Boost')"
+data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
+
+new entry "GOON_NPC_BARBARIAN_LEVEL_8"
+type "StatusData"
+data "StatusType" "BOOST"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
+data "Passives" "Goon_NPC_Roulette_Barbarian_Level_8_Feat"
+data "Boosts" ""
+data "RemoveConditions" "not HasPassive('CX_Barbarian_Boost')"
+data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
+
+new entry "GOON_NPC_BARBARIAN_LEVEL_9"
+type "StatusData"
+data "StatusType" "BOOST"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
+data "Passives" "BrutalCritical"
+data "Boosts" ""
+data "RemoveConditions" "not HasPassive('CX_Barbarian_Boost')"
+data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
+
+// new entry "GOON_NPC_BARBARIAN_LEVEL_10"
+// type "StatusData"
+// data "StatusType" "BOOST"
+// data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
+// data "Passives" ""
+// data "Boosts" ""
+// data "RemoveConditions" "not HasPassive('CX_Barbarian_Boost')"
+// data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
+
+new entry "GOON_NPC_BARBARIAN_LEVEL_11"
+type "StatusData"
+data "StatusType" "BOOST"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
+data "Passives" "RelentlessRage"
+data "Boosts" ""
+data "RemoveConditions" "not HasPassive('CX_Barbarian_Boost')"
+data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
+
+new entry "GOON_NPC_BARBARIAN_LEVEL_12"
+type "StatusData"
+data "StatusType" "BOOST"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
+data "Passives" "Goon_NPC_Roulette_Barbarian_Level_12_Feat"
+data "Boosts" "ActionResource(Rage,1,0)"
+data "RemoveConditions" "not HasPassive('CX_Barbarian_Boost')"
+data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
+
+// Subclasses
 new entry "CX_Barbarian_Berserker_Boost"
 type "PassiveData"
 data "DisplayName" "h7fb10ed8gcd0ag4e02g909fg5a9433f5cebc"
 data "Description" "h28f5bbd1ge7ddg492egb781gbf7d0d1b0be7"
 data "Icon" "Action_Barbarian_Frenzy"
 data "Boosts" ""
+data "StatsFunctorContext" "OnCreate;OnStatusApplied;OnStatusRemoved"
+data "Conditions" ""
+data "StatsFunctors" "IF(CharacterLevelGreaterThan(2,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_BERSERKER_LEVEL_3,100,-1);IF(CharacterLevelGreaterThan(5,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_BERSERKER_LEVEL_6,100,-1);IF(CharacterLevelGreaterThan(9,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_BERSERKER_LEVEL_10,100,-1)"
 
+new entry "GOON_NPC_BARBARIAN_BERSERKER_LEVEL_3"
+type "StatusData"
+data "StatusType" "BOOST"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
+data "Passives" "RageFrenzyUnlock"
+data "Boosts" "UnlockSpell(Target_FrenziedStrike);UnlockSpell(Throw_FrenziedThrow)"
+data "RemoveConditions" "not HasPassive('CX_Barbarian_Berserker_Boost')"
+data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
 
+new entry "GOON_NPC_BARBARIAN_BERSERKER_LEVEL_6"
+type "StatusData"
+data "StatusType" "BOOST"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
+data "Passives" "MindlessRage"
+data "Boosts" ""
+data "RemoveConditions" "not HasPassive('CX_Barbarian_Berserker_Boost')"
+data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
+
+new entry "GOON_NPC_BARBARIAN_BERSERKER_LEVEL_10"
+type "StatusData"
+data "StatusType" "BOOST"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
+data "Passives" ""
+data "Boosts" "UnlockSpell(Target_IntimidatingPresence)"
+data "RemoveConditions" "not HasPassive('CX_Barbarian_Berserker_Boost')"
+data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
 
 new entry "CX_Barbarian_WildMagic_Boost"
 type "PassiveData"
@@ -104,10 +216,47 @@ data "DisplayName" "h3b4ca2edgd773g4765ga420gf434555cc1f1"
 data "Description" "h344dfc77g19d4g4999g87a7g6b27338790d7"
 data "Icon" "Action_Barbarian_Rage_WildMagic"
 data "Boosts" ""
+data "StatsFunctorContext" "OnCreate;OnStatusApplied;OnStatusRemoved"
+data "Conditions" ""
+data "StatsFunctors" "IF(CharacterLevelGreaterThan(2,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_WILDMAGIC_LEVEL_3,100,-1);IF(CharacterLevelGreaterThan(5,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_WILDMAGIC_LEVEL_6,100,-1);IF(CharacterLevelGreaterThan(8,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_WILDMAGIC_LEVEL_9,100,-1)IF(CharacterLevelGreaterThan(9,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_WILDMAGIC_LEVEL_10,100,-1)"
 
+new entry "GOON_NPC_BARBARIAN_WILDMAGIC_LEVEL_3"
+type "StatusData"
+data "StatusType" "BOOST"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
+data "Passives" "WildMagicRage"
+data "Boosts" "UnlockSpell(Shout_MagicAwareness)"
+data "RemoveConditions" "not HasPassive('CX_Barbarian_WildMagic_Boost')"
+data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
 
+new entry "GOON_NPC_BARBARIAN_WILDMAGIC_LEVEL_6"
+type "StatusData"
+data "StatusType" "BOOST"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
+data "Passives" ""
+data "Boosts" "UnlockSpell(Target_BolsteringMagic_Boost);UnlockSpell(Target_BolsteringMagic_SpellSlot1);UnlockSpell(Target_BolsteringMagic_SpellSlot2)"
+data "RemoveConditions" "not HasPassive('CX_Barbarian_WildMagic_Boost')"
+data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
 
-// =================== Bard ===================
+new entry "GOON_NPC_BARBARIAN_WILDMAGIC_LEVEL_9"
+type "StatusData"
+data "StatusType" "BOOST"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
+data "Passives" ""
+data "Boosts" "UnlockSpell(Target_BolsteringMagic_SpellSlot3)"
+data "RemoveConditions" "not HasPassive('CX_Barbarian_WildMagic_Boost')"
+data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
+
+new entry "GOON_NPC_BARBARIAN_WILDMAGIC_LEVEL_10"
+type "StatusData"
+data "StatusType" "BOOST"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
+data "Passives" "Unstable_Backlash"
+data "Boosts" ""
+data "RemoveConditions" "not HasPassive('CX_Barbarian_WildMagic_Boost')"
+data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
+
+// ==================================== Bard ====================================
 
 new entry "CX_Bard_Boost"
 type "PassiveData"
@@ -116,7 +265,7 @@ data "Description" "h97a23da3gd2c1g4b07gb187g9f8696856259"
 data "Icon" "Action_Bard_GrantBardicInspiration"
 data "Boosts" ""
 
-// =================== Cleric ===================
+// ==================================== Cleric ====================================
 
 new entry "CX_Cleric_Boost"
 type "PassiveData"
@@ -128,7 +277,7 @@ data "Description" "hacdccdb0ge6c6g454bga598g6df082810262"
 data "Icon" "Action_DivineIntervention_Attack"
 data "Boosts" ""
 
-// =================== Druid ===================
+// ==================================== Druid ====================================
 
 new entry "CX_Druid_Boost"
 type "PassiveData"
@@ -150,7 +299,7 @@ data "DisplayName" "h407e27feg0d73g483dgbed5gb58542ff0cca"
 data "Description" "h5872faaag78ffg4f03g99cbgcda17b06d423"
 data "Icon" "Action_SymbioticEntity"
 data "Boosts" ""
-// =================== Fighter ===================
+// ==================================== Fighter ====================================
 
 new entry "CX_Fighter_Boost"
 type "PassiveData"
@@ -177,7 +326,7 @@ data "Description" "h5c580e8ag700cg4159gbc2dg145ea47b7f8b"
 data "Icon" "PassiveFeature_EldritchStrike"
 data "Boosts" ""
 
-// =================== Monk ===================
+// ==================================== Monk ====================================
 
 new entry "CX_Monk_Boost"
 type "PassiveData"
@@ -203,7 +352,7 @@ data "Description" "hc901b2c6gb064g43d7g899cg1638fa8453b3"
 data "Icon" "Action_Monk_FangsOfTheFireSnake"
 data "Boosts" ""
 
-// =================== Paladin ===================
+// ==================================== Paladin ====================================
 
 new entry "CX_Paladin_Boost"
 type "PassiveData"
@@ -236,7 +385,7 @@ data "Description" "h529feb44gb9e2g445dg988cg1311742dc8bc"
 data "Icon" "Action_Paladin_DreadfulAspect"
 data "Boosts" ""
 
-// =================== Ranger ===================
+// ==================================== Ranger ====================================
 
 new entry "CX_Ranger_Boost"
 type "PassiveData"
@@ -261,7 +410,7 @@ data "Description" "hf1e55b72g2b2cg44fagaa04g147842765b7c"
 data "Icon" "Action_Multiattack_Volley"
 data "Boosts" ""
 
-// =================== Rogue ===================
+// ==================================== Rogue ====================================
 
 // 3 Sneak Attacks? It's all hardcoded to have only one usable IIRC
 new entry "CX_Rogue_Boost"
@@ -275,7 +424,7 @@ data "Icon" "Action_SneakAttack_Melee"
 // data "Boosts" "ActionResource(SneakAttack_Charge,3,0);UnlockInterrupt(Interrupt_SneakAttack);UnlockInterrupt(Interrupt_SneakAttack_Critical)"
 data "Boosts" "IF(not HasActionResource('SneakAttack_Charge', 1, 0, false, true, context.Source)):ActionResource(SneakAttack_Charge,1,0);UnlockInterrupt(Interrupt_SneakAttack);UnlockInterrupt(Interrupt_SneakAttack_Critical)"
 
-// =================== Sorcerer ===================
+// ==================================== Sorcerer ====================================
 
 new entry "CX_Sorcerer_Boost"
 type "PassiveData"
@@ -284,7 +433,7 @@ data "Description" "hf8533079gfd16g4590g9754g99a81d9cd95f"
 data "Icon" "Skill_Sorcerer_Passive_Metamagic_CarefulSpell"
 data "Boosts" ""
 
-// =================== Warlock ===================
+// ==================================== Warlock ====================================
 
 new entry "CX_Warlock_Boost"
 type "PassiveData"
@@ -293,7 +442,7 @@ data "Description" "h45452726ge3a8g4311g98adg1853a70ff4a6"
 data "Icon" "Spell_Necromancy_BestowCurse"
 data "Boosts" ""
 
-// =================== Wizard ===================
+// ==================================== Wizard ====================================
 
 new entry "CX_Wizard_Boost"
 type "PassiveData"
@@ -316,7 +465,7 @@ data "Description" "hcffab35fg6567g4cd3ga4eeg568c65b1bbd7"
 data "Icon" "PassiveFeature_UndeadThralls_ExtraSummon"
 data "Boosts" ""
 
-// ==================================== Original CX Spell Passives ====================================
+// ===================================================== Original CX Spell Passives =====================================================
 
 new entry "CX_Spells_L1"
 type "PassiveData"
@@ -430,7 +579,7 @@ data "Description" "hfcd2e6c0g291fg4e62gaaccg48073db379de"
 data "Icon" "Spell_Eyebite_Panicked"
 data "Boosts" ""
 
-// ==================================== CX Spell Passives 7-9 ====================================
+// ===================================================== CX Spell Passives 7-9 =====================================================
 // Doesn't automatically register like the class passives, requires editing the CX lua
 
 // new entry "CX_Spells_L7"
