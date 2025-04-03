@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<save>
+    <version major="4" minor="6" revision="0" build="1"/>
+    <region id="Progressions">
+        <node id="root">
+            <children>
+                <!-- FIGHTER -->
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ProficiencyBonus(SavingThrow,Strength);ProficiencyBonus(SavingThrow,Constitution)"/>
+                    <attribute id="Level" type="uint8" value="1"/>
+                    <attribute id="Name" type="LSString" value="NPC_Fighter"/>
+                    <!-- <attribute id="PassivesAdded" type="LSString" value=""/> -->
+                    <attribute id="PassivesAdded" type="LSString" value="Goon_Fighter_NPC_Progressions"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="0e6da493-5a37-423b-8c28-629462b22faa"/>
+                    <attribute id="UUID" type="guid" value="7d5877f0-e973-4a7a-b8d8-423fecadebb4"/>
+                </node>
+                <node id="Progression">
+                    <!-- <attribute id="Selectors" type="LSString" value=""/> -->
+                    <attribute id="Selectors" type="LSString" value="AddSpells(964e765d-5881-463e-b1b0-4fc6b8035aa8)"/> <!-- Shout_ActionSurge -->
+                    <attribute id="Level" type="uint8" value="2"/>
+                    <attribute id="Name" type="LSString" value="NPC_Fighter"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="0e6da493-5a37-423b-8c28-629462b22faa"/>
+                    <attribute id="UUID" type="guid" value="8568b134-eb2c-44ec-bbb5-c1bf6f36ea52"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="3"/>
+                    <attribute id="Name" type="LSString" value="NPC_Fighter"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="0e6da493-5a37-423b-8c28-629462b22faa"/>
+                    <attribute id="UUID" type="guid" value="b22c77d4-8d9a-4849-9027-03ddb2ca0685"/>
+                </node>
+                <node id="Progression">
+                    <!-- TODO: Roulette an appropriate feat? -->
+                    <attribute id="Level" type="uint8" value="4"/>
+                    <attribute id="Name" type="LSString" value="NPC_Fighter"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="0e6da493-5a37-423b-8c28-629462b22faa"/>
+                    <attribute id="UUID" type="guid" value="e8df4377-b653-4d44-9750-b93eb8f1bac2"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="5"/>
+                    <attribute id="Name" type="LSString" value="NPC_Fighter"/>
+                    <attribute id="PassivesAdded" type="LSString" value="ExtraAttack"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="0e6da493-5a37-423b-8c28-629462b22faa"/>
+                    <attribute id="UUID" type="guid" value="59f63529-f78d-4e36-b65c-dbb06c81ce1a"/>
+                </node>
+                <node id="Progression">
+                    <!-- TODO: Roulette an appropriate feat? -->
+                    <attribute id="Level" type="uint8" value="6"/>
+                    <attribute id="Name" type="LSString" value="NPC_Fighter"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="0e6da493-5a37-423b-8c28-629462b22faa"/>
+                    <attribute id="UUID" type="guid" value="14a21e11-d013-4864-80dd-0c54f680e585"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="7"/>
+                    <attribute id="Name" type="LSString" value="NPC_Fighter"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="0e6da493-5a37-423b-8c28-629462b22faa"/>
+                    <attribute id="UUID" type="guid" value="a6d24127-ff64-47e5-aeea-26cdfef6470a"/>
+                </node>
+                <node id="Progression">
+                    <!-- TODO: Roulette an appropriate feat? -->
+                    <attribute id="Level" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="NPC_Fighter"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="0e6da493-5a37-423b-8c28-629462b22faa"/>
+                    <attribute id="UUID" type="guid" value="87334bef-b1fc-4a6b-81cd-29beefad5b72"/>
+                </node>
+                <!-- Apparently there's 2 sets of equally empty progressions for 6, 7 and 8 -->
+                <!-- <node id="Progression">
+                    <attribute id="Level" type="uint8" value="6"/>
+                    <attribute id="Name" type="LSString" value="NPC_Fighter"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="0e6da493-5a37-423b-8c28-629462b22faa"/>
+                    <attribute id="UUID" type="guid" value="371a8e9f-e35e-4c3d-b73f-fa20bce0eb98"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="7"/>
+                    <attribute id="Name" type="LSString" value="NPC_Fighter"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="0e6da493-5a37-423b-8c28-629462b22faa"/>
+                    <attribute id="UUID" type="guid" value="5d1cd8b8-642f-4078-812c-55fb65c9203c"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="NPC_Fighter"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="0e6da493-5a37-423b-8c28-629462b22faa"/>
+                    <attribute id="UUID" type="guid" value="60001036-8a0f-41cb-9914-a939cae1c699"/>
+                </node> -->
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="9"/>
+                    <attribute id="Name" type="LSString" value="NPC_Fighter"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="0e6da493-5a37-423b-8c28-629462b22faa"/>
+                    <attribute id="UUID" type="guid" value="f201a28f-e09c-4615-8d6f-6378ce7d5b5d"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="10"/>
+                    <attribute id="Name" type="LSString" value="NPC_Fighter"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="0e6da493-5a37-423b-8c28-629462b22faa"/>
+                    <attribute id="UUID" type="guid" value="74c62d74-6e2e-46fa-bc0e-f67f792f6913"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="11"/>
+                    <attribute id="Name" type="LSString" value="NPC_Fighter"/>
+                    <attribute id="PassivesAdded" type="LSString" value="ExtraAttack_2"/>
+                    <attribute id="PassivesRemoved" type="LSString" value="ExtraAttack"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="0e6da493-5a37-423b-8c28-629462b22faa"/>
+                    <attribute id="UUID" type="guid" value="c6c838b3-66f4-4e53-ab1d-01df3f628c53"/>
+                </node>
+                <node id="Progression">
+                    <!-- TODO: Roulette an appropriate feat? -->
+                    <attribute id="Level" type="uint8" value="12"/>
+                    <attribute id="Name" type="LSString" value="NPC_Fighter"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="0e6da493-5a37-423b-8c28-629462b22faa"/>
+                    <attribute id="UUID" type="guid" value="8bbfc231-4f3c-43ae-81a5-5914c9ff00bb"/>
+                </node>
+            </children>
+        </node>
+    </region>
+</save>

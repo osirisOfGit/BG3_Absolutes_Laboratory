@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<save>
+    <version major="4" minor="6" revision="0" build="1"/>
+    <region id="Progressions">
+        <node id="root">
+            <children>
+                <!-- MONK -->
+                <node id="Progression">
+                    <!-- <attribute id="Boosts" type="LSString" value="ProficiencyBonus(SavingThrow,Strength);ProficiencyBonus(SavingThrow,Dexterity);Proficiency(SimpleWeapons);Proficiency(Shortswords)"/> -->
+                    <attribute id="Boosts" type="LSString" value="ProficiencyBonus(SavingThrow,Strength);ProficiencyBonus(SavingThrow,Dexterity);Proficiency(SimpleWeapons);Proficiency(Shortswords);ActionResource(KiPoint,2,0);ProficiencyBonus(Skill,Athletics);ProficiencyBonus(Skill,Acrobatics);ProficiencyBonus(Skill,Religion)"/>
+                    <attribute id="Level" type="uint8" value="1"/>
+                    <attribute id="Name" type="LSString" value="NPC_Monk"/>
+                    <!-- <attribute id="PassivesAdded" type="LSString" value="UnarmoredDefense_Monk;MartialArts_DextrousUnarmedAttacks;MartialArts_UnarmedDamage;MartialArts_BonusUnarmedStrike"/> -->
+                    <attribute id="PassivesAdded" type="LSString" value="UnarmoredDefense_Monk;MartialArts_DextrousUnarmedAttacks;MartialArts_UnarmedDamage;MartialArts_BonusUnarmedStrike;Monk_SoundSwitch;FlurryOfBlowsUnlock;Goon_Monk_NPC_Progressions"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="878630d0-136a-4dc9-aa2a-a0a123d3a107"/>
+                    <attribute id="UUID" type="guid" value="44a6c6b2-25f1-4248-82e3-3676bfe992a0"/>
+                </node>
+                <node id="Progression">
+                    <!-- <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,2,0)"/> -->
+                    <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0)"/>
+                    <attribute id="Level" type="uint8" value="2"/>
+                    <attribute id="Name" type="LSString" value="NPC_Monk"/>
+                    <!-- <attribute id="PassivesAdded" type="LSString" value="UnarmoredMovement_1"/> -->
+                    <attribute id="PassivesAdded" type="LSString" value="UnarmoredMovement_1;DedicatedWeapon"/>
+                    <!-- <attribute id="Selectors" type="LSString" value=""/> -->
+                    <attribute id="Selectors" type="LSString" value="AddSpells(2715246d-3375-4766-9a3e-5961efd56748)"/> <!-- Shout_PatientDefense, Shout_Disengage_StepOfTheWind, Shout_Dash_StepOfTheWind -->
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="878630d0-136a-4dc9-aa2a-a0a123d3a107"/>
+                    <attribute id="UUID" type="guid" value="80f2f343-fc7a-4346-924b-b119e3354da5"/>
+                </node>
+                <node id="Progression">
+                    <!-- TODO: Roulette a subclass, then unlock its features when appropriate -->
+                    <!-- <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0)"/> -->
+                    <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0);ActionResource(DeflectMissiles_Charge,1,0)"/>
+                    <attribute id="Level" type="uint8" value="3"/>
+                    <attribute id="Name" type="LSString" value="NPC_Monk"/>
+                    <!-- <attribute id="PassivesAdded" type="LSString" value="DeflectMissiles"/> -->
+                    <attribute id="PassivesAdded" type="LSString" value="DeflectMissiles;KiFueledAttack"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="878630d0-136a-4dc9-aa2a-a0a123d3a107"/>
+                    <attribute id="UUID" type="guid" value="45cf151d-5ed6-4b87-835b-6de2cec7601a"/>
+                </node>
+                <node id="Progression">
+                    <!-- TODO: Roulette an appropriate feat? -->
+                    <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0)"/>
+                    <attribute id="Level" type="uint8" value="4"/>
+                    <attribute id="Name" type="LSString" value="NPC_Monk"/>
+                    <!-- <attribute id="PassivesAdded" type="LSString" value="SlowFall"/> -->
+                    <attribute id="PassivesAdded" type="LSString" value="SlowFall;QuickenedHealing"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="878630d0-136a-4dc9-aa2a-a0a123d3a107"/>
+                    <attribute id="UUID" type="guid" value="0fdc31ae-ae92-4788-95a4-de8b05839b5e"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0)"/>
+                    <attribute id="Level" type="uint8" value="5"/>
+                    <attribute id="Name" type="LSString" value="NPC_Monk"/>
+                    <!-- <attribute id="PassivesAdded" type="LSString" value="ExtraAttack"/> -->
+                    <attribute id="PassivesAdded" type="LSString" value="ExtraAttack;FocusedAim"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <!-- <attribute id="Selectors" type="LSString" value=""/> -->
+                    <attribute id="Selectors" type="LSString" value="AddSpells(3ba6090a-a8be-4938-82ef-40eba0083441)"/> <!-- Target_StunningStrike, Target_StunningStrike_Unarmed -->
+                    <attribute id="TableUUID" type="guid" value="878630d0-136a-4dc9-aa2a-a0a123d3a107"/>
+                    <attribute id="UUID" type="guid" value="ea9647bf-4d05-4dba-aae9-8591b964e02a"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0)"/>
+                    <attribute id="Level" type="uint8" value="6"/>
+                    <attribute id="Name" type="LSString" value="NPC_Monk"/>
+                    <attribute id="PassivesAdded" type="LSString" value="UnarmoredMovement_2;KiEmpoweredStrikes"/>
+                    <attribute id="PassivesRemoved" type="LSString" value="UnarmoredMovement_1"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="878630d0-136a-4dc9-aa2a-a0a123d3a107"/>
+                    <attribute id="UUID" type="guid" value="8e5474aa-125f-4c98-a453-de4056baca94"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0)"/>
+                    <attribute id="Level" type="uint8" value="7"/>
+                    <attribute id="Name" type="LSString" value="NPC_Monk"/>
+                    <attribute id="PassivesAdded" type="LSString" value="Evasion;StillnessOfMind"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="878630d0-136a-4dc9-aa2a-a0a123d3a107"/>
+                    <attribute id="UUID" type="guid" value="fb7990f2-5f43-4ed6-a9db-35c5a65603ad"/>
+                </node>
+                <node id="Progression">
+                    <!-- TODO: Roulette an appropriate feat? -->
+                    <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0)"/>
+                    <attribute id="Level" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="NPC_Monk"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="878630d0-136a-4dc9-aa2a-a0a123d3a107"/>
+                    <attribute id="UUID" type="guid" value="00e50a22-6102-44bc-aade-289f20533d3a"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0)"/>
+                    <attribute id="Level" type="uint8" value="9"/>
+                    <attribute id="Name" type="LSString" value="NPC_Monk"/>
+                    <attribute id="PassivesAdded" type="LSString" value="UnarmoredMovement_DifficultTerrain"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="878630d0-136a-4dc9-aa2a-a0a123d3a107"/>
+                    <attribute id="UUID" type="guid" value="b2e89a9b-d749-4849-b5a6-27f0fa7ed0b8"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0)"/>
+                    <attribute id="Level" type="uint8" value="10"/>
+                    <attribute id="Name" type="LSString" value="NPC_Monk"/>
+                    <attribute id="PassivesAdded" type="LSString" value="UnarmoredMovement_3;PurityOfBody"/>
+                    <attribute id="PassivesRemoved" type="LSString" value="UnarmoredMovement_2;"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="878630d0-136a-4dc9-aa2a-a0a123d3a107"/>
+                    <attribute id="UUID" type="guid" value="c810e84b-b602-4a62-8293-ab17961c933d"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0)"/>
+                    <attribute id="Level" type="uint8" value="11"/>
+                    <attribute id="Name" type="LSString" value="NPC_Monk"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="878630d0-136a-4dc9-aa2a-a0a123d3a107"/>
+                    <attribute id="UUID" type="guid" value="79f4fdb0-fa03-4828-8e62-345f66b96c9e"/>
+                </node>
+                <node id="Progression">
+                    <!-- TODO: Roulette an appropriate feat? -->
+                    <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0)"/>
+                    <attribute id="Level" type="uint8" value="12"/>
+                    <attribute id="Name" type="LSString" value="NPC_Monk"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="878630d0-136a-4dc9-aa2a-a0a123d3a107"/>
+                    <attribute id="UUID" type="guid" value="32c44988-648b-4c99-b842-20e25dc5d7cd"/>
+                </node>
+                <!-- MONK: EXPANSION 13-20 -->
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0);Tag(COMPREHEND_LANGUAGES)"/>
+                    <attribute id="Level" type="uint8" value="13"/>
+                    <attribute id="Name" type="LSString" value="NPC_Monk"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="878630d0-136a-4dc9-aa2a-a0a123d3a107"/>
+                    <attribute id="UUID" type="guid" value="dceb7039-0e2c-43ef-9c10-55246a172d11"/>
+                </node>
+                <node id="Progression">
+                    <!-- <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0);ProficiencyBonus(SavingThrow,Strength);ProficiencyBonus(SavingThrow,Dexterity);ProficiencyBonus(SavingThrow,Constitution);ProficiencyBonus(SavingThrow,Intelligence);ProficiencyBonus(SavingThrow,Wisdom);ProficiencyBonus(SavingThrow,Charisma)"/> -->
+                    <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0);ProficiencyBonus(SavingThrow,Constitution);ProficiencyBonus(SavingThrow,Intelligence);ProficiencyBonus(SavingThrow,Wisdom);ProficiencyBonus(SavingThrow,Charisma)"/>
+                    <attribute id="Level" type="uint8" value="14"/>
+                    <attribute id="Name" type="LSString" value="NPC_Monk"/>
+                    <attribute id="PassivesAdded" type="LSString" value="DiamondSoul;UnarmoredMovement_4"/>
+                    <attribute id="PassivesRemoved" type="LSString" value="UnarmoredMovement_3"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="878630d0-136a-4dc9-aa2a-a0a123d3a107"/>
+                    <attribute id="UUID" type="guid" value="caa8cd28-1c81-4f07-9c0c-0170387b6006"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0)"/>
+                    <attribute id="Level" type="uint8" value="15"/>
+                    <attribute id="Name" type="LSString" value="NPC_Monk"/>
+                    <attribute id="PassivesAdded" type="LSString" value="TimelessBody"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="878630d0-136a-4dc9-aa2a-a0a123d3a107"/>
+                    <attribute id="UUID" type="guid" value="019f2052-6818-4030-8c5e-ddc70027a133"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="AllowImprovement" type="bool" value="true"/>
+                    <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0)"/>
+                    <attribute id="Level" type="uint8" value="16"/>
+                    <attribute id="Name" type="LSString" value="NPC_Monk"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="878630d0-136a-4dc9-aa2a-a0a123d3a107"/>
+                    <attribute id="UUID" type="guid" value="285b3c00-0dc6-4cb1-9023-b6f816e1adb1"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0)"/>
+                    <attribute id="Level" type="uint8" value="17"/>
+                    <attribute id="Name" type="LSString" value="NPC_Monk"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="878630d0-136a-4dc9-aa2a-a0a123d3a107"/>
+                    <attribute id="UUID" type="guid" value="54c08b3e-2d04-4e33-85a5-70ed9600452a"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0)"/>
+                    <attribute id="Level" type="uint8" value="18"/>
+                    <attribute id="Name" type="LSString" value="NPC_Monk"/>
+                    <attribute id="PassivesAdded" type="LSString" value="EmptyBody;UnarmoredMovement_5"/>
+                    <attribute id="PassivesRemoved" type="LSString" value="UnarmoredMovement_4"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="878630d0-136a-4dc9-aa2a-a0a123d3a107"/>
+                    <attribute id="UUID" type="guid" value="c767ce84-e2f2-41c2-a982-a4a4d7e7af3f"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="AllowImprovement" type="bool" value="true"/>
+                    <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0)"/>
+                    <attribute id="Level" type="uint8" value="19"/>
+                    <attribute id="Name" type="LSString" value="NPC_Monk"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="878630d0-136a-4dc9-aa2a-a0a123d3a107"/>
+                    <attribute id="UUID" type="guid" value="486fc4ab-179d-4b77-8a41-5dc116b002a1"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(KiPoint,1,0)"/>
+                    <attribute id="Level" type="uint8" value="20"/>
+                    <attribute id="Name" type="LSString" value="NPC_Monk"/>
+                    <attribute id="PassivesAdded" type="LSString" value="PerfectSelf"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="878630d0-136a-4dc9-aa2a-a0a123d3a107"/>
+                    <attribute id="UUID" type="guid" value="865e08aa-f9de-40c8-9add-dec6bee8efd8"/>
+                </node>
+            </children>
+        </node>
+    </region>
+</save>

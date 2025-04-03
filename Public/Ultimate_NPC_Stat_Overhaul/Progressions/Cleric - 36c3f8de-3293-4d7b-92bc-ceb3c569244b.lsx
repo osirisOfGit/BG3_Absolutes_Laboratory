@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<save>
+    <version major="4" minor="6" revision="0" build="1"/>
+    <region id="Progressions">
+        <node id="root">
+            <children>
+                <!-- CLERIC -->
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,2,1);ProficiencyBonus(SavingThrow,Wisdom);ProficiencyBonus(SavingThrow,Charisma)"/>
+                    <attribute id="Level" type="uint8" value="1"/>
+                    <attribute id="Name" type="LSString" value="NPC_Cleric"/>
+                    <!-- <attribute id="PassivesAdded" type="LSString" value=""/> -->
+                    <attribute id="PassivesAdded" type="LSString" value="Goon_Cleric_NPC_Progressions"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="36c3f8de-3293-4d7b-92bc-ceb3c569244b"/>
+                    <attribute id="UUID" type="guid" value="1ad594c1-e06f-40f6-bb1d-765add46584a"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,1);ActionResource(ChannelDivinity,1,0)"/>
+                    <attribute id="Level" type="uint8" value="2"/>
+                    <attribute id="Name" type="LSString" value="NPC_Cleric"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="36c3f8de-3293-4d7b-92bc-ceb3c569244b"/>
+                    <attribute id="UUID" type="guid" value="fdcda349-5a31-42ad-9e87-21ad862608a5"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,2,2);ActionResource(SpellSlot,1,1);"/>
+                    <attribute id="Level" type="uint8" value="3"/>
+                    <attribute id="Name" type="LSString" value="NPC_Cleric"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="36c3f8de-3293-4d7b-92bc-ceb3c569244b"/>
+                    <attribute id="UUID" type="guid" value="86a1f593-866f-49f5-a0be-af45a192aa31"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,2);"/>
+                    <attribute id="Level" type="uint8" value="4"/>
+                    <attribute id="Name" type="LSString" value="NPC_Cleric"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="36c3f8de-3293-4d7b-92bc-ceb3c569244b"/>
+                    <attribute id="UUID" type="guid" value="6f11007c-60c8-4657-829f-4d902567216f"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,2,3);"/>
+                    <attribute id="Level" type="uint8" value="5"/>
+                    <attribute id="Name" type="LSString" value="NPC_Cleric"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="36c3f8de-3293-4d7b-92bc-ceb3c569244b"/>
+                    <attribute id="UUID" type="guid" value="8de94ff3-3420-4732-ab3e-14acf936d823"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,3);ActionResource(ChannelDivinity,1,0)"/>
+                    <attribute id="Level" type="uint8" value="6"/>
+                    <attribute id="Name" type="LSString" value="NPC_Cleric"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="36c3f8de-3293-4d7b-92bc-ceb3c569244b"/>
+                    <attribute id="UUID" type="guid" value="cc8e8bab-3764-4f58-b264-33f411fb6e66"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,4);"/>
+                    <attribute id="Level" type="uint8" value="7"/>
+                    <attribute id="Name" type="LSString" value="NPC_Cleric"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="36c3f8de-3293-4d7b-92bc-ceb3c569244b"/>
+                    <attribute id="UUID" type="guid" value="f0a8c27c-3d6a-4abe-a302-38b188a7063e"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,4);"/>
+                    <attribute id="Level" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="NPC_Cleric"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="36c3f8de-3293-4d7b-92bc-ceb3c569244b"/>
+                    <attribute id="UUID" type="guid" value="0de643b0-56bf-42b6-9116-14525ceefa63"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,4);ActionResource(SpellSlot,1,5);"/>
+                    <attribute id="Level" type="uint8" value="9"/>
+                    <attribute id="Name" type="LSString" value="NPC_Cleric"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="36c3f8de-3293-4d7b-92bc-ceb3c569244b"/>
+                    <attribute id="UUID" type="guid" value="1d71a919-c777-41b3-9ad6-55dfcc5334ce"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,5);"/>
+                    <attribute id="Level" type="uint8" value="10"/>
+                    <attribute id="Name" type="LSString" value="NPC_Cleric"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="36c3f8de-3293-4d7b-92bc-ceb3c569244b"/>
+                    <attribute id="UUID" type="guid" value="7111339e-d362-4b30-b75f-252ad3336a09"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,6);"/>
+                    <attribute id="Level" type="uint8" value="11"/>
+                    <attribute id="Name" type="LSString" value="NPC_Cleric"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="36c3f8de-3293-4d7b-92bc-ceb3c569244b"/>
+                    <attribute id="UUID" type="guid" value="7b453d81-9cc6-42d9-aa13-9290363403c3"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Level" type="uint8" value="12"/>
+                    <attribute id="Name" type="LSString" value="NPC_Cleric"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="36c3f8de-3293-4d7b-92bc-ceb3c569244b"/>
+                    <attribute id="UUID" type="guid" value="bab8e659-a8ed-47ad-a649-4e3830c8f79e"/>
+                </node>
+            </children>
+        </node>
+    </region>
+</save>

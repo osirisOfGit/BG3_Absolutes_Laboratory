@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<save>
+    <version major="4" minor="6" revision="0" build="1"/>
+    <region id="Progressions">
+        <node id="root">
+            <children>
+                <!-- DRUID -->
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="Tag(DRUID);ActionResource(SpellSlot,2,1);ProficiencyBonus(SavingThrow,Wisdom);ProficiencyBonus(SavingThrow,Intelligence);Proficiency(LightArmor);Proficiency(MediumArmor);Proficiency(Shields);Proficiency(Clubs);Proficiency(Daggers);Proficiency(Javelins);Proficiency(Maces);Proficiency(Quarterstaffs);Proficiency(Scimitars);Proficiency(Sickles);Proficiency(Spears)"/>
+                    <attribute id="Level" type="uint8" value="1"/>
+                    <attribute id="Name" type="LSString" value="NPC_Druid"/>
+                    <!-- <attribute id="PassivesAdded" type="LSString" value=""/> -->
+                    <attribute id="PassivesAdded" type="LSString" value="Goon_Druid_NPC_Progressions"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="7e76da16-650c-4a6e-85b0-f9e23a7f5a60"/>
+                    <attribute id="UUID" type="guid" value="13b286a5-fb07-4944-97e9-58be14a32678"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,1); ActionResource(WildShape,2,0)"/>
+                    <attribute id="Level" type="uint8" value="2"/>
+                    <attribute id="Name" type="LSString" value="NPC_Druid"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="7e76da16-650c-4a6e-85b0-f9e23a7f5a60"/>
+                    <attribute id="UUID" type="guid" value="cb70bfde-ec6e-4a63-b76b-657d0c08ef31"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,1);ActionResource(SpellSlot,2,2);"/>
+                    <attribute id="Level" type="uint8" value="3"/>
+                    <attribute id="Name" type="LSString" value="NPC_Druid"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="7e76da16-650c-4a6e-85b0-f9e23a7f5a60"/>
+                    <attribute id="UUID" type="guid" value="1843cb66-3652-47e8-aab1-2996d92a0299"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,2);"/>
+                    <attribute id="Level" type="uint8" value="4"/>
+                    <attribute id="Name" type="LSString" value="NPC_Druid"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="7e76da16-650c-4a6e-85b0-f9e23a7f5a60"/>
+                    <attribute id="UUID" type="guid" value="951bf92c-f11b-4119-a184-712df169c683"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,2,3);"/>
+                    <attribute id="Level" type="uint8" value="5"/>
+                    <attribute id="Name" type="LSString" value="NPC_Druid"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="7e76da16-650c-4a6e-85b0-f9e23a7f5a60"/>
+                    <attribute id="UUID" type="guid" value="cb0fe75f-d07e-4c62-a5ed-4f9c2a827165"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,3);"/>
+                    <attribute id="Level" type="uint8" value="6"/>
+                    <attribute id="Name" type="LSString" value="NPC_Druid"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="7e76da16-650c-4a6e-85b0-f9e23a7f5a60"/>
+                    <attribute id="UUID" type="guid" value="5781ad9e-7c44-4642-a417-c44d52859b41"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,4)"/>
+                    <attribute id="Level" type="uint8" value="7"/>
+                    <attribute id="Name" type="LSString" value="NPC_Druid"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="7e76da16-650c-4a6e-85b0-f9e23a7f5a60"/>
+                    <attribute id="UUID" type="guid" value="a67706c4-10f0-4a62-9923-7b065d7a7c6a"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,4);"/>
+                    <attribute id="Level" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="NPC_Druid"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="7e76da16-650c-4a6e-85b0-f9e23a7f5a60"/>
+                    <attribute id="UUID" type="guid" value="9524fa67-9131-4cac-be07-d29bf3dd1f1e"/>
+                </node>
+                <!-- More duplicate progressions -->
+                <!-- <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,3);"/>
+                    <attribute id="Level" type="uint8" value="6"/>
+                    <attribute id="Name" type="LSString" value="NPC_Druid"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="7e76da16-650c-4a6e-85b0-f9e23a7f5a60"/>
+                    <attribute id="UUID" type="guid" value="6e917d64-bd58-4cfb-93d8-61b3a1615cdc"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,4);"/>
+                    <attribute id="Level" type="uint8" value="7"/>
+                    <attribute id="Name" type="LSString" value="NPC_Druid"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="7e76da16-650c-4a6e-85b0-f9e23a7f5a60"/>
+                    <attribute id="UUID" type="guid" value="cc28866c-ee2d-426d-bc42-8666f466b8f2"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,4)"/>
+                    <attribute id="Level" type="uint8" value="8"/>
+                    <attribute id="Name" type="LSString" value="NPC_Druid"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="7e76da16-650c-4a6e-85b0-f9e23a7f5a60"/>
+                    <attribute id="UUID" type="guid" value="fe7cb3e4-06ae-4eb0-9215-5b9937c59da9"/>
+                </node> -->
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,4);ActionResource(SpellSlot,1,5)"/>
+                    <attribute id="Level" type="uint8" value="9"/>
+                    <attribute id="Name" type="LSString" value="NPC_Druid"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="7e76da16-650c-4a6e-85b0-f9e23a7f5a60"/>
+                    <attribute id="UUID" type="guid" value="0c02f230-ee13-4202-b851-14d7aba81214"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,5)"/>
+                    <attribute id="Level" type="uint8" value="10"/>
+                    <attribute id="Name" type="LSString" value="NPC_Druid"/>
+                    <attribute id="PassivesAdded" type="LSString" value="NaturesWard"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="7e76da16-650c-4a6e-85b0-f9e23a7f5a60"/>
+                    <attribute id="UUID" type="guid" value="9d11f901-249d-46ba-b828-968721e324e2"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,6)"/>
+                    <attribute id="Level" type="uint8" value="11"/>
+                    <attribute id="Name" type="LSString" value="NPC_Druid"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="7e76da16-650c-4a6e-85b0-f9e23a7f5a60"/>
+                    <attribute id="UUID" type="guid" value="fefcce64-f698-4cc9-b330-eec260dcd0e7"/>
+                </node>
+                <node id="Progression">
+                    <attribute id="Boosts" type="LSString" value="ActionResource(SpellSlot,1,6)"/>
+                    <attribute id="Level" type="uint8" value="12"/>
+                    <attribute id="Name" type="LSString" value="NPC_Druid"/>
+                    <attribute id="ProgressionType" type="uint8" value="0"/>
+                    <attribute id="TableUUID" type="guid" value="7e76da16-650c-4a6e-85b0-f9e23a7f5a60"/>
+                    <attribute id="UUID" type="guid" value="ae564831-9211-4972-8ac2-32d866f63409"/>
+                </node>
+            </children>
+        </node>
+    </region>
+</save>
