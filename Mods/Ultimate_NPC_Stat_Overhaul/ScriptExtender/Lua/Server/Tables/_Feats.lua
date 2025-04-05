@@ -1,12 +1,5 @@
--- Vars stuff
-local selectedFeats = {}
-
-for _, roll in ipairs(rolls) do
-    Mods[ModTable].PersistentVars[character][roll.type] = roll.value
-end
-
 -- Function to handle feat selection for a specific class and level
-local function SelectFeat(class, level)
+local function RouletteFeats(class, level)
     if FeatTables[class] and FeatTables[class][level] then
         local featList = FeatTables[class][level]
         local selectedFeat

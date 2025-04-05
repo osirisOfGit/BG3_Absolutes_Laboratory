@@ -1,4 +1,4 @@
-local BardLevelBoosts = {
+local DruidLevelBoosts = {
     [1] = function(char)
         -- Fill
     end,

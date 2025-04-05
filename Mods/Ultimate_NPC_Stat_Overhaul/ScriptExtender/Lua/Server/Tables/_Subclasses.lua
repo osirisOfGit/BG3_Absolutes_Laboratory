@@ -1,13 +1,19 @@
-function SubclassSelection(character, class, level)
-    if SubclassPassives[class] and SubclassPassives[class][level] then
-        local passives = SubclassPassives[class][level]
-        for _, passive in ipairs(passives) do
-            -- Check if the character already has the passive
-            if not HasPassive(character, passive) then
-                -- Add the selected passive to the character
-                Osi.AddPassive(character, passive)
+function RouletteSubclass(character, class, level)
+    -- Check if the class exists in the SubclassTables
+    if SubclassTables[class] then
+        local subclassTable = SubclassTables[class]
+
+        -- Check if the character already has any of the subclass passives
+        for _, passive in ipairs(subclassTable) do
+            if HasPassive(character, passive) then
+                return -- Exit if any passive is already applied
             end
         end
+
+        -- Randomly select a subclass passive from the table
+        local selectedPassive = subclassTable[math.random(#subclassTable)]
+        -- Add the selected passive to the character
+        Osi.AddPassive(character, selectedPassive)
     end
 end
 
@@ -60,62 +66,57 @@ local DruidSubclassTable = {
 
 local FighterSubclassTable = {
     "CX_Fighter_BattleMaster_Boost",
-    "CX_Fighter_Champion_Boost",
-    "CX_Fighter_EldritchKnight_Boost",
-    "CX_Fighter_Gunslinger_Boost"
+    "CX_Fighter_EldritchKnight_Boost"
 }
 
 local MonkSubclassTable = {
-    "CX_Monk_WayOfTheOpenHand_Boost",
-    "CX_Monk_WayOfTheShadow_Boost",
-    "CX_Monk_WayOfTheFourElements_Boost",
-    "CX_Monk_WayOfTheDrunkenMaster_Boost"
+    "CX_Monk_OpenHand_Boost",
+    "CX_Monk_FourElements_Boost"
+
 }
 
 local PaladinSubclassTable = {
-    "CX_Paladin_OathOfDevotion_Boost",
-    "CX_Paladin_OathOfTheAncients_Boost",
-    "CX_Paladin_OathOfVengeance_Boost",
-    "CX_Paladin_OathOfConquest_Boost",
-    "CX_Paladin_OathOfGlory_Boost"
+    "CX_Paladin_Devotion_Boost",
+    "CX_Paladin_Vengeance_Boost",
+    "CX_Paladin_Oathbreaker_Boost"
 }
 
 local RangerSubclassTable = {
     "CX_Ranger_Hunter_Boost",
-    "CX_Ranger_BeastMaster_Boost",
-    "CX_Ranger_GloomStalker_Boost",
-    "CX_Ranger_Swarmkeeper_Boost"
+    "CX_Ranger_BeastMaster_Boost"
+    -- "CX_Ranger_GloomStalker_Boost",
+    -- "CX_Ranger_Swarmkeeper_Boost"
 }
 
 local RogueSubclassTable = {
-    "CX_Rogue_Thief_Boost",
-    "CX_Rogue_Assassin_Boost",
-    "CX_Rogue_ArcaneTrickster_Boost",
-    "CX_Rogue_Scout_Boost"
+    -- "CX_Rogue_Thief_Boost",
+    -- "CX_Rogue_Assassin_Boost",
+    -- "CX_Rogue_ArcaneTrickster_Boost",
+    -- "CX_Rogue_Scout_Boost"
 }
 
 local SorcererSubclassTable = {
-    "CX_Sorcerer_StormSorcery_Boost",
-    "CX_Sorcerer_DraconicBloodline_Boost",
-    "CX_Sorcerer_WildMagic_Boost",
-    "CX_Sorcerer_ShadowMagic_Boost"
+    -- "CX_Sorcerer_StormSorcery_Boost",
+    -- "CX_Sorcerer_DraconicBloodline_Boost",
+    -- "CX_Sorcerer_WildMagic_Boost",
+    -- "CX_Sorcerer_ShadowMagic_Boost"
 }
 
 local WarlockSubclassTable = {
-    "CX_Warlock_TheArchfey_Boost",
-    "CX_Warlock_TheFiend_Boost",
-    "CX_Warlock_TheGreatOldOne_Boost",
-    "CX_Warlock_TheHexblade_Boost",
-    "CX_Warlock_TheUndying_Boost"
+    -- "CX_Warlock_TheArchfey_Boost",
+    -- "CX_Warlock_TheFiend_Boost",
+    -- "CX_Warlock_TheGreatOldOne_Boost",
+    -- "CX_Warlock_TheHexblade_Boost",
+    -- "CX_Warlock_TheUndying_Boost"
 }
 
 local WizardSubclassTable = {
-    "CX_Wizard_Abjuration_Boost",
-    "CX_Wizard_Conjuration_Boost",
-    "CX_Wizard_Divination_Boost",
-    "CX_Wizard_Enchantment_Boost",
+    -- "CX_Wizard_Abjuration_Boost",
+    -- "CX_Wizard_Conjuration_Boost",
+    -- "CX_Wizard_Divination_Boost",
+    -- "CX_Wizard_Enchantment_Boost",
     "CX_Wizard_Evocation_Boost",
-    "CX_Wizard_Illusion_Boost",
-    "CX_Wizard_Necromancy_Boost",
-    "CX_Wizard_Transmutation_Boost"
+    -- "CX_Wizard_Illusion_Boost",
+    "CX_Wizard_Necromancy_Boost"
+    -- "CX_Wizard_Transmutation_Boost"
 }

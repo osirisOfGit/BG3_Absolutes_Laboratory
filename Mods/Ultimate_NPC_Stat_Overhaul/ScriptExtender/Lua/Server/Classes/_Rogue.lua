@@ -1,4 +1,4 @@
-local BardLevelBoosts = {
+local RogueLevelBoosts = {
     [1] = function(char)
         -- Fill
     end,
