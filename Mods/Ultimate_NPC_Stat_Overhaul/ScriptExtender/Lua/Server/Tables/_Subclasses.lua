@@ -36,7 +36,7 @@ local SubclassTables = {
 local BarbarianSubclassTable = {
     "CX_Barbarian_WildMagic_Boost",
     "CX_Barbarian_Berserker_Boost",
-    -- "CX_Barbarian_TotemWarriorPath_Boost"
+    "CX_Barbarian_TotemWarriorPath_Boost"
 }
 
 local BardSubclassTable = {

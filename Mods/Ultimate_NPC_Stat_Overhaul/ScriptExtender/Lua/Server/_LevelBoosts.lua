@@ -16,6 +16,7 @@ local LevelBoostTables = {
 
 -- Holy moly scan the whole population of the world like Mark Zuckerberg and the lizard empire.
 Ext.Osiris.RegisterListener("LevelGameplayStarted", 2, "after", function(level_name, is_editor_mode)
+    print("== LevelGameplayStarted Triggered ==")
     if not LevelBoostTables then
         print("Error: LevelBoostTables is nil!")
         return
@@ -24,19 +25,36 @@ Ext.Osiris.RegisterListener("LevelGameplayStarted", 2, "after", function(level_n
     for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
         local charID = entity.Uuid and entity.Uuid.EntityUuid or entity
         if type(charID) == "string" then
+            print("[CHARACTER] Checking:", charID)
+
             for classPassive, classFunction in pairs(LevelBoostTables) do
                 if HasPassive(charID, classPassive) then
+                    print("  [CLASS MATCH] Found class passive:", classPassive)
+
+                    -- Ensure PersistentVars entry exists
                     Mods[ModTable].PersistentVars[charID] = Mods[ModTable].PersistentVars[charID] or {}
-                    if next(Mods[ModTable].PersistentVars[charID]) == nil then
+                    local charVars = Mods[ModTable].PersistentVars[charID]
+
+                    if next(charVars) == nil then
+                        print("  [ROULETTE] No PersistentVars found. Running class function (roulette)...")
                         classFunction(charID)
+                    else
+                        print("  [SKIP ROULETTE] PersistentVars already exist. Skipping class function.")
                     end
+
+                    print("  [LEVEL BOOSTS] Applying level-based boosts...")
                     ApplyLevelBasedBoosts(charID)
+
+                    print("  [PERSISTENT PASSIVES] Applying stored passives from PersistentVars...")
                     ApplyPersistantVars(charID)
                 end
             end
         end
     end
+
+    print("== LevelGameplayStarted Complete ==")
 end)
+
 
 local function ApplyLevelBasedBoosts(character)
     -- Iterate through the LevelBoostTables to find the matching class progression passive

@@ -1,16 +1,16 @@
 local BarbarianLevelBoosts = {
     [1] = function(char)
-    -- RouletteSkills(char, "233793b3-838a-4d4e-9d68-1e0a1089aba5", 2)
-    -- RouletteAbilities(char, "b9149c8e-52c8-46e5-9cb6-fc39301c05fe", 2, 1)
+    RouletteSkills(char, "233793b3-838a-4d4e-9d68-1e0a1089aba5", 2)
+    RouletteAbilities(char, "b9149c8e-52c8-46e5-9cb6-fc39301c05fe", 2, 1)
     end,
     [2] = function(char)
         -- Fill
     end,
     [3] = function(char)
-    -- RouletteSubclasses(char, "Barbarian")
+    RouletteSubclasses(char, "Barbarian")
     end,
     [4] = function(char)
-    -- RouletteFeats("Barbarian", 4)
+    RouletteFeats("Barbarian", 4)
     end,
 
     [5] = function(char)
