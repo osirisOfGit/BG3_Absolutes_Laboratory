@@ -32,7 +32,7 @@ data "Passives" "CX_Warlock_Boost;CX_Magic_Boost;Gnome_Cunning;Gnome_Speed;DeepG
 new entry "EO_Justiciar_Eldritch_Fighter"
 type "Character"
 using "EO_Justiciar_Eldritch_Fighter"
-data "Passives" "CX_Fighter_Boost;CX_Fighter_EK_Boost;CX_Martial_Boost;CX_Magic_Boost;HumanMilitia;HumanVersatility;AttackOfOpportunity;Darkvision;DarknessRules;SHA_DarkVengeance;SHA_VisionOfShar;LivingShadow;SunlightSensitivity;"
+data "Passives" "CX_Fighter_Boost;CX_Fighter_EldritchKnight_Boost;CX_Martial_Boost;CX_Magic_Boost;HumanMilitia;HumanVersatility;AttackOfOpportunity;Darkvision;DarknessRules;SHA_DarkVengeance;SHA_VisionOfShar;LivingShadow;SunlightSensitivity;"
 
 // UCL_Ranger;UCL_GloomStalker;UCL_2_FightingStyle_Defence;UCL_Generic_Str_Asi
 new entry "EO_DefiledTemple_Gloomstalker_Ranger"
@@ -154,7 +154,7 @@ new entry "EO_CRE_GithGish_EldritchKnight_Fighter"
 type "Character"
 using "EO_CRE_GithGish_EldritchKnight_Fighter"
 // data "Passives" "WarMagic_Githyanki;AttackOfOpportunity;DarknessRules"
-data "Passives" "CX_Fighter_Boost;CX_Fighter_EK_Boost;CX_Martial_Boost;CX_Magic_Boost;CX_Spells_L1;CX_Spells_L2;CX_Spells_L3;AttackOfOpportunity;DarknessRules;WarMagic_Githyanki"
+data "Passives" "CX_Fighter_Boost;CX_Fighter_EldritchKnight_Boost;CX_Martial_Boost;CX_Magic_Boost;CX_Spells_L1;CX_Spells_L2;CX_Spells_L3;AttackOfOpportunity;DarknessRules;WarMagic_Githyanki"
 
 // UCL_Fighter;UCL_BattleMaster;UCL_1_FightingStyle_GreatWeaponFighting;UCL_Fighter_ActionSurge_Melee;UCL_Fighter_TwoHander
 new entry "EO_CRE_GithCaptain_Battlemaster_Fighter"
@@ -182,7 +182,7 @@ new entry "EO_Lathander_Guard_Eldritch_Fighter"
 type "Character"
 using "EO_Lathander_Guard_Eldritch_Fighter"
 // data "Passives" "AttackOfOpportunity;HumanMilitia;HumanVersatility;DarknessRules"
-data "Passives" "CX_Fighter_Boost;CX_Fighter_EK_Boost;CX_Martial_Boost;HumanMilitia;HumanVersatility;AttackOfOpportunity;DarknessRules"
+data "Passives" "CX_Fighter_Boost;CX_Fighter_EldritchKnight_Boost;CX_Martial_Boost;HumanMilitia;HumanVersatility;AttackOfOpportunity;DarknessRules"
 
 // UCL_Cleric;UCL_LightDomain;UCL_Warcaster_Wis
 new entry "EO_Lathander_Guard_Light_Cleric"

@@ -1,0 +1,8 @@
+// ==================================== Template for progression passives ====================================
+
+new entry "Goon_NPC_Progressions_Template"
+type "PassiveData"
+// This character is using class progressions.
+data "Description" "h22e51f36g68a9g4b6aga433g694b75975e4d;1"
+data "Properties" "Highlighted"
+data "Icon" "GenericIcon_Intent_Buff"

@@ -1,25 +1,3 @@
-// ==================================== Barbarian ====================================
-
-new entry "Goon_NPC_Roulette_Barbarian_Level_1_Selectors"
-type "PassiveData"
-data "Properties" "IsHidden"
-
-new entry "Goon_NPC_Roulette_Barbarian_Level_3_Subclass"
-type "PassiveData"
-data "Properties" "IsHidden"
-
-new entry "Goon_NPC_Roulette_Barbarian_Level_4_Feat"
-type "PassiveData"
-data "Properties" "IsHidden"
-
-new entry "Goon_NPC_Roulette_Barbarian_Level_8_Feat"
-type "PassiveData"
-data "Properties" "IsHidden"
-
-new entry "Goon_NPC_Roulette_Barbarian_Level_12_Feat"
-type "PassiveData"
-data "Properties" "IsHidden"
-
 // ==================================== Warlock ====================================
 // TODO: MAKE THE NPCS SPIN BABY SPIN
 
