@@ -228,7 +228,7 @@ data "Description" "h42db1062gb882g467fgb8cdgba975ea87ffd"
 // data "Icon" "PassiveFeature_AttackOfOpportunity"
 data "Icon" "Action_SneakAttack_Melee"
 // data "Boosts" "ActionResource(SneakAttack_Charge,3,0);UnlockInterrupt(Interrupt_SneakAttack);UnlockInterrupt(Interrupt_SneakAttack_Critical)"
-data "Boosts" "IF(not HasActionResource('SneakAttack_Charge', 1, 0, false, true, context.Source)):ActionResource(SneakAttack_Charge,1,0);UnlockInterrupt(Interrupt_SneakAttack);UnlockInterrupt(Interrupt_SneakAttack_Critical)"
+data "Boosts" "IF(not HasPassive('Goon_Rogue_NPC_Progressions')):ActionResource(SneakAttack_Charge,1,0);UnlockInterrupt(Interrupt_SneakAttack);UnlockInterrupt(Interrupt_SneakAttack_Critical)"
 
 // ==================================== Sorcerer ====================================
 
