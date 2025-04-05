@@ -2104,7 +2104,7 @@ new entry "CHA_Bandit_Gnome_Ranger"
 type "Character"
 using "CHA_Bandit_Gnome_Ranger"
 // data "Passives" "Gnome_Cunning;Gnome_Speed;DarknessRules;Darkvision"
-data "Passives" "CX_Ranger_Boost;CX_Ranger_Hunter_Boost;CX_Martial_Boost;Gnome_Cunning;Gnome_Speed;AttackOfOpportunity;DarknessRules;Darkvision"
+data "Passives" "CX_Rogue_Boost;CX_Martial_Boost;Gnome_Cunning;Gnome_Speed;AttackOfOpportunity;DarknessRules;Darkvision"
 
 // Mino - Circle of the Emerald Grove
 new entry "DEN_Druids_Gnome_Ranger"
