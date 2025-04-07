@@ -1,5 +1,5 @@
 -- Function to handle feat selection for a specific class and level
-local function RouletteFeats(class, level)
+Mods[ModTable].RouletteFeats = function(class, level)
     if FeatTables[class] and FeatTables[class][level] then
         local featList = FeatTables[class][level]
         local selectedFeat
@@ -12,7 +12,7 @@ local function RouletteFeats(class, level)
 end
 
 -- Tables
-local FeatTables = {
+Mods[ModTable].FeatTables = {
     -- Barbarian Feats for Levels 4, 8, and 12
     ["Barbarian"] = {
         ["BarbarianLevel4"] = {

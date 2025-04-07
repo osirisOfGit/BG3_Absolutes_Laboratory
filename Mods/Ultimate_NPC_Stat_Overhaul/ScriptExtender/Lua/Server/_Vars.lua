@@ -4,10 +4,14 @@ Mods = Mods or {} -- Ensure the global Mods table exists
 Mods[ModTable] = Mods[ModTable] or {} -- Initialize the ModTable
 Mods[ModTable].PersistentVars = Mods[ModTable].PersistentVars or {} -- Initialize PersistentVars
 
+-- Initialize global feats list
+Mods[ModTable].PersistentVars.selectedFeats = Mods[ModTable].PersistentVars.selectedFeats or {}
+
 -- Debug print to confirm Mods[ModTable] initialization
 print("[DEBUG] Mods[ModTable] initialized:", Mods[ModTable])
+print("[DEBUG] PersistentVars initialized:", Mods[ModTable].PersistentVars)
 
--- Utility: Ensures category and key structure exists
+-- Utility: Ensures category and key structure exists for a character
 local function EnsureVarStructure(character, category)
     if not character or not category then
         print("[ERROR] EnsureVarStructure called with invalid arguments. Character:", character, "Category:", category)
@@ -118,5 +122,31 @@ function DumpCharacterVars(character)
     print("======================================")
 end
 
--- Debug print to confirm PersistentVars structure
-print("[DEBUG] PersistentVars initialized:", Mods[ModTable].PersistentVars)
+-- === Global Feat Tracking === --
+
+-- Add a feat to selectedFeats
+function AddSelectedFeat(feat)
+    if not feat then
+        print("[ERROR] AddSelectedFeat called with invalid feat:", feat)
+        return
+    end
+
+    Mods[ModTable].PersistentVars.selectedFeats[feat] = true
+    print("[AddSelectedFeat] Feat added:", feat)
+end
+
+-- Check if a feat is already selected
+function IsFeatSelected(feat)
+    if not feat then
+        print("[ERROR] IsFeatSelected called with invalid feat:", feat)
+        return false
+    end
+
+    return Mods[ModTable].PersistentVars.selectedFeats[feat] or false
+end
+
+-- Clear all selected feats
+function ClearSelectedFeats()
+    Mods[ModTable].PersistentVars.selectedFeats = {}
+    print("[ClearSelectedFeats] All selected feats cleared.")
+end

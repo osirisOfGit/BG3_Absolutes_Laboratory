@@ -3,162 +3,137 @@
 -- SelectRandomSpellsFromUUID(char, "some-uuid-for-spells", "SpellTag", 3)
 -- SelectRandomAbilitiesFromUUID(char, "some-uuid-for-abilities", "AbilityTag", 1)
 
--- ==================================== Passives ====================================
+local ModTable = "Ultimate_NPC_Stat_Overhaul"
 
-local function RoulettePassives(character, uuid, tag, amount)
-    -- Query the game for the list of passives associated with the UUID
-    local passiveList = Osi.GetPassivesByUUID(uuid, tag) -- Replace with the correct Osi function if available
+Mods = Mods or {}
+Mods[ModTable] = Mods[ModTable] or {}
 
-    -- Ensure the passive list is valid and not empty
-    if not passiveList or #passiveList == 0 then
-        print("Error: No passives found for UUID:", uuid)
-        return
+
+-- ==================================== 🎲 Data Table ====================================
+
+Mods[ModTable].RouletteData = {
+    Passives = {
+        ["UUID_EXAMPLE_PASSIVES"] = {
+            "GOON_PASSIVE_WILD", "GOON_PASSIVE_BRAVE", "GOON_PASSIVE_SHADOWSTEP"
+        }
+    },
+    Skills = {
+        ["UUID_EXAMPLE_SKILLS"] = {
+            "Skill_Stealth", "Skill_Perception", "Skill_Arcana"
+        }
+    },
+    Spells = {
+        ["UUID_EXAMPLE_SPELLS"] = {
+            "Target_Firebolt", "Target_HealingWord", "Zone_FogCloud"
+        }
+    },
+    Abilities = {
+        ["UUID_EXAMPLE_ABILITIES"] = {
+            "Ability_Strength", "Ability_Dexterity", "Ability_Charisma"
+        }
+    }
+}
+
+-- ==================================== 🔧 Utility Functions ====================================
+
+local function GetRouletteList(category, uuid, tag)
+    local data = Mods[ModTable].RouletteData and Mods[ModTable].RouletteData[category]
+    if not data then
+        print("[ROULETTE] No data for category:", category)
+        return {}
     end
 
-    -- Shuffle the passive list to ensure randomness
-    local shuffledPassives = {}
-    for _, passive in ipairs(passiveList) do
-        table.insert(shuffledPassives, passive)
-    end
-    for i = #shuffledPassives, 2, -1 do
-        local j = math.random(i)
-        shuffledPassives[i], shuffledPassives[j] = shuffledPassives[j], shuffledPassives[i]
+    local list = data[uuid]
+    if not list then
+        print("[ROULETTE] No list for UUID:", uuid, "in category:", category)
+        return {}
     end
 
-    -- Select the specified number of passives
-    local selectedCount = 0
-    for _, passive in ipairs(shuffledPassives) do
-        if not HasPassive(character, passive) then
-            Osi.AddPassive(character, passive)
-            print("Added passive:", passive, "to character:", character)
-            selectedCount = selectedCount + 1
-            if selectedCount >= amount then
-                break
+    if tag then
+        local filtered = {}
+        for _, entry in ipairs(list) do
+            if entry:find(tag) then
+                table.insert(filtered, entry)
             end
         end
+        return filtered
     end
 
-    if selectedCount < amount then
-        print("Warning: Only", selectedCount, "passives were added. Not enough unique passives available.")
+    return list
+end
+
+local function ShuffleList(inputList)
+    local list = {}
+    for _, item in ipairs(inputList) do
+        table.insert(list, item)
+    end
+    for i = #list, 2, -1 do
+        local j = math.random(i)
+        list[i], list[j] = list[j], list[i]
+    end
+    return list
+end
+
+local function AddUniqueEntries(char, items, checkFn, addFn, label, amount)
+    local selected = 0
+    for _, entry in ipairs(items) do
+        if not checkFn(char, entry) then
+            addFn(char, entry)
+            print("[ROULETTE]", label, "added:", entry, "->", char)
+            selected = selected + 1
+            if selected >= amount then break end
+        end
+    end
+    if selected < amount then
+        print("[ROULETTE] Only", selected, label, "added to", char, "- not enough unique entries")
     end
 end
 
--- ==================================== Skills ====================================
+-- ==================================== 🌀 Roulette Functions ====================================
 
-local function RouletteSkills(character, uuid, tag, amount)
-    -- Query the game for the list of skills associated with the UUID
-    local skillList = Osi.GetSkillsByUUID(uuid, tag) -- Replace with the correct Osi function if available
+Mods[ModTable].RoulettePassives = function(character, uuid, tag, amount)
+    local list = GetRouletteList("Passives", uuid, tag)
+    if #list == 0 then return end
 
-    -- Ensure the skill list is valid and not empty
-    if not skillList or #skillList == 0 then
-        print("Error: No skills found for UUID:", uuid)
-        return
-    end
-
-    -- Shuffle the skill list to ensure randomness
-    local shuffledSkills = {}
-    for _, skill in ipairs(skillList) do
-        table.insert(shuffledSkills, skill)
-    end
-    for i = #shuffledSkills, 2, -1 do
-        local j = math.random(i)
-        shuffledSkills[i], shuffledSkills[j] = shuffledSkills[j], shuffledSkills[i]
-    end
-
-    -- Select the specified number of skills
-    local selectedCount = 0
-    for _, skill in ipairs(shuffledSkills) do
-        if not HasSkill(character, skill) then
-            Osi.AddSkill(character, skill, 1) -- Add the skill to the character
-            print("Added skill:", skill, "to character:", character)
-            selectedCount = selectedCount + 1
-            if selectedCount >= amount then
-                break
-            end
-        end
-    end
-
-    if selectedCount < amount then
-        print("Warning: Only", selectedCount, "skills were added. Not enough unique skills available.")
-    end
+    local shuffled = ShuffleList(list)
+    AddUniqueEntries(character, shuffled, HasPassive, Osi.AddPassive, "Passive", amount)
 end
 
--- ==================================== Abilities ====================================
+Mods[ModTable].RouletteSkills = function(character, uuid, tag, amount)
+    local list = GetRouletteList("Skills", uuid, tag)
+    if #list == 0 then return end
 
-local function RouletteAbilities(character, uuid, tag, amount)
-    -- Query the game for the list of abilities associated with the UUID
-    local abilityList = Osi.GetAbilitiesByUUID(uuid, tag) -- Replace with the correct Osi function if available
-
-    -- Ensure the ability list is valid and not empty
-    if not abilityList or #abilityList == 0 then
-        print("Error: No abilities found for UUID:", uuid)
-        return
-    end
-
-    -- Shuffle the ability list to ensure randomness
-    local shuffledAbilities = {}
-    for _, ability in ipairs(abilityList) do
-        table.insert(shuffledAbilities, ability)
-    end
-    for i = #shuffledAbilities, 2, -1 do
-        local j = math.random(i)
-        shuffledAbilities[i], shuffledAbilities[j] = shuffledAbilities[j], shuffledAbilities[i]
-    end
-
-    -- Select the specified number of abilities
-    local selectedCount = 0
-    for _, ability in ipairs(shuffledAbilities) do
-        if not HasAbility(character, ability) then
-            Osi.AddAbility(character, ability, 1) -- Add the ability to the character
-            print("Added ability:", ability, "to character:", character)
-            selectedCount = selectedCount + 1
-            if selectedCount >= amount then
-                break
-            end
-        end
-    end
-
-    if selectedCount < amount then
-        print("Warning: Only", selectedCount, "abilities were added. Not enough unique abilities available.")
-    end
+    local shuffled = ShuffleList(list)
+    AddUniqueEntries(character, shuffled, HasSkill, function(char, skill) Osi.AddSkill(char, skill, 1) end, "Skill", amount)
 end
 
--- ==================================== Spells ====================================
+Mods[ModTable].RouletteSpells = function(character, uuid, tag, amount)
+    local list = GetRouletteList("Spells", uuid, tag)
+    if #list == 0 then return end
 
-local function RouletteSpells(character, uuid, tag, amount)
-    -- Query the game for the list of spells associated with the UUID
-    local spellList = Osi.GetSpellsByUUID(uuid, tag) -- Replace with the correct Osi function if available
+    local shuffled = ShuffleList(list)
+    AddUniqueEntries(character, shuffled, HasSpell, Osi.AddSpell, "Spell", amount)
+end
 
-    -- Ensure the spell list is valid and not empty
-    if not spellList or #spellList == 0 then
-        print("Error: No spells found for UUID:", uuid)
-        return
-    end
+Mods[ModTable].RouletteAbilities = function(character, uuid, tag, amount)
+    local list = GetRouletteList("Abilities", uuid, tag)
+    if #list == 0 then return end
 
-    -- Shuffle the spell list to ensure randomness
-    local shuffledSpells = {}
-    for _, spell in ipairs(spellList) do
-        table.insert(shuffledSpells, spell)
-    end
-    for i = #shuffledSpells, 2, -1 do
-        local j = math.random(i)
-        shuffledSpells[i], shuffledSpells[j] = shuffledSpells[j], shuffledSpells[i]
-    end
+    local shuffled = ShuffleList(list)
+    AddUniqueEntries(character, shuffled, HasAbility, function(char, ab) Osi.AddAbility(char, ab, 1) end, "Ability", amount)
+end
 
-    -- Select the specified number of spells
-    local selectedCount = 0
-    for _, spell in ipairs(shuffledSpells) do
-        if not HasSpell(character, spell) then
-            Osi.AddSpell(character, spell) -- Add the spell to the character
-            print("Added spell:", spell, "to character:", character)
-            selectedCount = selectedCount + 1
-            if selectedCount >= amount then
-                break
-            end
-        end
-    end
-
-    if selectedCount < amount then
-        print("Warning: Only", selectedCount, "spells were added. Not enough unique spells available.")
+Mods[ModTable].RouletteFeats = function(class, level)
+    local featTables = Mods[ModTable].FeatTables
+    if featTables[class] and featTables[class][level] then
+        local featList = featTables[class][level]
+        local selectedFeat
+        repeat
+            selectedFeat = featList[math.random(#featList)]
+        until not Mods[ModTable].selectedFeats[selectedFeat]  -- Ensure no duplicates
+        Mods[ModTable].selectedFeats[selectedFeat] = true  -- Mark feat as selected
+        return selectedFeat
+    else
+        print("[DEBUG] No feats found for class:", class, "level:", level)
     end
 end

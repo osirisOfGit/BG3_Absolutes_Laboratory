@@ -1,7 +1,7 @@
-function RouletteSubclass(character, class, level)
+Mods[ModTable].RouletteSubclasses = function(character, class, level)
     -- Check if the class exists in the SubclassTables
     if SubclassTables[class] then
-        local subclassTable = SubclassTables[class]
+        Mods[ModTable].subclassTable = SubclassTables[class]
 
         -- Check if the character already has any of the subclass passives
         for _, passive in ipairs(subclassTable) do
@@ -11,14 +11,14 @@ function RouletteSubclass(character, class, level)
         end
 
         -- Randomly select a subclass passive from the table
-        local selectedPassive = subclassTable[math.random(#subclassTable)]
+        Mods[ModTable].selectedPassive = subclassTable[math.random(#subclassTable)]
         -- Add the selected passive to the character
         Osi.AddPassive(character, selectedPassive)
     end
 end
 
 -- Map all subclass tables to their respective classes
-local SubclassTables = {
+Mods[ModTable].SubclassTables = {
     Barbarian = BarbarianSubclassTable,
     Bard = BardSubclassTable,
     Cleric = ClericSubclassTable,
@@ -33,20 +33,20 @@ local SubclassTables = {
     Wizard = WizardSubclassTable
 }
 
-local BarbarianSubclassTable = {
+Mods[ModTable].BarbarianSubclassTable = {
     "CX_Barbarian_WildMagic_Boost",
     "CX_Barbarian_Berserker_Boost",
     "CX_Barbarian_TotemWarriorPath_Boost"
 }
 
-local BardSubclassTable = {
+Mods[ModTable].BardSubclassTable = {
     -- "CX_Bard_CollegeOfLore_Boost",
     -- "CX_Bard_CollegeOfValor_Boost",
     -- "CX_Bard_CollegeOfSwords_Boost",
     -- "CX_Bard_CollegeOfWhispers_Boost"
 }
 
-local ClericSubclassTable = {
+Mods[ModTable].ClericSubclassTable = {
     -- "CX_Cleric_LifeDomain_Boost",
     -- "CX_Cleric_LightDomain_Boost",
     -- "CX_Cleric_ForgeDomain_Boost",
@@ -57,52 +57,52 @@ local ClericSubclassTable = {
     -- "CX_Cleric_CreationDomain_Boost"
 }
 
-local DruidSubclassTable = {
+Mods[ModTable].DruidSubclassTable = {
     "CX_Druid_CircleOfTheLand_Boost",
     "CX_Druid_CircleOfTheMoon_Boost",
     "CX_Druid_CircleOfSpores_Boost",
     "CX_Druid_CircleOfTheShepherd_Boost"
 }
 
-local FighterSubclassTable = {
+Mods[ModTable].FighterSubclassTable = {
     "CX_Fighter_BattleMaster_Boost",
     "CX_Fighter_EldritchKnight_Boost"
 }
 
-local MonkSubclassTable = {
+Mods[ModTable].MonkSubclassTable = {
     "CX_Monk_OpenHand_Boost",
     "CX_Monk_FourElements_Boost"
 
 }
 
-local PaladinSubclassTable = {
+Mods[ModTable].PaladinSubclassTable = {
     "CX_Paladin_Devotion_Boost",
     "CX_Paladin_Vengeance_Boost",
     "CX_Paladin_Oathbreaker_Boost"
 }
 
-local RangerSubclassTable = {
+Mods[ModTable].RangerSubclassTable = {
     "CX_Ranger_Hunter_Boost",
     "CX_Ranger_BeastMaster_Boost"
     -- "CX_Ranger_GloomStalker_Boost",
     -- "CX_Ranger_Swarmkeeper_Boost"
 }
 
-local RogueSubclassTable = {
+Mods[ModTable].RogueSubclassTable = {
     -- "CX_Rogue_Thief_Boost",
     -- "CX_Rogue_Assassin_Boost",
     -- "CX_Rogue_ArcaneTrickster_Boost",
     -- "CX_Rogue_Scout_Boost"
 }
 
-local SorcererSubclassTable = {
+Mods[ModTable].SorcererSubclassTable = {
     -- "CX_Sorcerer_StormSorcery_Boost",
     -- "CX_Sorcerer_DraconicBloodline_Boost",
     -- "CX_Sorcerer_WildMagic_Boost",
     -- "CX_Sorcerer_ShadowMagic_Boost"
 }
 
-local WarlockSubclassTable = {
+Mods[ModTable].WarlockSubclassTable = {
     -- "CX_Warlock_TheArchfey_Boost",
     -- "CX_Warlock_TheFiend_Boost",
     -- "CX_Warlock_TheGreatOldOne_Boost",
@@ -110,7 +110,7 @@ local WarlockSubclassTable = {
     -- "CX_Warlock_TheUndying_Boost"
 }
 
-local WizardSubclassTable = {
+Mods[ModTable].WizardSubclassTable = {
     -- "CX_Wizard_Abjuration_Boost",
     -- "CX_Wizard_Conjuration_Boost",
     -- "CX_Wizard_Divination_Boost",
