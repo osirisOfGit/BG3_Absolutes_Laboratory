@@ -19,7 +19,7 @@
     data "Icon" "Action_Barbarian_Rage"
     // data "Boosts" "UnlockInterrupt(Interrupt_RecklessAttack)"
     data "StatsFunctorContext" "OnCreate;OnStatusApplied;OnStatusRemoved"
-    data "Conditions" "not HasPassive('Goon_Barbarian_NPC_Progressions')"
+    data "Conditions" "(not HasPassive('Goon_Barbarian_NPC_Progressions'))"
     data "StatsFunctors" "IF(not CharacterLevelGreaterThan(1,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_1,100,-1);IF(CharacterLevelGreaterThan(1,GetOwner(context.Source)) and not CharacterLevelGreaterThan(2,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_2,100,-1);IF(CharacterLevelGreaterThan(2,GetOwner(context.Source)) and not CharacterLevelGreaterThan(3,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_3,100,-1);IF(CharacterLevelGreaterThan(3,GetOwner(context.Source)) and not CharacterLevelGreaterThan(4,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_4,100,-1);IF(CharacterLevelGreaterThan(4,GetOwner(context.Source)) and not CharacterLevelGreaterThan(5,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_5,100,-1);IF(CharacterLevelGreaterThan(5,GetOwner(context.Source)) and not CharacterLevelGreaterThan(6,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_6,100,-1);IF(CharacterLevelGreaterThan(6,GetOwner(context.Source)) and not CharacterLevelGreaterThan(7,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_7,100,-1);IF(CharacterLevelGreaterThan(7,GetOwner(context.Source)) and not CharacterLevelGreaterThan(8,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_8,100,-1);IF(CharacterLevelGreaterThan(8,GetOwner(context.Source)) and not CharacterLevelGreaterThan(9,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_9,100,-1);IF(CharacterLevelGreaterThan(9,GetOwner(context.Source)) and not CharacterLevelGreaterThan(10,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_10,100,-1);IF(CharacterLevelGreaterThan(10,GetOwner(context.Source)) and not CharacterLevelGreaterThan(11,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_11,100,-1);IF(CharacterLevelGreaterThan(11,GetOwner(context.Source))):ApplyStatus(GOON_NPC_BARBARIAN_LEVEL_12,100,-1)"
 
     //  and not CharacterLevelGreaterThan(12,GetOwner(context.Source))
@@ -32,8 +32,8 @@
     data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
     data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
     data "StackId" "GOON_NPC_BARBARIAN_PROGRESSION_TEMPLATE"
-    data "StackType" "Overwrite"
-    data "RemoveConditions" "not HasPassive('CX_Barbarian_Boost')"
+    data "StackType" "Ignore"
+    data "RemoveConditions" "(not HasPassive('CX_Barbarian_Boost') or HasStatus('Goon_Barbarian_NPC_Progressions'))"
 
     // Progression statuses
     new entry "GOON_NPC_BARBARIAN_LEVEL_1"
@@ -216,7 +216,7 @@
     data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator;ApplyToDead;IgnoreResting"
     data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
     data "StackId" "GOON_NPC_BARBARIAN_BERSERKER_PROGRESSION_TEMPLATE"
-    data "StackType" "Overwrite"
+    data "StackType" "Ignore"
     data "RemoveConditions" "not HasPassive('CX_Barbarian_Berserker_Boost')"
 
     // Progression statuses
@@ -262,7 +262,7 @@
     data "StatusType" "BOOST"
     data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
     data "StackId" "GOON_NPC_BARBARIAN_WILDMAGIC_PROGRESSION_TEMPLATE"
-    data "StackType" "Overwrite"
+    data "StackType" "Ignore"
     data "RemoveConditions" "not HasPassive('CX_Barbarian_WildMagic_Boost')"
 
     // Progression statuses
@@ -316,7 +316,7 @@
     data "StatusType" "BOOST"
     data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
     data "StackId" "GOON_NPC_BARBARIAN_WILDHEART_PROGRESSION_TEMPLATE"
-    data "StackType" "Overwrite"
+    data "StackType" "Ignore"
     data "RemoveConditions" "not HasPassive('CX_Barbarian_Wildheart_Boost')"
 
     // Progression statuses
