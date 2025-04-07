@@ -1,4 +1,4 @@
-local RangerLevelBoosts = {
+Mods[ModTable].RangerLevelBoosts = {
     [1] = function(char)
         -- Fill
     end,

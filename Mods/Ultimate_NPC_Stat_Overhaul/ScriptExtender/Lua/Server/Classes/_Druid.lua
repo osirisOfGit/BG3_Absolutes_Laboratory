@@ -1,4 +1,4 @@
-local DruidLevelBoosts = {
+Mods[ModTable].DruidLevelBoosts = {
     [1] = function(char)
         -- Fill
     end,

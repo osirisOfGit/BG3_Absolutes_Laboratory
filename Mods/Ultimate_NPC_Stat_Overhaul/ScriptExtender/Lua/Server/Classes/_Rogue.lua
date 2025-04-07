@@ -1,4 +1,4 @@
-local RogueLevelBoosts = {
+Mods[ModTable].RogueLevelBoosts = {
     [1] = function(char)
         -- Fill
     end,

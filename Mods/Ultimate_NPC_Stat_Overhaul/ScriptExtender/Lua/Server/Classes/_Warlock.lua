@@ -1,4 +1,4 @@
-local WarlockLevelBoosts = {
+Mods[ModTable].WarlockLevelBoosts = {
     [1] = function(char)
         -- Fill
     end,

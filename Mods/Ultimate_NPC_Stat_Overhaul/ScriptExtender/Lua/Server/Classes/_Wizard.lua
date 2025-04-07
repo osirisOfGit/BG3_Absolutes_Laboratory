@@ -1,4 +1,4 @@
-local WizardLevelBoosts = {
+Mods[ModTable].WizardLevelBoosts = {
     [1] = function(char)
         -- Fill
     end,

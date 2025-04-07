@@ -1,4 +1,4 @@
-local BardLevelBoosts = {
+Mods[ModTable].BardLevelBoosts = {
     [1] = function(char)
         -- Fill
     end,

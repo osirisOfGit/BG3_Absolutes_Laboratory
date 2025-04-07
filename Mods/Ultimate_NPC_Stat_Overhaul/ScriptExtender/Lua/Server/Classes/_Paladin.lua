@@ -1,4 +1,4 @@
-local PaladinLevelBoosts = {
+Mods[ModTable].PaladinLevelBoosts = {
     [1] = function(char)
         -- Fill
     end,

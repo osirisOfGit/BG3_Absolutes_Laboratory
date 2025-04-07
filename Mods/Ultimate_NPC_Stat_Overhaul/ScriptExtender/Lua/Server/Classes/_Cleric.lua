@@ -1,4 +1,4 @@
-local ClericLevelBoosts = {
+Mods[ModTable].ClericLevelBoosts = {
     [1] = function(char)
         -- Fill
     end,

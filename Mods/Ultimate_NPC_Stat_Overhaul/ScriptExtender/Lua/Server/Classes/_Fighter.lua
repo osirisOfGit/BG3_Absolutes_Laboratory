@@ -1,4 +1,4 @@
-local FighterLevelBoosts = {
+Mods[ModTable].FighterLevelBoosts = {
     [1] = function(char)
         -- Fill
     end,

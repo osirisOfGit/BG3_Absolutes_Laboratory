@@ -1,4 +1,4 @@
-local MonkLevelBoosts = {
+Mods[ModTable].MonkLevelBoosts = {
     [1] = function(char)
         -- Fill
     end,

@@ -1,4 +1,4 @@
-local SorcererLevelBoosts = {
+Mods[ModTable].SorcererLevelBoosts = {
     [1] = function(char)
         -- Fill
     end,
