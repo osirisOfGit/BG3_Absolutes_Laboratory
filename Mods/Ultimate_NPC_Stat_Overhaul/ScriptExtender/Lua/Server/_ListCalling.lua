@@ -86,8 +86,13 @@ Mods[ModTable].RoulettePassives = function(character, uuid, tag, amount)
         return
     end
 
+    print("[DEBUG] Full Passive List:", list)
     local shuffled = ShuffleList(list)
-    AddUniqueEntries(character, shuffled, HasPassive, Osi.AddPassive, "Passive", amount)
+    print("[DEBUG] Shuffled Passive List:", shuffled)
+    AddUniqueEntries(character, shuffled, HasPassive, function(char, passive)
+        print("[DEBUG] Adding Passive:", passive, "to Character:", char)
+        Osi.AddPassive(char, passive)
+    end, "Passive", amount)
 end
 
 Mods[ModTable].RouletteSkills = function(character, uuid, tag, amount)
@@ -98,8 +103,13 @@ Mods[ModTable].RouletteSkills = function(character, uuid, tag, amount)
         return
     end
 
+    print("[DEBUG] Full Skill List:", list)
     local shuffled = ShuffleList(list)
-    AddUniqueEntries(character, shuffled, HasSkill, function(char, skill) Osi.AddSkill(char, skill, 1) end, "Skill", amount)
+    print("[DEBUG] Shuffled Skill List:", shuffled)
+    AddUniqueEntries(character, shuffled, HasSkill, function(char, skill)
+        print("[DEBUG] Adding Skill:", skill, "to Character:", char)
+        Osi.AddSkill(char, skill, 1)
+    end, "Skill", amount)
 end
 
 Mods[ModTable].RouletteSpells = function(character, uuid, tag, amount)
@@ -110,8 +120,13 @@ Mods[ModTable].RouletteSpells = function(character, uuid, tag, amount)
         return
     end
 
+    print("[DEBUG] Full Spell List:", list)
     local shuffled = ShuffleList(list)
-    AddUniqueEntries(character, shuffled, HasSpell, Osi.AddSpell, "Spell", amount)
+    print("[DEBUG] Shuffled Spell List:", shuffled)
+    AddUniqueEntries(character, shuffled, HasSpell, function(char, spell)
+        print("[DEBUG] Adding Spell:", spell, "to Character:", char)
+        Osi.AddSpell(char, spell)
+    end, "Spell", amount)
 end
 
 Mods[ModTable].RouletteAbilities = function(character, uuid, tag, amount)
