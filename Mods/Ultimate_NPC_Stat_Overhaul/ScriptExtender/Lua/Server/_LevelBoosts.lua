@@ -83,24 +83,24 @@ Ext.Osiris.RegisterListener("LevelGameplayStarted", 2, "after", function(level_n
             entityCount = entityCount + 1
             print("[CHARACTER] Valid CharID:", charID)
 
-            local matched = false
+            local hasAnyMatch = false
             for classPassive, levelBoostTable in pairs(Mods[ModTable].LevelBoostTables) do
                 print("[DEBUG] Checking passive:", classPassive, "for CharID:", charID)
                 if HasPassive(charID, classPassive) then
                     matchedCount = matchedCount + 1
                     print("[CLASS MATCH] Found class passive:", classPassive, "for CharID:", charID)
 
-                    -- Apply boosts and persistent vars
+                    -- Apply boosts and persistent vars for this passive
                     ApplyLevelBasedBoosts(charID, classPassive, levelBoostTable)
                     ApplyPersistentVars(charID)
 
-                    matched = true
+                    hasAnyMatch = true
                 else
                     print("[NO MATCH] CharID:", charID, "does not have passive:", classPassive)
                 end
             end
 
-            if not matched then
+            if not hasAnyMatch then
                 print("[WARNING] No matching class passive found for CharID:", charID)
             end
         else
