@@ -1,6 +1,8 @@
 -- Load required files
 Ext.Require("Server/_Vars.lua")
+Ext.Require("Server/_ListCalling.lua")
 
+-- Load class-specific files
 Ext.Require("Server/Classes/_Barbarian.lua")
 Ext.Require("Server/Classes/_Bard.lua")
 Ext.Require("Server/Classes/_Cleric.lua")
@@ -14,9 +16,10 @@ Ext.Require("Server/Classes/_Sorcerer.lua")
 Ext.Require("Server/Classes/_Warlock.lua")
 Ext.Require("Server/Classes/_Wizard.lua")
 
+-- Load utility and table files
 Ext.Require("Server/Tables/_Feats.lua")
 Ext.Require("Server/Tables/_Subclasses.lua")
 
-Ext.Require("Server/_ListCalling.lua")
+-- Load main functionality files
 Ext.Require("Server/_VarsReset.lua")
 Ext.Require("Server/_LevelBoosts.lua")

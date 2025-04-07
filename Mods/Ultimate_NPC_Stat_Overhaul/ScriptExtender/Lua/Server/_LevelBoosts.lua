@@ -1,3 +1,12 @@
+-- Helper to count entries in a table
+local function TableLength(tbl)
+    local count = 0
+    for _ in pairs(tbl) do
+        count = count + 1
+    end
+    return count
+end
+
 -- Map class progression passives to their respective level boosts tables
 Mods[ModTable].LevelBoostTables = {
     ["Goon_Barbarian_NPC_Progressions"] = Mods[ModTable].BarbarianLevelBoosts,
@@ -32,16 +41,28 @@ local function ApplyLevelBasedBoosts(character)
     end
 end
 
-function RouletteSkills(character, skillUUID, count)
-    print("[DEBUG] RouletteSkills called for Character:", character, "SkillUUID:", skillUUID, "Count:", count)
-    -- Add logic to apply skills here
-end
+local function ApplyPersistentVars(character)
+    local charVars = Mods[ModTable].PersistentVars[character]
+    if not charVars then
+        print("[DEBUG] No PersistentVars found for CharID:", character)
+        return
+    end
 
--- Helper to count entries in a table
-local function TableLength(tbl)
-    local count = 0
-    for _ in pairs(tbl) do count = count + 1 end
-    return count
+    print("[DEBUG] Applying PersistentVars for CharID:", character)
+
+    if charVars.passives then
+        for _, passive in ipairs(charVars.passives) do
+            Osi.AddPassive(character, passive)
+            print("[DEBUG] Applied passive:", passive, "to CharID:", character)
+        end
+    end
+
+    if charVars.skills then
+        for _, skill in ipairs(charVars.skills) do
+            Osi.AddSkill(character, skill, 1)
+            print("[DEBUG] Applied skill:", skill, "to CharID:", character)
+        end
+    end
 end
 
 Ext.Osiris.RegisterListener("LevelGameplayStarted", 2, "after", function(level_name, is_editor_mode)
@@ -52,7 +73,6 @@ Ext.Osiris.RegisterListener("LevelGameplayStarted", 2, "after", function(level_n
         return
     end
 
-    -- Print how many entries are in LevelBoostTables
     local boostCount = TableLength(Mods[ModTable].LevelBoostTables)
     print("[DEBUG] LevelBoostTables entries:", boostCount)
 
@@ -68,57 +88,18 @@ Ext.Osiris.RegisterListener("LevelGameplayStarted", 2, "after", function(level_n
             print("[CHARACTER] Valid CharID:", charID)
 
             for classPassive, classFunction in pairs(Mods[ModTable].LevelBoostTables) do
+                print("[DEBUG] Checking passive:", classPassive, "for CharID:", charID)
                 if HasPassive(charID, classPassive) then
-                    matchedCount = matchedCount + 1
                     print("[CLASS MATCH] Found class passive:", classPassive, "for CharID:", charID)
-            
-                    -- Debug classFunction
-                    print("[DEBUG] classFunction for passive:", classPassive, "is:", classFunction)
-            
-                    -- Ensure PersistentVars entry exists
-                    Mods[ModTable].PersistentVars[charID] = Mods[ModTable].PersistentVars[charID] or {}
-                    local charVars = Mods[ModTable].PersistentVars[charID]
-            
-                    -- Debug PersistentVars before applying
-                    if Ext.Json and Ext.Json.Stringify then
-                        print("[PERSISTENT VARS - BEFORE]", Ext.Json.Stringify(charVars))
-                    else
-                        for k, v in pairs(charVars) do
-                            print("[DEBUG] PersistentVar Key:", k, "Value:", v)
-                        end
-                    end
-            
-                    -- Apply boosts if needed
-                    if not charVars.boostsApplied then
-                        print("[BOOSTS] Applying boosts for CharID:", charID)
-                        if type(classFunction) == "function" then
-                            classFunction(charID)
-                        else
-                            print("[ERROR] classFunction is not a function for passive:", classPassive)
-                        end
-                        charVars.boostsApplied = true
-                    else
-                        print("[BOOSTS] Boosts already applied for CharID:", charID)
-                    end
-            
-                    -- Apply level-based boosts
-                    print("[LEVEL BOOSTS] Applying level-based boosts...")
-                    ApplyLevelBasedBoosts(charID)
-            
-                    -- Apply persistent passives
-                    print("[PERSISTENT PASSIVES] Applying stored passives from PersistentVars...")
-                    ApplyPersistentVars(charID)
-            
-                    -- Debug PersistentVars after applying
-                    if Ext.Json and Ext.Json.Stringify then
-                        print("[PERSISTENT VARS - AFTER]", Ext.Json.Stringify(Mods[ModTable].PersistentVars[charID]))
-                    else
-                        for k, v in pairs(Mods[ModTable].PersistentVars[charID]) do
-                            print("[DEBUG] PersistentVar Key:", k, "Value:", v)
-                        end
-                    end
+                    -- Existing logic...
+                    break
                 else
                     print("[NO MATCH] CharID:", charID, "does not have passive:", classPassive)
+
+                    -- Apply boosts and persistent vars
+                    ApplyLevelBasedBoosts(charID)
+                    ApplyPersistentVars(charID)
+
                 end
             end
         else
@@ -131,5 +112,4 @@ Ext.Osiris.RegisterListener("LevelGameplayStarted", 2, "after", function(level_n
     print("== LevelGameplayStarted Complete ==")
 end)
 
--- Debug print to confirm initialization
 print("[DEBUG] LevelBoostTables initialized:", Mods[ModTable].LevelBoostTables)
