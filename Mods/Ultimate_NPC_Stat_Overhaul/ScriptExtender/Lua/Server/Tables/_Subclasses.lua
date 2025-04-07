@@ -1,22 +1,3 @@
-Mods[ModTable].RouletteSubclasses = function(character, class, level)
-    -- Check if the class exists in the SubclassTables
-    if SubclassTables[class] then
-        Mods[ModTable].subclassTable = SubclassTables[class]
-
-        -- Check if the character already has any of the subclass passives
-        for _, passive in ipairs(subclassTable) do
-            if HasPassive(character, passive) then
-                return -- Exit if any passive is already applied
-            end
-        end
-
-        -- Randomly select a subclass passive from the table
-        Mods[ModTable].selectedPassive = subclassTable[math.random(#subclassTable)]
-        -- Add the selected passive to the character
-        Osi.AddPassive(character, selectedPassive)
-    end
-end
-
 -- Map all subclass tables to their respective classes
 Mods[ModTable].SubclassTables = {
     Barbarian = BarbarianSubclassTable,
