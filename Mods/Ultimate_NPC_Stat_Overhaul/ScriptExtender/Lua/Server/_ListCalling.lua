@@ -1,7 +1,9 @@
--- SelectRandomPassivesFromUUID(char, "some-uuid-for-passives", "PassivesTag", 2)
--- SelectRandomSkillsFromUUID(char, "some-uuid-for-skills", "SkillTag", 2)
--- SelectRandomSpellsFromUUID(char, "some-uuid-for-spells", "SpellTag", 3)
--- SelectRandomAbilitiesFromUUID(char, "some-uuid-for-abilities", "AbilityTag", 1)
+-- Ensure the Queue table exists
+Queue = Queue or {}
+
+-- Ensure the CLUtils and Utils tables exist
+CLUtils = CLUtils or {}
+Utils = Utils or {}
 
 -- Debug print helper
 local function DebugPrintList(label, list)
@@ -9,6 +11,53 @@ local function DebugPrintList(label, list)
     for i, item in ipairs(list) do
         print("  [" .. i .. "] " .. tostring(item))
     end
+end
+
+function Queue.Commit()
+    print("[DEBUG] Entering Queue.Commit")
+    Queue.CommitLists()
+    Queue.CommitFeatsAndProgressions()
+    Queue.CommitRaces()
+    -- Uncomment if needed
+    -- Queue.CommitSpellData()
+end
+
+function Queue.CommitLists()
+    print("[DEBUG] Entering Queue.CommitLists")
+    for type, listList in pairs(Queue.Lists) do
+        for listId, list in pairs(listList) do
+            local gameList = CLUtils.CacheOrRetrieve(listId, type)
+            for _, item in pairs(gameList[CLGlobals.ListNodes[type]]) do
+                if not CLUtils.IsInTable(list, item) then
+                    table.insert(list, item)
+                end
+            end
+            local res = Utils.StripInvalidStatData(list)
+            gameList[CLGlobals.ListNodes[type]] = res
+        end
+    end
+end
+
+function CLUtils.CacheOrRetrieve(listId, type)
+    -- Retrieve the game list based on the list ID and type
+    local gameList = Ext.Stats.Get(listId, nil, false)
+    if not gameList then
+        print("[ERROR] Failed to retrieve game list for ListID:", listId, "Type:", type)
+        return {}
+    end
+    return gameList
+end
+
+function Utils.StripInvalidStatData(arr)
+    print("[DEBUG] Cleaning up list:", arr)
+    for key, value in pairs(arr) do
+        if value == '' or value == ' ' then
+            arr[key] = nil
+        elseif Ext.Stats.Get(value, nil, false) == nil then
+            arr[key] = nil
+        end
+    end
+    return arr
 end
 
 -- ==================================== 🔧 Utility Functions ====================================
@@ -35,11 +84,11 @@ local function GetRouletteList(category, uuid, tag)
             end
         end
         DebugPrintList("Filtered List", filtered)
-        return filtered
+        return Utils.StripInvalidStatData(filtered) -- Clean up the filtered list
     end
 
     DebugPrintList("Full List", list)
-    return list
+    return Utils.StripInvalidStatData(list) -- Clean up the full list
 end
 
 local function ShuffleList(inputList)
@@ -76,6 +125,25 @@ local function AddUniqueEntries(char, items, checkFn, addFn, label, amount)
     end
 end
 
+-- ==================================== 🌀 Generic Roulette Processor ====================================
+
+local function ProcessRoulette(character, category, uuid, tag, amount, checkFn, addFn, label)
+    print("[DEBUG] Processing Roulette for Category:", category, "Character:", character, "UUID:", uuid, "Tag:", tag, "Amount:", amount)
+    local list = GetRouletteList(category, uuid, tag)
+    if #list == 0 then
+        print("[ROULETTE] No entries available for Category:", category, "UUID:", uuid, "Tag:", tag)
+        return
+    end
+
+    print("[DEBUG] Full List for Category:", category, list)
+    local shuffled = ShuffleList(list)
+    print("[DEBUG] Shuffled List for Category:", category, shuffled)
+    AddUniqueEntries(character, shuffled, checkFn, addFn, label, amount)
+
+    -- Commit the changes to the game
+    Queue.CommitLists()
+end
+
 -- ==================================== 🌀 Roulette Functions ====================================
 
 Mods[ModTable].RoulettePassives = function(character, uuid, tag, amount)
@@ -93,6 +161,9 @@ Mods[ModTable].RoulettePassives = function(character, uuid, tag, amount)
         print("[DEBUG] Adding Passive:", passive, "to Character:", char)
         Osi.AddPassive(char, passive)
     end, "Passive", amount)
+
+    -- Commit the changes to the game
+    Queue.CommitLists()
 end
 
 Mods[ModTable].RouletteSkills = function(character, uuid, tag, amount)
@@ -110,6 +181,9 @@ Mods[ModTable].RouletteSkills = function(character, uuid, tag, amount)
         print("[DEBUG] Adding Skill:", skill, "to Character:", char)
         Osi.AddSkill(char, skill, 1)
     end, "Skill", amount)
+
+    -- Commit the changes to the game
+    Queue.CommitLists()
 end
 
 Mods[ModTable].RouletteSpells = function(character, uuid, tag, amount)
@@ -138,32 +212,48 @@ Mods[ModTable].RouletteAbilities = function(character, uuid, tag, amount)
     end
 
     local shuffled = ShuffleList(list)
-    AddUniqueEntries(character, shuffled, HasAbility, function(char, ab) Osi.AddAbility(char, ab, 1) end, "Ability", amount)
+    AddUniqueEntries(character, shuffled, HasAbility, function(char, ab)
+        print("[DEBUG] Adding Ability Modifier:", ab, "to Character:", char)
+        AddAbilityModifiers(char, ab) -- Use AddAbilityModifiers instead of Osi.AddAbility
+    end, "Ability", amount)
 end
 
-Mods[ModTable].RouletteFeats = function(class, level)
-    print("[DEBUG] RouletteFeats called for Class:", class, "Level:", level)
+Mods[ModTable].RouletteFeats = function(character, class, level)
+    print("[DEBUG] RouletteFeats called for Character:", character, "Class:", class, "Level:", level)
     local featTables = Mods[ModTable].FeatTables
+
     if featTables[class] and featTables[class][level] then
         local featList = featTables[class][level]
         DebugPrintList("Available Feats", featList)
+
         local selectedFeat
+        local attempts = 0
         repeat
             selectedFeat = featList[math.random(#featList)]
-            print("[DEBUG] Rolled Feat:", selectedFeat)
-        until not Mods[ModTable].selectedFeats[selectedFeat]  -- Ensure no duplicates
-        Mods[ModTable].selectedFeats[selectedFeat] = true  -- Mark feat as selected
+            attempts = attempts + 1
+            if attempts > 100 then
+                print("[ERROR] Too many attempts to find a unique feat for", character)
+                return
+            end
+        until not IsFeatSelected(character, selectedFeat)
+
+        AddSelectedFeat(character, selectedFeat)
         print("[RouletteFeats] Selected feat:", selectedFeat)
+
+        -- Optional: apply the feat as a passive (if that's how your feats work)
+        Osi.AddPassive(character, selectedFeat)
+
         return selectedFeat
     else
         print("[DEBUG] No feats found for class:", class, "level:", level)
     end
 end
 
+
 Mods[ModTable].RouletteSubclasses = function(character, class, level)
     print("[DEBUG] RouletteSubclasses called for Character:", character, "Class:", class, "Level:", level)
 
-    -- Check if the class exists in the SubclassTables
+    -- Ensure the class exists in the SubclassTables
     local subclassTable = Mods[ModTable].SubclassTables[class]
     if not subclassTable then
         print("[ERROR] No subclass table found for class:", class)

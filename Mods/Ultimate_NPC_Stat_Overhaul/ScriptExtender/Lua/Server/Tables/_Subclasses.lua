@@ -101,3 +101,6 @@ Mods[ModTable].WizardSubclassTable = {
     "CX_Wizard_Necromancy_Boost"
     -- "CX_Wizard_Transmutation_Boost"
 }
+
+-- Debug print to verify initialization
+print("[DEBUG] SubclassTables initialized:", Mods[ModTable].SubclassTables)
