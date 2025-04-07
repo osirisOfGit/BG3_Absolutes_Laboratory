@@ -14,59 +14,74 @@ local LevelBoostTables = {
     ["Goon_Wizard_NPC_Progressions"] = WizardLevelBoosts
 }
 
--- Holy moly scan the whole population of the world like Mark Zuckerberg and the lizard empire.
 Ext.Osiris.RegisterListener("LevelGameplayStarted", 2, "after", function(level_name, is_editor_mode)
     print("== LevelGameplayStarted Triggered ==")
+
     if not LevelBoostTables then
         print("Error: LevelBoostTables is nil!")
         return
     end
 
+    local entityCount = 0
     for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
         local charID = entity.Uuid and entity.Uuid.EntityUuid or entity
+        print("[DEBUG] Entity:", entity, "CharID:", charID)
+
         if type(charID) == "string" then
-            print("[CHARACTER] Checking:", charID)
+            entityCount = entityCount + 1
+            print("[CHARACTER] Valid CharID:", charID)
 
             for classPassive, classFunction in pairs(LevelBoostTables) do
                 if HasPassive(charID, classPassive) then
-                    print("  [CLASS MATCH] Found class passive:", classPassive)
+                    print("[CLASS MATCH] Found class passive:", classPassive, "for CharID:", charID)
 
                     -- Ensure PersistentVars entry exists
                     Mods[ModTable].PersistentVars[charID] = Mods[ModTable].PersistentVars[charID] or {}
                     local charVars = Mods[ModTable].PersistentVars[charID]
 
-                    if next(charVars) == nil then
-                        print("  [ROULETTE] No PersistentVars found. Running class function (roulette)...")
+                    -- Apply boosts if needed
+                    if not charVars.boostsApplied then
+                        print("[BOOSTS] Applying boosts for CharID:", charID)
                         classFunction(charID)
+                        charVars.boostsApplied = true
                     else
-                        print("  [SKIP ROULETTE] PersistentVars already exist. Skipping class function.")
+                        print("[BOOSTS] Boosts already applied for CharID:", charID)
                     end
 
-                    print("  [LEVEL BOOSTS] Applying level-based boosts...")
+                    -- Apply level-based boosts
+                    print("[LEVEL BOOSTS] Applying level-based boosts...")
                     ApplyLevelBasedBoosts(charID)
 
-                    print("  [PERSISTENT PASSIVES] Applying stored passives from PersistentVars...")
+                    -- Apply persistent passives
+                    print("[PERSISTENT PASSIVES] Applying stored passives from PersistentVars...")
                     ApplyPersistantVars(charID)
+                else
+                    print("[NO MATCH] CharID:", charID, "does not have passive:", classPassive)
                 end
             end
+        else
+            print("[WARNING] Invalid CharID or entity skipped.")
         end
     end
 
+    print("[DEBUG] Total entities processed:", entityCount)
     print("== LevelGameplayStarted Complete ==")
 end)
 
-
 local function ApplyLevelBasedBoosts(character)
-    -- Iterate through the LevelBoostTables to find the matching class progression passive
     for classPassive, levelBoostTable in pairs(LevelBoostTables) do
         if HasPassive(character, classPassive) then
-            local level = Osi.GetLevel(character) -- Get the character's level
+            local level = Osi.GetLevel(character)
+            print("[LEVEL BOOSTS] Applying boosts for CharID:", character, "ClassPassive:", classPassive, "Level:", level)
+
             for i = 1, level do
                 if levelBoostTable[i] then
-                    levelBoostTable[i](character) -- Apply the level boost
+                    print("[BOOST] Applying level", i, "boost for CharID:", character)
+                    levelBoostTable[i](character)
+                else
+                    print("[NO BOOST] No boost defined for level", i, "for CharID:", character)
                 end
             end
-            -- break -- Exit the loop once the correct class is found (nah)
         end
     end
 end
