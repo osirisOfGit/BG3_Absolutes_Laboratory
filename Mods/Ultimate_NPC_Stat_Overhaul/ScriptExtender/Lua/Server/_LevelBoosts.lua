@@ -85,21 +85,23 @@ Ext.Osiris.RegisterListener("LevelGameplayStarted", 2, "after", function(level_n
 
             local hasAnyMatch = false
             for classPassive, levelBoostTable in pairs(Mods[ModTable].LevelBoostTables) do
-                print("[DEBUG] Checking passive:", classPassive, "for CharID:", charID)
                 local hasPassive = HasPassive(charID, classPassive)
-                print("[DEBUG] Result of HasPassive for CharID:", charID, "Passive:", classPassive, "is:", hasPassive)
-            
+                
+                -- Only log passives that are present (where hasPassive == 1)
                 if hasPassive == 1 then
-                    matchedCount = matchedCount + 1
                     print("[CLASS MATCH] Found class passive:", classPassive, "for CharID:", charID)
-            
+                    
+                    -- Increment matchedCount for each match
+                    matchedCount = matchedCount + 1
+                    
                     -- Apply boosts and persistent vars for this passive
                     ApplyLevelBasedBoosts(charID, classPassive, levelBoostTable)
                     ApplyPersistentVars(charID)
-            
+                    
                     hasAnyMatch = true
                 else
-                    print("[NO MATCH] CharID:", charID, "does not have passive:", classPassive)
+                    -- Optionally, you can skip logging for 0s entirely
+                    -- print("[NO MATCH] CharID:", charID, "does not have passive:", classPassive)
                 end
             end
 

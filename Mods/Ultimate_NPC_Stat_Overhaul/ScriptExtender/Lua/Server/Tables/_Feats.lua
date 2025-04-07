@@ -1,16 +1,3 @@
--- Function to handle feat selection for a specific class and level
-Mods[ModTable].RouletteFeats = function(class, level)
-    if FeatTables[class] and FeatTables[class][level] then
-        local featList = FeatTables[class][level]
-        local selectedFeat
-        repeat
-            selectedFeat = featList[math.random(#featList)]
-        until not selectedFeats[selectedFeat]  -- Ensure no duplicates
-        selectedFeats[selectedFeat] = true  -- Mark feat as selected
-        return selectedFeat
-    end
-end
-
 -- Tables
 Mods[ModTable].FeatTables = {
     -- Barbarian Feats for Levels 4, 8, and 12
