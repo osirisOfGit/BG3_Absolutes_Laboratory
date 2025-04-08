@@ -33,7 +33,7 @@
     data "RemoveEvents" "OnStatusApplied;OnStatusRemoved"
     data "StackId" "GOON_NPC_BARBARIAN_PROGRESSION_TEMPLATE"
     data "StackType" "Ignore"
-    data "RemoveConditions" "(not HasPassive('CX_Barbarian_Boost') or HasStatus('Goon_Barbarian_NPC_Progressions'))"
+    data "RemoveConditions" "not HasPassive('CX_Barbarian_Boost') or HasStatus('Goon_Barbarian_NPC_Progressions')"
 
     // Progression statuses
     new entry "GOON_NPC_BARBARIAN_LEVEL_1"

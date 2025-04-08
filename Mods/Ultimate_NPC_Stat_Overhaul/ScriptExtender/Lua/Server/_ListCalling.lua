@@ -1,98 +1,4 @@
--- Ensure the Queue table exists
-Queue = Queue or {}
-
--- Ensure the CLUtils and Utils tables exist
-CLUtils = CLUtils or {}
-Utils = Utils or {}
-
--- Debug print helper
-local function DebugPrintList(label, list)
-    print("[DEBUG] " .. label .. ":")
-    for i, item in ipairs(list) do
-        print("  [" .. i .. "] " .. tostring(item))
-    end
-end
-
-function Queue.Commit()
-    print("[DEBUG] Entering Queue.Commit")
-    Queue.CommitLists()
-    Queue.CommitFeatsAndProgressions()
-    Queue.CommitRaces()
-    -- Uncomment if needed
-    -- Queue.CommitSpellData()
-end
-
-function Queue.CommitLists()
-    print("[DEBUG] Entering Queue.CommitLists")
-    for type, listList in pairs(Queue.Lists) do
-        for listId, list in pairs(listList) do
-            local gameList = CLUtils.CacheOrRetrieve(listId, type)
-            for _, item in pairs(gameList[CLGlobals.ListNodes[type]]) do
-                if not CLUtils.IsInTable(list, item) then
-                    table.insert(list, item)
-                end
-            end
-            local res = Utils.StripInvalidStatData(list)
-            gameList[CLGlobals.ListNodes[type]] = res
-        end
-    end
-end
-
-function CLUtils.CacheOrRetrieve(listId, type)
-    -- Retrieve the game list based on the list ID and type
-    local gameList = Ext.Stats.Get(listId, nil, false)
-    if not gameList then
-        print("[ERROR] Failed to retrieve game list for ListID:", listId, "Type:", type)
-        return {}
-    end
-    return gameList
-end
-
-function Utils.StripInvalidStatData(arr)
-    print("[DEBUG] Cleaning up list:", arr)
-    for key, value in pairs(arr) do
-        if value == '' or value == ' ' then
-            arr[key] = nil
-        elseif Ext.Stats.Get(value, nil, false) == nil then
-            arr[key] = nil
-        end
-    end
-    return arr
-end
-
--- ==================================== 🔧 Utility Functions ====================================
-
-local function GetRouletteList(category, uuid, tag)
-    print("[DEBUG] Fetching Roulette List for Category:", category, "UUID:", uuid, "Tag:", tag)
-    local data = Mods[ModTable].RouletteData and Mods[ModTable].RouletteData[category]
-    if not data then
-        print("[ROULETTE] No data for category:", category)
-        return {}
-    end
-
-    local list = data[uuid]
-    if not list then
-        print("[ROULETTE] No list for UUID:", uuid, "in category:", category)
-        return {}
-    end
-
-    if tag then
-        local filtered = {}
-        for _, entry in ipairs(list) do
-            if entry:find(tag) then
-                table.insert(filtered, entry)
-            end
-        end
-        DebugPrintList("Filtered List", filtered)
-        return Utils.StripInvalidStatData(filtered) -- Clean up the filtered list
-    end
-
-    DebugPrintList("Full List", list)
-    return Utils.StripInvalidStatData(list) -- Clean up the full list
-end
-
-local function ShuffleList(inputList)
-    print("[DEBUG] Shuffling List...")
+function ShuffleList(inputList)
     local list = {}
     for _, item in ipairs(inputList) do
         table.insert(list, item)
@@ -101,181 +7,121 @@ local function ShuffleList(inputList)
         local j = math.random(i)
         list[i], list[j] = list[j], list[i]
     end
-    DebugPrintList("Shuffled List", list)
     return list
 end
 
-local function AddUniqueEntries(char, items, checkFn, addFn, label, amount)
-    print("[DEBUG] Adding Unique Entries for:", label, "Character:", char, "Amount:", amount)
-    local selected = 0
-    for _, entry in ipairs(items) do
-        print("[DEBUG] Checking entry:", entry)
-        if not checkFn(char, entry) then
-            print("[DEBUG] Entry not found on character. Adding:", entry)
-            addFn(char, entry)
-            print("[ROULETTE]", label, "added:", entry, "->", char)
-            selected = selected + 1
-            if selected >= amount then break end
-        else
-            print("[DEBUG] Entry already exists on character. Skipping:", entry)
-        end
-    end
-    if selected < amount then
-        print("[ROULETTE] Only", selected, label, "added to", char, "- not enough unique entries")
-    end
+-- ==================================== Passives ====================================
+
+function HasPassive(character, passive)
+    return Osi.HasPassive(character, passive) == 1
 end
 
--- ==================================== 🌀 Generic Roulette Processor ====================================
-
-local function ProcessRoulette(character, category, uuid, tag, amount, checkFn, addFn, label)
-    print("[DEBUG] Processing Roulette for Category:", category, "Character:", character, "UUID:", uuid, "Tag:", tag, "Amount:", amount)
-    local list = GetRouletteList(category, uuid, tag)
-    if #list == 0 then
-        print("[ROULETTE] No entries available for Category:", category, "UUID:", uuid, "Tag:", tag)
-        return
-    end
-
-    print("[DEBUG] Full List for Category:", category, list)
-    local shuffled = ShuffleList(list)
-    print("[DEBUG] Shuffled List for Category:", category, shuffled)
-    AddUniqueEntries(character, shuffled, checkFn, addFn, label, amount)
-
-    -- Commit the changes to the game
-    Queue.CommitLists()
-end
-
--- ==================================== 🌀 Roulette Functions ====================================
-
-Mods[ModTable].RoulettePassives = function(character, uuid, tag, amount)
+function RoulettePassives(character, uuid, tag, amount)
     print("[DEBUG] RoulettePassives called for Character:", character, "UUID:", uuid, "Tag:", tag, "Amount:", amount)
-    local list = GetRouletteList("Passives", uuid, tag)
-    if #list == 0 then
-        print("[ROULETTE] No passives available for UUID:", uuid, "and Tag:", tag)
+
+    -- Fetch the passive list using the UUID
+    local passiveList = Ext.StaticData.Get(uuid, "PassiveList")
+    if not passiveList or not passiveList.Passives then
+        print("[ERROR] No passives found for UUID:", uuid)
         return
     end
 
-    print("[DEBUG] Full Passive List:", list)
-    local shuffled = ShuffleList(list)
-    print("[DEBUG] Shuffled Passive List:", shuffled)
-    AddUniqueEntries(character, shuffled, HasPassive, function(char, passive)
-        print("[DEBUG] Adding Passive:", passive, "to Character:", char)
-        Osi.AddPassive(char, passive)
-    end, "Passive", amount)
-
-    -- Commit the changes to the game
-    Queue.CommitLists()
-end
-
-Mods[ModTable].RouletteSkills = function(character, uuid, tag, amount)
-    print("[DEBUG] RouletteSkills called for Character:", character, "UUID:", uuid, "Tag:", tag, "Amount:", amount)
-    local list = GetRouletteList("Skills", uuid, tag)
-    if #list == 0 then
-        print("[ROULETTE] No skills available for UUID:", uuid, "and Tag:", tag)
-        return
-    end
-
-    print("[DEBUG] Full Skill List:", list)
-    local shuffled = ShuffleList(list)
-    print("[DEBUG] Shuffled Skill List:", shuffled)
-    AddUniqueEntries(character, shuffled, HasSkill, function(char, skill)
-        print("[DEBUG] Adding Skill:", skill, "to Character:", char)
-        Osi.AddSkill(char, skill, 1)
-    end, "Skill", amount)
-
-    -- Commit the changes to the game
-    Queue.CommitLists()
-end
-
-Mods[ModTable].RouletteSpells = function(character, uuid, tag, amount)
-    print("[DEBUG] RouletteSpells called for Character:", character, "UUID:", uuid, "Tag:", tag, "Amount:", amount)
-    local list = GetRouletteList("Spells", uuid, tag)
-    if #list == 0 then
-        print("[ROULETTE] No spells available for UUID:", uuid, "and Tag:", tag)
-        return
-    end
-
-    print("[DEBUG] Full Spell List:", list)
-    local shuffled = ShuffleList(list)
-    print("[DEBUG] Shuffled Spell List:", shuffled)
-    AddUniqueEntries(character, shuffled, HasSpell, function(char, spell)
-        print("[DEBUG] Adding Spell:", spell, "to Character:", char)
-        Osi.AddSpell(char, spell)
-    end, "Spell", amount)
-end
-
-Mods[ModTable].RouletteAbilities = function(character, uuid, tag, amount)
-    print("[DEBUG] RouletteAbilities called for Character:", character, "UUID:", uuid, "Tag:", tag, "Amount:", amount)
-    local list = GetRouletteList("Abilities", uuid, tag)
-    if #list == 0 then
-        print("[ROULETTE] No abilities available for UUID:", uuid, "and Tag:", tag)
-        return
-    end
-
-    local shuffled = ShuffleList(list)
-    AddUniqueEntries(character, shuffled, HasAbility, function(char, ab)
-        print("[DEBUG] Adding Ability Modifier:", ab, "to Character:", char)
-        AddAbilityModifiers(char, ab) -- Use AddAbilityModifiers instead of Osi.AddAbility
-    end, "Ability", amount)
-end
-
-Mods[ModTable].RouletteFeats = function(character, class, level)
-    print("[DEBUG] RouletteFeats called for Character:", character, "Class:", class, "Level:", level)
-    local featTables = Mods[ModTable].FeatTables
-
-    if featTables[class] and featTables[class][level] then
-        local featList = featTables[class][level]
-        DebugPrintList("Available Feats", featList)
-
-        local selectedFeat
-        local attempts = 0
-        repeat
-            selectedFeat = featList[math.random(#featList)]
-            attempts = attempts + 1
-            if attempts > 100 then
-                print("[ERROR] Too many attempts to find a unique feat for", character)
-                return
-            end
-        until not IsFeatSelected(character, selectedFeat)
-
-        AddSelectedFeat(character, selectedFeat)
-        print("[RouletteFeats] Selected feat:", selectedFeat)
-
-        -- Optional: apply the feat as a passive (if that's how your feats work)
-        Osi.AddPassive(character, selectedFeat)
-
-        return selectedFeat
-    else
-        print("[DEBUG] No feats found for class:", class, "level:", level)
-    end
-end
-
-
-Mods[ModTable].RouletteSubclasses = function(character, class, level)
-    print("[DEBUG] RouletteSubclasses called for Character:", character, "Class:", class, "Level:", level)
-
-    -- Ensure the class exists in the SubclassTables
-    local subclassTable = Mods[ModTable].SubclassTables[class]
-    if not subclassTable then
-        print("[ERROR] No subclass table found for class:", class)
-        return
-    end
-
-    print("[DEBUG] Subclass table found for class:", class)
-    DebugPrintList("Available Subclasses", subclassTable)
-
-    -- Check if the character already has any of the subclass passives
-    for _, passive in ipairs(subclassTable) do
-        if HasPassive(character, passive) then
-            print("[DEBUG] Character already has subclass passive:", passive)
-            return -- Exit if any passive is already applied
+    -- Filter passives by tag if provided
+    local filteredPassives = {}
+    for _, passive in ipairs(passiveList.Passives) do
+        if not tag or passive:find(tag) then
+            table.insert(filteredPassives, passive)
         end
     end
 
-    -- Randomly select a subclass passive from the table
-    local selectedPassive = subclassTable[math.random(#subclassTable)]
-    print("[DEBUG] Rolled subclass passive:", selectedPassive)
+    if #filteredPassives == 0 then
+        print("[ROULETTE] No passives available after filtering for UUID:", uuid, "and Tag:", tag)
+        return
+    end
 
-    -- Add the selected passive to the character
-    Osi.AddPassive(character, selectedPassive)
-    print("[RouletteSubclasses] Subclass passive added:", selectedPassive, "to Character:", character)
+    -- Shuffle the filtered passives
+    local shuffledPassives = ShuffleList(filteredPassives)
+    print("[DEBUG] Shuffled Passive List:", shuffledPassives)
+
+    -- Add unique passives to the character
+    local addedCount = 0
+    for _, passive in ipairs(shuffledPassives) do
+        if not HasPassive(character, passive) then
+            print("[DEBUG] Adding Passive:", passive, "to Character:", character)
+            Osi.AddPassive(character, passive)
+            addedCount = addedCount + 1
+            if addedCount >= amount then
+                break
+            end
+        else
+            print("[DEBUG] Character already has Passive:", passive)
+        end
+    end
+
+    if addedCount == 0 then
+        print("[ROULETTE] No new passives were added to Character:", character)
+    else
+        print("[ROULETTE] Added", addedCount, "passives to Character:", character)
+    end
+end
+
+-- ==================================== Spells ====================================
+
+function HasSpell(character, spell)
+    return Osi.HasSpell(character, spell) == 1
+end
+
+function RouletteSpells(character, uuid, tag, amount)
+    print("[DEBUG] RouletteSpells called for Character:", character, "UUID:", uuid, "Tag:", tag, "Amount:", amount)
+
+    -- Fetch the spell list using the UUID
+    local spellList = Ext.StaticData.Get(uuid, "SpellList")
+    if not spellList or not spellList.Spells then
+        print("[ERROR] No spells found for UUID:", uuid)
+        return
+    end
+
+    -- Filter spells by tag if provided
+    local filteredSpells = {}
+    for _, spell in ipairs(spellList.Spells) do
+        if not tag or spell:find(tag) then
+            table.insert(filteredSpells, spell)
+        end
+    end
+
+    if #filteredSpells == 0 then
+        print("[ROULETTE] No spells available after filtering for UUID:", uuid, "and Tag:", tag)
+        return
+    end
+
+    -- Sort the filtered spells (optional, based on level or name)
+    local sortedSpells = DWE_SortSpellList(filteredSpells)
+    if sortedSpells then
+        filteredSpells = sortedSpells
+    end
+
+    -- Shuffle the filtered spells
+    local shuffledSpells = ShuffleList(filteredSpells)
+    print("[DEBUG] Shuffled Spell List:", shuffledSpells)
+
+    -- Add unique spells to the character
+    local addedCount = 0
+    for _, spell in ipairs(shuffledSpells) do
+        if not HasSpell(character, spell) then
+            print("[DEBUG] Adding Spell:", spell, "to Character:", character)
+            Osi.AddSpell(character, spell)
+            addedCount = addedCount + 1
+            if addedCount >= amount then
+                break
+            end
+        else
+            print("[DEBUG] Character already has Spell:", spell)
+        end
+    end
+
+    if addedCount == 0 then
+        print("[ROULETTE] No new spells were added to Character:", character)
+    else
+        print("[ROULETTE] Added", addedCount, "spells to Character:", character)
+    end
 end
