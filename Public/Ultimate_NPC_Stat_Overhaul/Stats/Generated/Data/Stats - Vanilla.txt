@@ -5519,7 +5519,7 @@ using "WoodWoad"
 // data "PathInfluence" "BloodElectrified,100;BloodFrozen,30;Lava,700;Fire,40;HolyFire,40;Hellfire,100;PoisonCloud,70;WyvernPoison,70;DrowPoisonCloud,70;PurpleWormPoison,70;SerpentVenom,70;InvisibleGithAcid,70;CloudkillCloud,70;MaliceCloud,70;CrawlerMucusCloud,70;WaterElectrified,100;WaterFrozen,30;Grease,30;Web,30;SporeBlackCloud,100;WaterCloudElectrified,40;SporeGreenCloud,40;Acid,30;CausticBrine,40;DarknessCloud,30;FogCloud,30;Mud,30;Oil,30;Poison,30;SpikeGrowth,40;SporePinkCloud,40;StinkingCloud,40"
 data "PathInfluence" "BloodElectrified,100;BloodFrozen,30;Lava,700;Fire,40;HolyFire,40;Hellfire,100;PoisonCloud,70;WyvernPoison,70;DrowPoisonCloud,70;PurpleWormPoison,70;SerpentVenom,70;InvisibleGithAcid,70;CloudkillCloud,70;Cloudkill6Cloud,70;MaliceCloud,70;CrawlerMucusCloud,70;WaterElectrified,100;WaterFrozen,30;Grease,30;Web,30;SporeBlackCloud,100;WaterCloudElectrified,40;SporeGreenCloud,40;Acid,30;CausticBrine,40;DarknessCloud,30;FogCloud,30;Mud,30;Oil,30;Poison,30;SpikeGrowth,40;SporePinkCloud,40;StinkingCloud,40"
 
-// ==================================== Aberrations ====================================
+// ==================================== Aberration ====================================
 
 // "_Base"
 //  ├─ "_Aberration"
@@ -5530,6 +5530,31 @@ data "PathInfluence" "BloodElectrified,100;BloodFrozen,30;Lava,700;Fire,40;HolyF
 //  │   │   └─ "NetherBrain"
 //  │   │       └─ "END_Netherbrain"
 //  │   │           └─ "END_Netherbrain_Face"
+//  │   ├─ "KillerReplica_Base"
+//  │   │   ├─ "KillerReplica_Barbarian"
+//  │   │   ├─ "KillerReplica_Bard"
+//  │   │   ├─ "KillerReplica_Cleric"
+//  │   │   ├─ "KillerReplica_Druid"
+//  │   │   ├─ "KillerReplica_Fighter"
+//  │   │   ├─ "KillerReplica_Monk"
+//  │   │   ├─ "KillerReplica_Paladin"
+//  │   │   ├─ "KillerReplica_Ranger"
+//  │   │   ├─ "KillerReplica_Rogue"
+//  │   │   ├─ "KillerReplica_Sorcerer"
+//  │   │   ├─ "KillerReplica_Warlock"
+//  │   │   └─ "KillerReplica_Wizard"
+//  │   ├─ "MindFlayer"
+//  │   │   ├─ "END_Daisy"
+//  │   │   ├─ "INT_Emperor"
+//  │   │   ├─ "MindFlayer_Arcanist"
+//  │   │   ├─ "MindFlayer_Caster"
+//  │   │   ├─ "MindFlayer_Lich"
+//  │   │   ├─ "MindFlayer_Player"
+//  │   │   ├─ "MindFlayer_Weak"
+//  │   │   │   └─ "CRA_Escape_Mindflayer"
+//  │   │   ├─ "TUT_HelmMindflayer"
+//  │   │   └─ "UND_SOB_Mindflayer"
+
 
 new entry "Spectator"
 type "Character"
@@ -5537,7 +5562,94 @@ using "Spectator"
 // data "PathInfluence" "PoisonCloud,70;CloudkillCloud,70;MaliceCloud,70;CrawlerMucusCloud,70;SporeBlackCloud,100;SporeGreenCloud,40;DarknessCloud,30;FogCloud,30;SporePinkCloud,40;StinkingCloud,40;WaterCloudElectrified,40"
 data "PathInfluence" "PoisonCloud,70;CloudkillCloud,70;Cloudkill6Cloud,70;MaliceCloud,70;CrawlerMucusCloud,70;SporeBlackCloud,100;SporeGreenCloud,40;DarknessCloud,30;FogCloud,30;SporePinkCloud,40;StinkingCloud,40;WaterCloudElectrified,40"
 
-// ==================================== Aberrations ====================================
+// Countermeasures - Netherbrain fight if siding with the Emperor
+new entry "KillerReplica_Barbarian"
+type "Character"
+using "KillerReplica_Barbarian"
+// data "Passives" "TAD_Charm;AttackOfOpportunity;DarknessRules"
+data "Passives" "CX_Barbarian_Boost;CX_Barbarian_Berserker_Boost;CX_Martial_Boost;AttackOfOpportunity;DarknessRules;TAD_Charm"
+
+new entry "KillerReplica_Bard"
+type "Character"
+using "KillerReplica_Bard"
+// data "Passives" "AttackOfOpportunity;DarknessRules"
+data "Passives" "CX_Bard_Boost;CX_Magic_Boost;AttackOfOpportunity;DarknessRules"
+
+new entry "KillerReplica_Cleric"
+type "Character"
+using "KillerReplica_Cleric"
+// data "Passives" "ExtraAttack;TAD_PeaceBreaker;END_ChillTouch_OnAttack;AttackOfOpportunity;DarknessRules"
+data "Passives" "CX_Cleric_Boost;CX_Magic_Boost;AttackOfOpportunity;DarknessRules;ExtraAttack;TAD_PeaceBreaker;END_ChillTouch_OnAttack"
+
+new entry "KillerReplica_Druid"
+type "Character"
+using "KillerReplica_Druid"
+// data "Passives" "AttackOfOpportunity;DarknessRules"
+data "Passives" "CX_Druid_Boost;CX_Druid_Spores_Boost;CX_Magic_Boost;AttackOfOpportunity;DarknessRules"
+
+new entry "KillerReplica_Fighter"
+type "Character"
+using "KillerReplica_Fighter"
+// data "Passives" "AttackOfOpportunity;DarknessRules"
+data "Passives" "CX_Fighter_Boost;CX_Fighter_BattleMaster_Boost;CX_Martial_Boost;AttackOfOpportunity;DarknessRules"
+
+new entry "KillerReplica_Monk"
+type "Character"
+using "KillerReplica_Monk"
+// data "Passives" "AttackOfOpportunity;DarknessRules"
+data "Passives" "CX_Monk_Boost;CX_Monk_FourElements_Boost;CX_Martial_Boost;AttackOfOpportunity;DarknessRules"
+
+new entry "KillerReplica_Paladin"
+type "Character"
+using "KillerReplica_Paladin"
+// data "Passives" "AttackOfOpportunity;DarknessRules"
+data "Passives" "CX_Paladin_Boost;CX_Paladin_Oathbreaker_Boost;CX_Martial_Boost;AttackOfOpportunity;DarknessRules"
+
+new entry "KillerReplica_Ranger"
+type "Character"
+using "KillerReplica_Ranger"
+// data "Passives" "AttackOfOpportunity;DarknessRules"
+data "Passives" "CX_Ranger_Boost;CX_Ranger_Hunter_Boost;CX_Martial_Boost;AttackOfOpportunity;DarknessRules"
+
+new entry "KillerReplica_Ranger"
+type "Character"
+using "KillerReplica_Ranger"
+// data "Passives" "AttackOfOpportunity;DarknessRules"
+data "Passives" "CX_Ranger_Boost;CX_Ranger_Hunter_Boost;CX_Martial_Boost;AttackOfOpportunity;DarknessRules"
+
+new entry "KillerReplica_Rogue"
+type "Character"
+using "KillerReplica_Rogue"
+// data "Passives" "AttackOfOpportunity;DarknessRules"
+data "Passives" "CX_Rogue_Boost;CX_Martial_Boost;AttackOfOpportunity;DarknessRules"
+
+// This one will be pending finalizing Sorcerer NPCs
+new entry "KillerReplica_Sorcerer"
+type "Character"
+using "KillerReplica_Sorcerer"
+// data "Passives" "TAD_PsionicDominance;Evasion;Metamagic_Heightened;Metamagic_Subtle;AttackOfOpportunity;DarknessRules"
+data "Passives" "CX_Sorcerer_Boost;CX_Magic_Boost;AttackOfOpportunity;DarknessRules;TAD_PsionicDominance;Evasion;Metamagic_Heightened;Metamagic_Subtle"
+
+new entry "KillerReplica_Warlock"
+type "Character"
+using "KillerReplica_Warlock"
+// data "Passives" "TAD_PsionicBacklash;AgonizingBlast;DevilsSight;AttackOfOpportunity;DarknessRules"
+data "Passives" "CX_Warlock_Boost;CX_Magic_Boost;CX_Martial_Boost;AttackOfOpportunity;DarknessRules;TAD_PsionicBacklash;AgonizingBlast;DevilsSight"
+
+new entry "KillerReplica_Wizard"
+type "Character"
+using "KillerReplica_Wizard"
+// data "Passives" "MagicResistance;AttackOfOpportunity;DarknessRules"
+data "Passives" "CX_Wizard_Boost;CX_Wizard_Evocation_Boost;CX_Magic_Boost;AttackOfOpportunity;DarknessRules;MagicResistance"
+
+// Dream Guardians - Netherbrain fight if siding with Orpheus
+new entry "END_Daisy"
+type "Character"
+using "END_Daisy"
+// data "Passives" "AttackOfOpportunity;DarknessRules;MagicResistance;TAD_Charm"
+data "Passives" "CX_Martial_Boost;CX_Magic_Boost;AttackOfOpportunity;DarknessRules;MagicResistance;TAD_Charm"
+
+// ==================================== Construct ====================================
 
 // "_Base"
 //  ├─ "_Construct"
