@@ -1446,12 +1446,13 @@ using "HAG_Masked_Fighter"
 // data "Passives" "AttackOfOpportunity;DarknessRules;HAG_MaskOfVengeance"
 data "Passives" "CX_Fighter_Boost;CX_Fighter_BattleMaster_Boost;CX_Martial_Boost;FeyAncestry;AttackOfOpportunity;DarknessRules;SuperiorDarkvision;SunlightSensitivity;HAG_MaskOfVengeance"
 
-// Nere - True Soul of the Absolute
+// Nere - True Soul of the Absolute - HONOUR MODE INHERITANCE
 new entry "UND_Nere"
 type "Character"
 using "UND_Nere"
 // data "Passives" "Muscular_Athletics;AttackOfOpportunity;ExtraAttack;SunlightSensitivity;FeyAncestry;DarknessRules;Darkvision;AdditionalSpellSlot_Level_1; AdditionalSpellSlot_Level_1; AdditionalSpellSlot_Level_1; AdditionalSpellSlot_Level_1; AdditionalSpellSlot_Level_2; AdditionalSpellSlot_Level_2"
-data "Passives" "CX_Fighter_Boost;CX_Fighter_BattleMaster_Boost;CX_Martial_Boost;CX_Magic_Boost;CX_Spells_L2;CX_Spells_L3C;FeyAncestry;AttackOfOpportunity;DarknessRules;SuperiorDarkvision;SunlightSensitivity;DualWielder_BonusAC;DualWielder_PassiveBonuses;ExtraAttack;Muscular_Athletics;AdditionalSpellSlot_Level_1;AdditionalSpellSlot_Level_1;AdditionalSpellSlot_Level_1;AdditionalSpellSlot_Level_1;AdditionalSpellSlot_Level_2;AdditionalSpellSlot_Level_2"
+// data "Passives" "Muscular_Athletics;AttackOfOpportunity;ExtraAttack;SunlightSensitivity;FeyAncestry;DarknessRules;Darkvision;AdditionalSpellSlot_Level_1; AdditionalSpellSlot_Level_1; AdditionalSpellSlot_Level_1; AdditionalSpellSlot_Level_1; AdditionalSpellSlot_Level_2; AdditionalSpellSlot_Level_2;LegendaryAction_UND_Nere_PsychicMirror"
+data "Passives" "CX_Fighter_Boost;CX_Fighter_BattleMaster_Boost;CX_Martial_Boost;CX_Magic_Boost;CX_Spells_L2;CX_Spells_L3C;FeyAncestry;AttackOfOpportunity;DarknessRules;SuperiorDarkvision;SunlightSensitivity;DualWielder_BonusAC;DualWielder_PassiveBonuses;ExtraAttack;Muscular_Athletics;AdditionalSpellSlot_Level_1;AdditionalSpellSlot_Level_1;AdditionalSpellSlot_Level_1;AdditionalSpellSlot_Level_1;AdditionalSpellSlot_Level_2;AdditionalSpellSlot_Level_2;LegendaryAction_UND_Nere_PsychicMirror"
 
 // "_Elf_Drow"
 //  ├─ "Elf_Drow_Ranger"
