@@ -1,0 +1,47 @@
+{
+	// See https://go.microsoft.com/fwlink/?LinkId=733558
+	// for the documentation about the tasks.json format
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "bg3Continue",
+			"type": "shell",
+			// mklink /J "D:\GOG\Baldurs Gate 3\Data\Mods\Armory" "D:\Mods\BG3 Modder MultiTool\The Armory\Armory\Mods\Armory"
+			// mklink /J "D:\GOG\Baldurs Gate 3\Data\Public\Armory" "D:\Mods\BG3 Modder MultiTool\The Armory\Armory\Public\Armory"
+
+			// mklink /J "D:\GOG\Baldurs Gate 3\Data\Mods\Preset_Mod_Example" "D:\Mods\BG3 Modder MultiTool\The Armory\Preset_Mod_Example\Mods\Preset_Mod_Example"
+			"windows": {
+				"command": "Start-Process",
+				"args": [
+					"-FilePath",
+					"D:\\GOG\\Baldurs Gate 3\\bin\\bg3_dx11.exe",
+					"-ArgumentList",
+					"--skip-launcher", 
+					"-WorkingDirectory",
+					"D:\\GOG\\Baldurs Gate 3\\bin"
+				],
+				"options": {
+					"shell": {
+						"executable": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+					}
+				},
+			}
+		},
+		{
+			"label": "bg3Kill",
+			"type": "shell",
+			"windows": {
+				"command": "taskkill",
+				"args": [
+					"/IM",
+					"bg3_dx11.exe"
+				],
+				"options": {
+					"shell": {
+						"executable": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+					}
+				},
+			}
+		}
+	]
+}

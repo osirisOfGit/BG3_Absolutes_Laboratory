@@ -1,5 +1,34 @@
 {
-	"bg3ModHelper.rootModPath": "d:\\Mods\\BG3 Modder MultiTool\\Ultimate_NPC_Stat_Overhaul",
+	"json.schemas": [
+		{
+			"fileMatch": [
+				"MCM_blueprint*.json"
+			],
+			"url": "https://raw.githubusercontent.com/AtilioA/BG3-MCM/main/.vscode/schema.json"
+		}
+	],
+	"Lua.diagnostics.globals": [
+		"Osi",
+		"Osiris",
+		"Ext"
+	],
+	"search.exclude": {
+		"**/*.raw": true,
+		"**/Story/*.div": true,
+		"**/*.osi": true,
+		"**/*.dat": true
+	},
+	"Lua.diagnostics.libraryFiles": "Disable",
+	"Lua.diagnostics.workspaceRate": 25,
+	"Lua.diagnostics.workspaceDelay": 5000,
+	"Lua.workspace.preloadFileSize": 10000,
+	"Lua.diagnostics.disable": [
+		"redundant-parameter"
+	],
+	"Lua.format.defaultConfig": {
+		"max_line_length": "180"
+	},
 	"bg3ModHelper.packingPriority": 0,
-	"bg3ModHelper.modName": "Ultimate_NPC_Stat_Overhaul"
+	"bg3ModHelper.rootModPath": "d:\\Mods\\BG3 Modder MultiTool\\The Armory",
+	"bg3ModHelper.modName": "The Armory",
 }

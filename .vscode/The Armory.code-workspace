@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "C:/Users/Di Immortalis/AppData/Local/Larian Studios/Baldur's Gate 3/Script Extender/Armory"
+		}
+	],
+	"settings": {
+		"bg3ModHelper.packingPriority": 0,
+		"bg3ModHelper.rootModPath": "d:\\Mods\\BG3 Modder MultiTool\\The Armory",
+		"bg3ModHelper.modName": "The Armory"
+	}
+}
