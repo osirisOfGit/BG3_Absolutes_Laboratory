@@ -91,11 +91,6 @@ function Main.buildOutTree()
 		local lastPercentage = 0
 
 		for act, actTemplates in TableUtils:OrderedPairs(CharacterIndex.templates.acts) do
-
-			for _, temp in pairs(actTemplates) do
-				self.configCell:AddImage(Ext.Template.GetRootTemplate(temp).Icon)
-			end
-
 			local actSelection = universalSelection:AddTree(act)
 			actSelection:SetOpen(false, "Always")
 
