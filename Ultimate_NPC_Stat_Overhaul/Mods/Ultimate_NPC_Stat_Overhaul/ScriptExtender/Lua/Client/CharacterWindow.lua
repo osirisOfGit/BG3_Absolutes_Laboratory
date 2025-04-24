@@ -18,6 +18,9 @@ function CharacterWindow:BuildWindow(parent, templateId)
 
 	if characterTemplate then
 		Styler:CheapTextAlign(CharacterIndex.displayNameMappings[templateId], displayCell, "Big")
-		displayCell:AddText(string.gsub(characterTemplate.FileName, "^.*[\\/]Mods[\\/]", ""))
+		Styler:CheapTextAlign(string.gsub(characterTemplate.FileName, "^.*[\\/]Mods[\\/]", ""), displayCell)
+		Styler:MiddleAlignedColumnLayout(displayCell, function (ele)
+			ele:AddImage(characterTemplate.Icon, {128, 128})
+		end)
 	end
 end

@@ -1,0 +1,2121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<save>
+    <version major="4" minor="8" revision="0" build="10"/>
+    <region id="IconUVList">
+        <node id="root">
+            <children>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2cdb4fb3-3a3f-086b-7406-88a8e24feb69-_(Icon_Zombie_Dwarf)"/>
+                    <attribute id="U1" type="float" value="0.00012207031"/>
+                    <attribute id="U2" type="float" value="0.03112793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2cdee30a-9ef4-ac95-5450-e145511ed90c-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.03137207"/>
+                    <attribute id="U2" type="float" value="0.06237793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2cdee30a-9ef4-ac95-5450-e145511ed90c-_(Icon_Vampire_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.06262207"/>
+                    <attribute id="U2" type="float" value="0.09362793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2ce9126c-e5cc-eda1-a1bf-176e6a40cc4d-_(Icon_Zombie)"/>
+                    <attribute id="U1" type="float" value="0.09387207"/>
+                    <attribute id="U2" type="float" value="0.12487793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2cf8afd7-5db7-fba7-99ad-f11b8c25b2f6-_(Icon_CC_Githyanki_Male)"/>
+                    <attribute id="U1" type="float" value="0.12512207"/>
+                    <attribute id="U2" type="float" value="0.15612793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2cf911ad-2338-fe6c-6b10-1d96b97de1ea-_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.15637207"/>
+                    <attribute id="U2" type="float" value="0.18737793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2d040a38-4793-d95f-1f3f-59e168230cfb-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.31262207"/>
+                    <attribute id="U2" type="float" value="0.34362793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2d09180e-841f-b4d5-335a-7cf4fefda371-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.40637207"/>
+                    <attribute id="U2" type="float" value="0.43737793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2d1dbe6f-53ce-ce7d-5864-83bd881520f6-_(Icon_Spider_Summon)"/>
+                    <attribute id="U1" type="float" value="0.18762207"/>
+                    <attribute id="U2" type="float" value="0.21862793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2d4ac8b8-c91d-c4eb-9f55-a6419e6ee9a3-_(Icon_Human_Male_Strong)"/>
+                    <attribute id="U1" type="float" value="0.21887207"/>
+                    <attribute id="U2" type="float" value="0.24987793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2d5c0e7a-9ac1-b447-ae81-3494ee165491-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.25012207"/>
+                    <attribute id="U2" type="float" value="0.28112793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2d76dc93-7376-04d7-74fd-a5d013e27551-_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.34387207"/>
+                    <attribute id="U2" type="float" value="0.37487793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2d7a994c-8f32-4b23-0d82-56e8f6451d77-_(Icon_Zombie)"/>
+                    <attribute id="U1" type="float" value="0.28137207"/>
+                    <attribute id="U2" type="float" value="0.31237793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2d84fed1-33e6-466c-4d62-58e712ab3db4-_(Icon_Children)"/>
+                    <attribute id="U1" type="float" value="0.37512207"/>
+                    <attribute id="U2" type="float" value="0.40612793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2e0394cc-620d-e07a-fefa-72a6e2906901-EQP_Warhammer_Scalemail_(Icon_Skeleton)"/>
+                    <attribute id="U1" type="float" value="0.68762207"/>
+                    <attribute id="U2" type="float" value="0.71862793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2e04044d-7115-f129-f07b-11291496e043-_(Icon_Elf_Female)"/>
+                    <attribute id="U1" type="float" value="0.75012207"/>
+                    <attribute id="U2" type="float" value="0.78112793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2e06e4e1-7fe3-93ed-8ede-e17abf4c6f2b-EQP_Goblin_Scimitar_HelmetMetal_(Icon_Goblin_Male)"/>
+                    <attribute id="U1" type="float" value="0.53137207"/>
+                    <attribute id="U2" type="float" value="0.56237793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2e0d8a60-a9f3-dd3f-421e-260147ad7207-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.43762207"/>
+                    <attribute id="U2" type="float" value="0.46862793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2e1ab974-bc0e-f012-2b03-7be54cf20d93-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.46887207"/>
+                    <attribute id="U2" type="float" value="0.49987793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2e381e06-c10c-78ec-37dd-e07bc8807781-_(Icon_Tiefling_Male)"/>
+                    <attribute id="U1" type="float" value="0.65637207"/>
+                    <attribute id="U2" type="float" value="0.68737793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2e536efb-1b23-0ed3-63a1-535d926d096d-_(Icon_Dwarf_Female)"/>
+                    <attribute id="U1" type="float" value="0.71887207"/>
+                    <attribute id="U2" type="float" value="0.74987793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2e5dc4d8-8c64-4441-8d8d-00fa048b534e-EQP_Shortsword_(Icon_Skeleton)"/>
+                    <attribute id="U1" type="float" value="0.50012207"/>
+                    <attribute id="U2" type="float" value="0.53112793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2e625110-e17e-ab0e-b256-b508efe63c12-_(Icon_CC_Human_Male_Grey)"/>
+                    <attribute id="U1" type="float" value="0.78137207"/>
+                    <attribute id="U2" type="float" value="0.81237793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2e8a0c33-4fa3-6672-ac6c-6ea772d27ceb-_(Icon_Dragonborn_Female)"/>
+                    <attribute id="U1" type="float" value="0.56262207"/>
+                    <attribute id="U2" type="float" value="0.59362793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2e8d1053-44dc-f647-2731-cab6bc21a3b1-EQP_Dagger_Leather_(Icon_Gnomes_Female)"/>
+                    <attribute id="U1" type="float" value="0.59387207"/>
+                    <attribute id="U2" type="float" value="0.62487793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2e97a6fc-7c97-3024-f1bc-d9a594a94cbc-_(Icon_Skeleton)"/>
+                    <attribute id="U1" type="float" value="0.62512207"/>
+                    <attribute id="U2" type="float" value="0.65612793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2ea1639c-5935-e089-43ab-359f33409ab6-_(Icon_DarkVine_Tentacle)"/>
+                    <attribute id="U1" type="float" value="0.84387207"/>
+                    <attribute id="U2" type="float" value="0.87487793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2ea359f4-6687-41de-b5af-a15799574dbf-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.81262207"/>
+                    <attribute id="U2" type="float" value="0.84362793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2eb059d6-ea31-dc3f-3105-dea65c85f6fa-EQP_Warhammer_Scalemail_Shield_Fist_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.87512207"/>
+                    <attribute id="U2" type="float" value="0.90612793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2eb469e8-463a-312e-afcd-7bf806311a76-EQP_LOW_DeathsHeadOfBhaal_(Icon_Dwarf_Male)"/>
+                    <attribute id="U1" type="float" value="0.90637207"/>
+                    <attribute id="U2" type="float" value="0.93737793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2ed1d779-3fd5-4b0c-78a4-553f67262293-EQP_Staff_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.93762207"/>
+                    <attribute id="U2" type="float" value="0.96862793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="2edb45cf-92b8-ff79-91ef-8972e000e596-_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.96887207"/>
+                    <attribute id="U2" type="float" value="0.99987793"/>
+                    <attribute id="V1" type="float" value="0.00012207031"/>
+                    <attribute id="V2" type="float" value="0.03112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="355d4b22-08a0-b227-37a4-207b79c34fce-_(Icon_CC_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.28137207"/>
+                    <attribute id="U2" type="float" value="0.31237793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="35970ce5-c783-2394-9d4a-79215f1fe768-_(Icon_Elf_Male)"/>
+                    <attribute id="U1" type="float" value="0.43762207"/>
+                    <attribute id="U2" type="float" value="0.46862793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="359b181b-c98e-b4aa-0da4-82c28d98fc0c-_(Icon_Diloph)"/>
+                    <attribute id="U1" type="float" value="0.31262207"/>
+                    <attribute id="U2" type="float" value="0.34362793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="35ac87cb-43d3-b4c0-cc32-7fe51a0fca0a-EQP_Halberd_Chainmail_HelmetMetal_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.90637207"/>
+                    <attribute id="U2" type="float" value="0.93737793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="35b41e16-6312-d4fa-33c5-7f5617b7b21d-EQP_Mace_Shield_HandCrossbow_Chainmail_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.93762207"/>
+                    <attribute id="U2" type="float" value="0.96862793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="35b69f04-4503-adb6-b2fc-3b38be68f783-_(Icon_CC_HalfElves_Female)"/>
+                    <attribute id="U1" type="float" value="0.96887207"/>
+                    <attribute id="U2" type="float" value="0.99987793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="35c727af-9fc4-cbfc-8818-ddd29821e945-EQP_Longbow_Dagger_Leather_(Icon_Dwarf_Female)"/>
+                    <attribute id="U1" type="float" value="0.00012207031"/>
+                    <attribute id="U2" type="float" value="0.03112793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="35caa0bb-831d-ce7f-6b09-87d8cf470bbc-_(Icon_Dragonborn_Male)"/>
+                    <attribute id="U1" type="float" value="0.03137207"/>
+                    <attribute id="U2" type="float" value="0.06237793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="35d1bbbb-ab05-82de-a887-b8e72d8dd926-_(Icon_Dragonborn_Male)"/>
+                    <attribute id="U1" type="float" value="0.06262207"/>
+                    <attribute id="U2" type="float" value="0.09362793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="35d2e4f9-e625-153a-dce5-5bc0f18a8678-EQP_Dagger_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.09387207"/>
+                    <attribute id="U2" type="float" value="0.12487793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="35e6325e-2165-497a-87ce-f0dd71fc8775-EQP_Longbow_StuddedLeather_(Icon_Halfling_Male)"/>
+                    <attribute id="U1" type="float" value="0.15637207"/>
+                    <attribute id="U2" type="float" value="0.18737793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="35e878a4-51ea-62be-f4c8-d59664526b5f-EQP_LOW_SerialKiller_DG_3_(Icon_Doppel)"/>
+                    <attribute id="U1" type="float" value="0.12512207"/>
+                    <attribute id="U2" type="float" value="0.15612793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="35ea21e8-0f43-68e8-5448-7af93b6c5a44-EQP_Goblin_Shortbow_(Icon_Goblin_Female)"/>
+                    <attribute id="U1" type="float" value="0.18762207"/>
+                    <attribute id="U2" type="float" value="0.21862793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="35f18e5d-be96-5eda-8e52-1b69d01065db-_(Icon_Human_Male_Strong)"/>
+                    <attribute id="U1" type="float" value="0.25012207"/>
+                    <attribute id="U2" type="float" value="0.28112793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="35f6fcde-1635-587b-ed11-797e60b590e2-_(Icon_Elf_Female)"/>
+                    <attribute id="U1" type="float" value="0.21887207"/>
+                    <attribute id="U2" type="float" value="0.24987793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="360604d2-858f-f4ba-e6a2-88cf94a9c7ef-_(Icon_Dwarf_Male)"/>
+                    <attribute id="U1" type="float" value="0.68762207"/>
+                    <attribute id="U2" type="float" value="0.71862793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3606d76d-7b2e-8f9c-2413-d62ca436c355-_(Icon_DarkVine_Tentacle_Giant)"/>
+                    <attribute id="U1" type="float" value="0.00012207031"/>
+                    <attribute id="U2" type="float" value="0.03112793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3606f893-e71d-1662-0f7d-b94819f07ece-_(Icon_Dragonborn_Female)"/>
+                    <attribute id="U1" type="float" value="0.03137207"/>
+                    <attribute id="U2" type="float" value="0.06237793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="360abc76-9e0b-575c-304a-9594eb066fb5-_(Icon_CC_Dragonborn_Male)"/>
+                    <attribute id="U1" type="float" value="0.34387207"/>
+                    <attribute id="U2" type="float" value="0.37487793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="360e2abd-94d1-475c-c074-750d3b3578d4-_(Icon_HalfOrcs_Male)"/>
+                    <attribute id="U1" type="float" value="0.37512207"/>
+                    <attribute id="U2" type="float" value="0.40612793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="362ca7b6-e9bf-0b0f-7653-eb70d4611f99-EQP_Dagger_(Icon_Halfling_Male)"/>
+                    <attribute id="U1" type="float" value="0.40637207"/>
+                    <attribute id="U2" type="float" value="0.43737793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="36446b9a-4654-ab4f-0848-7429a5dcc3e3-_(Icon_Spider_Summon)"/>
+                    <attribute id="U1" type="float" value="0.46887207"/>
+                    <attribute id="U2" type="float" value="0.49987793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="36476f6f-c64d-79db-9c3b-1ebfca3b48fb-_(Icon_Hyena)"/>
+                    <attribute id="U1" type="float" value="0.50012207"/>
+                    <attribute id="U2" type="float" value="0.53112793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="364cac98-3f3f-2437-2d33-4d5359574dd3-EQP_Staff_Leather_(Icon_Gnomes_Female)"/>
+                    <attribute id="U1" type="float" value="0.43762207"/>
+                    <attribute id="U2" type="float" value="0.46862793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="36569855-4c74-6ea2-0d2b-d7fb1694365e-EQP_Redcap_Sickle_(Icon_Redcap)"/>
+                    <attribute id="U1" type="float" value="0.87512207"/>
+                    <attribute id="U2" type="float" value="0.90612793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="365a2160-a087-a4ae-9c29-235f47878524-_(Icon_Armor)"/>
+                    <attribute id="U1" type="float" value="0.46887207"/>
+                    <attribute id="U2" type="float" value="0.49987793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3677da6d-8070-3331-51b6-3732ee9a4365-_(Icon_Gnomes_Female)"/>
+                    <attribute id="U1" type="float" value="0.06262207"/>
+                    <attribute id="U2" type="float" value="0.09362793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="36785924-ecf3-0413-93bb-e9aa03305fc0-EQP_Shortsword_Robe_Gith_(Icon_Githyanki_Female)"/>
+                    <attribute id="U1" type="float" value="0.90637207"/>
+                    <attribute id="U2" type="float" value="0.93737793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="367f0d5f-f532-2f5d-e6ba-f58f4aeae38b-_(Icon_Boar)"/>
+                    <attribute id="U1" type="float" value="0.50012207"/>
+                    <attribute id="U2" type="float" value="0.53112793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="368477a0-dca5-7257-5250-744e6c48e3d4-_(Icon_Cheese_Wheel)"/>
+                    <attribute id="U1" type="float" value="0.71887207"/>
+                    <attribute id="U2" type="float" value="0.74987793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="369292ff-45b3-96c3-58d4-8cb3dd0ddcd0-_(Icon_Children)"/>
+                    <attribute id="U1" type="float" value="0.75012207"/>
+                    <attribute id="U2" type="float" value="0.78112793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="369f49af-2e1d-7e66-8bea-32217522b369-_(Icon_Halfling_Female)"/>
+                    <attribute id="U1" type="float" value="0.53137207"/>
+                    <attribute id="U2" type="float" value="0.56237793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="36ab11df-b9ec-5838-0412-25ca3b3a31f7-EQP_Infernal_Spear_Plate_HelmetLeather_(Icon_HalfOrcs_Male)"/>
+                    <attribute id="U1" type="float" value="0.28137207"/>
+                    <attribute id="U2" type="float" value="0.31237793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="36ab11df-b9ec-5838-0412-25ca3b3a31f7-EQP_Spear_B_Plate_HelmetLeather_(Icon_HalfOrcs_Male)"/>
+                    <attribute id="U1" type="float" value="0.31262207"/>
+                    <attribute id="U2" type="float" value="0.34362793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="36ab11df-b9ec-5838-0412-25ca3b3a31f7-EQP_Spear_B_Plate_HelmetLeather_HandCrossbow_(Icon_HalfOrcs_Male)"/>
+                    <attribute id="U1" type="float" value="0.34387207"/>
+                    <attribute id="U2" type="float" value="0.37487793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="36ab11df-b9ec-5838-0412-25ca3b3a31f7-EQP_Spear_Plate_HelmetLeather_(Icon_HalfOrcs_Male)"/>
+                    <attribute id="U1" type="float" value="0.37512207"/>
+                    <attribute id="U2" type="float" value="0.40612793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="36b0510d-d020-b2bf-c227-93f5aa8235e2-EQP_END_CityWatch_Melee_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.43762207"/>
+                    <attribute id="U2" type="float" value="0.46862793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="36b57d8e-d278-d837-26cd-bac1fc5e0d02-EQP_Goblin_Shortbow_(Icon_Goblin_Male)"/>
+                    <attribute id="U1" type="float" value="0.40637207"/>
+                    <attribute id="U2" type="float" value="0.43737793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="36d2d301-c2d0-1ef3-5f73-26da68c075ee-_(Icon_Goblin_Children)"/>
+                    <attribute id="U1" type="float" value="0.46887207"/>
+                    <attribute id="U2" type="float" value="0.49987793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="370ffacc-6ed7-9221-6605-fb9770f08607-EQP_Ogre_Club_(Icon_Ogre)"/>
+                    <attribute id="U1" type="float" value="0.56262207"/>
+                    <attribute id="U2" type="float" value="0.59362793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="372ca057-a10d-a885-4783-d01208a72c01-_(Icon_Tiefling_Male)"/>
+                    <attribute id="U1" type="float" value="0.59387207"/>
+                    <attribute id="U2" type="float" value="0.62487793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3747e97e-46e5-0246-0d67-7a708fbc1fae-EQP_Goblin_Staff_(Icon_Goblin_Female)"/>
+                    <attribute id="U1" type="float" value="0.09387207"/>
+                    <attribute id="U2" type="float" value="0.12487793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="374f862e-ecf3-5ea3-5149-40f27ff1b559-EQP_SteelWatcher_Greatsword_B_(Icon_SteelWatcher_Biped)"/>
+                    <attribute id="U1" type="float" value="0.65637207"/>
+                    <attribute id="U2" type="float" value="0.68737793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="374f862e-ecf3-5ea3-5149-40f27ff1b559-_(Icon_SteelWatcher_Biped)"/>
+                    <attribute id="U1" type="float" value="0.62512207"/>
+                    <attribute id="U2" type="float" value="0.65612793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="376a3d97-1dce-836c-5067-59571920beab-EQP_Longsword_HalfPlate_Gith_(Icon_Githyanki_Male)"/>
+                    <attribute id="U1" type="float" value="0.68762207"/>
+                    <attribute id="U2" type="float" value="0.71862793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="376c44d6-ba7a-00dd-a15b-b64b584b348a-EQP_Cultist_Daggers_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.71887207"/>
+                    <attribute id="U2" type="float" value="0.74987793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="376f9d2a-fa79-a548-051c-cc1dc46c52ac-_(Icon_Dwarf_Female)"/>
+                    <attribute id="U1" type="float" value="0.75012207"/>
+                    <attribute id="U2" type="float" value="0.78112793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="376f9d2a-fa79-a548-051c-cc1dc46c52ac-_(Icon_Elf_Female)"/>
+                    <attribute id="U1" type="float" value="0.78137207"/>
+                    <attribute id="U2" type="float" value="0.81237793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3787c9e0-19d5-f59d-1be4-81ce584335ad-_(Icon_Elf_Female)"/>
+                    <attribute id="U1" type="float" value="0.12512207"/>
+                    <attribute id="U2" type="float" value="0.15612793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="379321f4-696d-c293-b7b6-47c02e48b875-EQP_Greatsword_HalfPlate_Gith_(Icon_Githyanki_Male)"/>
+                    <attribute id="U1" type="float" value="0.78137207"/>
+                    <attribute id="U2" type="float" value="0.81237793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="37984c02-dd18-668c-a9dd-8cf089db8bf9-_(Icon_Gnoll)"/>
+                    <attribute id="U1" type="float" value="0.53137207"/>
+                    <attribute id="U2" type="float" value="0.56237793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="37a5f115-e4c1-64ee-1431-a05d951e5b0d-_(Icon_HalfOrcs_Male)"/>
+                    <attribute id="U1" type="float" value="0.50012207"/>
+                    <attribute id="U2" type="float" value="0.53112793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="37ad28e7-48ea-3f72-b726-d46adfe4d28b-_(Icon_Drow_Female)"/>
+                    <attribute id="U1" type="float" value="0.53137207"/>
+                    <attribute id="U2" type="float" value="0.56237793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="37ced379-f773-71fb-a7a9-de02553c07bd-_(Icon_Tiefling_Female)"/>
+                    <attribute id="U1" type="float" value="0.56262207"/>
+                    <attribute id="U2" type="float" value="0.59362793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="37d1556f-bcd5-90ff-6253-105322f42701-EQP_Dagger_(Icon_Drow_Female)"/>
+                    <attribute id="U1" type="float" value="0.59387207"/>
+                    <attribute id="U2" type="float" value="0.62487793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3801c974-4185-c851-8e3d-4040865a024c-_(Icon_Ooze)"/>
+                    <attribute id="U1" type="float" value="0.15637207"/>
+                    <attribute id="U2" type="float" value="0.18737793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="38053a78-44df-f0a6-22e4-4dc33df1dcbe-_(Icon_Human_Male_Strong)"/>
+                    <attribute id="U1" type="float" value="0.56262207"/>
+                    <attribute id="U2" type="float" value="0.59362793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="38133328-8f93-7c3b-0f90-ea3f384dd8d8-_(Icon_Githyanki_Female)"/>
+                    <attribute id="U1" type="float" value="0.93762207"/>
+                    <attribute id="U2" type="float" value="0.96862793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="38198865-9612-6bd9-b602-cf728c546653-_(Icon_Dragonborn_Female)"/>
+                    <attribute id="U1" type="float" value="0.96887207"/>
+                    <attribute id="U2" type="float" value="0.99987793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3825d552-3fab-57df-f8e6-5b72d3055ad5-LOW_SteelWatchFoundry_Collared_(Icon_Gnomes_Female)"/>
+                    <attribute id="U1" type="float" value="0.18762207"/>
+                    <attribute id="U2" type="float" value="0.21862793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3825d552-3fab-57df-f8e6-5b72d3055ad5-LOW_SteelWatchFoundry_Collared_StuddedLeather_(Icon_Gnomes_Female)"/>
+                    <attribute id="U1" type="float" value="0.21887207"/>
+                    <attribute id="U2" type="float" value="0.24987793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="382a8630-3ef5-6623-7e30-8be5712b323c-EQP_Goblin_Shortbow_(Icon_Goblin_Male)"/>
+                    <attribute id="U1" type="float" value="0.81262207"/>
+                    <attribute id="U2" type="float" value="0.84362793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3855c2b4-4525-58a1-26b9-5d6918771a91-_(Icon_CC_Dragonborn_Female_Grey)"/>
+                    <attribute id="U1" type="float" value="0.25012207"/>
+                    <attribute id="U2" type="float" value="0.28112793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="38585cff-5024-d66f-035d-4c8298169b13-EQP_Longbow_Dagger_Leather_(Icon_Elf_Female)"/>
+                    <attribute id="U1" type="float" value="0.59387207"/>
+                    <attribute id="U2" type="float" value="0.62487793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="385ae646-a5bb-c868-5116-537a0f8e32f3-EQP_LOW_ReaperOfBhaal_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.84387207"/>
+                    <attribute id="U2" type="float" value="0.87487793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="385ce549-772b-0ea8-9ece-77bc6685d870-_(Icon_CC_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.87512207"/>
+                    <attribute id="U2" type="float" value="0.90612793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="385d134e-b795-8148-3c5f-04fe6599c2c1-_(Icon_CC_HalfElves_Male_Strong)"/>
+                    <attribute id="U1" type="float" value="0.90637207"/>
+                    <attribute id="U2" type="float" value="0.93737793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="388096af-f0df-3989-904d-ed9399cd5442-_(Icon_Dragonborn_Male)"/>
+                    <attribute id="U1" type="float" value="0.81262207"/>
+                    <attribute id="U2" type="float" value="0.84362793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="388f7fe1-6363-e729-93e5-14b7485d86b5-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.93762207"/>
+                    <attribute id="U2" type="float" value="0.96862793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3897fe8a-045e-ce56-8968-6bac0cb7c671-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.28137207"/>
+                    <attribute id="U2" type="float" value="0.31237793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="38b4a89a-05f2-018c-22d1-71c6d7a79e96-_(Icon_Dragonborn_Male)"/>
+                    <attribute id="U1" type="float" value="0.62512207"/>
+                    <attribute id="U2" type="float" value="0.65612793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="38c9c279-f25e-58b0-796c-1a317dbe9b74-EQP_UmberleePriest_Crossbow_Dagger_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.65637207"/>
+                    <attribute id="U2" type="float" value="0.68737793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="38cc2eb4-3b8e-0f19-5f23-c334a908b975-_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.68762207"/>
+                    <attribute id="U2" type="float" value="0.71862793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="38e42472-d077-47f4-1071-80acbb8ad9bd-_(Icon_Wolf)"/>
+                    <attribute id="U1" type="float" value="0.75012207"/>
+                    <attribute id="U2" type="float" value="0.78112793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="38e7cab0-5c23-30da-6258-1c256c2f4cf3-_(Icon_HalfElf_Female)"/>
+                    <attribute id="U1" type="float" value="0.71887207"/>
+                    <attribute id="U2" type="float" value="0.74987793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="38eefc1a-7b65-a535-fb03-5a8f53cdf8fc-_(Icon_Dragonborn_Female)"/>
+                    <attribute id="U1" type="float" value="0.78137207"/>
+                    <attribute id="U2" type="float" value="0.81237793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="38fa6a06-f271-d20c-e1b0-09eda7337fe6-EQP_Longsword_StuddedLeather_(Icon_Githyanki_Male)"/>
+                    <attribute id="U1" type="float" value="0.81262207"/>
+                    <attribute id="U2" type="float" value="0.84362793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="39029cd5-14c8-ef48-5eb9-131588a2e666-_(Icon_Elemental_Mud)"/>
+                    <attribute id="U1" type="float" value="0.62512207"/>
+                    <attribute id="U2" type="float" value="0.65612793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3921fbdf-aa1b-9a0b-a823-605bb0746673-_(Icon_Tiefling_Male)"/>
+                    <attribute id="U1" type="float" value="0.31262207"/>
+                    <attribute id="U2" type="float" value="0.34362793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="39247b28-e54b-8b01-209b-199ec26e67a5-EQP_HeavyCrossbow_Leather_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.65637207"/>
+                    <attribute id="U2" type="float" value="0.68737793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3941141e-087d-ac53-6543-973e3d5f9a97-_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.84387207"/>
+                    <attribute id="U2" type="float" value="0.87487793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="394a1fcf-6340-ec0c-cd67-4627bfe817f1-_(Icon_DarkVine_Tentacle)"/>
+                    <attribute id="U1" type="float" value="0.96887207"/>
+                    <attribute id="U2" type="float" value="0.99987793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3951ab8d-1919-eb11-c074-3fe098f965cc-_(Icon_CC_Tiefling_Female_Grey)"/>
+                    <attribute id="U1" type="float" value="0.34387207"/>
+                    <attribute id="U2" type="float" value="0.37487793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3960bc48-5412-3147-e13d-bcde876353ec-EQP_Staff_C_Robe_(Icon_Dwarf_Male)"/>
+                    <attribute id="U1" type="float" value="0.37512207"/>
+                    <attribute id="U2" type="float" value="0.40612793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3984a0dc-ef93-a534-11cb-39e38204671d-EQP_Longbow_Leather_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.40637207"/>
+                    <attribute id="U2" type="float" value="0.43737793"/>
+                    <attribute id="V1" type="float" value="0.15637207"/>
+                    <attribute id="V2" type="float" value="0.18737793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="39a2817f-78f5-da06-f9a8-9b57c9697c66-_(Icon_Gortane)"/>
+                    <attribute id="U1" type="float" value="0.84387207"/>
+                    <attribute id="U2" type="float" value="0.87487793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="39be1038-32b0-d006-44c6-0bc111e631b8-_(Icon_Gnomes_Male)"/>
+                    <attribute id="U1" type="float" value="0.87512207"/>
+                    <attribute id="U2" type="float" value="0.90612793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="39c15103-3656-ad91-f87c-aced280fa89e-_(Icon_Nightmare_Nurse)"/>
+                    <attribute id="U1" type="float" value="0.00012207031"/>
+                    <attribute id="U2" type="float" value="0.03112793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="39c15103-3656-ad91-f87c-aced280fa89e-_(Icon_Tiefling_Male)"/>
+                    <attribute id="U1" type="float" value="0.03137207"/>
+                    <attribute id="U2" type="float" value="0.06237793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="39c40e2e-3596-497e-e146-d998db4ceba0-EQP_Greatsword_HalfPlate_(Icon_Skeleton)"/>
+                    <attribute id="U1" type="float" value="0.90637207"/>
+                    <attribute id="U2" type="float" value="0.93737793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="39c40e2e-3596-497e-e146-d998db4ceba0-EQP_Greatsword_HalfPlate_(Icon_Skeleton_Hero)"/>
+                    <attribute id="U1" type="float" value="0.93762207"/>
+                    <attribute id="U2" type="float" value="0.96862793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="39c8628c-dc9f-4693-0430-f2def73c2947-EQP_Goblin_Axe_Shield_Absolute_(Icon_Goblin_Male)"/>
+                    <attribute id="U1" type="float" value="0.96887207"/>
+                    <attribute id="U2" type="float" value="0.99987793"/>
+                    <attribute id="V1" type="float" value="0.09387207"/>
+                    <attribute id="V2" type="float" value="0.12487793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="39cc10ee-a7dc-4efe-32d1-ebaa6e9c8a1e-_(Icon_Spider_Summon)"/>
+                    <attribute id="U1" type="float" value="0.09387207"/>
+                    <attribute id="U2" type="float" value="0.12487793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="39cc2cad-6f2d-d95f-03e1-f06b0346c33a-_(Icon_Armor)"/>
+                    <attribute id="U1" type="float" value="0.06262207"/>
+                    <attribute id="U2" type="float" value="0.09362793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="39d59978-8a65-a8ec-6e8b-0d391f4035e3-EQ_Karlach_(Icon_Origin_Karlach)"/>
+                    <attribute id="U1" type="float" value="0.12512207"/>
+                    <attribute id="U2" type="float" value="0.15612793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="39e404ea-c99b-45f7-2451-ddaca063e739-_(Icon_Cambion_Female)"/>
+                    <attribute id="U1" type="float" value="0.15637207"/>
+                    <attribute id="U2" type="float" value="0.18737793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="39eec5ba-854b-b259-9ef3-e77247994666-EQP_Shortbow_Leather_(Icon_Gnomes_Male)"/>
+                    <attribute id="U1" type="float" value="0.18762207"/>
+                    <attribute id="U2" type="float" value="0.21862793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="39f3409c-39ab-f20d-c583-e4e8ba7c62b7-EQP_UmberleePriest_Trident_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.21887207"/>
+                    <attribute id="U2" type="float" value="0.24987793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="39fd0efa-ae2d-a7e2-e07d-79b90a070367-_(Icon_Cazador)"/>
+                    <attribute id="U1" type="float" value="0.25012207"/>
+                    <attribute id="U2" type="float" value="0.28112793"/>
+                    <attribute id="V1" type="float" value="0.12512207"/>
+                    <attribute id="V2" type="float" value="0.15612793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3a01c388-506f-3b91-721a-9c5692db3357-_(Icon_Human_Female_Strong)"/>
+                    <attribute id="U1" type="float" value="0.00012207031"/>
+                    <attribute id="U2" type="float" value="0.03112793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3a185474-6567-accd-1c7c-1828a587d3f6-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.12512207"/>
+                    <attribute id="U2" type="float" value="0.15612793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3a22c108-6f5e-23e9-9a1c-094eee7b6e7d-DEN_GoblinRaider_Captain_(Icon_Goblin_Male)"/>
+                    <attribute id="U1" type="float" value="0.06262207"/>
+                    <attribute id="U2" type="float" value="0.09362793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3a39a66e-a64f-afaa-755f-b3ac984c240a-_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.09387207"/>
+                    <attribute id="U2" type="float" value="0.12487793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3a494067-5dda-4253-5749-8490caa55dad-EQP_Greatclub_ScaleMail_(Icon_Skeleton)"/>
+                    <attribute id="U1" type="float" value="0.15637207"/>
+                    <attribute id="U2" type="float" value="0.18737793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3a8e88ff-5562-af88-1f27-6beec47e3e3e-EQP_Warhammer_Scalemail_Shield_Fist_(Icon_Dwarf_Female)"/>
+                    <attribute id="U1" type="float" value="0.03137207"/>
+                    <attribute id="U2" type="float" value="0.06237793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3aa33194-9d57-6fb5-30e6-38b7a31f8d15-EQP_Dagger_Robe_(Icon_Gnomes_Male)"/>
+                    <attribute id="U1" type="float" value="0.18762207"/>
+                    <attribute id="U2" type="float" value="0.21862793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3abe4378-b28b-54dc-afe8-e44a1c49c3b4-EQP_Warhammer_Scalemail_Shield_Fist_(Icon_Dwarf_Female)"/>
+                    <attribute id="U1" type="float" value="0.21887207"/>
+                    <attribute id="U2" type="float" value="0.24987793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3ad6cac3-a374-eacf-6d31-bdf5a007a0cd-_(Icon_Githyanki_Male)"/>
+                    <attribute id="U1" type="float" value="0.25012207"/>
+                    <attribute id="U2" type="float" value="0.28112793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3addbe4e-f867-6435-c260-fc3a3be53e87-EQP_Club_(Icon_Dryad)"/>
+                    <attribute id="U1" type="float" value="0.28137207"/>
+                    <attribute id="U2" type="float" value="0.31237793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3aed62a0-b637-73ec-337a-379b9215dfab-_(Icon_Children)"/>
+                    <attribute id="U1" type="float" value="0.34387207"/>
+                    <attribute id="U2" type="float" value="0.37487793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3aed9e9b-3fb4-17aa-625e-00948b759ffc-MOO_PrisonWarden_(Icon_Tiefling_Female)"/>
+                    <attribute id="U1" type="float" value="0.31262207"/>
+                    <attribute id="U2" type="float" value="0.34362793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3afc6ad9-d32d-acc0-0ea5-62059f605fd4-_(Icon_Bear)"/>
+                    <attribute id="U1" type="float" value="0.37512207"/>
+                    <attribute id="U2" type="float" value="0.40612793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3afc8338-972d-4aed-5056-8de28f52d476-_(Icon_Hyena)"/>
+                    <attribute id="U1" type="float" value="0.40637207"/>
+                    <attribute id="U2" type="float" value="0.43737793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3b04ab58-72c6-7906-f4f2-2fc39d87ca1b-_(Icon_Nightmare_Nurse)"/>
+                    <attribute id="U1" type="float" value="0.50012207"/>
+                    <attribute id="U2" type="float" value="0.53112793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3b04b842-7492-98a0-4efd-da4a557bd129-EQP_Longsword_ScaleMail_Shield_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.53137207"/>
+                    <attribute id="U2" type="float" value="0.56237793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3b0c8b0a-8f5f-47de-a4fd-f61bef9e39c3-EQP_Greatsword_HalfPlate_Gith_(Icon_Githyanki_Female)"/>
+                    <attribute id="U1" type="float" value="0.43762207"/>
+                    <attribute id="U2" type="float" value="0.46862793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3b184bee-383a-eae6-d153-82632031470e-_(Icon_Elf_Male)"/>
+                    <attribute id="U1" type="float" value="0.75012207"/>
+                    <attribute id="U2" type="float" value="0.78112793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3b241eba-ac77-12df-99d8-d84c67773ca3-_(Icon_Gnomes_Male)"/>
+                    <attribute id="U1" type="float" value="0.78137207"/>
+                    <attribute id="U2" type="float" value="0.81237793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3b248da9-246c-6d3b-067a-ed13aeef847c-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.81262207"/>
+                    <attribute id="U2" type="float" value="0.84362793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3b3f91a3-6a79-50a9-04b6-77c7e31295db-_(Icon_Crawling_Claw)"/>
+                    <attribute id="U1" type="float" value="0.46887207"/>
+                    <attribute id="U2" type="float" value="0.49987793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3b51d08a-f1eb-2d0c-a5ed-37e514f10bf9-LOW_BlushingMermaid_Redcap_Melee_(Icon_Redcap)"/>
+                    <attribute id="U1" type="float" value="0.62512207"/>
+                    <attribute id="U2" type="float" value="0.65612793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3b62da4f-2b92-554b-23af-75ab8d8f12f9-_(Icon_Gnoll)"/>
+                    <attribute id="U1" type="float" value="0.65637207"/>
+                    <attribute id="U2" type="float" value="0.68737793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3b64eacb-f230-bb63-cee3-4eb2956abe26-_(Icon_Gnomes_Male)"/>
+                    <attribute id="U1" type="float" value="0.68762207"/>
+                    <attribute id="U2" type="float" value="0.71862793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3b68a6cf-fe94-b14d-14b2-6f19f5aa9843-EQP_Longsword_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.71887207"/>
+                    <attribute id="U2" type="float" value="0.74987793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3b6d2b1a-7ff4-fe4a-3a0a-98ed2ada84f3-EQP_HeavyCrossbow_Leather_(Icon_Dwarf_Male)"/>
+                    <attribute id="U1" type="float" value="0.56262207"/>
+                    <attribute id="U2" type="float" value="0.59362793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3b6dd7ad-97c4-f2cd-ffa2-f317290c10ac-_(Icon_Bugbear_Male)"/>
+                    <attribute id="U1" type="float" value="0.59387207"/>
+                    <attribute id="U2" type="float" value="0.62487793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3ba155bb-962c-6152-87cc-6c0ebfc77778-_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.84387207"/>
+                    <attribute id="U2" type="float" value="0.87487793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3bc5885f-0216-c129-a126-f3724219bde6-_(Icon_CC_Tiefling_Male_Grey)"/>
+                    <attribute id="U1" type="float" value="0.90637207"/>
+                    <attribute id="U2" type="float" value="0.93737793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3bc82cbe-d165-77f0-2b7b-6931f261f377-SHA_Justiciar_Scimitar_Shar_(Icon_Skeleton)"/>
+                    <attribute id="U1" type="float" value="0.87512207"/>
+                    <attribute id="U2" type="float" value="0.90612793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3bf4eb81-0596-0bad-c1b1-edebbc5ad469-_(Icon_HalfOrcs_Male)"/>
+                    <attribute id="U1" type="float" value="0.93762207"/>
+                    <attribute id="U2" type="float" value="0.96862793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3bf639ab-c2f3-6aa8-a60c-2d483f3051b1-_(Icon_Halfling_Male)"/>
+                    <attribute id="U1" type="float" value="0.96887207"/>
+                    <attribute id="U2" type="float" value="0.99987793"/>
+                    <attribute id="V1" type="float" value="0.03137207"/>
+                    <attribute id="V2" type="float" value="0.06237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3c1a7254-fb76-44d4-46cc-8e6350582d81-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.00012207031"/>
+                    <attribute id="U2" type="float" value="0.03112793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3c3b05de-2180-d7a7-6aff-755fe5c1ba77-_(Icon_Goblin_Male)"/>
+                    <attribute id="U1" type="float" value="0.03137207"/>
+                    <attribute id="U2" type="float" value="0.06237793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3c421063-b616-a593-805b-e0e606fabb32-UND_Gnome_MinePickaxe_(Icon_Gnomes_Male)"/>
+                    <attribute id="U1" type="float" value="0.15637207"/>
+                    <attribute id="U2" type="float" value="0.18737793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3c501bce-8e5a-258a-abad-a68b61cb4574-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.06262207"/>
+                    <attribute id="U2" type="float" value="0.09362793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3c7080b0-598f-b18d-6e7a-4339d737d695-_(Icon_Dwarf_Female)"/>
+                    <attribute id="U1" type="float" value="0.12512207"/>
+                    <attribute id="U2" type="float" value="0.15612793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3c771edf-1a84-eae8-0f3e-c27dc29aa1ba-EQP_LOW_ReaperOfBhaal_(Icon_Tiefling_Male)"/>
+                    <attribute id="U1" type="float" value="0.09387207"/>
+                    <attribute id="U2" type="float" value="0.12487793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3cb31d54-98a1-b1ae-7afe-7b2ce3331be2-EQP_Spear_Chainmail_Shield_HelmetMetal_Fist_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.18762207"/>
+                    <attribute id="U2" type="float" value="0.21862793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3cc41126-b09e-5866-55b9-da49537c09cc-EQP_Goblin_Scimitar_(Icon_Goblin_Male)"/>
+                    <attribute id="U1" type="float" value="0.21887207"/>
+                    <attribute id="U2" type="float" value="0.24987793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3cd848ca-8776-c011-12e7-2fb7bf39875b-EQP_Spear_Chainmail_Shield_HelmetMetal_Fist_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.25012207"/>
+                    <attribute id="U2" type="float" value="0.28112793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3ce036f0-20f8-2eee-b8a8-1a15bcf60063-EQP_Mace_B_Chainmail_Shield_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.28137207"/>
+                    <attribute id="U2" type="float" value="0.31237793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3ce036f0-20f8-2eee-b8a8-1a15bcf60063-EQP_Mace_B_Chainmail_Shield_HandCrossbow_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.31262207"/>
+                    <attribute id="U2" type="float" value="0.34362793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3ce036f0-20f8-2eee-b8a8-1a15bcf60063-EQP_Mace_Chainmail_Shield_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.34387207"/>
+                    <attribute id="U2" type="float" value="0.37487793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3ce719c5-f5d3-8bac-d3e4-ae31b558171e-_(Icon_Halfling_Female)"/>
+                    <attribute id="U1" type="float" value="0.37512207"/>
+                    <attribute id="U2" type="float" value="0.40612793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3cea72b5-bbc3-a9d8-3bb9-edb85ef9738c-_(Icon_Human_Female_Strong)"/>
+                    <attribute id="U1" type="float" value="0.40637207"/>
+                    <attribute id="U2" type="float" value="0.43737793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3cecbbe2-5b4a-59da-a379-ba4292b7cb64-_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.43762207"/>
+                    <attribute id="U2" type="float" value="0.46862793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3cee2bcf-b994-3ef9-6715-9b95d8cded2d-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.46887207"/>
+                    <attribute id="U2" type="float" value="0.49987793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3cf1efc1-5dfc-30e3-b736-2e185ea6624c-_(Icon_Dragonborn_Male)"/>
+                    <attribute id="U1" type="float" value="0.50012207"/>
+                    <attribute id="U2" type="float" value="0.53112793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3d011b15-2fff-cfde-a08a-7711642f8cd0-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.59387207"/>
+                    <attribute id="U2" type="float" value="0.62487793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3d013235-6068-83ad-efe0-10f969ab9316-_(Icon_Elf_Female)"/>
+                    <attribute id="U1" type="float" value="0.87512207"/>
+                    <attribute id="U2" type="float" value="0.90612793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3d114dfe-a60b-131d-15fc-702da2ad7cfe-EQP_HeavyCrossbow_Leather_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.75012207"/>
+                    <attribute id="U2" type="float" value="0.78112793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3d14bc84-ebb5-90a1-fcac-852dba699002-_(Icon_Gnomes_Male)"/>
+                    <attribute id="U1" type="float" value="0.62512207"/>
+                    <attribute id="U2" type="float" value="0.65612793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3d1fa846-9660-5ed3-ef1f-400cdef74533-EQP_Dagger_(Icon_Dwarf_Male)"/>
+                    <attribute id="U1" type="float" value="0.53137207"/>
+                    <attribute id="U2" type="float" value="0.56237793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3d208d76-d321-b60b-c0a0-1660deef4cbe-UND_Gnome_MinePickaxe_(Icon_Gnomes_Female)"/>
+                    <attribute id="U1" type="float" value="0.78137207"/>
+                    <attribute id="U2" type="float" value="0.81237793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3d301f0b-fc49-ab0b-b35c-e519b8f5c906-_(Icon_Human_Female_Strong)"/>
+                    <attribute id="U1" type="float" value="0.81262207"/>
+                    <attribute id="U2" type="float" value="0.84362793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3d317fe9-c092-ae60-df2e-51f5256a74f0-EQP_Goblin_Shortbow_(Icon_Goblin_Male)"/>
+                    <attribute id="U1" type="float" value="0.84387207"/>
+                    <attribute id="U2" type="float" value="0.87487793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3d49a8e0-25f3-9efa-8c00-f9b73962d24e-_(Icon_Dragonborn_Female)"/>
+                    <attribute id="U1" type="float" value="0.65637207"/>
+                    <attribute id="U2" type="float" value="0.68737793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3d60ac95-c232-11d5-1686-37f8c2f3bfa1-_(Icon_HalfOrcs_Female)"/>
+                    <attribute id="U1" type="float" value="0.68762207"/>
+                    <attribute id="U2" type="float" value="0.71862793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3d63b405-f716-94d9-6b95-6df46c8f8e81-EQP_MasterOfSouls_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.71887207"/>
+                    <attribute id="U2" type="float" value="0.74987793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="3d6b42a0-74ca-194f-53f9-69d621cc8dc3-_(Icon_Gnomes_Female)"/>
+                    <attribute id="U1" type="float" value="0.56262207"/>
+                    <attribute id="U2" type="float" value="0.59362793"/>
+                    <attribute id="V1" type="float" value="0.06262207"/>
+                    <attribute id="V2" type="float" value="0.09362793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f5eca336-6f0a-152f-427f-3adb0e2f0df4-_(Icon_Gnomes_Female)"/>
+                    <attribute id="U1" type="float" value="0.00012207031"/>
+                    <attribute id="U2" type="float" value="0.03112793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f5f0fbeb-b4bf-571b-6119-f74ad22d07f1-_(Icon_Children)"/>
+                    <attribute id="U1" type="float" value="0.03137207"/>
+                    <attribute id="U2" type="float" value="0.06237793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f5ff981d-98c7-e907-10b2-0f24ef52b289-EQP_Club_(Icon_HalfElf_Female)"/>
+                    <attribute id="U1" type="float" value="0.06262207"/>
+                    <attribute id="U2" type="float" value="0.09362793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f6085059-49a2-38b5-b191-dcb71ed7ad1c-EQP_Staff_Leather_Shortbow_(Icon_Elf_Male)"/>
+                    <attribute id="U1" type="float" value="0.00012207031"/>
+                    <attribute id="U2" type="float" value="0.03112793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f61e3cc3-0732-8bf2-9a73-98c143ca0067-EQP_Warhammer_Scalemail_Shield_Fist_(Icon_Dwarf_Male)"/>
+                    <attribute id="U1" type="float" value="0.84387207"/>
+                    <attribute id="U2" type="float" value="0.87487793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f632f68b-185c-49e5-4bcf-1063ec3bb243-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.37512207"/>
+                    <attribute id="U2" type="float" value="0.40612793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f635bf04-80f2-cecf-dfa7-48c4c7599030-EQP_Greatclub_ScaleMail_(Icon_Skeleton)"/>
+                    <attribute id="U1" type="float" value="0.40637207"/>
+                    <attribute id="U2" type="float" value="0.43737793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f63abb14-894a-fc32-a6ea-477b966a37c9-_(Icon_ShamblingMound)"/>
+                    <attribute id="U1" type="float" value="0.87512207"/>
+                    <attribute id="U2" type="float" value="0.90612793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f64dc1ec-12e3-1c85-719a-98e7a96d465b-EQP_Longbow_Dagger_Leather_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.90637207"/>
+                    <attribute id="U2" type="float" value="0.93737793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f652b158-d061-f788-b951-83ee360bfb33-_(Icon_Elf_Male)"/>
+                    <attribute id="U1" type="float" value="0.43762207"/>
+                    <attribute id="U2" type="float" value="0.46862793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f6665849-b720-07ba-3122-6743740e8e64-_(Icon_Gnoll)"/>
+                    <attribute id="U1" type="float" value="0.03137207"/>
+                    <attribute id="U2" type="float" value="0.06237793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f690084e-dec7-4606-8aac-bd94a62ca45a-EQP_HandCrossbow_B_Leather_DW_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.96887207"/>
+                    <attribute id="U2" type="float" value="0.99987793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f691cd9f-6e63-20c8-d946-aeec7af05496-_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.46887207"/>
+                    <attribute id="U2" type="float" value="0.49987793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f692ea0a-b20e-6e6b-4b41-353225156af7-_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.50012207"/>
+                    <attribute id="U2" type="float" value="0.53112793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f69e8446-ad58-0431-414c-03641f34c14a-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.93762207"/>
+                    <attribute id="U2" type="float" value="0.96862793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f6a81d1b-8f42-3b50-9cd9-8e8ddfa44625-EQP_Unarmed_(Icon_Goblin_Male)"/>
+                    <attribute id="U1" type="float" value="0.09387207"/>
+                    <attribute id="U2" type="float" value="0.12487793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f6ad70fa-41a7-0083-c4a2-ee69a32f1bea-EQP_Minotaur_Greatclub_(Icon_Minotaur)"/>
+                    <attribute id="U1" type="float" value="0.12512207"/>
+                    <attribute id="U2" type="float" value="0.15612793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f6ad70fa-41a7-0083-c4a2-ee69a32f1bea-EQP_Unarmed_(Icon_Minotaur)"/>
+                    <attribute id="U1" type="float" value="0.15637207"/>
+                    <attribute id="U2" type="float" value="0.18737793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f6ad70fa-41a7-0083-c4a2-ee69a32f1bea-UND_Minotaur_ClubAmulet_(Icon_Minotaur)"/>
+                    <attribute id="U1" type="float" value="0.18762207"/>
+                    <attribute id="U2" type="float" value="0.21862793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f6c21093-b4af-2929-d313-fb5001c2f245-_(Icon_ScryingEye)"/>
+                    <attribute id="U1" type="float" value="0.25012207"/>
+                    <attribute id="U2" type="float" value="0.28112793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f6c78db3-fe95-0268-a595-fd1902f613ba-EQP_Gnoll_Bow_(Icon_Gnoll)"/>
+                    <attribute id="U1" type="float" value="0.21887207"/>
+                    <attribute id="U2" type="float" value="0.24987793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f6cba222-eee4-ab50-0735-161ed1cdc627-EQP_Flail_DW_Breastplate_(Icon_Halfling_Male)"/>
+                    <attribute id="U1" type="float" value="0.28137207"/>
+                    <attribute id="U2" type="float" value="0.31237793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f6ccc87f-e307-79f4-095f-90a68c32adae-_(Icon_Dwarf_Male)"/>
+                    <attribute id="U1" type="float" value="0.31262207"/>
+                    <attribute id="U2" type="float" value="0.34362793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f6d93365-8cf1-5643-c42d-3bdba1e44f86-EQP_Staff_(Icon_Bugbear_Male)"/>
+                    <attribute id="U1" type="float" value="0.34387207"/>
+                    <attribute id="U2" type="float" value="0.37487793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f6e2d302-e53f-1358-5a46-0091bf5b72f6-_(Icon_Gnomes_Male)"/>
+                    <attribute id="U1" type="float" value="0.37512207"/>
+                    <attribute id="U2" type="float" value="0.40612793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f6e371f4-f0a9-929e-facc-08fa85180834-EQP_Spear_Chainmail_Shield_HelmetMetal_Fist_(Icon_Dwarf_Female)"/>
+                    <attribute id="U1" type="float" value="0.40637207"/>
+                    <attribute id="U2" type="float" value="0.43737793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f6fa54b4-1ddd-f077-e138-09540248ffe5-EQP_Goblin_Shortbow_(Icon_Goblin_Female)"/>
+                    <attribute id="U1" type="float" value="0.43762207"/>
+                    <attribute id="U2" type="float" value="0.46862793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f70766b5-bb6d-2bcf-2871-c9fba6041097-EQP_Longsword_HalfPlate_Gith_(Icon_Githyanki_Female)"/>
+                    <attribute id="U1" type="float" value="0.84387207"/>
+                    <attribute id="U2" type="float" value="0.87487793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f70e62b1-4c33-df8a-674d-3533518224bd-EQP_LOW_CountingHouseGuard_Melee_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.96887207"/>
+                    <attribute id="U2" type="float" value="0.99987793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f710bff9-5210-39f0-bbe2-916ea7252fc1-LOW_BlushingMermaid_Redcap_Melee_(Icon_Redcap)"/>
+                    <attribute id="U1" type="float" value="0.53137207"/>
+                    <attribute id="U2" type="float" value="0.56237793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f71f7f3e-68d0-7474-e632-ef9598547fbf-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.00012207031"/>
+                    <attribute id="U2" type="float" value="0.03112793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f72350ec-1d6f-24b0-e709-c65a4e7e28e9-_(Icon_Elf_Male)"/>
+                    <attribute id="U1" type="float" value="0.87512207"/>
+                    <attribute id="U2" type="float" value="0.90612793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f7696d51-5eed-e739-b90c-812cdd5f36d8-EQP_Goblin_Shortbow_(Icon_Goblin_Female)"/>
+                    <attribute id="U1" type="float" value="0.75012207"/>
+                    <attribute id="U2" type="float" value="0.78112793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f7a86b79-30f8-9927-af04-e3ab0f17c9ec-_(Icon_Githyanki_Female)"/>
+                    <attribute id="U1" type="float" value="0.46887207"/>
+                    <attribute id="U2" type="float" value="0.49987793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f7b25805-5d1d-84ef-e786-3702cfa12a9f-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.50012207"/>
+                    <attribute id="U2" type="float" value="0.53112793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f7cb6fc6-8de9-e393-af4f-2e5965f0d329-EQP_Club_(Icon_Elf_Male)"/>
+                    <attribute id="U1" type="float" value="0.53137207"/>
+                    <attribute id="U2" type="float" value="0.56237793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f7de84f3-88cb-4523-f1e8-f7e6864d49de-EQP_Mace_(Icon_Skeleton)"/>
+                    <attribute id="U1" type="float" value="0.56262207"/>
+                    <attribute id="U2" type="float" value="0.59362793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f7f4152f-1927-5a3b-0694-f4980ae20729-EQP_Crossbow_Dagger_Leather_(Icon_Dwarf_Male)"/>
+                    <attribute id="U1" type="float" value="0.59387207"/>
+                    <attribute id="U2" type="float" value="0.62487793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f806d2bf-329a-33a7-abf0-455c1eeecb7e-EQP_HeavyCrossbow_Leather_(Icon_Dwarf_Female)"/>
+                    <attribute id="U1" type="float" value="0.56262207"/>
+                    <attribute id="U2" type="float" value="0.59362793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f8103934-8d3d-cbd9-5cf6-1a8951b98e93-EQP_Unarmed_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.06262207"/>
+                    <attribute id="U2" type="float" value="0.09362793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f81e9644-60e0-c9ed-8865-7ee52a9411b8-_(Icon_Githyanki_Female)"/>
+                    <attribute id="U1" type="float" value="0.03137207"/>
+                    <attribute id="U2" type="float" value="0.06237793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f82d7b6e-7194-ddaf-2876-6f5cfd97c955-EQP_Daisy_(Icon_Dragonborn_Female)"/>
+                    <attribute id="U1" type="float" value="0.06262207"/>
+                    <attribute id="U2" type="float" value="0.09362793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f830e5cc-5ca1-f4a2-ec03-d49bc1296cc2-EQP_Longsword_StuddedLeather_(Icon_Githyanki_Male)"/>
+                    <attribute id="U1" type="float" value="0.59387207"/>
+                    <attribute id="U2" type="float" value="0.62487793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f830e5cc-5ca1-f4a2-ec03-d49bc1296cc2-EQP_Shortword_StuddedLeather_DW_(Icon_Githyanki_Male)"/>
+                    <attribute id="U1" type="float" value="0.62512207"/>
+                    <attribute id="U2" type="float" value="0.65612793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f8314a81-5cc3-00cd-58d4-f16238b5bdc7-_(Icon_HalfElf_Male)"/>
+                    <attribute id="U1" type="float" value="0.78137207"/>
+                    <attribute id="U2" type="float" value="0.81237793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f87255bc-40a8-a7ec-efd4-a650181719d9-_(Icon_HalfElf_Male)"/>
+                    <attribute id="U1" type="float" value="0.90637207"/>
+                    <attribute id="U2" type="float" value="0.93737793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f89e6c3b-f4fb-64fb-3003-2ecb703f28d6-_(Icon_CC_Human_Female_Grey)"/>
+                    <attribute id="U1" type="float" value="0.09387207"/>
+                    <attribute id="U2" type="float" value="0.12487793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f8a0c356-872c-f155-02cb-81cc72dce7f4-_(Icon_DarkVine_Tentacle)"/>
+                    <attribute id="U1" type="float" value="0.62512207"/>
+                    <attribute id="U2" type="float" value="0.65612793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f8f3e5da-f96d-b41d-b300-3d7d1b84a80b-_(Icon_Human_Female_Strong)"/>
+                    <attribute id="U1" type="float" value="0.65637207"/>
+                    <attribute id="U2" type="float" value="0.68737793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f8f4bbe5-47c4-ee56-d4e9-b4df7701fb75-_(Icon_Children)"/>
+                    <attribute id="U1" type="float" value="0.68762207"/>
+                    <attribute id="U2" type="float" value="0.71862793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f8ffcd31-bbeb-cc37-d42f-14d133413cf3-EQP_Goblin_Shortbow_(Icon_Goblin_Female)"/>
+                    <attribute id="U1" type="float" value="0.71887207"/>
+                    <attribute id="U2" type="float" value="0.74987793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f91f02f3-4fb2-0435-c46e-820d5765f2cd-EQP_Mace_Leather_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.12512207"/>
+                    <attribute id="U2" type="float" value="0.15612793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f92b84c6-81f4-e422-bd20-29574d3119c1-EQP_Spear_B_Plate_HelmetLeather_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.15637207"/>
+                    <attribute id="U2" type="float" value="0.18737793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f92b84c6-81f4-e422-bd20-29574d3119c1-EQP_Spear_B_Plate_HelmetLeather_HandCrossbow_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.18762207"/>
+                    <attribute id="U2" type="float" value="0.21862793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f92b84c6-81f4-e422-bd20-29574d3119c1-EQP_Spear_Plate_HelmetLeather_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.21887207"/>
+                    <attribute id="U2" type="float" value="0.24987793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f9377f31-4570-53ab-8f2b-3a217de25432-SCL_Drider_(Icon_Drider)"/>
+                    <attribute id="U1" type="float" value="0.81262207"/>
+                    <attribute id="U2" type="float" value="0.84362793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f947fc55-0f61-380a-540d-860eb75afb45-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.65637207"/>
+                    <attribute id="U2" type="float" value="0.68737793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f95088da-b4fc-e1e4-09fd-37b952abb49a-_(Icon_Zombie)"/>
+                    <attribute id="U1" type="float" value="0.93762207"/>
+                    <attribute id="U2" type="float" value="0.96862793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f957b201-2bf1-a6ba-9902-4072163ec707-EQP_Dagger_Leather_(Icon_Gnomes_Female)"/>
+                    <attribute id="U1" type="float" value="0.68762207"/>
+                    <attribute id="U2" type="float" value="0.71862793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f95b1233-bbde-faee-6111-f0a039df44a5-EQP_Goblin_Scimitar_Shield_(Icon_Goblin_Male)"/>
+                    <attribute id="U1" type="float" value="0.25012207"/>
+                    <attribute id="U2" type="float" value="0.28112793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f95d6bf6-217c-6f8e-43cb-d3cfd9b5fee4-EQP_Longsword_ScaleMail_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.28137207"/>
+                    <attribute id="U2" type="float" value="0.31237793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f96e9ece-d7eb-94ae-b292-70027b8ce76a-_(Icon_Mindflayer)"/>
+                    <attribute id="U1" type="float" value="0.31262207"/>
+                    <attribute id="U2" type="float" value="0.34362793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f97eb569-65d7-a4dd-6c2d-e9ebe382d4d3-_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.34387207"/>
+                    <attribute id="U2" type="float" value="0.37487793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f984ccdd-f6bc-9d45-cd47-89949629a4db-_(Icon_Halfling_Female)"/>
+                    <attribute id="U1" type="float" value="0.71887207"/>
+                    <attribute id="U2" type="float" value="0.74987793"/>
+                    <attribute id="V1" type="float" value="0.21887207"/>
+                    <attribute id="V2" type="float" value="0.24987793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f9dad0cb-4b58-c911-7eea-7d4c9871b04e-EQ_Shadowheart_(Icon_HalfElf_Female)"/>
+                    <attribute id="U1" type="float" value="0.75012207"/>
+                    <attribute id="U2" type="float" value="0.78112793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f9fbb045-4861-cdf3-ffaf-0970dadad9cd-EQP_Greatclub_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.81262207"/>
+                    <attribute id="U2" type="float" value="0.84362793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="f9fbb045-4861-cdf3-ffaf-0970dadad9cd-_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.78137207"/>
+                    <attribute id="U2" type="float" value="0.81237793"/>
+                    <attribute id="V1" type="float" value="0.18762207"/>
+                    <attribute id="V2" type="float" value="0.21862793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fa0ab132-d513-1def-9ff9-eafeb2eeef7b-_(Icon_Halfling_Male)"/>
+                    <attribute id="U1" type="float" value="0.09387207"/>
+                    <attribute id="U2" type="float" value="0.12487793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fa2d50c8-1daa-bf40-2869-cbc75c7230cc-_(Icon_Skeleton)"/>
+                    <attribute id="U1" type="float" value="0.12512207"/>
+                    <attribute id="U2" type="float" value="0.15612793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fa3d07ba-9abd-4c84-a6f8-728029f87891-EQP_Unarmed_(Icon_Goblin_Female)"/>
+                    <attribute id="U1" type="float" value="0.15637207"/>
+                    <attribute id="U2" type="float" value="0.18737793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fa55e318-d678-8353-8bb8-9bd3e17233e4-_(Icon_HalfOrcs_Female)"/>
+                    <attribute id="U1" type="float" value="0.28137207"/>
+                    <attribute id="U2" type="float" value="0.31237793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fa563387-5e25-6549-99fd-53bc4463deed-_(Icon_HalfElf_Female)"/>
+                    <attribute id="U1" type="float" value="0.46887207"/>
+                    <attribute id="U2" type="float" value="0.49987793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fa5a8a33-05ac-a50e-e768-234d4c7d6bf5-LOW_BlushingMermaid_Redcap_Melee_(Icon_Redcap)"/>
+                    <attribute id="U1" type="float" value="0.18762207"/>
+                    <attribute id="U2" type="float" value="0.21862793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fa68f096-23cb-8e14-eb1e-5e8cf000a7ad-EQP_HandCrossbow_Leather_Shortsword_(Icon_HalfElf_Female)"/>
+                    <attribute id="U1" type="float" value="0.31262207"/>
+                    <attribute id="U2" type="float" value="0.34362793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fa811d2e-b105-3f78-b9ad-cb6d883ffc73-_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.40637207"/>
+                    <attribute id="U2" type="float" value="0.43737793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fa819f8b-5e46-e292-c1cb-4acabc5353b2-_(Icon_Dwarf_Male)"/>
+                    <attribute id="U1" type="float" value="0.43762207"/>
+                    <attribute id="U2" type="float" value="0.46862793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fa83ac11-e4bc-d97f-d090-8aece67966ba-EQP_Staff_Robe_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.34387207"/>
+                    <attribute id="U2" type="float" value="0.37487793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fa8c11a3-c9c8-b6e0-017a-d464ab95fb77-EQP_Shortsword_Leather_(Icon_Elf_Female)"/>
+                    <attribute id="U1" type="float" value="0.21887207"/>
+                    <attribute id="U2" type="float" value="0.24987793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fa98fc6b-a18d-7dd1-b9ed-709039e41e73-_(Icon_Drow_Female_Strong)"/>
+                    <attribute id="U1" type="float" value="0.37512207"/>
+                    <attribute id="U2" type="float" value="0.40612793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fa9e4cf4-f408-df69-ac8c-0290776f3742-EQP_Dagger_Leather_(Icon_Gnomes_Female)"/>
+                    <attribute id="U1" type="float" value="0.25012207"/>
+                    <attribute id="U2" type="float" value="0.28112793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="faa502ff-511d-17b4-3fe6-4d915365839c-_(Icon_HalfOrcs_Female)"/>
+                    <attribute id="U1" type="float" value="0.50012207"/>
+                    <attribute id="U2" type="float" value="0.53112793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="facc0248-ca79-c513-65c4-391cfba409d6-_(Icon_Dwarf_Female)"/>
+                    <attribute id="U1" type="float" value="0.53137207"/>
+                    <attribute id="U2" type="float" value="0.56237793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="facf2a2d-9815-e486-ed11-627dcaf1d02e-_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.56262207"/>
+                    <attribute id="U2" type="float" value="0.59362793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="faf5255f-4dfa-d8bb-7e7a-5e4b7e11497c-EQ_Wyll_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.59387207"/>
+                    <attribute id="U2" type="float" value="0.62487793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="faf5255f-4dfa-d8bb-7e7a-5e4b7e11497c-EQ_Wyll_(Icon_Origin_Wyll)"/>
+                    <attribute id="U1" type="float" value="0.62512207"/>
+                    <attribute id="U2" type="float" value="0.65612793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fb0d924c-a290-71aa-ca12-b2858eb83911-EQP_Scimitar_Leather_DW_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.65637207"/>
+                    <attribute id="U2" type="float" value="0.68737793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fb13258e-ac0a-a9dd-694b-36ca9a3ad4cd-EQP_Dagger_DW_(Icon_DarkJusticiar)"/>
+                    <attribute id="U1" type="float" value="0.96887207"/>
+                    <attribute id="U2" type="float" value="0.99987793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fb13258e-ac0a-a9dd-694b-36ca9a3ad4cd-EQP_Mace_(Icon_DarkJusticiar)"/>
+                    <attribute id="U1" type="float" value="0.00012207031"/>
+                    <attribute id="U2" type="float" value="0.03112793"/>
+                    <attribute id="V1" type="float" value="0.28137207"/>
+                    <attribute id="V2" type="float" value="0.31237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fb3e785e-f6ee-b676-526e-5091d765d179-_(Icon_Githyanki_Male)"/>
+                    <attribute id="U1" type="float" value="0.68762207"/>
+                    <attribute id="U2" type="float" value="0.71862793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fb4ef2bf-0900-14be-3043-71939d113723-EQP_HeavyCrossbow_Leather_(Icon_Dwarf_Male)"/>
+                    <attribute id="U1" type="float" value="0.71887207"/>
+                    <attribute id="U2" type="float" value="0.74987793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fb504594-9817-22f5-7593-dad7c287ed80-_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.03137207"/>
+                    <attribute id="U2" type="float" value="0.06237793"/>
+                    <attribute id="V1" type="float" value="0.28137207"/>
+                    <attribute id="V2" type="float" value="0.31237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fb5c6d24-df28-3719-abda-c7c3b46c1795-EQP_Goblin_Greataxe_(Icon_Goblin_Male)"/>
+                    <attribute id="U1" type="float" value="0.75012207"/>
+                    <attribute id="U2" type="float" value="0.78112793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fb6d54b2-c26a-1077-cbeb-3bb4c57bc0f0-_(Icon_Dwarf_Female)"/>
+                    <attribute id="U1" type="float" value="0.78137207"/>
+                    <attribute id="U2" type="float" value="0.81237793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fb778c24-ab9c-af1a-6fd0-47769e993367-_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.90637207"/>
+                    <attribute id="U2" type="float" value="0.93737793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fb7dcd0c-a702-5cb4-e68a-c523b539fdbb-EQP_Longsword_ScaleMail_Shield_HelmetMetal_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.81262207"/>
+                    <attribute id="U2" type="float" value="0.84362793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fb961e71-3266-000f-ea69-3d66d06e2163-EQP_Shortsword_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.93762207"/>
+                    <attribute id="U2" type="float" value="0.96862793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fb99d424-6e8e-a9da-a74c-24b1f126900e-_(Icon_Dragonborn_Male)"/>
+                    <attribute id="U1" type="float" value="0.87512207"/>
+                    <attribute id="U2" type="float" value="0.90612793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fb9c8f04-8ebf-5b87-61c0-f16173e4aaab-_(Icon_CC_Tiefling_Female_Grey)"/>
+                    <attribute id="U1" type="float" value="0.84387207"/>
+                    <attribute id="U2" type="float" value="0.87487793"/>
+                    <attribute id="V1" type="float" value="0.25012207"/>
+                    <attribute id="V2" type="float" value="0.28112793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fbafee47-b7d4-6f66-3c20-7be131f9a548-_(Icon_Githyanki_Male)"/>
+                    <attribute id="U1" type="float" value="0.06262207"/>
+                    <attribute id="U2" type="float" value="0.09362793"/>
+                    <attribute id="V1" type="float" value="0.28137207"/>
+                    <attribute id="V2" type="float" value="0.31237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fbc46606-e7d1-5de3-a25e-51d1ab1a06df-EQP_Warhammer_Scalemail_Shield_Fist_(Icon_Dwarf_Male)"/>
+                    <attribute id="U1" type="float" value="0.09387207"/>
+                    <attribute id="U2" type="float" value="0.12487793"/>
+                    <attribute id="V1" type="float" value="0.28137207"/>
+                    <attribute id="V2" type="float" value="0.31237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fbf1ebba-4c66-cb31-e165-026ff9bed98c-_(Icon_HalfOrcs_Female)"/>
+                    <attribute id="U1" type="float" value="0.12512207"/>
+                    <attribute id="U2" type="float" value="0.15612793"/>
+                    <attribute id="V1" type="float" value="0.28137207"/>
+                    <attribute id="V2" type="float" value="0.31237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fbf981eb-8c4f-327e-8293-5134170fd591-EQP_HeavyCrossbow_StuddedLeather_Gith_(Icon_Githyanki_Female)"/>
+                    <attribute id="U1" type="float" value="0.15637207"/>
+                    <attribute id="U2" type="float" value="0.18737793"/>
+                    <attribute id="V1" type="float" value="0.28137207"/>
+                    <attribute id="V2" type="float" value="0.31237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fc341db7-a1f7-338d-c15a-03f9b616e5c3-_(Icon_Elf_Female)"/>
+                    <attribute id="U1" type="float" value="0.25012207"/>
+                    <attribute id="U2" type="float" value="0.28112793"/>
+                    <attribute id="V1" type="float" value="0.28137207"/>
+                    <attribute id="V2" type="float" value="0.31237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fc3d77ce-df17-2425-90e2-3107d5ff3e91-_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.18762207"/>
+                    <attribute id="U2" type="float" value="0.21862793"/>
+                    <attribute id="V1" type="float" value="0.28137207"/>
+                    <attribute id="V2" type="float" value="0.31237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fc614365-42d2-0cf6-5a86-5396b2e39d5d-EQP_Mace_Leather_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.31262207"/>
+                    <attribute id="U2" type="float" value="0.34362793"/>
+                    <attribute id="V1" type="float" value="0.28137207"/>
+                    <attribute id="V2" type="float" value="0.31237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fc72ab5f-05df-2339-b125-bbae8f526ef5-_(Icon_Human_Female)"/>
+                    <attribute id="U1" type="float" value="0.21887207"/>
+                    <attribute id="U2" type="float" value="0.24987793"/>
+                    <attribute id="V1" type="float" value="0.28137207"/>
+                    <attribute id="V2" type="float" value="0.31237793"/>
+                </node>
+                <node id="IconUV">
+                    <attribute id="MapKey" type="FixedString" value="fc84342c-6bb9-45a6-524d-202a81e880c8-EQP_HandCrossbow_Leather_Shortsword_(Icon_Human_Male)"/>
+                    <attribute id="U1" type="float" value="0.28137207"/>
+                    <attribute id="U2" type="float" value="0.31237793"/>
+                    <attribute id="V1" type="float" value="0.28137207"/>
+                    <attribute id="V2" type="float" value="0.31237793"/>
+                </node>
+            </children>
+        </node>
+    </region>
+    <region id="TextureAtlasInfo">
+        <node id="root">
+            <children>
+                <node id="TextureAtlasIconSize">
+                    <attribute id="Height" type="int32" value="128"/>
+                    <attribute id="Width" type="int32" value="128"/>
+                </node>
+                <node id="TextureAtlasPath">
+                    <attribute id="Path" type="string" value="Assets/Textures/Icons/eight.dds"/>
+                    <attribute id="UUID" type="FixedString" value="dcf0906b-334d-fe49-d3f6-3d6eb343f714"/>
+                </node>
+                <node id="TextureAtlasTextureSize">
+                    <attribute id="Height" type="int32" value="4096"/>
+                    <attribute id="Width" type="int32" value="4096"/>
+                </node>
+            </children>
+        </node>
+    </region>
+</save>

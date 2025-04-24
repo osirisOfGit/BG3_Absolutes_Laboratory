@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<save>
+    <version major="4" minor="8" revision="0" build="10"/>
+    <region id="IconUVList">
+        <node id="root"/>
+    </region>
+    <region id="TextureAtlasInfo">
+        <node id="root">
+            <children>
+                <node id="TextureAtlasIconSize">
+                    <attribute id="Height" type="int32" value="64"/>
+                    <attribute id="Width" type="int32" value="64"/>
+                </node>
+                <node id="TextureAtlasPath">
+                    <attribute id="Path" type="string" value="Assets/Textures/Icons/five.dds"/>
+                    <attribute id="UUID" type="FixedString" value="3ee5cd06-8758-7d7e-0265-82516f457d6c"/>
+                </node>
+                <node id="TextureAtlasTextureSize">
+                    <attribute id="Height" type="int32" value="512"/>
+                    <attribute id="Width" type="int32" value="512"/>
+                </node>
+            </children>
+        </node>
+    </region>
+</save>
