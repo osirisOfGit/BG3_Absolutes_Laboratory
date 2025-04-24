@@ -64,6 +64,7 @@ local selectedSelectable
 function Main.buildOutTree()
 	local self = Main
 
+	self.configCell:AddImage("003f13b5-f9a1-00a0-a3e4-f131d1e2b6bb-_(Icon_Elf_Male)")
 	local universalSelection = self.selectionTreeCell:AddTree("Acts")
 	universalSelection.NoAutoOpenOnLog = true
 
