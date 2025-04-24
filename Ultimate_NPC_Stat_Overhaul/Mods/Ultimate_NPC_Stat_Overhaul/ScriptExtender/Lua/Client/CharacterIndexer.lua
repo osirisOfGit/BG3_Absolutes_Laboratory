@@ -46,45 +46,60 @@ local function addToTable(tableToAddTo, field, id)
 	end
 end
 
+---@return number, fun():number wrapped coroutine
+function CharacterIndex:hydrateIndex()
+	local progressions = Ext.StaticData.GetAll("Progression")
+	local templates = Ext.ClientTemplate.GetAllRootTemplates()
 
-local function hydrateIndex()
-	for _, progressionId in pairs(Ext.StaticData.GetAll("Progression")) do
-		---@type ResourceProgression
-		local progression = Ext.StaticData.Get(progressionId, "Progression")
+	local maxCount = TableUtils:CountElements(progressions) + TableUtils:CountElements(templates)
+	return maxCount, coroutine.wrap(function()
+		local count = 0
+		local lastPercentage = 0
 
-		CharacterIndex.displayNameMappings[progression.ResourceUUID] = progression.Name
-		CharacterIndex.progressionIndex[progression.ResourceUUID] = progression.TableUUID
-		addToTable(CharacterIndex.progressionIndex, progression.TableUUID, progression.ResourceUUID)
-	end
+		for _, progressionId in pairs(progressions) do
+			---@type ResourceProgression
+			local progression = Ext.StaticData.Get(progressionId, "Progression")
 
-	local templateIndex = CharacterIndex.templates
-	for id, characterTemplate in pairs(Ext.ClientTemplate.GetAllRootTemplates()) do
-		if characterTemplate.TemplateType == "character" then
-			---@cast characterTemplate CharacterTemplate
-
-			CharacterIndex.displayNameMappings[id] = characterTemplate.DisplayName:Get() or characterTemplate.Name
-
-			addToTable(templateIndex.acts, characterTemplate.LevelName, id)
-			addToTable(templateIndex.races, characterTemplate.Race, id)
-			if characterTemplate.Race then
-				---@type ResourceRace
-				local raceResource = Ext.StaticData.Get(characterTemplate.Race, "Race")
-
-				if raceResource then
-					CharacterIndex.displayNameMappings[characterTemplate.Race] = raceResource.DisplayName:Get() or raceResource.Name
-				end
-			end
-
-			---@type Character
-			local stat = Ext.Stats.Get(characterTemplate.Stats)
-
-			if stat then
-				addToTable(templateIndex.progressions, stat.Progressions, id)
+			self.displayNameMappings[progression.ResourceUUID] = progression.Name
+			self.progressionIndex[progression.ResourceUUID] = progression.TableUUID
+			addToTable(self.progressionIndex, progression.TableUUID, progression.ResourceUUID)
+			count = count + 1
+			if math.floor(((count / maxCount) * 100)) > lastPercentage then
+				lastPercentage = math.floor(((count / maxCount) * 100))
+				coroutine.yield(count)
 			end
 		end
-	end
+
+		local templateIndex = self.templates
+		for id, characterTemplate in pairs(templates) do
+			if characterTemplate.TemplateType == "character" then
+				---@cast characterTemplate CharacterTemplate
+
+				self.displayNameMappings[id] = characterTemplate.DisplayName:Get() or characterTemplate.Name
+
+				addToTable(templateIndex.acts, characterTemplate.LevelName, id)
+				addToTable(templateIndex.races, characterTemplate.Race, id)
+				if characterTemplate.Race then
+					---@type ResourceRace
+					local raceResource = Ext.StaticData.Get(characterTemplate.Race, "Race")
+
+					if raceResource then
+						self.displayNameMappings[characterTemplate.Race] = raceResource.DisplayName:Get() or raceResource.Name
+					end
+				end
+
+				---@type Character
+				local stat = Ext.Stats.Get(characterTemplate.Stats)
+
+				if stat then
+					addToTable(templateIndex.progressions, stat.Progressions, id)
+				end
+			end
+			count = count + 1
+			if math.floor(((count / maxCount) * 100)) > lastPercentage then
+				lastPercentage = math.floor(((count / maxCount) * 100))
+				coroutine.yield(count)
+			end
+		end
+	end)
 end
-
-Ext.Events.StatsLoaded:Subscribe(hydrateIndex)
-
-Ext.Events.ResetCompleted:Subscribe(hydrateIndex)
