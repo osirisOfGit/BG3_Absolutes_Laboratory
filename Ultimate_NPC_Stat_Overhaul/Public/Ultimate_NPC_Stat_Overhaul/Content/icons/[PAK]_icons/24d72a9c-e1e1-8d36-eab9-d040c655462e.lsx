@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="8" revision="0" build="10" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="TextureBank">
+		<node id="TextureBank">
+			<children>
+				<node id="Resource">
+					<attribute id="ID" type="FixedString" value="24d72a9c-e1e1-8d36-eab9-d040c655462e" />
+					<attribute id="Name" type="LSString" value="9" />
+					<attribute id="SourceFile" type="LSString" value="Public/Ultimate_NPC_Stat_Overhaul/Assets/Textures/Icons/9.dds" />
+					<attribute id="Template" type="FixedString" value="9" />
+					<attribute id="Streaming" type="bool" value="True" />
+					<attribute id="Type" type="int32" value="1" />
+					<attribute id="SRGB" type="bool" value="False" />
+					<attribute id="Width" type="int32" value="512" />
+					<attribute id="Height" type="int32" value="512" />
+					<attribute id="Depth" type="int32" value="1" />
+				</node>
+			</children>
+		</node>
+	</region>
+</save>
