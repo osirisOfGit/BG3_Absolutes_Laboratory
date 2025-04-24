@@ -37,22 +37,20 @@ CharacterIndex.displayNameMappings = {}
 ---@param field string
 ---@param id string
 local function addToTable(tableToAddTo, field, id)
-	field = field == "" and "Unknown" or field
-
-	if field then
+	if field and field ~= "" then
 		tableToAddTo[field] = tableToAddTo[field] or {}
 
 		table.insert(tableToAddTo[field], id)
 	end
 end
 
----@return number, fun():number wrapped coroutine
+---@return fun():number wrapped coroutine
 function CharacterIndex:hydrateIndex()
 	local progressions = Ext.StaticData.GetAll("Progression")
 	local templates = Ext.ClientTemplate.GetAllRootTemplates()
 
 	local maxCount = TableUtils:CountElements(progressions) + TableUtils:CountElements(templates)
-	return maxCount, coroutine.wrap(function()
+	return coroutine.wrap(function()
 		local count = 0
 		local lastPercentage = 0
 
@@ -60,13 +58,15 @@ function CharacterIndex:hydrateIndex()
 			---@type ResourceProgression
 			local progression = Ext.StaticData.Get(progressionId, "Progression")
 
-			self.displayNameMappings[progression.ResourceUUID] = progression.Name
-			self.progressionIndex[progression.ResourceUUID] = progression.TableUUID
-			addToTable(self.progressionIndex, progression.TableUUID, progression.ResourceUUID)
-			count = count + 1
-			if math.floor(((count / maxCount) * 100)) > lastPercentage then
-				lastPercentage = math.floor(((count / maxCount) * 100))
-				coroutine.yield(count)
+			if progression and progression.ResourceUUID then
+				self.displayNameMappings[progression.ResourceUUID] = progression.Name or "Unknown"
+				self.progressionIndex[progression.ResourceUUID] = progression.TableUUID
+				addToTable(self.progressionIndex, progression.TableUUID, progression.ResourceUUID)
+				count = count + 1
+				if math.floor(((count / maxCount) * 100)) > lastPercentage then
+					lastPercentage = math.floor(((count / maxCount) * 100))
+					coroutine.yield(count / maxCount)
+				end
 			end
 		end
 
@@ -75,7 +75,7 @@ function CharacterIndex:hydrateIndex()
 			if characterTemplate.TemplateType == "character" then
 				---@cast characterTemplate CharacterTemplate
 
-				self.displayNameMappings[id] = characterTemplate.DisplayName:Get() or characterTemplate.Name
+				self.displayNameMappings[id] = characterTemplate.DisplayName:Get() or characterTemplate.Name or characterTemplate.TemplateName
 
 				addToTable(templateIndex.acts, characterTemplate.LevelName, id)
 				addToTable(templateIndex.races, characterTemplate.Race, id)
@@ -98,7 +98,7 @@ function CharacterIndex:hydrateIndex()
 			count = count + 1
 			if math.floor(((count / maxCount) * 100)) > lastPercentage then
 				lastPercentage = math.floor(((count / maxCount) * 100))
-				coroutine.yield(count)
+				coroutine.yield(count / maxCount)
 			end
 		end
 	end)
