@@ -8,5 +8,7 @@ Ext.Events.StatsLoaded:Subscribe(function()
 	Logger:ClearLogFile()
 end)
 
+Ext.Require("Client/RandomHelpers.lua")
+Ext.Require("Client/Styler.lua")
 Ext.Require("Client/CharacterIndexer.lua")
 Ext.Require("Client/Main.lua")

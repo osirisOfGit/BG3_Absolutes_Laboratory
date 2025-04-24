@@ -56,6 +56,8 @@ function Styler:CheapTextAlign(text, parent, font)
 	end
 	selectable:SetStyle("SelectableTextAlign", 0.5)
 	selectable.Disabled = true
+
+	return selectable
 end
 
 ---@param parent ExtuiTreeParent

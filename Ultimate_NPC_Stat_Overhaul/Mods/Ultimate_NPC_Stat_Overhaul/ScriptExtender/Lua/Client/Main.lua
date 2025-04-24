@@ -1,3 +1,5 @@
+Ext.Require("Client/CharacterWindow.lua")
+
 Main = {
 	---@type ExtuiTreeParent
 	parent = nil,
@@ -55,21 +57,31 @@ Ext.ModEvents.BG3MCM["MCM_Mod_Tab_Activated"]:Subscribe(function(payload)
 	end
 end)
 
+---@type ExtuiSelectable
+local selectedSelectable
+
 ---@return fun():number
 function Main.buildOutTree()
 	local self = Main
 
+	self.configCell:AddImage("7a7a65c4-7590-e5bf-7cb7-09a8573c73fa-_(Icon_Quasit)")
 	local universalSelection = self.selectionTreeCell:AddTree("Acts")
 	universalSelection.NoAutoOpenOnLog = true
 
 	---@param parent ExtuiTree
 	---@param template GUIDSTRING
 	local function buildSelectable(parent, template)
+		---@type ExtuiSelectable
 		local selectable = parent:AddSelectable(string.format("%s (%s)",
 			CharacterIndex.displayNameMappings[template],
 			string.sub(template, #template - 5)))
 
 		selectable.UserData = template
+
+		selectable.OnClick = function ()
+			Helpers:KillChildren(self.configCell)
+			CharacterWindow:BuildWindow(self.configCell, selectable.UserData)
+		end
 	end
 
 	return coroutine.wrap(function()
