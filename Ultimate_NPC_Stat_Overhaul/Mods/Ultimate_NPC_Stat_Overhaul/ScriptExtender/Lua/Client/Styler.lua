@@ -49,15 +49,17 @@ end
 ---@param parent ExtuiTreeParent
 ---@param font string?
 function Styler:CheapTextAlign(text, parent, font)
-	---@type ExtuiSelectable
-	local selectable = parent:AddSelectable(text)
-	if font then
-		selectable.Font = font
-	end
-	selectable:SetStyle("SelectableTextAlign", 0.5)
-	selectable.Disabled = true
+	if text and text ~= "" then
+		---@type ExtuiSelectable
+		local selectable = parent:AddSelectable(text)
+		if font then
+			selectable.Font = font
+		end
+		selectable:SetStyle("SelectableTextAlign", 0.5)
+		selectable.Disabled = true
 
-	return selectable
+		return selectable
+	end
 end
 
 ---@param parent ExtuiTreeParent
