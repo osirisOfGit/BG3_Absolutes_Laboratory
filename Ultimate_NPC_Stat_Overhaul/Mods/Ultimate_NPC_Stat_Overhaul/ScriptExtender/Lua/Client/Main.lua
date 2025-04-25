@@ -1,12 +1,12 @@
 Ext.Require("Client/CharacterWindow.lua")
-Ext.Require("Client/StatManager.lua")
+Ext.Require("Client/Stats/StatProxy.lua")
 
 Main = {
 	---@type ExtuiTreeParent
 	parent = nil,
-	---@type ExtuiTableCell
+	---@type ExtuiChildWindow
 	selectionTreeCell = nil,
-	---@type ExtuiTableCell
+	---@type ExtuiChildWindow
 	configCell = nil,
 	---@type ExtuiProgressBar
 	progressBar = nil
@@ -21,15 +21,16 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Configuration",
 		Main.progressBar = tabHeader:AddProgressBar()
 		Main.progressBar.Visible = false
 
-		local displayTable = tabHeader:AddTable("allConfigs", 2)
-		displayTable:AddColumn("", "WidthFixed")
-		displayTable:AddColumn("", "WidthStretch")
+		Main.displayTable = tabHeader:AddTable("allConfigs", 2)
+		Main.displayTable:AddColumn("", "WidthFixed")
+		Main.displayTable:AddColumn("", "WidthStretch")
 
-		local row = displayTable:AddRow()
+		local row = Main.displayTable:AddRow()
 
 		Main.selectionTreeCell = row:AddCell()
 
-		Main.configCell = row:AddCell()
+		Main.configCell = row:AddCell():AddChildWindow("ConfigCell")
+		Main.configCell.NoSavedSettings = true
 	end
 )
 
@@ -78,7 +79,7 @@ function Main.buildOutTree()
 
 		selectable.UserData = template
 
-		selectable.OnClick = function ()
+		selectable.OnClick = function()
 			Helpers:KillChildren(self.configCell)
 			CharacterWindow:BuildWindow(self.configCell, selectable.UserData)
 		end
@@ -130,6 +131,9 @@ function Main.buildOutTree()
 				progressionTableSelection.IDContext = progressionTable .. act
 				progressionTableSelection.UserData = progressionTable
 				progressionTableSelection:SetOpen(false, "Always")
+				progressionTableSelection.OnExpand = function()
+					self.displayTable.ColumnDefs[1].Width = self.selectionTreeCell.LastSize[1]
+				end
 
 				for _, progressionTemplate in TableUtils:OrderedPairs(progressionTemplates, function(key)
 					return CharacterIndex.displayNameMappings[progressionTemplates[key]]

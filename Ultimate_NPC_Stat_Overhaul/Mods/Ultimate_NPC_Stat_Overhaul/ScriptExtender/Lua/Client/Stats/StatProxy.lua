@@ -1,61 +1,47 @@
-StatManager = {}
-
----@class StatFieldsToParse
-local statsToParse = {
-	["Resistances"] = {
-		"AcidResistance",
-		"BludgeoningResistance",
-		"ColdResistance",
-		"FireResistance",
-		"ForceResistance",
-		"LightningResistance",
-		"NecroticResistance",
-		"PiercingResistance",
-		"PoisonResistance",
-		"PsychicResistance",
-		"RadiantResistance",
-		"SlashingResistance",
-		"ThunderResistance",
-	},
-	["Abilities"] = {
-		"Strength",
-		"Dexterity",
-		"Constitution",
-		"Intelligence",
-		"Wisdom",
-		"Charisma",
-	},
-	"ActionResources",
-	"Armor",
-	"ArmorType",
-	"Class",
-	"DarkvisionRange",
-	"DefaultBoosts",
-	"DifficultyStatuses",
-	"ExtraProperties",
-	"Flags",
-	"FOV",
-	"GameSize",
-	"Hearing",
-	"Initiative",
-	"Level",
-	"MinimumDetectionRange",
-	"Passives",
-	"PersonalStatusImmunities",
-	"ProficiencyBonusScaling",
-	"ProficiencyBonus",
-	"Progressions",
-	"Sight",
-	"SpellCastingAbility",
-	"UnarmedAttackAbility",
-	"UnarmedRangedAttackAbility",
-	"VerticalFOV",
-	"Vitality",
-	"Weight",
-	"XPReward",
+---@class StatProxy
+StatProxy = {
+	delimeter = ";",
+	---@class StatFieldsToParse
+	statsToParse = {},
 }
 
----@param stat Character
+---@type {[string]: StatProxy}
+local proxyRegistry = {}
+
+---@param instance table?
+---@return StatProxy instance
+function StatProxy:new(instance)
+	instance = instance or {}
+
+	setmetatable(instance, self)
+	self.__index = self
+	self.statsToParse = {}
+
+	return instance
+end
+
+function StatProxy:RegisterStatType(statType, instance)
+	proxyRegistry[statType] = instance
+end
+
+---@param statString string
+---@return fun():string
+function StatProxy:SplitSpring(statString)
+	return string.gmatch(statString, "([^" .. self.delimeter .. "]+)")
+end
+
+---@param parent ExtuiTreeParent
+---@param statString string
+---@param statType string?
+function StatProxy:buildHyperlinkedStrings(parent, statString, statType)
+	if proxyRegistry[statType] then
+		proxyRegistry[statType]:buildHyperlinkedStrings(parent, statString)
+	else
+		parent:AddText(statString)
+	end
+end
+
+---@param stat StatsObject
 ---@param propertiesToRender StatFieldsToParse
 ---@param statDisplayTable ExtuiTable
 local function buildDisplayTable(stat, propertiesToRender, statDisplayTable)
@@ -99,15 +85,16 @@ local function buildDisplayTable(stat, propertiesToRender, statDisplayTable)
 end
 
 
----@param characterStat Character
+---@param stat StatsObject
 ---@param parent ExtuiTreeParent
-function StatManager:RenderDisplayWindow(characterStat, parent)
-	---@param stat Character
+---@param statType string
+function StatProxy:RenderDisplayWindow(stat, parent)
+	---@param nextStat StatsObject
 	---@param propertiesToCopy StatFieldsToParse?
 	---@param parentCell ExtuiTreeParent|ExtuiTableCell
-	local function buildRecursiveStatTable(stat, propertiesToCopy, parentCell)
-		---@type Character?
-		local parentStat = stat.Using ~= "" and Ext.Stats.Get(stat.Using) or nil
+	local function buildRecursiveStatTable(nextStat, propertiesToCopy, parentCell)
+		---@type StatsObject?
+		local parentStat = nextStat.Using ~= "" and Ext.Stats.Get(nextStat.Using) or nil
 		if parentStat then
 			---@type StatFieldsToParse
 			local overriddenProperties = {}
@@ -116,10 +103,10 @@ function StatManager:RenderDisplayWindow(characterStat, parent)
 
 			local function determineStatDiff(fieldName, key, parentKey)
 				local isInherited
-				if type(stat[fieldName]) == "table" then
-					isInherited = TableUtils:CompareLists(stat[fieldName], parentStat[fieldName])
+				if type(nextStat[fieldName]) == "table" then
+					isInherited = TableUtils:CompareLists(nextStat[fieldName], parentStat[fieldName])
 				else
-					isInherited = tostring(stat[fieldName]) == tostring(parentStat[fieldName])
+					isInherited = tostring(nextStat[fieldName]) == tostring(parentStat[fieldName])
 				end
 
 				local tableToPopulate = isInherited and inheritedProperties or overriddenProperties
@@ -134,7 +121,7 @@ function StatManager:RenderDisplayWindow(characterStat, parent)
 				end
 			end
 
-			for key, value in TableUtils:OrderedPairs(propertiesToCopy or statsToParse) do
+			for key, value in TableUtils:OrderedPairs(propertiesToCopy or self.statsToParse) do
 				local success, error = pcall(function()
 					if type(value) == "string" then
 						determineStatDiff(value, key)
@@ -149,16 +136,16 @@ function StatManager:RenderDisplayWindow(characterStat, parent)
 				end
 			end
 
-			parentCell:AddText(string.format("%s | Original Mod: %s ", stat.Name, stat.OriginalModId,
-				stat.ModId ~= stat.OriginalModId and ("| Modified By: " .. stat.ModId) or "")).Font = "Large"
+			parentCell:AddText(string.format("%s | Original Mod: %s ", nextStat.Name, nextStat.OriginalModId,
+				nextStat.ModId ~= nextStat.OriginalModId and ("| Modified By: " .. nextStat.ModId) or "")).Font = "Large"
 
-			local statDisplayTable = parentCell:AddTable("StatDisplay" .. stat.Name, 2)
+			local statDisplayTable = parentCell:AddTable("StatDisplay" .. nextStat.Name, 2)
 			statDisplayTable:AddColumn("", "WidthFixed")
 			statDisplayTable:AddColumn("", "WidthStretch")
 
 			statDisplayTable.Borders = true
 			if next(overriddenProperties) then
-				buildDisplayTable(characterStat, overriddenProperties, statDisplayTable)
+				buildDisplayTable(nextStat, overriddenProperties, statDisplayTable)
 			end
 
 			if next(inheritedProperties) then
@@ -173,16 +160,30 @@ function StatManager:RenderDisplayWindow(characterStat, parent)
 				statDisplayTable:Destroy()
 			end
 		else
-			parentCell:AddText(string.format("%s | Original Mod: %s ", stat.Name, stat.OriginalModId,
-				stat.ModId ~= stat.OriginalModId and ("| Modified By: " .. stat.ModId) or "")).Font = "Large"
+			parentCell:AddText(string.format("%s | Original Mod: %s ", nextStat.Name, nextStat.OriginalModId,
+				nextStat.ModId ~= nextStat.OriginalModId and ("| Modified By: " .. nextStat.ModId) or "")).Font = "Large"
 
-			local statDisplayTable = parentCell:AddTable("StatDisplay" .. stat.Name, 2)
+			local statDisplayTable = parentCell:AddTable("StatDisplay" .. nextStat.Name, 2)
 			statDisplayTable:AddColumn("", "WidthFixed")
 			statDisplayTable:AddColumn("", "WidthStretch")
 			statDisplayTable.Borders = true
-			buildDisplayTable(characterStat, propertiesToCopy or statsToParse, statDisplayTable)
+			buildDisplayTable(nextStat, propertiesToCopy or self.statsToParse, statDisplayTable)
 		end
 	end
 
-	buildRecursiveStatTable(characterStat, nil, parent)
+	buildRecursiveStatTable(stat, nil, parent)
 end
+
+StatManager = StatProxy:new()
+
+function StatManager:RenderDisplayWindow(stat, parent)
+	local success, result = pcall(function(...)
+		proxyRegistry[stat.ModifierList]:RenderDisplayWindow(stat, parent)
+	end)
+
+	if not success then
+		Logger:BasicError(result)
+	end
+end
+
+Ext.Require("Client/Stats/Proxies/Character.lua")
