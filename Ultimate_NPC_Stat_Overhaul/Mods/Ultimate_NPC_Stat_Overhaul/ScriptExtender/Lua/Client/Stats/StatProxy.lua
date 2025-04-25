@@ -67,7 +67,7 @@ local function buildDisplayTable(stat, propertiesToRender, statDisplayTable)
 					and Ext.Loca.GetTranslatedString(stat[value], stat[value])
 					or stat[value])
 
-				if statValue then
+				if statValue and (statValue ~= "No" and statValue ~= "None") then
 					leftCell:AddText(value)
 					StatManager:buildHyperlinkedStrings(rightCell, statValue, value)
 					if value == "Icon" then
