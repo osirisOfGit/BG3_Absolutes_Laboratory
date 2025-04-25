@@ -28,7 +28,6 @@ CharacterTemplateProxy.fieldsToParse = {
 	"DisableEquipping",
 	"Equipment",
 	"EquipmentRace",
-	"EquipmentTypes",
 	"ExcludeInDifficulty",
 	"InventoryType",
 	"IsDroppedOnDeath",

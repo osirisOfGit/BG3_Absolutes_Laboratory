@@ -47,6 +47,8 @@ function ResourceProxy:buildHyperlinkedStrings(parent, statString, statType) end
 ---@param propertiesToRender ResourceFieldsToParse
 ---@param statDisplayTable ExtuiTable
 local function buildDisplayTable(resource, propertiesToRender, statDisplayTable)
+	resource = Ext.Types.GetObjectType(resource) == "CharacterTemplate" and Ext.Types.Serialize(resource) or resource
+
 	local function makeDisplayable(value)
 		if type(value) == "table" then
 			return #value > 0 and table.concat(value, "|")
@@ -79,16 +81,12 @@ local function buildDisplayTable(resource, propertiesToRender, statDisplayTable)
 			elseif type(value) == "table" then
 				for _, fieldName in TableUtils:OrderedPairs(value) do
 					local statValue
-					if not Ext.Types.GetObjectType(resource):find("stats::Object") then
-						if type(resource[key]) == "userdata" then
-							statValue = Ext.Types.Serialize(resource[key])[fieldName]
-						else
-							statValue = resource[key][fieldName]
-						end
-					else
+					if Ext.Types.GetObjectType(resource) == "stats::Object" then
 						statValue = resource[fieldName]
+					else
+						statValue = resource[key][fieldName]
 					end
-					
+
 					statValue = makeDisplayable(statValue)
 
 					if statValue then
@@ -115,13 +113,18 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 	---@param propertiesToCopy ResourceFieldsToParse?
 	---@param parentCell ExtuiTreeParent|ExtuiTableCell
 	local function buildRecursiveResourceTable(nextResource, propertiesToCopy, parentCell)
+		nextResource = Ext.Types.GetObjectType(nextResource) == "CharacterTemplate" and Ext.Types.Serialize(nextResource) or nextResource
+
 		---@type Resource?
 		local parentResource
-		if Ext.Types.GetObjectType(nextResource) == "CharacterTemplate" then
+		if Ext.Types.GetObjectType(nextResource) ~= "stats::Object" then
 			if nextResource.ParentTemplateId ~= "" then
 				parentResource = Ext.Template.GetRootTemplate(nextResource.ParentTemplateId)
 			elseif nextResource.TemplateName ~= "" then
 				parentResource = Ext.Template.GetRootTemplate(nextResource.TemplateName)
+			end
+			if parentResource then
+				parentResource = Ext.Types.Serialize(parentResource)
 			end
 		else
 			parentResource = (nextResource.Using ~= "" and Ext.Stats.Get(nextResource.Using) or nil)
@@ -183,11 +186,11 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 				end
 			end
 
-			if Ext.Types.GetObjectType(parentResource) == "CharacterTemplate" then
-				parentCell:AddText(string.format("%s | File: %s", nextResource.Name, nextResource.FileName:match("Public/(.+)") or "Unknown"))
-			else
+			if Ext.Types.GetObjectType(parentResource) == "stats::Object" then
 				parentCell:AddText(string.format("%s | Original Mod: %s ", nextResource.Name, nextResource.OriginalModId,
 					nextResource.ModId ~= nextResource.OriginalModId and ("| Modified By: " .. nextResource.ModId) or "")).Font = "Large"
+			else
+				parentCell:AddText(string.format("%s | File: %s", nextResource.Name, nextResource.FileName:match("Public/(.+)") or "Unknown"))
 			end
 
 			local statDisplayTable = parentCell:AddTable("StatDisplay" .. nextResource.Name, 2)
@@ -211,11 +214,11 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 				statDisplayTable:Destroy()
 			end
 		else
-			if Ext.Types.GetObjectType(nextResource) == "CharacterTemplate" then
-				parentCell:AddText(string.format("%s | File: %s", nextResource.Name, nextResource.FileName:gsub("^.*[\\/]Mods[\\/]", "") or "Unknown"))
-			else
+			if Ext.Types.GetObjectType(nextResource) == "stats::Object" then
 				parentCell:AddText(string.format("%s | Original Mod: %s ", nextResource.Name, nextResource.OriginalModId,
 					nextResource.ModId ~= nextResource.OriginalModId and ("| Modified By: " .. nextResource.ModId) or "")).Font = "Large"
+			else
+				parentCell:AddText(string.format("%s | File: %s", nextResource.Name, nextResource.FileName:gsub("^.*[\\/]Mods[\\/]", "") or "Unknown"))
 			end
 
 			local statDisplayTable = parentCell:AddTable("StatDisplay" .. nextResource.Name, 2)
