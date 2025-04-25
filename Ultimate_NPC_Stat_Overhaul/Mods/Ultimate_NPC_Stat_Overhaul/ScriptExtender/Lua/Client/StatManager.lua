@@ -59,26 +59,41 @@ local statsToParse = {
 ---@param propertiesToRender StatFieldsToParse
 ---@param statDisplayTable ExtuiTable
 local function buildDisplayTable(stat, propertiesToRender, statDisplayTable)
+	local function makeDisplayable(value)
+		if type(value) == "table" then
+			return table.concat(value, "|")
+		else
+			return tostring(value)
+		end
+	end
 	for key, value in TableUtils:OrderedPairs(propertiesToRender, function(key)
 		return type(propertiesToRender[key]) == "string" and propertiesToRender[key] or key
 	end) do
 		local statDisplayRow = statDisplayTable:AddRow()
 		local leftCell = statDisplayRow:AddCell()
 		local rightCell = statDisplayRow:AddCell()
-
 		local success, error = pcall(function()
 			if type(value) == "string" then
-				leftCell:AddText(value)
-				rightCell:AddText(tostring(stat[value]))
+				local statValue = makeDisplayable(stat[value])
+				if statValue then
+					leftCell:AddText(value)
+					rightCell:AddText(statValue)
+				end
 			elseif type(value) == "table" then
 				for _, fieldName in TableUtils:OrderedPairs(value) do
-					leftCell:AddText(fieldName)
-					rightCell:AddText(tostring(stat[fieldName]))
+					local statValue = makeDisplayable(stat[fieldName])
+					if statValue and statValue ~= "" then
+						leftCell:AddText(fieldName)
+						rightCell:AddText(statValue)
+					end
 				end
 			end
 		end)
 		if not success then
+			statDisplayRow:Destroy()
 			Logger:BasicError(error)
+		elseif #rightCell.Children == 0 then
+			statDisplayRow:Destroy()
 		end
 	end
 end
@@ -100,7 +115,11 @@ function StatManager:RenderDisplayWindow(characterStat, parent)
 			local inheritedProperties = {}
 
 			local function determineStatDiff(fieldName, key, parentKey)
-				local tableToPopulate = tostring(stat[fieldName]) == tostring(parentStat[fieldName]) and inheritedProperties or overriddenProperties
+				local isInherited = type(stat[fieldName]) == "table"
+					and TableUtils:CompareLists(stat[fieldName], parentStat[fieldName])
+					or tostring(stat[fieldName]) == tostring(parentStat[fieldName])
+
+				local tableToPopulate = isInherited and inheritedProperties or overriddenProperties
 
 				if parentKey then
 					if not tableToPopulate[parentKey] then
