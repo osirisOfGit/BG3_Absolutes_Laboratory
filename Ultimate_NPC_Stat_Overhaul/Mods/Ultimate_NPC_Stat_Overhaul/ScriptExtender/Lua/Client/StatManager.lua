@@ -115,9 +115,12 @@ function StatManager:RenderDisplayWindow(characterStat, parent)
 			local inheritedProperties = {}
 
 			local function determineStatDiff(fieldName, key, parentKey)
-				local isInherited = type(stat[fieldName]) == "table"
-					and TableUtils:CompareLists(stat[fieldName], parentStat[fieldName])
-					or tostring(stat[fieldName]) == tostring(parentStat[fieldName])
+				local isInherited
+				if type(stat[fieldName]) == "table" then
+					isInherited = TableUtils:CompareLists(stat[fieldName], parentStat[fieldName])
+				else
+					isInherited = tostring(stat[fieldName]) == tostring(parentStat[fieldName])
+				end
 
 				local tableToPopulate = isInherited and inheritedProperties or overriddenProperties
 
