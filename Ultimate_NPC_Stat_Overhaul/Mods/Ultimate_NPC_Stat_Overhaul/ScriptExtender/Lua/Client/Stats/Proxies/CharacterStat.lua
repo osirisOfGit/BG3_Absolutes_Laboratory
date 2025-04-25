@@ -1,5 +1,5 @@
-CharacterProxy = StatProxy:new()
-CharacterProxy.statsToParse = {
+CharacterStatProxy = StatProxy:new()
+CharacterStatProxy.fieldsToParse = {
 	["Resistances"] = {
 		"AcidResistance",
 		"BludgeoningResistance",
@@ -54,15 +54,15 @@ CharacterProxy.statsToParse = {
 }
 
 
-StatProxy:RegisterStatType("Character", CharacterProxy)
+StatProxy:RegisterStatType("Character", CharacterStatProxy)
+StatProxy:RegisterStatType("Stats", CharacterStatProxy)
 
-function CharacterProxy:buildHyperlinkedStrings(parent, statString, _)
-	if statString and statString ~= "" then
-		for statGroup in self:SplitSpring(statString) do
-			-- Accounting for `STATUS_EASY: HEALTHREDUCTION_EASYMODE;` type stats
-			for stat in string.gmatch(statString, "([^:]+)") do
+function CharacterStatProxy:buildHyperlinkedStrings(parent, statString)
+	---@type Character
+	local character = Ext.Stats.Get(statString)
 
-			end
-		end
+	if character then
+		local statText = Styler:HyperlinkText(parent:AddText(statString))
+		self:RenderDisplayWindow(character, statText:Tooltip())
 	end
 end

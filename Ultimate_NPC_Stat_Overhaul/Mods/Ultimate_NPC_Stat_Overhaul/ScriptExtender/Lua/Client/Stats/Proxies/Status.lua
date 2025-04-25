@@ -1,6 +1,6 @@
 StatusDataProxy = StatProxy:new()
 
-StatusDataProxy.statsToParse = {
+StatusDataProxy.fieldsToParse = {
 	"StatusType",
 	"AbsorbSurfaceRange",
 	"AbsorbSurfaceType",

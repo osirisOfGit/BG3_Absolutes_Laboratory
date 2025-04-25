@@ -1,6 +1,6 @@
 FunctorsProxy = StatProxy:new()
 
-FunctorsProxy.statsToParse = {
+FunctorsProxy.fieldsToParse = {
 }
 
 StatProxy:RegisterStatType("StatsFunctors", FunctorsProxy)

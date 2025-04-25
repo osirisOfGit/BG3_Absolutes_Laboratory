@@ -22,15 +22,20 @@ function CharacterWindow:BuildWindow(parent, templateId)
 		end)
 
 		Styler:CheapTextAlign(CharacterIndex.displayNameMappings[templateId], displayCell, "Big")
-		Styler:CheapTextAlign(string.gsub(characterTemplate.FileName, "^.*[\\/]Mods[\\/]", ""), displayCell)
 		Styler:CheapTextAlign(characterTemplate.LevelName, displayCell)
 
+		local tabBar = parent:AddTabBar("Tabs")
+
+		local templateTab = tabBar:AddTabItem("Template")
+		StatManager:RenderDisplayWindow(characterTemplate, templateTab)
+
 		if characterTemplate.Stats and characterTemplate.Stats ~= "" then
+			local statTab = tabBar:AddTabItem("Stats")
 			---@type Character
 			local characterStat = Ext.Stats.Get(characterTemplate.Stats)
 
 			if characterStat then
-				StatManager:RenderDisplayWindow(characterStat, parent)
+				StatManager:RenderDisplayWindow(characterStat, statTab)
 			end
 		end
 	end

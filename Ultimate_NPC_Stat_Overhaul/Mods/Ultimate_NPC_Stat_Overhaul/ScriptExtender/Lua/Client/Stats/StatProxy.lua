@@ -1,8 +1,10 @@
+---@alias Resource StatsObject|CharacterTemplate
+
 ---@class StatProxy
 StatProxy = {
 	delimeter = ";",
-	---@class StatFieldsToParse
-	statsToParse = {},
+	---@class ResourceFieldsToParse
+	fieldsToParse = {},
 }
 
 ---@type {[string]: StatProxy}
@@ -15,7 +17,7 @@ function StatProxy:new(instance)
 
 	setmetatable(instance, self)
 	self.__index = self
-	self.statsToParse = {}
+	self.fieldsToParse = {}
 
 	return instance
 end
@@ -26,8 +28,8 @@ function StatProxy:Get(statName)
 	return Ext.Stats.Get(statName)
 end
 
-function StatProxy:RegisterStatType(statType, instance)
-	proxyRegistry[statType] = instance
+function StatProxy:RegisterStatType(resourceType, instance)
+	proxyRegistry[resourceType] = instance
 end
 
 ---@param statString string
@@ -41,10 +43,10 @@ end
 ---@param statType string?
 function StatProxy:buildHyperlinkedStrings(parent, statString, statType) end
 
----@param stat StatsObject
----@param propertiesToRender StatFieldsToParse
+---@param resource Resource
+---@param propertiesToRender ResourceFieldsToParse
 ---@param statDisplayTable ExtuiTable
-local function buildDisplayTable(stat, propertiesToRender, statDisplayTable)
+local function buildDisplayTable(resource, propertiesToRender, statDisplayTable)
 	local function makeDisplayable(value)
 		if type(value) == "table" then
 			return #value > 0 and table.concat(value, "|")
@@ -64,19 +66,19 @@ local function buildDisplayTable(stat, propertiesToRender, statDisplayTable)
 			if type(value) == "string" then
 				local statValue = makeDisplayable(
 					(value == "DisplayName" or value == "Description")
-					and Ext.Loca.GetTranslatedString(stat[value], stat[value]):gsub("<[^>]+>", "")
-					or stat[value])
+					and Ext.Loca.GetTranslatedString(resource[value], resource[value]):gsub("<[^>]+>", "")
+					or resource[value])
 
 				if statValue and (statValue ~= "No" and statValue ~= "None") then
 					leftCell:AddText(value)
 					StatManager:buildHyperlinkedStrings(rightCell, statValue, value)
 					if value == "Icon" then
-						rightCell:AddImage(statValue, {32, 32}).SameLine = true
+						rightCell:AddImage(statValue, { 32, 32 }).SameLine = true
 					end
 				end
 			elseif type(value) == "table" then
 				for _, fieldName in TableUtils:OrderedPairs(value) do
-					local statValue = makeDisplayable(stat[fieldName])
+					local statValue = makeDisplayable(resource[fieldName])
 					if statValue then
 						leftCell:AddText(fieldName)
 						StatManager:buildHyperlinkedStrings(rightCell, statValue, fieldName)
@@ -93,29 +95,38 @@ local function buildDisplayTable(stat, propertiesToRender, statDisplayTable)
 	end
 end
 
-
----@param stat StatsObject
+---@param resource Resource
 ---@param parent ExtuiTreeParent
 ---@param statType string
-function StatProxy:RenderDisplayWindow(stat, parent)
-	---@param nextStat StatsObject
-	---@param propertiesToCopy StatFieldsToParse?
+function StatProxy:RenderDisplayWindow(resource, parent)
+	---@param nextResource Resource
+	---@param propertiesToCopy ResourceFieldsToParse?
 	---@param parentCell ExtuiTreeParent|ExtuiTableCell
-	local function buildRecursiveStatTable(nextStat, propertiesToCopy, parentCell)
-		---@type StatsObject?
-		local parentStat = nextStat.Using ~= "" and Ext.Stats.Get(nextStat.Using) or nil
-		if parentStat then
-			---@type StatFieldsToParse
+	local function buildRecursiveStatTable(nextResource, propertiesToCopy, parentCell)
+		---@type Resource?
+		local parentResource
+		if Ext.Types.GetObjectType(nextResource) == "CharacterTemplate" then
+			if nextResource.ParentTemplateId ~= "" then
+				parentResource = Ext.Template.GetRootTemplate(nextResource.ParentTemplateId)
+			elseif nextResource.TemplateName ~= "" then
+				parentResource = Ext.Template.GetRootTemplate(nextResource.TemplateName)
+			end
+		else
+			parentResource = (nextResource.Using ~= "" and Ext.Stats.Get(nextResource.Using) or nil)
+		end
+
+		if parentResource then
+			---@type ResourceFieldsToParse
 			local overriddenProperties = {}
-			---@type StatFieldsToParse
+			---@type ResourceFieldsToParse
 			local inheritedProperties = {}
 
 			local function determineStatDiff(fieldName, key, parentKey)
 				local isInherited
-				if type(nextStat[fieldName]) == "table" then
-					isInherited = TableUtils:CompareLists(nextStat[fieldName], parentStat[fieldName])
+				if type(nextResource[fieldName]) == "table" then
+					isInherited = TableUtils:CompareLists(nextResource[fieldName], parentResource[fieldName])
 				else
-					isInherited = tostring(nextStat[fieldName]) == tostring(parentStat[fieldName])
+					isInherited = tostring(nextResource[fieldName]) == tostring(parentResource[fieldName])
 				end
 
 				local tableToPopulate = isInherited and inheritedProperties or overriddenProperties
@@ -130,7 +141,7 @@ function StatProxy:RenderDisplayWindow(stat, parent)
 				end
 			end
 
-			for key, value in TableUtils:OrderedPairs(propertiesToCopy or self.statsToParse) do
+			for key, value in TableUtils:OrderedPairs(propertiesToCopy or self.fieldsToParse) do
 				local success, error = pcall(function()
 					if type(value) == "string" then
 						determineStatDiff(value, key)
@@ -145,16 +156,20 @@ function StatProxy:RenderDisplayWindow(stat, parent)
 				end
 			end
 
-			parentCell:AddText(string.format("%s | Original Mod: %s ", nextStat.Name, nextStat.OriginalModId,
-				nextStat.ModId ~= nextStat.OriginalModId and ("| Modified By: " .. nextStat.ModId) or "")).Font = "Large"
+			if Ext.Types.GetObjectType(parentResource) == "CharacterTemplate" then
+				parentCell:AddText(string.format("%s | File: %s", nextResource.Name, nextResource.FileName:match("Public/(.+)") or "Unknown"))
+			else
+				parentCell:AddText(string.format("%s | Original Mod: %s ", nextResource.Name, nextResource.OriginalModId,
+					nextResource.ModId ~= nextResource.OriginalModId and ("| Modified By: " .. nextResource.ModId) or "")).Font = "Large"
+			end
 
-			local statDisplayTable = parentCell:AddTable("StatDisplay" .. nextStat.Name, 2)
+			local statDisplayTable = parentCell:AddTable("StatDisplay" .. nextResource.Name, 2)
 			statDisplayTable:AddColumn("", "WidthFixed")
 			statDisplayTable:AddColumn("", "WidthStretch")
 
 			statDisplayTable.Borders = true
 			if next(overriddenProperties) then
-				buildDisplayTable(nextStat, overriddenProperties, statDisplayTable)
+				buildDisplayTable(nextResource, overriddenProperties, statDisplayTable)
 			end
 
 			if next(inheritedProperties) then
@@ -162,32 +177,36 @@ function StatProxy:RenderDisplayWindow(stat, parent)
 				statDisplayRow:AddCell()
 
 				local rightCell = statDisplayRow:AddCell()
-				buildRecursiveStatTable(parentStat, inheritedProperties, rightCell)
+				buildRecursiveStatTable(parentResource, inheritedProperties, rightCell)
 			end
 
 			if #statDisplayTable.Children == 0 then
 				statDisplayTable:Destroy()
 			end
 		else
-			parentCell:AddText(string.format("%s | Original Mod: %s ", nextStat.Name, nextStat.OriginalModId,
-				nextStat.ModId ~= nextStat.OriginalModId and ("| Modified By: " .. nextStat.ModId) or "")).Font = "Large"
+			if Ext.Types.GetObjectType(nextResource) == "CharacterTemplate" then
+				parentCell:AddText(string.format("%s | File: %s", nextResource.Name, nextResource.FileName:gsub("^.*[\\/]Mods[\\/]", "") or "Unknown"))
+			else
+				parentCell:AddText(string.format("%s | Original Mod: %s ", nextResource.Name, nextResource.OriginalModId,
+					nextResource.ModId ~= nextResource.OriginalModId and ("| Modified By: " .. nextResource.ModId) or "")).Font = "Large"
+			end
 
-			local statDisplayTable = parentCell:AddTable("StatDisplay" .. nextStat.Name, 2)
+			local statDisplayTable = parentCell:AddTable("StatDisplay" .. nextResource.Name, 2)
 			statDisplayTable:AddColumn("", "WidthFixed")
 			statDisplayTable:AddColumn("", "WidthStretch")
 			statDisplayTable.Borders = true
-			buildDisplayTable(nextStat, propertiesToCopy or self.statsToParse, statDisplayTable)
+			buildDisplayTable(nextResource, propertiesToCopy or self.fieldsToParse, statDisplayTable)
 		end
 	end
 
-	buildRecursiveStatTable(stat, nil, parent)
+	buildRecursiveStatTable(resource, nil, parent)
 end
 
 StatManager = StatProxy:new()
 
-function StatManager:RenderDisplayWindow(stat, parent)
+function StatManager:RenderDisplayWindow(resource, parent)
 	local success, result = pcall(function(...)
-		proxyRegistry[stat.ModifierList]:RenderDisplayWindow(stat, parent)
+		proxyRegistry[Ext.Types.GetObjectType(resource) == "CharacterTemplate" and "CharacterTemplate" or resource.ModifierList]:RenderDisplayWindow(resource, parent)
 	end)
 
 	if not success then
@@ -195,10 +214,10 @@ function StatManager:RenderDisplayWindow(stat, parent)
 	end
 end
 
-function StatManager:buildHyperlinkedStrings(parent, statString, statType)
+function StatManager:buildHyperlinkedStrings(parent, statString, resourceType)
 	local success, result = pcall(function(...)
-		if proxyRegistry[statType] then
-			proxyRegistry[statType]:buildHyperlinkedStrings(parent, statString)
+		if proxyRegistry[resourceType] then
+			proxyRegistry[resourceType]:buildHyperlinkedStrings(parent, statString)
 		else
 			parent:AddText(statString)
 		end
@@ -209,6 +228,7 @@ function StatManager:buildHyperlinkedStrings(parent, statString, statType)
 	end
 end
 
-Ext.Require("Client/Stats/Proxies/Character.lua")
+Ext.Require("Client/Stats/Proxies/CharacterTemplate.lua")
+Ext.Require("Client/Stats/Proxies/CharacterStat.lua")
 Ext.Require("Client/Stats/Proxies/Status.lua")
 Ext.Require("Client/Stats/Proxies/Passives.lua")

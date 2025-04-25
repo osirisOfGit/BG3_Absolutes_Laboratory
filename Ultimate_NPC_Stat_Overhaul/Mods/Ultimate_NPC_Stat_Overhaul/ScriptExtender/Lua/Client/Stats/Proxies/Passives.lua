@@ -1,6 +1,6 @@
 PassivesProxy = StatProxy:new()
 
-PassivesProxy.statsToParse = {
+PassivesProxy.fieldsToParse = {
 	"BoostConditions",
 	"BoostContext",
 	"Boosts",
