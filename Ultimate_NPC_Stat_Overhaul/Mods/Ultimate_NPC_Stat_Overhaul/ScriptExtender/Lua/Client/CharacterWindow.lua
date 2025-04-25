@@ -27,7 +27,7 @@ function CharacterWindow:BuildWindow(parent, templateId)
 		local tabBar = parent:AddTabBar("Tabs")
 
 		local templateTab = tabBar:AddTabItem("Template")
-		StatManager:RenderDisplayWindow(characterTemplate, templateTab)
+		ResourceManager:RenderDisplayWindow(characterTemplate, templateTab)
 
 		if characterTemplate.Stats and characterTemplate.Stats ~= "" then
 			local statTab = tabBar:AddTabItem("Stats")
@@ -35,7 +35,7 @@ function CharacterWindow:BuildWindow(parent, templateId)
 			local characterStat = Ext.Stats.Get(characterTemplate.Stats)
 
 			if characterStat then
-				StatManager:RenderDisplayWindow(characterStat, statTab)
+				ResourceManager:RenderDisplayWindow(characterStat, statTab)
 			end
 		end
 	end

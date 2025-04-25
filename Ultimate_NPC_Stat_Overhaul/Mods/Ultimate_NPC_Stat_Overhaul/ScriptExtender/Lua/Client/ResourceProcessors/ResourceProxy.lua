@@ -1,18 +1,18 @@
 ---@alias Resource StatsObject|CharacterTemplate
 
----@class StatProxy
-StatProxy = {
+---@class ResourceProxy
+ResourceProxy = {
 	delimeter = ";",
 	---@class ResourceFieldsToParse
 	fieldsToParse = {},
 }
 
----@type {[string]: StatProxy}
+---@type {[string]: ResourceProxy}
 local proxyRegistry = {}
 
 ---@param instance table?
----@return StatProxy instance
-function StatProxy:new(instance)
+---@return ResourceProxy instance
+function ResourceProxy:new(instance)
 	instance = instance or {}
 
 	setmetatable(instance, self)
@@ -24,24 +24,24 @@ end
 
 ---@param statName string
 ---@return StatsObject?
-function StatProxy:Get(statName)
+function ResourceProxy:GetStat(statName)
 	return Ext.Stats.Get(statName)
 end
 
-function StatProxy:RegisterStatType(resourceType, instance)
+function ResourceProxy:RegisterResourceProxy(resourceType, instance)
 	proxyRegistry[resourceType] = instance
 end
 
 ---@param statString string
 ---@return fun():string
-function StatProxy:SplitSpring(statString)
+function ResourceProxy:SplitSpring(statString)
 	return string.gmatch(statString, "([^" .. self.delimeter .. "]+)")
 end
 
 ---@param parent ExtuiTreeParent
 ---@param statString string
 ---@param statType string?
-function StatProxy:buildHyperlinkedStrings(parent, statString, statType) end
+function ResourceProxy:buildHyperlinkedStrings(parent, statString, statType) end
 
 ---@param resource Resource
 ---@param propertiesToRender ResourceFieldsToParse
@@ -71,7 +71,7 @@ local function buildDisplayTable(resource, propertiesToRender, statDisplayTable)
 
 				if statValue and (statValue ~= "No" and statValue ~= "None") then
 					leftCell:AddText(value)
-					StatManager:buildHyperlinkedStrings(rightCell, statValue, value)
+					ResourceManager:buildHyperlinkedStrings(rightCell, statValue, value)
 					if value == "Icon" then
 						rightCell:AddImage(statValue, { 32, 32 }).SameLine = true
 					end
@@ -81,7 +81,7 @@ local function buildDisplayTable(resource, propertiesToRender, statDisplayTable)
 					local statValue = makeDisplayable(resource[fieldName])
 					if statValue then
 						leftCell:AddText(fieldName)
-						StatManager:buildHyperlinkedStrings(rightCell, statValue, fieldName)
+						ResourceManager:buildHyperlinkedStrings(rightCell, statValue, fieldName)
 					end
 				end
 			end
@@ -98,11 +98,11 @@ end
 ---@param resource Resource
 ---@param parent ExtuiTreeParent
 ---@param statType string
-function StatProxy:RenderDisplayWindow(resource, parent)
+function ResourceProxy:RenderDisplayWindow(resource, parent)
 	---@param nextResource Resource
 	---@param propertiesToCopy ResourceFieldsToParse?
 	---@param parentCell ExtuiTreeParent|ExtuiTableCell
-	local function buildRecursiveStatTable(nextResource, propertiesToCopy, parentCell)
+	local function buildRecursiveResourceTable(nextResource, propertiesToCopy, parentCell)
 		---@type Resource?
 		local parentResource
 		if Ext.Types.GetObjectType(nextResource) == "CharacterTemplate" then
@@ -177,7 +177,7 @@ function StatProxy:RenderDisplayWindow(resource, parent)
 				statDisplayRow:AddCell()
 
 				local rightCell = statDisplayRow:AddCell()
-				buildRecursiveStatTable(parentResource, inheritedProperties, rightCell)
+				buildRecursiveResourceTable(parentResource, inheritedProperties, rightCell)
 			end
 
 			if #statDisplayTable.Children == 0 then
@@ -199,12 +199,12 @@ function StatProxy:RenderDisplayWindow(resource, parent)
 		end
 	end
 
-	buildRecursiveStatTable(resource, nil, parent)
+	buildRecursiveResourceTable(resource, nil, parent)
 end
 
-StatManager = StatProxy:new()
+ResourceManager = ResourceProxy:new()
 
-function StatManager:RenderDisplayWindow(resource, parent)
+function ResourceManager:RenderDisplayWindow(resource, parent)
 	local success, result = pcall(function(...)
 		proxyRegistry[Ext.Types.GetObjectType(resource) == "CharacterTemplate" and "CharacterTemplate" or resource.ModifierList]:RenderDisplayWindow(resource, parent)
 	end)
@@ -214,7 +214,7 @@ function StatManager:RenderDisplayWindow(resource, parent)
 	end
 end
 
-function StatManager:buildHyperlinkedStrings(parent, statString, resourceType)
+function ResourceManager:buildHyperlinkedStrings(parent, statString, resourceType)
 	local success, result = pcall(function(...)
 		if proxyRegistry[resourceType] then
 			proxyRegistry[resourceType]:buildHyperlinkedStrings(parent, statString)
@@ -228,7 +228,7 @@ function StatManager:buildHyperlinkedStrings(parent, statString, resourceType)
 	end
 end
 
-Ext.Require("Client/Stats/Proxies/CharacterTemplate.lua")
-Ext.Require("Client/Stats/Proxies/CharacterStat.lua")
-Ext.Require("Client/Stats/Proxies/Status.lua")
-Ext.Require("Client/Stats/Proxies/Passives.lua")
+Ext.Require("Client/ResourceProcessors/Proxies/CharacterTemplate.lua")
+Ext.Require("Client/ResourceProcessors/Proxies/CharacterStat.lua")
+Ext.Require("Client/ResourceProcessors/Proxies/Status.lua")
+Ext.Require("Client/ResourceProcessors/Proxies/Passives.lua")

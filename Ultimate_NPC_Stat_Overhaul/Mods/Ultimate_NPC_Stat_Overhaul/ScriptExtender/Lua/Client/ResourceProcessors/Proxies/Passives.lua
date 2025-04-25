@@ -1,4 +1,4 @@
-PassivesProxy = StatProxy:new()
+PassivesProxy = ResourceProxy:new()
 
 PassivesProxy.fieldsToParse = {
 	"BoostConditions",
@@ -35,7 +35,7 @@ PassivesProxy.fieldsToParse = {
 	"TooltipUseCosts",
 }
 
-StatProxy:RegisterStatType("Passives", PassivesProxy)
+ResourceProxy:RegisterResourceProxy("Passives", PassivesProxy)
 
 function PassivesProxy:buildHyperlinkedStrings(parent, statString)
 	if statString and statString ~= "" then

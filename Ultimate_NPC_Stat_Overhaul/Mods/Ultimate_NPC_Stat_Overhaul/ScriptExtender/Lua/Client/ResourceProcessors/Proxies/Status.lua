@@ -1,4 +1,4 @@
-StatusDataProxy = StatProxy:new()
+StatusDataProxy = ResourceProxy:new()
 
 StatusDataProxy.fieldsToParse = {
 	"StatusType",
@@ -90,8 +90,8 @@ StatusDataProxy.fieldsToParse = {
 	"WeaponOverride",
 }
 
-StatProxy:RegisterStatType("StatusData", StatusDataProxy)
-StatProxy:RegisterStatType("DifficultyStatuses", StatusDataProxy)
+ResourceProxy:RegisterResourceProxy("StatusData", StatusDataProxy)
+ResourceProxy:RegisterResourceProxy("DifficultyStatuses", StatusDataProxy)
 
 
 function StatusDataProxy:buildHyperlinkedStrings(parent, statString)
@@ -101,7 +101,7 @@ function StatusDataProxy:buildHyperlinkedStrings(parent, statString)
 			if rightSide then
 				rightSide = rightSide:match("^%s*(.-)%s*$")
 				---@type StatusData?
-				local statusData = self:Get(rightSide)
+				local statusData = self:GetStat(rightSide)
 
 				if statusData then
 					local hasKids = #parent.Children > 0
@@ -115,7 +115,7 @@ function StatusDataProxy:buildHyperlinkedStrings(parent, statString)
 				end
 			else
 				---@type StatusData?
-				local statusData = self:Get(leftSide:match("^%s*(.-)%s*$"))
+				local statusData = self:GetStat(leftSide:match("^%s*(.-)%s*$"))
 
 				if statusData then
 					local hasKids = #parent.Children > 0

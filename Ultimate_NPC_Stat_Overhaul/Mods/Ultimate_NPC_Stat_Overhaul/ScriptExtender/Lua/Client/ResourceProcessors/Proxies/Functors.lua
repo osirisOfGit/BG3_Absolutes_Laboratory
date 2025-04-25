@@ -1,9 +1,9 @@
-FunctorsProxy = StatProxy:new()
+FunctorsProxy = ResourceProxy:new()
 
 FunctorsProxy.fieldsToParse = {
 }
 
-StatProxy:RegisterStatType("StatsFunctors", FunctorsProxy)
+ResourceProxy:RegisterResourceProxy("StatsFunctors", FunctorsProxy)
 
 ---@param functors StatsFunctors
 function FunctorsProxy:buildHyperlinkedStrings(parent, functors)

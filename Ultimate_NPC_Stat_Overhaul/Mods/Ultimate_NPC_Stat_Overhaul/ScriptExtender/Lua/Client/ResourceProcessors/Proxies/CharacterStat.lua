@@ -1,4 +1,4 @@
-CharacterStatProxy = StatProxy:new()
+CharacterStatProxy = ResourceProxy:new()
 CharacterStatProxy.fieldsToParse = {
 	["Resistances"] = {
 		"AcidResistance",
@@ -54,8 +54,8 @@ CharacterStatProxy.fieldsToParse = {
 }
 
 
-StatProxy:RegisterStatType("Character", CharacterStatProxy)
-StatProxy:RegisterStatType("Stats", CharacterStatProxy)
+ResourceProxy:RegisterResourceProxy("Character", CharacterStatProxy)
+ResourceProxy:RegisterResourceProxy("Stats", CharacterStatProxy)
 
 function CharacterStatProxy:buildHyperlinkedStrings(parent, statString)
 	---@type Character

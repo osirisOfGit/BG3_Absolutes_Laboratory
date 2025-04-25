@@ -1,4 +1,4 @@
-CharacterTemplateProxy = StatProxy:new()
+CharacterTemplateProxy = ResourceProxy:new()
 CharacterTemplateProxy.fieldsToParse = {
 	"ActivationGroupId",
 	"AliveInventoryType",
@@ -47,4 +47,4 @@ CharacterTemplateProxy.fieldsToParse = {
 }
 
 
-StatProxy:RegisterStatType("CharacterTemplate", CharacterTemplateProxy)
+ResourceProxy:RegisterResourceProxy("CharacterTemplate", CharacterTemplateProxy)
