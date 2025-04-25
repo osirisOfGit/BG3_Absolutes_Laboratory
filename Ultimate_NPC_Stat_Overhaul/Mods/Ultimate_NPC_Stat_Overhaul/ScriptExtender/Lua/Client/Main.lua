@@ -1,4 +1,5 @@
 Ext.Require("Client/CharacterWindow.lua")
+Ext.Require("Client/StatManager.lua")
 
 Main = {
 	---@type ExtuiTreeParent
