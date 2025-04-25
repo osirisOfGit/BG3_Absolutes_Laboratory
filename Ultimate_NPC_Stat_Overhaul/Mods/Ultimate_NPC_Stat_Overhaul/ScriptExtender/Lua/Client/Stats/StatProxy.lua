@@ -20,6 +20,12 @@ function StatProxy:new(instance)
 	return instance
 end
 
+---@param statName string
+---@return StatsObject?
+function StatProxy:Get(statName)
+	return Ext.Stats.Get(statName)
+end
+
 function StatProxy:RegisterStatType(statType, instance)
 	proxyRegistry[statType] = instance
 end
@@ -33,13 +39,7 @@ end
 ---@param parent ExtuiTreeParent
 ---@param statString string
 ---@param statType string?
-function StatProxy:buildHyperlinkedStrings(parent, statString, statType)
-	if proxyRegistry[statType] then
-		proxyRegistry[statType]:buildHyperlinkedStrings(parent, statString)
-	else
-		parent:AddText(statString)
-	end
-end
+function StatProxy:buildHyperlinkedStrings(parent, statString, statType) end
 
 ---@param stat StatsObject
 ---@param propertiesToRender StatFieldsToParse
@@ -47,9 +47,11 @@ end
 local function buildDisplayTable(stat, propertiesToRender, statDisplayTable)
 	local function makeDisplayable(value)
 		if type(value) == "table" then
-			return table.concat(value, "|")
+			return #value > 0 and table.concat(value, "|")
+		elseif type(value) == "number" then
+			return value > 0 and value
 		else
-			return tostring(value)
+			return (value and tostring(value) ~= "") and tostring(value)
 		end
 	end
 	for key, value in TableUtils:OrderedPairs(propertiesToRender, function(key)
@@ -63,14 +65,14 @@ local function buildDisplayTable(stat, propertiesToRender, statDisplayTable)
 				local statValue = makeDisplayable(stat[value])
 				if statValue then
 					leftCell:AddText(value)
-					rightCell:AddText(statValue)
+					StatManager:buildHyperlinkedStrings(rightCell, statValue, value)
 				end
 			elseif type(value) == "table" then
 				for _, fieldName in TableUtils:OrderedPairs(value) do
 					local statValue = makeDisplayable(stat[fieldName])
-					if statValue and statValue ~= "" then
+					if statValue then
 						leftCell:AddText(fieldName)
-						rightCell:AddText(statValue)
+						StatManager:buildHyperlinkedStrings(rightCell, statValue, fieldName)
 					end
 				end
 			end
@@ -186,4 +188,19 @@ function StatManager:RenderDisplayWindow(stat, parent)
 	end
 end
 
+function StatManager:buildHyperlinkedStrings(parent, statString, statType)
+	local success, result = pcall(function(...)
+		if proxyRegistry[statType] then
+			proxyRegistry[statType]:buildHyperlinkedStrings(parent, statString)
+		else
+			parent:AddText(statString)
+		end
+	end)
+
+	if not success then
+		Logger:BasicError(result)
+	end
+end
+
 Ext.Require("Client/Stats/Proxies/Character.lua")
+Ext.Require("Client/Stats/Proxies/Status.lua")
