@@ -78,7 +78,19 @@ local function buildDisplayTable(resource, propertiesToRender, statDisplayTable)
 				end
 			elseif type(value) == "table" then
 				for _, fieldName in TableUtils:OrderedPairs(value) do
-					local statValue = makeDisplayable(resource[fieldName])
+					local statValue
+					if not Ext.Types.GetObjectType(resource):find("stats::Object") then
+						if type(resource[key]) == "userdata" then
+							statValue = Ext.Types.Serialize(resource[key])[fieldName]
+						else
+							statValue = resource[key][fieldName]
+						end
+					else
+						statValue = resource[fieldName]
+					end
+					
+					statValue = makeDisplayable(statValue)
+
 					if statValue then
 						leftCell:AddText(fieldName)
 						ResourceManager:buildHyperlinkedStrings(rightCell, statValue, fieldName)
@@ -122,11 +134,26 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 			local inheritedProperties = {}
 
 			local function determineStatDiff(fieldName, key, parentKey)
-				local isInherited
-				if type(nextResource[fieldName]) == "table" then
-					isInherited = TableUtils:CompareLists(nextResource[fieldName], parentResource[fieldName])
+				local fieldValue
+				local parentValue
+				if parentKey and not Ext.Types.GetObjectType(resource):find("stats::Object") then
+					if type(nextResource[parentKey]) == "userdata" then
+						fieldValue = Ext.Types.Serialize(nextResource[parentKey])[fieldName]
+						parentValue = Ext.Types.Serialize(parentResource[parentKey])[fieldName]
+					else
+						fieldValue = nextResource[parentKey][fieldName]
+						parentValue = parentResource[parentKey][fieldName]
+					end
 				else
-					isInherited = tostring(nextResource[fieldName]) == tostring(parentResource[fieldName])
+					fieldValue = nextResource[fieldName]
+					parentValue = parentResource[fieldName]
+				end
+
+				local isInherited
+				if type(fieldValue) == "table" then
+					isInherited = TableUtils:CompareLists(fieldValue, parentValue)
+				else
+					isInherited = tostring(fieldValue) == tostring(parentValue)
 				end
 
 				local tableToPopulate = isInherited and inheritedProperties or overriddenProperties
