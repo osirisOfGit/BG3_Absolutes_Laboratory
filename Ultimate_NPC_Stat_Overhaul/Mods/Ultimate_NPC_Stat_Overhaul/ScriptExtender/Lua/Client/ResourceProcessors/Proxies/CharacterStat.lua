@@ -57,7 +57,7 @@ CharacterStatProxy.fieldsToParse = {
 ResourceProxy:RegisterResourceProxy("Character", CharacterStatProxy)
 ResourceProxy:RegisterResourceProxy("Stats", CharacterStatProxy)
 
-function CharacterStatProxy:buildHyperlinkedStrings(parent, statString)
+function CharacterStatProxy:RenderDisplayableValue(parent, statString)
 	---@type Character
 	local character = Ext.Stats.Get(statString)
 

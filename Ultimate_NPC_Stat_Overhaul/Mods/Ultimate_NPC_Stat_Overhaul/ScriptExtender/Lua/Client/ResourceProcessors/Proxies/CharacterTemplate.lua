@@ -39,7 +39,6 @@ CharacterTemplateProxy.fieldsToParse = {
 	"ItemList",
 	"LevelOverride",
 	"MaxDashDistance",
-	"OnDeathActions",
 	"OnlyInDifficulty",
 	"Race",
 	"SkillList",

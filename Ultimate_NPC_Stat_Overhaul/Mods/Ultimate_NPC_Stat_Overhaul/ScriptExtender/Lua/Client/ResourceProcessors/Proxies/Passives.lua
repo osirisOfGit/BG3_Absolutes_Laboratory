@@ -37,7 +37,7 @@ PassivesProxy.fieldsToParse = {
 
 ResourceProxy:RegisterResourceProxy("Passives", PassivesProxy)
 
-function PassivesProxy:buildHyperlinkedStrings(parent, statString)
+function PassivesProxy:RenderDisplayableValue(parent, statString)
 	if statString and statString ~= "" then
 		for passiveName in self:SplitSpring(statString) do
 			---@type PassiveData?

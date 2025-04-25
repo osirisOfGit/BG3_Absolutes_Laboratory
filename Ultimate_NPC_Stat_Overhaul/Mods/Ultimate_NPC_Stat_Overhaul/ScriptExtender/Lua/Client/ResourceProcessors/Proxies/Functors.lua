@@ -6,7 +6,7 @@ FunctorsProxy.fieldsToParse = {
 ResourceProxy:RegisterResourceProxy("StatsFunctors", FunctorsProxy)
 
 ---@param functors StatsFunctors
-function FunctorsProxy:buildHyperlinkedStrings(parent, functors)
+function FunctorsProxy:RenderDisplayableValue(parent, functors)
 	if functors and functors ~= "" then
 		for _, functor in ipairs(functors.FunctorList) do
 			if functor.TypeId == "ApplyStatus" then

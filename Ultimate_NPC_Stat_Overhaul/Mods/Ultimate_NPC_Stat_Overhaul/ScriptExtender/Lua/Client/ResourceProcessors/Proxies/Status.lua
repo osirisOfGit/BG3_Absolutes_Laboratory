@@ -94,7 +94,7 @@ ResourceProxy:RegisterResourceProxy("StatusData", StatusDataProxy)
 ResourceProxy:RegisterResourceProxy("DifficultyStatuses", StatusDataProxy)
 
 
-function StatusDataProxy:buildHyperlinkedStrings(parent, statString)
+function StatusDataProxy:RenderDisplayableValue(parent, statString)
 	if statString and statString ~= "" then
 		for statGroup in self:SplitSpring(statString) do
 			local leftSide, rightSide = statGroup:match("([^:]*):?(.*)")

@@ -39,9 +39,9 @@ function ResourceProxy:SplitSpring(statString)
 end
 
 ---@param parent ExtuiTreeParent
----@param statString string
+---@param resourceValue any
 ---@param statType string?
-function ResourceProxy:buildHyperlinkedStrings(parent, statString, statType) end
+function ResourceProxy:RenderDisplayableValue(parent, resourceValue, statType) end
 
 ---@param resource Resource
 ---@param propertiesToRender ResourceFieldsToParse
@@ -50,12 +50,14 @@ local function buildDisplayTable(resource, propertiesToRender, statDisplayTable)
 	resource = Ext.Types.GetObjectType(resource) == "CharacterTemplate" and Ext.Types.Serialize(resource) or resource
 
 	local function makeDisplayable(value)
-		if type(value) == "table" then
-			return #value > 0 and table.concat(value, "|")
-		elseif type(value) == "number" then
-			return value > 0 and value
-		else
-			return (value and tostring(value) ~= "") and tostring(value)
+		if value then
+			if type(value) == "table" then
+				return value
+			elseif type(value) == "number" then
+				return value > 0 and value
+			else
+				return tostring(value) ~= "" and tostring(value)
+			end
 		end
 	end
 	for key, value in TableUtils:OrderedPairs(propertiesToRender, function(key)
@@ -73,7 +75,7 @@ local function buildDisplayTable(resource, propertiesToRender, statDisplayTable)
 
 				if statValue and (statValue ~= "No" and statValue ~= "None") then
 					leftCell:AddText(value)
-					ResourceManager:buildHyperlinkedStrings(rightCell, statValue, value)
+					ResourceManager:RenderDisplayableValue(rightCell, statValue, value)
 					if value == "Icon" then
 						rightCell:AddImage(statValue, { 32, 32 }).SameLine = true
 					end
@@ -91,7 +93,7 @@ local function buildDisplayTable(resource, propertiesToRender, statDisplayTable)
 
 					if statValue then
 						leftCell:AddText(fieldName)
-						ResourceManager:buildHyperlinkedStrings(rightCell, statValue, fieldName)
+						ResourceManager:RenderDisplayableValue(rightCell, statValue, fieldName)
 					end
 				end
 			end
@@ -244,12 +246,12 @@ function ResourceManager:RenderDisplayWindow(resource, parent)
 	end
 end
 
-function ResourceManager:buildHyperlinkedStrings(parent, statString, resourceType)
+function ResourceManager:RenderDisplayableValue(parent, resourceValue, resourceType)
 	local success, result = pcall(function(...)
 		if proxyRegistry[resourceType] then
-			proxyRegistry[resourceType]:buildHyperlinkedStrings(parent, statString)
-		else
-			parent:AddText(statString)
+			proxyRegistry[resourceType]:RenderDisplayableValue(parent, resourceValue)
+		elseif resourceValue ~= "" then
+			parent:AddText(tostring(resourceValue))
 		end
 	end)
 
@@ -260,5 +262,6 @@ end
 
 Ext.Require("Client/ResourceProcessors/Proxies/CharacterTemplate.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/CharacterStat.lua")
+Ext.Require("Client/ResourceProcessors/Proxies/ItemList.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/Status.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/Passives.lua")
