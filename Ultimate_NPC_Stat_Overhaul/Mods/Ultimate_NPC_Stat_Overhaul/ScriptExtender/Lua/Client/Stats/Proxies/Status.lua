@@ -99,16 +99,18 @@ function StatusDataProxy:buildHyperlinkedStrings(parent, statString)
 		for statGroup in self:SplitSpring(statString) do
 			local leftSide, rightSide = statGroup:match("([^:]*):?(.*)")
 			if rightSide then
+				rightSide = rightSide:match("^%s*(.-)%s*$")
 				---@type StatusData?
-				local statusData = self:Get(rightSide:match("^%s*(.-)%s*$"))
+				local statusData = self:Get(rightSide)
 
 				if statusData then
 					local hasKids = #parent.Children > 0
-					parent:AddText(leftSide .. " : ").SameLine = hasKids
+					parent:AddText(leftSide .. ":").SameLine = hasKids
 
-					local text = parent:AddText(rightSide .. ";")
+					local text = Styler:HyperlinkText(parent:AddText(rightSide))
 					text.SameLine = true
-					text:SetColor("Text", { 173 / 255, 216 / 255, 230 / 255, 1 })
+
+					parent:AddText(";").SameLine = true
 					self:RenderDisplayWindow(statusData, text:Tooltip())
 				end
 			else
@@ -118,9 +120,8 @@ function StatusDataProxy:buildHyperlinkedStrings(parent, statString)
 				if statusData then
 					local hasKids = #parent.Children > 0
 
-					local text = parent:AddText(leftSide .. ";")
+					local text = Styler:HyperlinkText(parent:AddText(leftSide .. ";"))
 					text.SameLine = hasKids
-					text:SetColor("Text", { 173 / 255, 216 / 255, 230 / 255, 1 })
 
 					self:RenderDisplayWindow(statusData, text:Tooltip())
 				end

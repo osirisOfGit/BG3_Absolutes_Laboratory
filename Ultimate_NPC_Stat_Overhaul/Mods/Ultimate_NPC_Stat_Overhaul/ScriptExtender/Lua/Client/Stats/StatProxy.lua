@@ -62,7 +62,11 @@ local function buildDisplayTable(stat, propertiesToRender, statDisplayTable)
 		local rightCell = statDisplayRow:AddCell()
 		local success, error = pcall(function()
 			if type(value) == "string" then
-				local statValue = makeDisplayable(value == "DisplayName" and Ext.Loca.GetTranslatedString(stat[value], stat[value]) or stat[value])
+				local statValue = makeDisplayable(
+					(value == "DisplayName" or value == "Description")
+					and Ext.Loca.GetTranslatedString(stat[value], stat[value])
+					or stat[value])
+
 				if statValue then
 					leftCell:AddText(value)
 					StatManager:buildHyperlinkedStrings(rightCell, statValue, value)
@@ -204,3 +208,4 @@ end
 
 Ext.Require("Client/Stats/Proxies/Character.lua")
 Ext.Require("Client/Stats/Proxies/Status.lua")
+Ext.Require("Client/Stats/Proxies/Passives.lua")

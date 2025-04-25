@@ -87,6 +87,13 @@ function Styler:MiddleAlignedColumnLayout(parent, ...)
 end
 
 function Styler:ScaleFactor()
-    -- testing monitor for development is 1440p
-    return Ext.IMGUI.GetViewportSize()[2] / 1440
+	-- testing monitor for development is 1440p
+	return Ext.IMGUI.GetViewportSize()[2] / 1440
+end
+
+---@type ExtuiText
+---@return ExtuiText
+function Styler:HyperlinkText(text)
+	text:SetColor("Text", { 173 / 255, 216 / 255, 230 / 255, 1 })
+	return text
 end
