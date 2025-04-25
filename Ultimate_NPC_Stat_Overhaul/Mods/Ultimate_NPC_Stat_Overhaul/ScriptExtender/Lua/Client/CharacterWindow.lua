@@ -43,7 +43,6 @@ local statsToParse = {
 	"Passives",
 	"PersonalStatusImmunities",
 	"ProficiencyBonusScaling",
-	"Proficiency",
 	"ProficiencyBonus",
 	"Progressions",
 	"Sight",
@@ -116,8 +115,8 @@ function CharacterWindow:BuildWindow(parent, templateId)
 								if type(value) == "string" then
 									determineStatDiff(value, key)
 								elseif type(value) == "table" then
-									for index, fieldName in ipairs(value) do
-										determineStatDiff(key, index, fieldName)
+									for index, fieldName in pairs(value) do
+										determineStatDiff(fieldName, index, key)
 									end
 								end
 							end)
@@ -127,12 +126,17 @@ function CharacterWindow:BuildWindow(parent, templateId)
 						end
 
 						parentCell:AddText(string.format("%s | Original Mod: %s ", stat.Name, stat.OriginalModId,
-							stat.ModId ~= stat.OriginalModId and ("| Modified By: " .. stat.ModId) or ""))
+							stat.ModId ~= stat.OriginalModId and ("| Modified By: " .. stat.ModId) or "")).Font = "Large"
 
 						local statDisplayTable = parentCell:AddTable("StatDisplay" .. stat.Name, 2)
+						statDisplayTable:AddColumn("", "WidthFixed")
+						statDisplayTable:AddColumn("", "WidthStretch")
+
 						statDisplayTable.Borders = true
 						if next(overriddenProperties) then
-							for key, value in TableUtils:OrderedPairs(overriddenProperties) do
+							for key, value in TableUtils:OrderedPairs(overriddenProperties, function(key)
+								return type(overriddenProperties[key]) == "string" and overriddenProperties[key] or key
+							end) do
 								local statDisplayRow = statDisplayTable:AddRow()
 								local leftCell = statDisplayRow:AddCell()
 								local rightCell = statDisplayRow:AddCell()
@@ -142,7 +146,7 @@ function CharacterWindow:BuildWindow(parent, templateId)
 										leftCell:AddText(value)
 										rightCell:AddText(tostring(stat[value]))
 									elseif type(value) == "table" then
-										for _, fieldName in ipairs(value) do
+										for _, fieldName in TableUtils:OrderedPairs(value) do
 											leftCell:AddText(fieldName)
 											rightCell:AddText(tostring(stat[fieldName]))
 										end
@@ -156,9 +160,9 @@ function CharacterWindow:BuildWindow(parent, templateId)
 
 						if next(inheritedProperties) then
 							local statDisplayRow = statDisplayTable:AddRow()
-							local leftCell = statDisplayRow:AddCell()
+							statDisplayRow:AddCell()
+
 							local rightCell = statDisplayRow:AddCell()
-							leftCell:AddText("Inherited From")
 							buildRecursiveStatTable(parentStat, inheritedProperties, rightCell)
 						end
 
@@ -167,11 +171,15 @@ function CharacterWindow:BuildWindow(parent, templateId)
 						end
 					else
 						parentCell:AddText(string.format("%s | Original Mod: %s ", stat.Name, stat.OriginalModId,
-							stat.ModId ~= stat.OriginalModId and ("| Modified By: " .. stat.ModId) or ""))
+							stat.ModId ~= stat.OriginalModId and ("| Modified By: " .. stat.ModId) or "")).Font = "Large"
 
 						local statDisplayTable = parentCell:AddTable("StatDisplay" .. stat.Name, 2)
+						statDisplayTable:AddColumn("", "WidthFixed")
+						statDisplayTable:AddColumn("", "WidthStretch")
 						statDisplayTable.Borders = true
-						for key, value in TableUtils:OrderedPairs(propertiesToCopy or statsToParse) do
+						for key, value in TableUtils:OrderedPairs(propertiesToCopy or statsToParse, function(key)
+							return type((propertiesToCopy or statsToParse)[key]) == "string" and (propertiesToCopy or statsToParse)[key] or key
+						end) do
 							local statDisplayRow = statDisplayTable:AddRow()
 							local leftCell = statDisplayRow:AddCell()
 							local rightCell = statDisplayRow:AddCell()
@@ -181,7 +189,7 @@ function CharacterWindow:BuildWindow(parent, templateId)
 									leftCell:AddText(value)
 									rightCell:AddText(tostring(stat[value]))
 								elseif type(value) == "table" then
-									for _, fieldName in ipairs(value) do
+									for _, fieldName in TableUtils:OrderedPairs(value) do
 										leftCell:AddText(fieldName)
 										rightCell:AddText(tostring(stat[fieldName]))
 									end
