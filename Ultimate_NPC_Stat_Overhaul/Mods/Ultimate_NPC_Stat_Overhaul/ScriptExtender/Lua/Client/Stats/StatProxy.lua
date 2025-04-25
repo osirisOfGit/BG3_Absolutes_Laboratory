@@ -64,7 +64,7 @@ local function buildDisplayTable(stat, propertiesToRender, statDisplayTable)
 			if type(value) == "string" then
 				local statValue = makeDisplayable(
 					(value == "DisplayName" or value == "Description")
-					and Ext.Loca.GetTranslatedString(stat[value], stat[value])
+					and Ext.Loca.GetTranslatedString(stat[value], stat[value]):gsub("<[^>]+>", "")
 					or stat[value])
 
 				if statValue and (statValue ~= "No" and statValue ~= "None") then
