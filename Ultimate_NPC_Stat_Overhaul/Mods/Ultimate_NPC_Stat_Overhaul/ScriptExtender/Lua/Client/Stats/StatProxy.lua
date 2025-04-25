@@ -70,6 +70,9 @@ local function buildDisplayTable(stat, propertiesToRender, statDisplayTable)
 				if statValue then
 					leftCell:AddText(value)
 					StatManager:buildHyperlinkedStrings(rightCell, statValue, value)
+					if value == "Icon" then
+						rightCell:AddImage(statValue, {32, 32}).SameLine = true
+					end
 				end
 			elseif type(value) == "table" then
 				for _, fieldName in TableUtils:OrderedPairs(value) do

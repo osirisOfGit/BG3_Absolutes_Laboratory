@@ -131,9 +131,6 @@ function Main.buildOutTree()
 				progressionTableSelection.IDContext = progressionTable .. act
 				progressionTableSelection.UserData = progressionTable
 				progressionTableSelection:SetOpen(false, "Always")
-				progressionTableSelection.OnExpand = function()
-					self.displayTable.ColumnDefs[1].Width = self.selectionTreeCell.LastSize[1]
-				end
 
 				for _, progressionTemplate in TableUtils:OrderedPairs(progressionTemplates, function(key)
 					return CharacterIndex.displayNameMappings[progressionTemplates[key]]
