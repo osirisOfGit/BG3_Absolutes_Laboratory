@@ -5,15 +5,10 @@ StatusDataProxy.statsToParse = {
 	"AbsorbSurfaceRange",
 	"AbsorbSurfaceType",
 	"AiCalculationSpellOverride",
-	"AnimationEnd",
-	"AnimationLoop",
-	"AnimationStart",
 	"ApplyEffect",
 	"AuraFlags",
-	"AuraFX",
 	"AuraRadius",
 	"AuraStatuses",
-	"BeamEffect",
 	"BonusFromSkill",
 	"Boosts",
 	"Charges",
@@ -24,8 +19,6 @@ StatusDataProxy.statsToParse = {
 	"DieAction",
 	"DisableInteractions",
 	"DisplayName",
-	"DisplayNameRef",
-	"DynamicAnimationTag",
 	"EndEffect",
 	"ForceStackOverwrite",
 	"FreezeTime",
@@ -41,7 +34,6 @@ StatusDataProxy.statsToParse = {
 	"LeaveAction",
 	"ManagedStatusEffectGroup",
 	"ManagedStatusEffectType",
-	"Necromantic",
 	"NumStableFailed",
 	"NumStableSuccess",
 	"OnApplyConditions",
@@ -95,9 +87,7 @@ StatusDataProxy.statsToParse = {
 	"TooltipDamage",
 	"TooltipPermanentWarnings",
 	"TooltipSave",
-	"UseLyingPickingState",
 	"WeaponOverride",
-
 }
 
 StatProxy:RegisterStatType("StatusData", StatusDataProxy)

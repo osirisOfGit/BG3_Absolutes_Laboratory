@@ -62,7 +62,7 @@ local function buildDisplayTable(stat, propertiesToRender, statDisplayTable)
 		local rightCell = statDisplayRow:AddCell()
 		local success, error = pcall(function()
 			if type(value) == "string" then
-				local statValue = makeDisplayable(stat[value])
+				local statValue = makeDisplayable(value == "DisplayName" and Ext.Loca.GetTranslatedString(stat[value], stat[value]) or stat[value])
 				if statValue then
 					leftCell:AddText(value)
 					StatManager:buildHyperlinkedStrings(rightCell, statValue, value)
