@@ -180,7 +180,7 @@ function StatManager:RenderDisplayWindow(characterStat, parent)
 			statDisplayTable:AddColumn("", "WidthFixed")
 			statDisplayTable:AddColumn("", "WidthStretch")
 			statDisplayTable.Borders = true
-			buildDisplayTable(characterStat, statsToParse, statDisplayTable)
+			buildDisplayTable(characterStat, propertiesToCopy or statsToParse, statDisplayTable)
 		end
 	end
 
