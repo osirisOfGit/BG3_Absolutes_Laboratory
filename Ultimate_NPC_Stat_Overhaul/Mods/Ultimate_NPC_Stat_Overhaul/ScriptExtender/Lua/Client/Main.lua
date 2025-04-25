@@ -29,8 +29,10 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Configuration",
 
 		Main.selectionTreeCell = row:AddCell()
 
-		Main.configCell = row:AddCell():AddChildWindow("ConfigCell")
-		Main.configCell.NoSavedSettings = true
+		Main.configCell = row:AddCell()
+		-- Main.configCell.AlwaysAutoResize = true
+		-- Main.configCell.ChildAlwaysAutoResize = true
+		-- Main.configCell.NoSavedSettings = true
 	end
 )
 
@@ -85,6 +87,35 @@ function Main.buildOutTree()
 		end
 	end
 
+	---@param parentTree ExtuiTree
+	---@param templateMap {[string]: string[]}
+	---@param templateSuperSet string[]
+	local function buildTree(parentTree, templateMap, templateSuperSet)
+		for resourceId, templates in TableUtils:OrderedPairs(templateMap, function(key)
+			return CharacterIndex.displayNameMappings[key]
+		end) do
+			local resourceSelection = parentTree:AddTree(string.format("%s (%s)", (CharacterIndex.displayNameMappings[resourceId] or resourceId),
+				string.sub(resourceId, #resourceId - 5)))
+			resourceSelection:SetOpen(false, "Always")
+			resourceSelection.UserData = resourceId
+			resourceSelection.IDContext = resourceId .. parentTree.IDContext
+
+			for _, resourceTemplate in TableUtils:OrderedPairs(templates, function(key)
+				return CharacterIndex.displayNameMappings[templates[key]]
+			end) do
+				if TableUtils:ListContains(templateSuperSet, resourceTemplate) then
+					buildSelectable(resourceSelection, resourceTemplate)
+				end
+			end
+			if #resourceSelection.Children == 0 then
+				resourceSelection:Destroy()
+			end
+		end
+		if #parentTree.Children == 0 then
+			parentTree:Destroy()
+		end
+	end
+
 	return coroutine.wrap(function()
 		self.progressBar.Value = 0
 		local maxCount = TableUtils:CountElements(CharacterIndex.templates.acts)
@@ -99,54 +130,18 @@ function Main.buildOutTree()
 			local parentRaceSelection = actSelection:AddTree("Races")
 			parentRaceSelection.IDContext = act .. "Race"
 			parentRaceSelection:SetOpen(false, "Always")
-
-			for race, raceTemplates in TableUtils:OrderedPairs(CharacterIndex.templates.races, function(key)
-				return CharacterIndex.displayNameMappings[key]
-			end) do
-				local raceSelection = parentRaceSelection:AddTree(string.format("%s (%s)", (CharacterIndex.displayNameMappings[race] or race), string.sub(race, #race - 5)))
-				raceSelection:SetOpen(false, "Always")
-				raceSelection.UserData = race
-				raceSelection.IDContext = race .. act
-
-				for _, raceTemplate in TableUtils:OrderedPairs(raceTemplates, function(key)
-					return CharacterIndex.displayNameMappings[raceTemplates[key]]
-				end) do
-					if TableUtils:ListContains(actTemplates, raceTemplate) then
-						buildSelectable(raceSelection, raceTemplate)
-					end
-				end
-				if #raceSelection.Children == 0 then
-					raceSelection:Destroy()
-				end
-			end
-			if #parentRaceSelection.Children == 0 then
-				parentRaceSelection:Destroy()
-			end
+			buildTree(parentRaceSelection, CharacterIndex.templates.races, actTemplates)
 
 			local parentProgressionTableSelection = actSelection:AddTree("Progression Tables")
 			parentProgressionTableSelection:SetOpen(false, "Always")
 			parentProgressionTableSelection.IDContext = "progression" .. act
-			for progressionTable, progressionTemplates in TableUtils:OrderedPairs(CharacterIndex.templates.progressions) do
-				local progressionTableSelection = parentProgressionTableSelection:AddTree(progressionTable)
-				progressionTableSelection.IDContext = progressionTable .. act
-				progressionTableSelection.UserData = progressionTable
-				progressionTableSelection:SetOpen(false, "Always")
+			buildTree(parentProgressionTableSelection, CharacterIndex.templates.progressions, actTemplates)
 
-				for _, progressionTemplate in TableUtils:OrderedPairs(progressionTemplates, function(key)
-					return CharacterIndex.displayNameMappings[progressionTemplates[key]]
-				end) do
-					if TableUtils:ListContains(actTemplates, progressionTemplate) then
-						buildSelectable(progressionTableSelection, progressionTemplate)
-					end
-				end
+			local parentFactionsSelection = actSelection:AddTree("Parent Factions")
+			parentFactionsSelection:SetOpen(false, "Always")
+			parentFactionsSelection.IDContext = "progression" .. act
+			buildTree(parentFactionsSelection, CharacterIndex.templates.factions, actTemplates)
 
-				if #progressionTableSelection.Children == 0 then
-					progressionTableSelection:Destroy()
-				end
-			end
-			if #parentProgressionTableSelection.Children == 0 then
-				parentProgressionTableSelection:Destroy()
-			end
 			count = count + 1
 
 			if math.floor(((count / maxCount) * 100)) > lastPercentage then

@@ -16,6 +16,7 @@ CharacterIndex = {}
 CharacterIndex.templates = {
 	acts = {},
 	progressions = {},
+	factions = {},
 	races = {}
 }
 
@@ -71,6 +72,19 @@ function CharacterIndex:hydrateIndex()
 		end
 
 		local templateIndex = self.templates
+
+		---@param faction ResourceFaction
+		---@param id string
+		local function buildFaction(faction, id)
+			self.displayNameMappings[faction.ResourceUUID] = faction.Faction
+
+			if faction.ParentGuid ~= "00000000-0000-0000-0000-000000000000" then
+				buildFaction(Ext.StaticData.Get(faction.ParentGuid, "Faction"), id)
+			else
+				addToTable(templateIndex.factions, faction.ResourceUUID, id)
+			end
+		end
+
 		for id, characterTemplate in pairs(templates) do
 			if characterTemplate.TemplateType == "character" then
 				---@cast characterTemplate CharacterTemplate
@@ -85,6 +99,14 @@ function CharacterIndex:hydrateIndex()
 
 					if raceResource then
 						self.displayNameMappings[characterTemplate.Race] = raceResource.DisplayName:Get() or raceResource.Name
+					end
+				end
+
+				if characterTemplate.CombatComponent.Faction then
+					---@type ResourceFaction	
+					local faction = Ext.StaticData.Get(characterTemplate.CombatComponent.Faction, "Faction")
+					if faction then
+						buildFaction(faction, id)
 					end
 				end
 
