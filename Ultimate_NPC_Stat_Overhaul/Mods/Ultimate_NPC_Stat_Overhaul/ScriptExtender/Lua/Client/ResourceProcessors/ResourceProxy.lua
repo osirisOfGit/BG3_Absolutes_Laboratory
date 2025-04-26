@@ -1,4 +1,4 @@
----@alias Resource StatsObject|CharacterTemplate
+---@alias Resource StatsObject|GameObjectTemplate
 
 ---@class ResourceProxy
 ResourceProxy = {
@@ -53,7 +53,7 @@ local function buildDisplayTable(resource, propertiesToRender, statDisplayTable)
 		if value then
 			if type(value) == "table" then
 				if value["Handle"] then
-					return Ext.Loca.GetTranslatedString(value["Handle"])
+					return Ext.Loca.GetTranslatedString(value["Handle"]["Handle"], ""):gsub("<[^>]+>", "")
 				end
 
 				return next(value) and value or nil
@@ -72,10 +72,17 @@ local function buildDisplayTable(resource, propertiesToRender, statDisplayTable)
 		local rightCell = statDisplayRow:AddCell()
 		local success, error = pcall(function()
 			if type(fieldEntry) == "string" then
-				local statValue = makeDisplayable(
-					(fieldEntry == "DisplayName" or fieldEntry == "Description")
-					and Ext.Loca.GetTranslatedString(serializedResource[fieldEntry], serializedResource[fieldEntry]):gsub("<[^>]+>", "")
-					or serializedResource[fieldEntry])
+				local statValue
+				if (fieldEntry == "DisplayName" or fieldEntry == "Description") then
+					if type(serializedResource[fieldEntry]) == "table" then
+						_D(serializedResource[fieldEntry])
+					else
+						statValue = Ext.Loca.GetTranslatedString(serializedResource[fieldEntry], serializedResource[fieldEntry]):gsub("<[^>]+>", "")
+					end
+				else
+					statValue = serializedResource[fieldEntry]
+				end
+				statValue = makeDisplayable(statValue)
 
 				if statValue and (statValue ~= "No" and statValue ~= "None" and statValue ~= "Empty") then
 					leftCell:AddText(fieldEntry)
@@ -245,7 +252,7 @@ ResourceManager = ResourceProxy:new()
 
 function ResourceManager:RenderDisplayWindow(resource, parent)
 	local success, result = pcall(function(...)
-		proxyRegistry[Ext.Types.GetObjectType(resource) == "CharacterTemplate" and "CharacterTemplate" or resource.ModifierList]:RenderDisplayWindow(resource, parent)
+		proxyRegistry[Ext.Types.GetObjectType(resource) == "stats::Object" and resource.ModifierList or Ext.Types.GetObjectType(resource)]:RenderDisplayWindow(resource, parent)
 	end)
 
 	if not success then
@@ -257,11 +264,15 @@ function ResourceManager:RenderDisplayableValue(parent, resourceValue, resourceT
 	local success, result = pcall(function(...)
 		if proxyRegistry[resourceType] then
 			proxyRegistry[resourceType]:RenderDisplayableValue(parent, resourceValue)
-		else
+		elseif resourceValue then
 			if (type(resourceValue) == "string" and resourceValue ~= "") or (type(resourceValue) == "number" and resourceValue > 0) then
 				parent:AddText(tostring(resourceValue))
-			elseif type(resourceValue) == "table" and resourceValue[1] and type(resourceValue[1]) ~= "table" then
-				parent:AddText(table.concat(resourceValue, "|"))
+			elseif type(resourceValue) == "table" then
+				if resourceValue[1] and type(resourceValue[1]) ~= "table" then
+					parent:AddText(table.concat(resourceValue, "|"))
+				else
+					parent:AddText(tostring(resourceValue))
+				end
 			end
 		end
 	end)
@@ -272,7 +283,9 @@ function ResourceManager:RenderDisplayableValue(parent, resourceValue, resourceT
 end
 
 Ext.Require("Client/ResourceProcessors/Proxies/CharacterTemplate.lua")
+Ext.Require("Client/ResourceProcessors/Proxies/ItemTemplate.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/CharacterStat.lua")
+Ext.Require("Client/ResourceProcessors/Proxies/StatParser.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/ItemList.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/Status.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/Passives.lua")

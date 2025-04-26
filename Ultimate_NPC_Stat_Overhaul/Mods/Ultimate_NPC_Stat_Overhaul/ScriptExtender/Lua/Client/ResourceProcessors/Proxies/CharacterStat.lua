@@ -55,7 +55,6 @@ CharacterStatProxy.fieldsToParse = {
 
 
 ResourceProxy:RegisterResourceProxy("Character", CharacterStatProxy)
-ResourceProxy:RegisterResourceProxy("Stats", CharacterStatProxy)
 
 function CharacterStatProxy:RenderDisplayableValue(parent, statString)
 	---@type Character
@@ -63,6 +62,6 @@ function CharacterStatProxy:RenderDisplayableValue(parent, statString)
 
 	if character then
 		local statText = Styler:HyperlinkText(parent:AddText(statString))
-		self:RenderDisplayWindow(character, statText:Tooltip())
+		ResourceManager:RenderDisplayWindow(character, statText:Tooltip())
 	end
 end
