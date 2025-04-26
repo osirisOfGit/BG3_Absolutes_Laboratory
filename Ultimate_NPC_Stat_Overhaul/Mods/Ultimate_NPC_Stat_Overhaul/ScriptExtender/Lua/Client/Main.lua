@@ -102,6 +102,8 @@ local selectedSelectable
 function Main.buildOutTree()
 	local self = Main
 
+	selectedSelectable = nil
+
 	local universalSelection = self.selectionTreeCell:AddTree("Acts")
 	universalSelection.NoAutoOpenOnLog = true
 
