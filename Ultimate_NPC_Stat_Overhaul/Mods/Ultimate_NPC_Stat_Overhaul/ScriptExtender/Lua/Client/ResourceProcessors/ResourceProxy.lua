@@ -205,7 +205,7 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 				parentCell:AddText(string.format("%s | File: %s", serializedResource.Name, serializedResource.FileName:match("Public/(.+)") or "Unknown")).Font = "Large"
 			end
 
-			local statDisplayTable = Styler:TwoColumnTable(parentCell,  serializedResource.Name)
+			local statDisplayTable = Styler:TwoColumnTable(parentCell, serializedResource.Name)
 
 			statDisplayTable.Borders = true
 			if next(overriddenProperties) then
@@ -262,7 +262,9 @@ function ResourceManager:RenderDisplayableValue(parent, resourceValue, resourceT
 		if proxyRegistry[resourceType] then
 			proxyRegistry[resourceType]:RenderDisplayableValue(parent, resourceValue, resourceType)
 		elseif resourceValue then
-			if (type(resourceValue) == "string" and resourceValue ~= "") or (type(resourceValue) == "number" and resourceValue > 0) then
+			if (type(resourceValue) == "string" and resourceValue ~= "" and resourceValue ~= "00000000-0000-0000-0000-000000000000")
+				or (type(resourceValue) == "number" and resourceValue > 0)
+			then
 				parent:AddText(tostring(resourceValue))
 			elseif type(resourceValue) == "table" then
 				if resourceValue[1] and type(resourceValue[1]) ~= "table" then
@@ -286,6 +288,7 @@ Ext.Require("Client/ResourceProcessors/Proxies/CharacterStat.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/SkillList.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/Factions.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/Tags.lua")
+Ext.Require("Client/ResourceProcessors/Proxies/Race.lua")
 
 --- Stat Stuff
 Ext.Require("Client/ResourceProcessors/Proxies/StatParser.lua")
