@@ -189,10 +189,7 @@ ResourceProxy:RegisterResourceProxy("SpellRoll", SpellRollProxy)
 ---@param resourceValue table
 function SpellRollProxy:RenderDisplayableValue(parent, resourceValue)
 	if resourceValue then
-		local displayTable = parent:AddTable("spellRoll", 2)
-		displayTable.Borders = true
-		displayTable:AddColumn("", "WidthFixed")
-		displayTable:AddColumn("", "WidthStretch")
+		local displayTable = Styler:TwoColumnTable(parent)
 
 		for property, value in TableUtils:OrderedPairs(resourceValue) do
 			local row = displayTable:AddRow()
