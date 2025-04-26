@@ -54,9 +54,9 @@ local function buildDisplayTable(resource, propertiesToRender, statDisplayTable)
 			if type(value) == "table" then
 				if value["Handle"] then
 					return Ext.Loca.GetTranslatedString(value["Handle"])
-				else
-					return value["Get"] and value["Get"](value) or value
 				end
+
+				return next(value) and value or nil
 			elseif type(value) == "number" then
 				return value > 0 and value
 			else
@@ -77,7 +77,7 @@ local function buildDisplayTable(resource, propertiesToRender, statDisplayTable)
 					and Ext.Loca.GetTranslatedString(serializedResource[fieldEntry], serializedResource[fieldEntry]):gsub("<[^>]+>", "")
 					or serializedResource[fieldEntry])
 
-				if statValue and (statValue ~= "No" and statValue ~= "None") then
+				if statValue and (statValue ~= "No" and statValue ~= "None" and statValue ~= "Empty") then
 					leftCell:AddText(fieldEntry)
 
 					ResourceManager:RenderDisplayableValue(rightCell, statValue, fieldEntry)
@@ -120,7 +120,9 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 	---@param propertiesToCopy ResourceFieldsToParse?
 	---@param parentCell ExtuiTreeParent|ExtuiTableCell
 	local function buildRecursiveResourceTable(nextResource, propertiesToCopy, parentCell)
-		local serializedResource = (type(nextResource) == "userdata" and Ext.Types.GetObjectType(nextResource):find("Template")) and Ext.Types.Serialize(nextResource) or nextResource
+		local serializedResource = (type(nextResource) == "userdata" and Ext.Types.GetObjectType(nextResource):find("Template"))
+			and Ext.Types.Serialize(nextResource)
+			or nextResource
 
 		---@type Resource?
 		local parentResource
@@ -255,8 +257,12 @@ function ResourceManager:RenderDisplayableValue(parent, resourceValue, resourceT
 	local success, result = pcall(function(...)
 		if proxyRegistry[resourceType] then
 			proxyRegistry[resourceType]:RenderDisplayableValue(parent, resourceValue)
-		elseif resourceValue ~= "" then
-			parent:AddText(tostring(resourceValue))
+		else
+			if (type(resourceValue) == "string" and resourceValue ~= "") or (type(resourceValue) == "number" and resourceValue > 0) then
+				parent:AddText(tostring(resourceValue))
+			elseif type(resourceValue) == "table" and resourceValue[1] and type(resourceValue[1]) ~= "table" then
+				parent:AddText(table.concat(resourceValue, "|"))
+			end
 		end
 	end)
 
