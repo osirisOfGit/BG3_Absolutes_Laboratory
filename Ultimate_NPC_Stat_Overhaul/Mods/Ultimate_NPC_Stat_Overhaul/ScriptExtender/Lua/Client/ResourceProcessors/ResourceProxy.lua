@@ -230,10 +230,16 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 				parentCell:AddText(string.format("%s | Original Mod: %s ", serializedResource.Name, serializedResource.OriginalModId,
 					serializedResource.ModId ~= serializedResource.OriginalModId and ("| Modified By: " .. serializedResource.ModId) or "")).Font = "Large"
 			else
-				parentCell:AddText(string.format("%s | File: %s", serializedResource.Name, serializedResource.FileName:gsub("^.*[\\/]Mods[\\/]", "") or "Unknown")).Font = "Large"
+				if serializedResource.FileName then
+					parentCell:AddText(string.format("%s | File: %s",
+						serializedResource.Name,
+						serializedResource.FileName:gsub("^.*[\\/]Mods[\\/]", "") or "Unknown")).Font = "Large"
+				else
+					parentCell:AddText(string.format("%s", serializedResource.Name or serializedResource.Category)).Font = "Large"
+				end
 			end
 
-			local statDisplayTable = parentCell:AddTable("StatDisplay" .. serializedResource.Name, 2)
+			local statDisplayTable = parentCell:AddTable("StatDisplay" .. (serializedResource.Name or serializedResource.Category), 2)
 			statDisplayTable:AddColumn("", "WidthFixed")
 			statDisplayTable:AddColumn("", "WidthStretch")
 			statDisplayTable.Borders = true
@@ -259,7 +265,7 @@ end
 function ResourceManager:RenderDisplayableValue(parent, resourceValue, resourceType)
 	local success, result = pcall(function(...)
 		if proxyRegistry[resourceType] then
-			proxyRegistry[resourceType]:RenderDisplayableValue(parent, resourceValue)
+			proxyRegistry[resourceType]:RenderDisplayableValue(parent, resourceValue, resourceType)
 		elseif resourceValue then
 			if (type(resourceValue) == "string" and resourceValue ~= "") or (type(resourceValue) == "number" and resourceValue > 0) then
 				parent:AddText(tostring(resourceValue))
@@ -267,7 +273,7 @@ function ResourceManager:RenderDisplayableValue(parent, resourceValue, resourceT
 				if resourceValue[1] and type(resourceValue[1]) ~= "table" then
 					parent:AddText(table.concat(resourceValue, "|"))
 				else
-					parent:AddText(tostring(resourceValue))
+					Styler:SimpleRecursiveTwoColumnTable(parent, resourceValue)
 				end
 			end
 		end
@@ -291,3 +297,4 @@ Ext.Require("Client/ResourceProcessors/Proxies/ItemList.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/Status.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/Passives.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/Spell.lua")
+Ext.Require("Client/ResourceProcessors/Proxies/TreasureTables.lua")

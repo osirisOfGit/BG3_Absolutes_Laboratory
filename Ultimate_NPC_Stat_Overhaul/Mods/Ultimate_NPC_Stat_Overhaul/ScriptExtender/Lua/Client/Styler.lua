@@ -86,6 +86,47 @@ function Styler:MiddleAlignedColumnLayout(parent, ...)
 	end
 end
 
+---@param parent ExtuiTreeParent
+---@return ExtuiTable
+function Styler:TwoColumnTable(parent)
+	local displayTable = parent:AddTable("twoCol" .. parent.IDContext, 2)
+	displayTable.Borders = true
+	displayTable:AddColumn("", "WidthFixed")
+	displayTable:AddColumn("", "WidthStretch")
+
+	return displayTable
+end
+
+---@param parent ExtuiTreeParent
+---@param resource Resource
+function Styler:SimpleRecursiveTwoColumnTable(parent, resource)
+	for key, value in TableUtils:OrderedPairs(resource) do
+		local subTable = Styler:TwoColumnTable(parent)
+
+		if type(value) == "table" then
+			for name, subValue in TableUtils:OrderedPairs(value) do
+				local subRow = subTable:AddRow()
+				subRow:AddCell():AddText(name)
+
+				local valueCell = subRow:AddCell()
+				ResourceManager:RenderDisplayableValue(valueCell, subValue, name)
+
+				if #valueCell.Children == 0 then
+					subRow:Destroy()
+				end
+			end
+		elseif value ~= "" and (type(value) ~= "number" or value > 0) then
+			local subRow = subTable:AddRow()
+			subRow:AddCell():AddText(key)
+			subRow:AddCell():AddText(tostring(value))
+		end
+
+		if #subTable.Children == 0 then
+			subTable:Destroy()
+		end
+	end
+end
+
 function Styler:ScaleFactor()
 	-- testing monitor for development is 1440p
 	return Ext.IMGUI.GetViewportSize()[2] / 1440
