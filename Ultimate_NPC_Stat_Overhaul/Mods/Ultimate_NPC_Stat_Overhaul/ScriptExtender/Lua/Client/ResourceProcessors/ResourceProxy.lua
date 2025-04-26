@@ -289,6 +289,7 @@ Ext.Require("Client/ResourceProcessors/Proxies/SkillList.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/Factions.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/Tags.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/Race.lua")
+Ext.Require("Client/ResourceProcessors/Proxies/Progressions.lua")
 
 --- Stat Stuff
 Ext.Require("Client/ResourceProcessors/Proxies/StatParser.lua")
