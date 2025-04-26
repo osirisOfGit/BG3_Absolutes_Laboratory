@@ -202,7 +202,7 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 				parentCell:AddText(string.format("%s | Original Mod: %s ", serializedResource.Name, serializedResource.OriginalModId,
 					serializedResource.ModId ~= serializedResource.OriginalModId and ("| Modified By: " .. serializedResource.ModId) or "")).Font = "Large"
 			else
-				parentCell:AddText(string.format("%s | File: %s", serializedResource.Name, serializedResource.FileName:match("Public/(.+)") or "Unknown"))
+				parentCell:AddText(string.format("%s | File: %s", serializedResource.Name, serializedResource.FileName:match("Public/(.+)") or "Unknown")).Font = "Large"
 			end
 
 			local statDisplayTable = parentCell:AddTable("StatDisplay" .. serializedResource.Name, 2)
@@ -230,7 +230,7 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 				parentCell:AddText(string.format("%s | Original Mod: %s ", serializedResource.Name, serializedResource.OriginalModId,
 					serializedResource.ModId ~= serializedResource.OriginalModId and ("| Modified By: " .. serializedResource.ModId) or "")).Font = "Large"
 			else
-				parentCell:AddText(string.format("%s | File: %s", serializedResource.Name, serializedResource.FileName:gsub("^.*[\\/]Mods[\\/]", "") or "Unknown"))
+				parentCell:AddText(string.format("%s | File: %s", serializedResource.Name, serializedResource.FileName:gsub("^.*[\\/]Mods[\\/]", "") or "Unknown")).Font = "Large"
 			end
 
 			local statDisplayTable = parentCell:AddTable("StatDisplay" .. serializedResource.Name, 2)
