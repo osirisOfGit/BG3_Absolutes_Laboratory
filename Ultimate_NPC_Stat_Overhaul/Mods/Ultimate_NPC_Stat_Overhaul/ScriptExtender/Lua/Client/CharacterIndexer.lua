@@ -22,7 +22,6 @@ CharacterIndex.templates = {
 
 ---@type CharacterIndex
 CharacterIndex.entities = {
-	acts = {},
 	factions = {},
 	progressions = {},
 	races = {}
@@ -144,7 +143,6 @@ function CharacterIndex:hydrateEntityIndex()
 						or id
 				end
 
-				addToTable(index.acts, entity.ClientCharacter.Level, id)
 				addToTable(index.factions, entity.Faction and entity.Faction.field_8, id)
 				addToTable(index.races, entity.Race and entity.Race.Race, id)
 

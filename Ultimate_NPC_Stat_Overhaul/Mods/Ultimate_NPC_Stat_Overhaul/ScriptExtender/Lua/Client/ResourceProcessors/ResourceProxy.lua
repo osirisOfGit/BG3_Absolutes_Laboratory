@@ -5,6 +5,8 @@ ResourceProxy = {
 	delimeter = ";",
 	---@class ResourceFieldsToParse
 	fieldsToParse = {},
+	---@type fun():boolean
+	CanRenderValue = nil,
 }
 
 ---@type {[string]: ResourceProxy}
@@ -30,6 +32,10 @@ end
 
 function ResourceProxy:RegisterResourceProxy(resourceType, instance)
 	proxyRegistry[resourceType] = instance
+end
+
+function ResourceProxy:CanRenderValue(resourceType)
+	return proxyRegistry[resourceType] ~= nil
 end
 
 ---@param statString string
