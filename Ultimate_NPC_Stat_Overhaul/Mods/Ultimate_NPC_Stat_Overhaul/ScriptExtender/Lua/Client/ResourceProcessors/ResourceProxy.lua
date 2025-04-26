@@ -73,7 +73,7 @@ local function buildDisplayTable(resource, propertiesToRender, statDisplayTable)
 		local success, error = pcall(function()
 			if type(fieldEntry) == "string" then
 				local statValue
-				if (fieldEntry == "DisplayName" or fieldEntry == "Description") and type(serializedResource[fieldEntry]) ~= "table" then
+				if (fieldEntry == "DisplayName" or fieldEntry:find("Description")) and type(serializedResource[fieldEntry]) ~= "table" then
 					statValue = Ext.Loca.GetTranslatedString(serializedResource[fieldEntry], serializedResource[fieldEntry]):gsub("<[^>]+>", "")
 				else
 					statValue = serializedResource[fieldEntry]

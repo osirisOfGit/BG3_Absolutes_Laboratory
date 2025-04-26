@@ -27,7 +27,6 @@ SpellProxy.fieldsToParse = {
 	"Description",
 	"DescriptionRef",
 	"DescriptionParams",
-	"DisappearEffect",
 	"DisplayName",
 	"DisplayNameRef",
 	"Distribution",
