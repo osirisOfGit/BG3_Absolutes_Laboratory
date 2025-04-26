@@ -123,7 +123,7 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 	---@param propertiesToCopy ResourceFieldsToParse?
 	---@param parentCell ExtuiTreeParent|ExtuiTableCell
 	local function buildRecursiveResourceTable(nextResource, propertiesToCopy, parentCell)
-		local serializedResource = (type(nextResource) == "userdata" and Ext.Types.GetObjectType(nextResource):find("Template"))
+		local serializedResource = (type(nextResource) == "userdata" and not Ext.Types.GetObjectType(nextResource):find("stats::Object"))
 			and Ext.Types.Serialize(nextResource)
 			or nextResource
 
@@ -285,6 +285,7 @@ Ext.Require("Client/ResourceProcessors/Proxies/ItemTemplate.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/CharacterStat.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/SkillList.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/Factions.lua")
+Ext.Require("Client/ResourceProcessors/Proxies/Tags.lua")
 
 --- Stat Stuff
 Ext.Require("Client/ResourceProcessors/Proxies/StatParser.lua")

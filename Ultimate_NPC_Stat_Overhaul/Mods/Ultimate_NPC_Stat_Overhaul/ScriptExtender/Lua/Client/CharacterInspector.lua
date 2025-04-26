@@ -12,7 +12,7 @@ Main = {
 	progressBar = nil
 }
 
-Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Configuration",
+Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 	--- @param tabHeader ExtuiTreeParent
 	function(tabHeader)
 		Main.parent = tabHeader

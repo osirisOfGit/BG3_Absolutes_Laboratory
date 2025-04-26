@@ -181,20 +181,3 @@ function SpellProxy:RenderDisplayableValue(parent, resourceValue)
 		end
 	end
 end
-
-SpellRollProxy = ResourceProxy:new()
-
-ResourceProxy:RegisterResourceProxy("SpellRoll", SpellRollProxy)
-
----@param resourceValue table
-function SpellRollProxy:RenderDisplayableValue(parent, resourceValue)
-	if resourceValue then
-		local displayTable = Styler:TwoColumnTable(parent)
-
-		for property, value in TableUtils:OrderedPairs(resourceValue) do
-			local row = displayTable:AddRow()
-			row:AddCell():AddText(property)
-			row:AddCell():AddText(tostring(value))
-		end
-	end
-end
