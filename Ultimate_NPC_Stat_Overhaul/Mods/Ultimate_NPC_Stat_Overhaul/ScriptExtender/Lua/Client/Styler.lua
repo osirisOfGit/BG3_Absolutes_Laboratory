@@ -88,8 +88,8 @@ end
 
 ---@param parent ExtuiTreeParent
 ---@return ExtuiTable
-function Styler:TwoColumnTable(parent)
-	local displayTable = parent:AddTable("twoCol" .. parent.IDContext, 2)
+function Styler:TwoColumnTable(parent, id)
+	local displayTable = parent:AddTable("twoCol" .. parent.IDContext .. (id or ""), 2)
 	displayTable.Borders = true
 	displayTable:AddColumn("", "WidthFixed")
 	displayTable:AddColumn("", "WidthStretch")

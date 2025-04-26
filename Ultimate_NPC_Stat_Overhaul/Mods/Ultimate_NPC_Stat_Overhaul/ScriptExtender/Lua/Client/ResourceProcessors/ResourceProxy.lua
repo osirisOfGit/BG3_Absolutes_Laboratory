@@ -205,7 +205,7 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 				parentCell:AddText(string.format("%s | File: %s", serializedResource.Name, serializedResource.FileName:match("Public/(.+)") or "Unknown")).Font = "Large"
 			end
 
-			local statDisplayTable = Styler:TwoColumnTable(parent)
+			local statDisplayTable = Styler:TwoColumnTable(parentCell,  serializedResource.Name)
 
 			statDisplayTable.Borders = true
 			if next(overriddenProperties) then
@@ -237,7 +237,7 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 				end
 			end
 
-			local statDisplayTable = Styler:TwoColumnTable(parent)
+			local statDisplayTable = Styler:TwoColumnTable(parentCell, serializedResource.Name or serializedResource.Category)
 			buildDisplayTable(serializedResource, propertiesToCopy or self.fieldsToParse, statDisplayTable)
 		end
 	end
