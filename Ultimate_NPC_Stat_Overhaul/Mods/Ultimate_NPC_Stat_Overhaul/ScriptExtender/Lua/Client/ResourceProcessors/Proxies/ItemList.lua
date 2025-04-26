@@ -25,18 +25,15 @@ function ItemListProxy:RenderDisplayableValue(parent, itemList)
 			displayTable:AddColumn("", "WidthStretch")
 
 			for key, value in TableUtils:OrderedPairs(itemData) do
-				local row = displayTable:AddRow()
-				if type(value) ~= "table" and (type(value) ~= "string" or value ~= "") and (type(value) ~= "number" or value > 0) then
+				if value and type(value) ~= "table" and (type(value) ~= "string" or value ~= "") and (type(value) ~= "number" or value > 0) then
+					local row = displayTable:AddRow()
 					row:AddCell():AddText(key)
 					if key == "TemplateID" and Ext.Template.GetRootTemplate(value) then
 						local templateText = Styler:HyperlinkText(row:AddCell():AddText(value))
 						ResourceManager:RenderDisplayWindow(Ext.Template.GetRootTemplate(value), templateText:Tooltip(), "ItemTemplate")
 					else
-						ResourceManager:RenderDisplayableValue(row:AddCell(), value, key)
+						ResourceManager:RenderDisplayableValue(row:AddCell(), tostring(value), key)
 					end
-				end
-				if #row.Children == 0 then
-					row:Destroy()
 				end
 			end
 		end
