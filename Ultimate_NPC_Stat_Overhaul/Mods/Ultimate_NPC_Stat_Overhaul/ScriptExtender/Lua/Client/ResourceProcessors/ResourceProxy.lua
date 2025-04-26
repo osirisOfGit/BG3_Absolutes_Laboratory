@@ -278,9 +278,14 @@ function ResourceManager:RenderDisplayableValue(parent, resourceValue, resourceT
 	end
 end
 
+
+--- Template Stuff
 Ext.Require("Client/ResourceProcessors/Proxies/CharacterTemplate.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/ItemTemplate.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/CharacterStat.lua")
+Ext.Require("Client/ResourceProcessors/Proxies/SkillList.lua")
+
+--- Stat Stuff
 Ext.Require("Client/ResourceProcessors/Proxies/StatParser.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/ItemList.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/Status.lua")
