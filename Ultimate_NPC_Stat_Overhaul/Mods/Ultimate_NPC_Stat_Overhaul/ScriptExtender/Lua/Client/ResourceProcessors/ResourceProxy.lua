@@ -47,12 +47,16 @@ function ResourceProxy:RenderDisplayableValue(parent, resourceValue, statType) e
 ---@param propertiesToRender ResourceFieldsToParse
 ---@param statDisplayTable ExtuiTable
 local function buildDisplayTable(resource, propertiesToRender, statDisplayTable)
-	resource = Ext.Types.GetObjectType(resource) == "CharacterTemplate" and Ext.Types.Serialize(resource) or resource
+	local serializedResource = (type(resource) == "table" or Ext.Types.GetObjectType(resource) == "stats::Object") and resource or Ext.Types.Serialize(resource)
 
 	local function makeDisplayable(value)
 		if value then
 			if type(value) == "table" then
-				return value
+				if value["Handle"] then
+					return Ext.Loca.GetTranslatedString(value["Handle"])
+				else
+					return value["Get"] and value["Get"](value) or value
+				end
 			elseif type(value) == "number" then
 				return value > 0 and value
 			else
@@ -60,33 +64,34 @@ local function buildDisplayTable(resource, propertiesToRender, statDisplayTable)
 			end
 		end
 	end
-	for key, value in TableUtils:OrderedPairs(propertiesToRender, function(key)
+	for key, fieldEntry in TableUtils:OrderedPairs(propertiesToRender, function(key)
 		return type(propertiesToRender[key]) == "string" and propertiesToRender[key] or key
 	end) do
 		local statDisplayRow = statDisplayTable:AddRow()
 		local leftCell = statDisplayRow:AddCell()
 		local rightCell = statDisplayRow:AddCell()
 		local success, error = pcall(function()
-			if type(value) == "string" then
+			if type(fieldEntry) == "string" then
 				local statValue = makeDisplayable(
-					(value == "DisplayName" or value == "Description")
-					and Ext.Loca.GetTranslatedString(resource[value], resource[value]):gsub("<[^>]+>", "")
-					or resource[value])
+					(fieldEntry == "DisplayName" or fieldEntry == "Description")
+					and Ext.Loca.GetTranslatedString(serializedResource[fieldEntry], serializedResource[fieldEntry]):gsub("<[^>]+>", "")
+					or serializedResource[fieldEntry])
 
 				if statValue and (statValue ~= "No" and statValue ~= "None") then
-					leftCell:AddText(value)
-					ResourceManager:RenderDisplayableValue(rightCell, statValue, value)
-					if value == "Icon" then
+					leftCell:AddText(fieldEntry)
+
+					ResourceManager:RenderDisplayableValue(rightCell, statValue, fieldEntry)
+					if fieldEntry == "Icon" then
 						rightCell:AddImage(statValue, { 32, 32 }).SameLine = true
 					end
 				end
-			elseif type(value) == "table" then
-				for _, fieldName in TableUtils:OrderedPairs(value) do
+			elseif type(fieldEntry) == "table" then
+				for _, fieldName in TableUtils:OrderedPairs(fieldEntry) do
 					local statValue
-					if Ext.Types.GetObjectType(resource) == "stats::Object" then
-						statValue = resource[fieldName]
+					if Ext.Types.GetObjectType(serializedResource) == "stats::Object" then
+						statValue = serializedResource[fieldName]
 					else
-						statValue = resource[key][fieldName]
+						statValue = serializedResource[key][fieldName]
 					end
 
 					statValue = makeDisplayable(statValue)
@@ -115,21 +120,21 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 	---@param propertiesToCopy ResourceFieldsToParse?
 	---@param parentCell ExtuiTreeParent|ExtuiTableCell
 	local function buildRecursiveResourceTable(nextResource, propertiesToCopy, parentCell)
-		nextResource = Ext.Types.GetObjectType(nextResource) == "CharacterTemplate" and Ext.Types.Serialize(nextResource) or nextResource
+		local serializedResource = (type(nextResource) == "userdata" and Ext.Types.GetObjectType(nextResource):find("Template")) and Ext.Types.Serialize(nextResource) or nextResource
 
 		---@type Resource?
 		local parentResource
-		if Ext.Types.GetObjectType(nextResource) ~= "stats::Object" then
-			if nextResource.ParentTemplateId ~= "" then
-				parentResource = Ext.Template.GetRootTemplate(nextResource.ParentTemplateId)
-			elseif nextResource.TemplateName ~= "" then
-				parentResource = Ext.Template.GetRootTemplate(nextResource.TemplateName)
+		if Ext.Types.GetObjectType(serializedResource) ~= "stats::Object" then
+			if serializedResource.ParentTemplateId ~= "" then
+				parentResource = Ext.Template.GetRootTemplate(serializedResource.ParentTemplateId)
+			elseif serializedResource.TemplateName ~= "" then
+				parentResource = Ext.Template.GetRootTemplate(serializedResource.TemplateName)
 			end
 			if parentResource then
 				parentResource = Ext.Types.Serialize(parentResource)
 			end
 		else
-			parentResource = (nextResource.Using ~= "" and Ext.Stats.Get(nextResource.Using) or nil)
+			parentResource = (serializedResource.Using ~= "" and Ext.Stats.Get(serializedResource.Using) or nil)
 		end
 
 		if parentResource then
@@ -142,15 +147,15 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 				local fieldValue
 				local parentValue
 				if parentKey and not Ext.Types.GetObjectType(resource):find("stats::Object") then
-					if type(nextResource[parentKey]) == "userdata" then
-						fieldValue = Ext.Types.Serialize(nextResource[parentKey])[fieldName]
+					if type(serializedResource[parentKey]) == "userdata" then
+						fieldValue = Ext.Types.Serialize(serializedResource[parentKey])[fieldName]
 						parentValue = Ext.Types.Serialize(parentResource[parentKey])[fieldName]
 					else
-						fieldValue = nextResource[parentKey][fieldName]
+						fieldValue = serializedResource[parentKey][fieldName]
 						parentValue = parentResource[parentKey][fieldName]
 					end
 				else
-					fieldValue = nextResource[fieldName]
+					fieldValue = serializedResource[fieldName]
 					parentValue = parentResource[fieldName]
 				end
 
@@ -189,19 +194,19 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 			end
 
 			if Ext.Types.GetObjectType(parentResource) == "stats::Object" then
-				parentCell:AddText(string.format("%s | Original Mod: %s ", nextResource.Name, nextResource.OriginalModId,
-					nextResource.ModId ~= nextResource.OriginalModId and ("| Modified By: " .. nextResource.ModId) or "")).Font = "Large"
+				parentCell:AddText(string.format("%s | Original Mod: %s ", serializedResource.Name, serializedResource.OriginalModId,
+					serializedResource.ModId ~= serializedResource.OriginalModId and ("| Modified By: " .. serializedResource.ModId) or "")).Font = "Large"
 			else
-				parentCell:AddText(string.format("%s | File: %s", nextResource.Name, nextResource.FileName:match("Public/(.+)") or "Unknown"))
+				parentCell:AddText(string.format("%s | File: %s", serializedResource.Name, serializedResource.FileName:match("Public/(.+)") or "Unknown"))
 			end
 
-			local statDisplayTable = parentCell:AddTable("StatDisplay" .. nextResource.Name, 2)
+			local statDisplayTable = parentCell:AddTable("StatDisplay" .. serializedResource.Name, 2)
 			statDisplayTable:AddColumn("", "WidthFixed")
 			statDisplayTable:AddColumn("", "WidthStretch")
 
 			statDisplayTable.Borders = true
 			if next(overriddenProperties) then
-				buildDisplayTable(nextResource, overriddenProperties, statDisplayTable)
+				buildDisplayTable(serializedResource, overriddenProperties, statDisplayTable)
 			end
 
 			if next(inheritedProperties) then
@@ -216,18 +221,18 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 				statDisplayTable:Destroy()
 			end
 		else
-			if Ext.Types.GetObjectType(nextResource) == "stats::Object" then
-				parentCell:AddText(string.format("%s | Original Mod: %s ", nextResource.Name, nextResource.OriginalModId,
-					nextResource.ModId ~= nextResource.OriginalModId and ("| Modified By: " .. nextResource.ModId) or "")).Font = "Large"
+			if Ext.Types.GetObjectType(serializedResource) == "stats::Object" then
+				parentCell:AddText(string.format("%s | Original Mod: %s ", serializedResource.Name, serializedResource.OriginalModId,
+					serializedResource.ModId ~= serializedResource.OriginalModId and ("| Modified By: " .. serializedResource.ModId) or "")).Font = "Large"
 			else
-				parentCell:AddText(string.format("%s | File: %s", nextResource.Name, nextResource.FileName:gsub("^.*[\\/]Mods[\\/]", "") or "Unknown"))
+				parentCell:AddText(string.format("%s | File: %s", serializedResource.Name, serializedResource.FileName:gsub("^.*[\\/]Mods[\\/]", "") or "Unknown"))
 			end
 
-			local statDisplayTable = parentCell:AddTable("StatDisplay" .. nextResource.Name, 2)
+			local statDisplayTable = parentCell:AddTable("StatDisplay" .. serializedResource.Name, 2)
 			statDisplayTable:AddColumn("", "WidthFixed")
 			statDisplayTable:AddColumn("", "WidthStretch")
 			statDisplayTable.Borders = true
-			buildDisplayTable(nextResource, propertiesToCopy or self.fieldsToParse, statDisplayTable)
+			buildDisplayTable(serializedResource, propertiesToCopy or self.fieldsToParse, statDisplayTable)
 		end
 	end
 
