@@ -36,6 +36,8 @@ PassivesProxy.fieldsToParse = {
 }
 
 ResourceProxy:RegisterResourceProxy("Passives", PassivesProxy)
+ResourceProxy:RegisterResourceProxy("PassivesAdded", PassivesProxy)
+ResourceProxy:RegisterResourceProxy("PassivesRemoved", PassivesProxy)
 
 function PassivesProxy:RenderDisplayableValue(parent, statString)
 	if statString and statString ~= "" then

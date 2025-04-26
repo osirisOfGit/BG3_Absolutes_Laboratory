@@ -3,13 +3,50 @@ ProgressionProxy = ResourceProxy:new()
 ProgressionProxy.fieldsToParse = {
 	"AddSpells",
 	"AllowImprovement",
-	"BoostPrototypes",
 	"Boosts",
 	"IsMulticlass",
 	"Level",
 	"Name",
-	"PassivePrototypesAdded",
-	"PassivePrototypesRemoved",
+	["PassivePrototypesAdded"] = {
+		"BoostConditionsIndex",
+		"BoostContext",
+		"ConditionsIndex",
+		"Description",
+		"EnabledConditions",
+		"EnabledContext",
+		"Name",
+		"PriorityOrder",
+		"Properties",
+		"StatsFunctorContext",
+		"StatsFunctors",
+		"ToggleGroup",
+		"ToggleOffContext",
+		"ToggleOffEffect",
+		"ToggleOffFunctors",
+		"ToggleOnEffect",
+		"ToggleOnFunctors",
+		"TooltipConditionalDamage",
+	},
+	["PassivePrototypesRemoved"] = {
+		"BoostConditionsIndex",
+		"BoostContext",
+		"ConditionsIndex",
+		"Description",
+		"EnabledConditions",
+		"EnabledContext",
+		"Name",
+		"PriorityOrder",
+		"Properties",
+		"StatsFunctorContext",
+		"StatsFunctors",
+		"ToggleGroup",
+		"ToggleOffContext",
+		"ToggleOffEffect",
+		"ToggleOffFunctors",
+		"ToggleOnEffect",
+		"ToggleOnFunctors",
+		"TooltipConditionalDamage",
+	},
 	"PassivesAdded",
 	"PassivesRemoved",
 	"ProgressionType",
@@ -36,7 +73,7 @@ function ProgressionProxy:RenderDisplayableValue(parent, progressionTableId, sta
 
 		if progressions then
 			local header = parent:AddCollapsingHeader("Progressions")
-			header:SetColor("Header", {1, 1, 1, 0})
+			header:SetColor("Header", { 1, 1, 1, 0 })
 
 			local table = Styler:TwoColumnTable(header, "progressions")
 			for _, progressionID in TableUtils:OrderedPairs(progressions, function(key)
