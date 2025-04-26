@@ -52,6 +52,10 @@ end
 ---@param second
 ---@treturn boolean true if the lists are equal
 function TableUtils:CompareLists(first, second)
+	if (first and not second) or (not first and second) then
+		return false
+	end
+
 	for property, value in pairs(first) do
 		if value ~= second[property] then
 			return false
