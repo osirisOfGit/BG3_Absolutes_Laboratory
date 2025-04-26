@@ -38,6 +38,7 @@ CharacterIndex.displayNameMappings = {}
 ---@param field string
 ---@param id string
 local function addToTable(tableToAddTo, field, id)
+	field = field == "" and "UNKOWN" or field
 	if field and field ~= "" then
 		tableToAddTo[field] = tableToAddTo[field] or {}
 
@@ -86,7 +87,7 @@ function CharacterIndex:hydrateIndex()
 		end
 
 		for id, characterTemplate in pairs(templates) do
-			if characterTemplate.TemplateType == "character" then
+			if characterTemplate.TemplateType == "character" and not string.find(characterTemplate.Name, "Timeline") then
 				---@cast characterTemplate CharacterTemplate
 
 				self.displayNameMappings[id] = characterTemplate.DisplayName:Get() or characterTemplate.Name or characterTemplate.TemplateName
