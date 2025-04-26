@@ -1,7 +1,6 @@
 SkillListProxy = ResourceProxy:new()
 SkillListProxy.fieldsToParse = {
 	"Conditions",
-	"LearningStrategy",
 	"Spell",
 	"SpellCastingAbility",
 }
@@ -17,14 +16,16 @@ function SkillListProxy:RenderDisplayableValue(parent, resourceValue)
 			displayTable:AddColumn("", "WidthFixed")
 			displayTable:AddColumn("", "WidthStretch")
 
-			for property, value in TableUtils:OrderedPairs(spellData) do
+			for _, property in TableUtils:OrderedPairs(self.fieldsToParse) do
+				local value = spellData[property]
+				
 				if type(value) == "userdata"  then
 					value = tostring(value)
 				end
 				if value and value ~= "" and value ~= "None" then
 					local row = displayTable:AddRow()
 					row:AddCell():AddText(property)
-					ResourceManager:RenderDisplayableValue(row:AddCell(), value, "Spell")
+					ResourceManager:RenderDisplayableValue(row:AddCell(), value, property)
 				end
 			end
 		end
