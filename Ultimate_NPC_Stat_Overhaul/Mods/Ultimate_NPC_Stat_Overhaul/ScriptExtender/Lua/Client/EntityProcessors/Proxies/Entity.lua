@@ -60,6 +60,7 @@ EntityHandleProxy.fieldsToParse = {
 	"StatusImmunities",
 	"SurfacePathInfluences",
 	"Tag",
+	"Uuid",
 	"WeaponSet"
 }
 
@@ -69,7 +70,7 @@ EntityProxy:RegisterResourceProxy("Entity", EntityHandleProxy)
 ---@param entity EntityHandle
 function EntityHandleProxy:RenderDisplayWindow(entity, parent)
 	EntityProxy.entityId = entity.Uuid.EntityUuid
-	
+
 	Channels.GetEntityDump:RequestToServer({
 		entity = entity.Uuid.EntityUuid,
 		fields = self.fieldsToParse

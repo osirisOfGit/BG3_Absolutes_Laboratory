@@ -58,4 +58,5 @@ end
 Ext.Require("Client/EntityProcessors/Proxies/Entity.lua")
 Ext.Require("Client/EntityProcessors/Proxies/ActionResources.lua")
 Ext.Require("Client/EntityProcessors/Proxies/BoostContainers.lua")
+Ext.Require("Client/EntityProcessors/Proxies/PassiveContainer.lua")
 Ext.Require("Client/EntityProcessors/Proxies/DisplayStrings.lua")
