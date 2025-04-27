@@ -283,7 +283,7 @@ function ResourceManager:RenderDisplayableValue(parent, resourceValue, resourceT
 	end)
 
 	if not success then
-		Logger:BasicError(result)
+		Logger:BasicError("Error managing resourceType %s : %s", resourceType or type(resourceValue), result)
 	end
 end
 
