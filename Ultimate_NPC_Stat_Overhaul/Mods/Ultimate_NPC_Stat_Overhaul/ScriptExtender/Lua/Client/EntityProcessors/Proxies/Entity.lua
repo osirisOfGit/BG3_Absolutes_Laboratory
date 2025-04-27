@@ -57,6 +57,7 @@ EntityHandleProxy.fieldsToParse = {
 	"SpellCastCanBeTargeted",
 	"SpellContainer",
 	"Stats",
+	"StatusContainer",
 	"StatusImmunities",
 	"SurfacePathInfluences",
 	"Tag",
@@ -67,6 +68,7 @@ EntityHandleProxy.fieldsToParse = {
 
 EntityProxy:RegisterResourceProxy("Entity", EntityHandleProxy)
 EntityProxy:RegisterResourceProxy("ItemEntity", EntityHandleProxy)
+EntityProxy:RegisterResourceProxy("Owner", EntityHandleProxy)
 
 ---@param entity EntityHandle
 function EntityHandleProxy:RenderDisplayWindow(entity, parent)

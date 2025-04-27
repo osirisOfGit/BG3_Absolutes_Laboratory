@@ -80,6 +80,45 @@ local function populatePassives(response, entity)
 	end
 end
 
+---@param response table
+---@param entity EntityHandle
+local function populateProgressions(response, entity)
+	response["ProgressionContainer"] = {}
+
+	for index, progressions in ipairs(entity.ProgressionContainer.Progressions) do
+		response["ProgressionContainer"][index] = {}
+
+
+		for _, progression in TableUtils:OrderedPairs(progressions) do
+			progression = (type(progression) == "userdata"
+					and (Ext.Types.GetObjectType(progression) == "Entity" and progression:GetAllComponents())
+					or Ext.Types.Serialize(progression))
+				or progression
+
+			response["ProgressionContainer"][index][progression.ProgressionMeta.Progression] = {}
+			local progressionTable = response["ProgressionContainer"][index][progression.ProgressionMeta.Progression]
+
+			for key, value in TableUtils:OrderedPairs(progression) do
+				if key ~= "ServerReplicationDependency" then
+					if key == "ProgressionMeta" then
+						---@cast value ProgressionMetaComponent
+
+						progressionTable[key] = {
+							ClassLevel = value.ClassLevel,
+							MulticlassSpellSlotOverride = value.MulticlassSpellSlotOverride,
+							Source = value.Source,
+							SpellSourceType = value.SpellSourceType,
+							Owner = value.Owner and value.Owner.Uuid.EntityUuid,
+						}
+					else
+						progressionTable[key] = value
+					end
+				end
+			end
+		end
+	end
+end
+
 Channels.GetEntityDump:SetRequestHandler(function(data, user)
 	---@type EntityHandle
 	local entity = Ext.Entity.Get(data.entity)
@@ -96,6 +135,8 @@ Channels.GetEntityDump:SetRequestHandler(function(data, user)
 					populateBoosts(response, entity)
 				elseif componentName == "PassiveContainer" then
 					populatePassives(response, entity)
+				elseif componentName == "ProgressionContainer" then
+					populateProgressions(response, entity)
 				else
 					local value = type(field) == "userdata" and Ext.Types.Serialize(field) or field
 
