@@ -1,0 +1,29 @@
+{
+	"SchemaVersion": 1,
+	"Tabs": [
+		{
+			"TabName": "General",
+			"TabDescription": "General settings",
+			"TabId": "general",
+			"Sections": [
+				{
+					"SectionName": "General Mod Behavior",
+					"SectionId": "general-mod-behavior",
+					"Settings": [
+						{
+							"Id": "log_level",
+							"Name": "Log level",
+							"Description": "0 = Off, 1 = Error, 2 = Warn, 3 = Info, 4 = Debug, 5 = Trace (Anything higher than Info will only be logged to the log.txt, not the SE console)",
+							"Type": "slider_int",
+							"Default": 3,
+							"Options": {
+								"Min": 0,
+								"Max": 5
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}
