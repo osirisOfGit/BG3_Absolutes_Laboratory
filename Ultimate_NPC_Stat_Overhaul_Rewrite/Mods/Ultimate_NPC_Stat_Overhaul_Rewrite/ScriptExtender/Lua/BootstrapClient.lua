@@ -12,5 +12,5 @@ end)
 
 Ext.Require("Client/RandomHelpers.lua")
 Ext.Require("Client/Styler.lua")
-Ext.Require("Client/CharacterIndexer.lua")
-Ext.Require("Client/CharacterInspector.lua")
+Ext.Require("Client/Inspector/CharacterIndexer.lua")
+Ext.Require("Client/Inspector/CharacterInspector.lua")

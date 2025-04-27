@@ -1,6 +1,6 @@
-Ext.Require("Client/CharacterWindow.lua")
-Ext.Require("Client/ResourceProcessors/ResourceProxy.lua")
-Ext.Require("Client/EntityProcessors/EntityProxy.lua")
+Ext.Require("Client/Inspector/CharacterWindow.lua")
+Ext.Require("Client/Inspector/ResourceProcessors/ResourceProxy.lua")
+Ext.Require("Client/Inspector/EntityProcessors/EntityProxy.lua")
 
 Main = {
 	---@type ExtuiTreeParent

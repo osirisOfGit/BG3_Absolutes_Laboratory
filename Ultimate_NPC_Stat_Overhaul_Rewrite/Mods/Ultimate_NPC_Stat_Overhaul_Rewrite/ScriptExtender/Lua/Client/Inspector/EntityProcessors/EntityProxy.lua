@@ -51,10 +51,10 @@ function EntityManager:RenderDisplayableValue(parent, resourceValue, resourceTyp
 	end
 end
 
-Ext.Require("Client/EntityProcessors/Proxies/Entity.lua")
-Ext.Require("Client/EntityProcessors/Proxies/ActionResources.lua")
-Ext.Require("Client/EntityProcessors/Proxies/BoostContainers.lua")
-Ext.Require("Client/EntityProcessors/Proxies/PassiveContainer.lua")
-Ext.Require("Client/EntityProcessors/Proxies/ProgressionContainer.lua")
-Ext.Require("Client/EntityProcessors/Proxies/DisplayStrings.lua")
-Ext.Require("Client/EntityProcessors/Proxies/SpellBook.lua")
+Ext.Require("Client/Inspector/EntityProcessors/Proxies/Entity.lua")
+Ext.Require("Client/Inspector/EntityProcessors/Proxies/ActionResources.lua")
+Ext.Require("Client/Inspector/EntityProcessors/Proxies/BoostContainers.lua")
+Ext.Require("Client/Inspector/EntityProcessors/Proxies/PassiveContainer.lua")
+Ext.Require("Client/Inspector/EntityProcessors/Proxies/ProgressionContainer.lua")
+Ext.Require("Client/Inspector/EntityProcessors/Proxies/DisplayStrings.lua")
+Ext.Require("Client/Inspector/EntityProcessors/Proxies/SpellBook.lua")
