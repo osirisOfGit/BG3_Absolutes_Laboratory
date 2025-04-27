@@ -13,17 +13,20 @@ Channels.GetEntityDump:SetRequestHandler(function(data, user)
 	local response = {}
 
 	if entity then
-		for _, field in ipairs(fieldsToGet) do
-			if entity[field] then
-				if entity[field][field] then
-					local value = entity[field][field]
-					response[field] = type(value) == "userdata" and Ext.Types.Serialize(value) or value
+		for componentName, field in pairs(entity:GetAllComponents()) do
+			if TableUtils:ListContains(fieldsToGet, componentName) then
+				local value = type(field) == "userdata" and Ext.Types.Serialize(field) or field
+
+				if value[componentName] then
+					response[componentName] = value[componentName]
+				elseif value[componentName .. "s"] then
+					response[componentName] = value[componentName .. "s"]
 				else
-					response[field] = type(entity[field]) == "userdata" and Ext.Types.Serialize(entity[field]) or entity[field]
+					response[componentName] = value
 				end
 			end
 		end
 	end
 
-	return response
+	return Ext.Json.Parse(Ext.Json.Stringify(response, {AvoidRecursion = true, IterateUserdata = true, StringifyInternalTypes = true, MaxDepth = 10}))
 end)

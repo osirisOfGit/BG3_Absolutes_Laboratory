@@ -22,17 +22,13 @@ EntityHandleProxy.fieldsToParse = {
 	"CanSense",
 	"CanSpeak",
 	"CanTravel",
-	"CanTriggerRandomCasts",
 	"Classes",
 	"CombatParticipant",
 	"Concentration",
-	"Darkness",
 	"Data",
 	"DifficultyCheck",
 	"DisplayName",
 	"DualWielding",
-	"EncumbranceState",
-	"EncumbranceStats",
 	"EocLevel",
 	"Expertise",
 	"Faction",
@@ -50,7 +46,6 @@ EntityHandleProxy.fieldsToParse = {
 	"Loot",
 	"Movement",
 	"ObjectInteraction",
-	"ObjectSize",
 	"OriginalTemplate",
 	"PassiveContainer",
 	"Proficiency",
@@ -58,7 +53,6 @@ EntityHandleProxy.fieldsToParse = {
 	"Race",
 	"Resistances",
 	"ServerAiArchetype",
-	"ServerAnubisExecutor",
 	"ServerAnubisTag",
 	"ServerBaseData",
 	"ServerBaseProficiency",
@@ -74,7 +68,6 @@ EntityHandleProxy.fieldsToParse = {
 	"ServerPickpocket",
 	"ServerRaceTag",
 	"ServerReplicationDependencyOwner",
-	"ServerSafePosition",
 	"ServerShapeshiftStates",
 	"ServerStatusDifficultyModifiers",
 	"ServerTemplateTag",
@@ -89,19 +82,27 @@ EntityHandleProxy.fieldsToParse = {
 	"StatusImmunities",
 	"SurfacePathInfluences",
 	"Tag",
-	"Uuid",
 	"WeaponSet"
 }
 
 
 EntityProxy:RegisterResourceProxy("Entity", EntityHandleProxy)
 
----@param entityId GUIDSTRING
-function EntityProxy:RenderDisplayWindow(entityId, parent)
+---@param entity EntityHandle
+function EntityProxy:RenderDisplayWindow(entity, parent)
 	Channels.GetEntityDump:RequestToServer({
-		entity = entityId,
+		entity = entity.Uuid.EntityUuid,
 		fields = self.fieldsToParse
 	}, function(data)
-		self:RenderDisplayWindow(data, parent)
+		local displayTable = Styler:TwoColumnTable(parent, entity.Uuid.EntityUuid)
+		for key, value in TableUtils:OrderedPairs(data) do
+			local row = displayTable:AddRow()
+			row:AddCell():AddText(key)
+			local valueCell = row:AddCell()
+			EntityManager:RenderDisplayableValue(valueCell, value, key)
+			if #valueCell.Children == 0 then
+				row:Destroy()
+			end
+		end
 	end)
 end
