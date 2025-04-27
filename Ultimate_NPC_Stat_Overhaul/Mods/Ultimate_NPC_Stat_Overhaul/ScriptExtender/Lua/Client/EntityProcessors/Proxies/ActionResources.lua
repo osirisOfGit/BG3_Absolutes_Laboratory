@@ -16,10 +16,10 @@ EntityProxy:RegisterResourceProxy("ActionResources", ActionResourcesProxy)
 EntityProxy:RegisterResourceProxy("ResourceActionResource", ActionResourcesProxy)
 
 
----@param resources ActionResourcesComponent
+---@param resources {[string]: ActionResourceEntry[]}
 function ActionResourcesProxy:RenderDisplayableValue(parent, resources, type)
-	if resources.Resources then
-		for resourceId, resource in TableUtils:OrderedPairs(resources.Resources, function(key)
+	if resources then
+		for resourceId, resource in TableUtils:OrderedPairs(resources, function(key)
 			local cache = CharacterIndex.displayNameMappings[key]
 			if not cache then
 				---@type ResourceActionResource
@@ -33,7 +33,7 @@ function ActionResourcesProxy:RenderDisplayableValue(parent, resources, type)
 		end) do
 			local displayTable = Styler:TwoColumnTable(parent, resourceId)
 			local row = displayTable:AddRow()
-			local displayName = row:AddCell():AddText(CharacterIndex.displayNameMappings[resourceId])
+			row:AddCell():AddText(CharacterIndex.displayNameMappings[resourceId])
 
 			EntityManager:RenderDisplayableValue(row:AddCell(), resource)
 		end
