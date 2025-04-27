@@ -70,23 +70,25 @@ EntityProxy:RegisterResourceProxy("ItemEntity", EntityHandleProxy)
 
 ---@param entity EntityHandle
 function EntityHandleProxy:RenderDisplayWindow(entity, parent)
-	Channels.GetEntityDump:RequestToServer({
-		entity = entity.Uuid.EntityUuid,
-		fields = self.fieldsToParse
-	}, function(data)
-		EntityProxy.entityId = entity.Uuid.EntityUuid
+	if entity then
+		Channels.GetEntityDump:RequestToServer({
+			entity = entity.Uuid.EntityUuid,
+			fields = self.fieldsToParse
+		}, function(data)
+			EntityProxy.entityId = entity.Uuid.EntityUuid
 
-		local displayTable = Styler:TwoColumnTable(parent, EntityProxy.entityId)
-		for key, value in TableUtils:OrderedPairs(data) do
-			local row = displayTable:AddRow()
-			row:AddCell():AddText(key)
-			local valueCell = row:AddCell()
-			EntityManager:RenderDisplayableValue(valueCell, value, key)
-			if #valueCell.Children == 0 then
-				row:Destroy()
+			local displayTable = Styler:TwoColumnTable(parent, EntityProxy.entityId)
+			for key, value in TableUtils:OrderedPairs(data) do
+				local row = displayTable:AddRow()
+				row:AddCell():AddText(key)
+				local valueCell = row:AddCell()
+				EntityManager:RenderDisplayableValue(valueCell, value, key)
+				if #valueCell.Children == 0 then
+					row:Destroy()
+				end
 			end
-		end
-	end)
+		end)
+	end
 end
 
 function EntityHandleProxy:RenderDisplayableValue(parent, entityId, resourceType)

@@ -166,6 +166,8 @@ SpellProxy.fieldsToParse = {
 
 ResourceProxy:RegisterResourceProxy("Spell", SpellProxy)
 ResourceProxy:RegisterResourceProxy("SpellData", SpellProxy)
+ResourceProxy:RegisterResourceProxy("Prototype", SpellProxy)
+ResourceProxy:RegisterResourceProxy("OriginatorPrototype", SpellProxy)
 
 ---@param resourceValue string
 function SpellProxy:RenderDisplayableValue(parent, resourceValue)
@@ -177,7 +179,7 @@ function SpellProxy:RenderDisplayableValue(parent, resourceValue)
 			local statText = Styler:HyperlinkText(parent:AddText(resourceValue))
 			ResourceManager:RenderDisplayWindow(spell, statText:Tooltip())
 		else
-			parent:AddText(spell)
+			parent:AddText(resourceValue)
 		end
 	end
 end

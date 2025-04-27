@@ -254,12 +254,14 @@ end
 ResourceManager = ResourceProxy:new()
 
 function ResourceManager:RenderDisplayWindow(resource, parent)
-	local success, result = xpcall(function(...)
-		proxyRegistry[Ext.Types.GetObjectType(resource) == "stats::Object" and resource.ModifierList or Ext.Types.GetObjectType(resource)]:RenderDisplayWindow(resource, parent)
-	end, debug.traceback)
+	if resource then
+		local success, result = xpcall(function(...)
+			proxyRegistry[Ext.Types.GetObjectType(resource) == "stats::Object" and resource.ModifierList or Ext.Types.GetObjectType(resource)]:RenderDisplayWindow(resource, parent)
+		end, debug.traceback)
 
-	if not success then
-		Logger:BasicError(result)
+		if not success then
+			Logger:BasicError(result)
+		end
 	end
 end
 
@@ -297,6 +299,7 @@ Ext.Require("Client/ResourceProcessors/Proxies/Progressions.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/StatParser.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/ItemList.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/Status.lua")
+Ext.Require("Client/ResourceProcessors/Proxies/ActionResource.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/Passives.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/Spell.lua")
 Ext.Require("Client/ResourceProcessors/Proxies/TreasureTables.lua")

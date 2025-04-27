@@ -61,7 +61,9 @@ function PassivesProxy:RenderDisplayableValue(parent, statString)
 				passiveText.SameLine = hasKids;
 				self:RenderDisplayWindow(passive, passiveText:Tooltip())
 
-				parent:AddText(self.delimeter).SameLine = true
+				if #passiveTable > 1 then
+					parent:AddText(self.delimeter).SameLine = true
+				end
 			end
 		end
 	end
