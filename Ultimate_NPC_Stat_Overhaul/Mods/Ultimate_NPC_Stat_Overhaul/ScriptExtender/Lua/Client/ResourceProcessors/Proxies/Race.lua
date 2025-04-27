@@ -17,7 +17,7 @@ ResourceProxy:RegisterResourceProxy("ParentGuid", RaceProxy)
 
 ---@param raceId string
 function RaceProxy:RenderDisplayableValue(parent, raceId, statType)
-	---@type ResourceRace?
+ 	---@type ResourceRace?
 	local race = Ext.StaticData.Get(raceId, "Race")
 
 	if race then

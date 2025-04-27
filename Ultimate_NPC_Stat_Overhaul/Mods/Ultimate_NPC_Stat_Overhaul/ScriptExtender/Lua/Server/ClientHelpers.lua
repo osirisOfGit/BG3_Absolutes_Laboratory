@@ -26,10 +26,8 @@ Channels.GetEntityDump:SetRequestHandler(function(data, user)
 			if TableUtils:ListContains(fieldsToGet, componentName) then
 				local value = type(field) == "userdata" and Ext.Types.Serialize(field) or field
 
-				if value[componentName] then
-					response[componentName] = value[componentName]
-				elseif value[componentName .. "s"] then
-					response[componentName] = value[componentName .. "s"]
+				if TableUtils:CountElements(value) == 1 then
+					response[componentName] = value[next(value)]
 				else
 					response[componentName] = value
 				end
