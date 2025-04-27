@@ -122,7 +122,7 @@ function Styler:SimpleRecursiveTwoColumnTable(parent, resource)
 			local displayCell = subRow:AddCell()
 			EntityManager:RenderDisplayableValue(displayCell, value, key)
 			if #displayCell.Children == 0 then
-				displayCell:AddText(tostring(value))
+				displayCell:AddText(tostring(value)).TextWrapPos = 800 * self:ScaleFactor()
 			end
 		end
 
