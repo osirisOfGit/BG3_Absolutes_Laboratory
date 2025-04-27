@@ -6,7 +6,7 @@ EntityProxy:RegisterResourceProxy("ProgressionContainer", ProgressionContainerPr
 ---@param progressionEntries {[number]: {[string]: BoostEntry}}
 function ProgressionContainerProxy:RenderDisplayableValue(parent, progressionEntries)
 	if progressionEntries then
-		local header = parent:AddCollapsingHeader("Progr")
+		local header = parent:AddCollapsingHeader("Progressions")
 		header:SetColor("Header", { 1, 1, 1, 0 })
 
 		local displayTable = Styler:TwoColumnTable(header, "progressions")

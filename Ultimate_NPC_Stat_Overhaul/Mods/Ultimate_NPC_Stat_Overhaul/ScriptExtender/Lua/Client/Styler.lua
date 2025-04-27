@@ -104,10 +104,12 @@ end
 function Styler:SimpleRecursiveTwoColumnTable(parent, resource, resourceType)
 	if TableUtils:CountElements(resource) >= 10 then
 		parent = parent:AddCollapsingHeader(resourceType or "")
-		parent:SetColor("Header", {1, 1, 1, 0})
+		parent:SetColor("Header", { 1, 1, 1, 0 })
 	end
 
-	for key, value in TableUtils:OrderedPairs(resource) do
+	for key, value in TableUtils:OrderedPairs(resource, function(key)
+		return tonumber(key) or key
+	end) do
 		local subTable = Styler:TwoColumnTable(parent)
 
 		if type(value) == "table" then
