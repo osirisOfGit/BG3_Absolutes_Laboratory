@@ -31,14 +31,9 @@ function ActionResourcesProxy:RenderDisplayableValue(parent, resources, type)
 				return CharacterIndex.displayNameMappings[key]
 			end
 		end) do
-			---@type ResourceActionResource
-			local resourceInfo = Ext.StaticData.Get(resourceId, "ActionResource")
-
 			local displayTable = Styler:TwoColumnTable(parent, resourceId)
 			local row = displayTable:AddRow()
-			local displayName = Styler:HyperlinkText(row:AddCell():AddText(CharacterIndex.displayNameMappings[resourceId]))
-
-			self:RenderDisplayWindow(resourceInfo, displayName:Tooltip())
+			local displayName = row:AddCell():AddText(CharacterIndex.displayNameMappings[resourceId])
 
 			EntityManager:RenderDisplayableValue(row:AddCell(), resource)
 		end
