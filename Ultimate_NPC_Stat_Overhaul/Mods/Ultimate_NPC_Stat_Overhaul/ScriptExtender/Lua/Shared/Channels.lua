@@ -30,3 +30,4 @@ Channels = {}
 
 Channels.GetEntityDump = Ext.Net.CreateChannel(ModuleUUID, "GetEntityDump")
 Channels.GetEntityIcon = Ext.Net.CreateChannel(ModuleUUID, "GetEntityIcon")
+Channels.GetEntityStat = Ext.Net.CreateChannel(ModuleUUID, "GetEntityStat")

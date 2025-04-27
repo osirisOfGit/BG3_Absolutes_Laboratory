@@ -3,6 +3,11 @@ Channels.GetEntityIcon:SetRequestHandler(function(data, user)
 	return { Result = entity.Icon and entity.Icon.Icon }
 end)
 
+Channels.GetEntityStat:SetRequestHandler(function(data, user)
+	local entity = Ext.Entity.Get(data.target) --[[@as EntityHandle]]
+	return { Result = entity.Data and entity.Data.StatsId }
+end)
+
 Channels.GetEntityDump:SetRequestHandler(function(data, user)
 	---@type EntityHandle
 	local entity = Ext.Entity.Get(data.entity)
