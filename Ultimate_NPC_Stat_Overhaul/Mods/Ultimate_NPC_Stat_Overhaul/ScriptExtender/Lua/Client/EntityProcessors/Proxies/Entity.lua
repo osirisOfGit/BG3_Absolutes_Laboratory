@@ -42,7 +42,6 @@ EntityHandleProxy.fieldsToParse = {
 	"ServerAnubisTag",
 	"ServerBaseData",
 	"ServerBaseProficiency",
-	"ServerBaseSize",
 	"ServerBaseStats",
 	"ServerBoostBase",
 	"ServerBoostTag",

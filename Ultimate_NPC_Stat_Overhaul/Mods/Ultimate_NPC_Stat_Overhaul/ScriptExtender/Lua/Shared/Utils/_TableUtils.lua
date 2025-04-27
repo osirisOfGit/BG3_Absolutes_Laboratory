@@ -191,7 +191,7 @@ end
 ---@return number
 function TableUtils:CountElements(tbl)
 	local count = 0
-	for _, value in pairs(tbl) do
+	for _, _ in pairs(tbl) do
 		count = count + 1
 	end
 	return count

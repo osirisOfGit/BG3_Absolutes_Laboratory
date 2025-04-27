@@ -36,12 +36,20 @@ PassivesProxy.fieldsToParse = {
 }
 
 ResourceProxy:RegisterResourceProxy("Passives", PassivesProxy)
+ResourceProxy:RegisterResourceProxy("ServerPassiveBase", PassivesProxy)
 ResourceProxy:RegisterResourceProxy("PassivesAdded", PassivesProxy)
 ResourceProxy:RegisterResourceProxy("PassivesRemoved", PassivesProxy)
 
 function PassivesProxy:RenderDisplayableValue(parent, statString)
 	if statString and statString ~= "" then
-		for passiveName in self:SplitSpring(statString) do
+		if type(statString) == "string" then
+			local passiveTable = {}
+			for val in self:SplitSpring(statString) do
+				table.insert(passiveTable, val)
+			end
+		end
+
+		for _, passiveName in ipairs(statString) do
 			---@type PassiveData?
 			local passive = Ext.Stats.Get(passiveName)
 
