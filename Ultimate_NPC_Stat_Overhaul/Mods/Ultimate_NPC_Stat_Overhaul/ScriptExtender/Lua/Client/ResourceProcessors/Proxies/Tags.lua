@@ -11,9 +11,10 @@ TagsProxy.fieldsToParse = {
 }
 
 ResourceProxy:RegisterResourceProxy("Tags", TagsProxy)
+ResourceProxy:RegisterResourceProxy("Tag", TagsProxy)
 
 ---@param tags string[]
-function TagsProxy:RenderDisplayableValue(parent, tags)
+function TagsProxy:RenderDisplayableValue(parent, tags, statType)
 	for _, tagId in ipairs(tags) do
 		---@type ResourceTag?
 		local tag = Ext.StaticData.Get(tagId, "Tag")

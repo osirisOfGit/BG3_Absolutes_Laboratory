@@ -101,27 +101,33 @@ end
 ---@param resource Resource
 function Styler:SimpleRecursiveTwoColumnTable(parent, resource)
 	for key, value in TableUtils:OrderedPairs(resource) do
-		local subTable = Styler:TwoColumnTable(parent)
+		local subTable
 
 		if type(value) == "table" then
 			for name, subValue in TableUtils:OrderedPairs(value) do
-				local subRow = subTable:AddRow()
-				subRow:AddCell():AddText(name)
+				if type(name) ~= "number" then
+					subTable = Styler:TwoColumnTable(parent)
+					local subRow = subTable:AddRow()
+					subRow:AddCell():AddText(name)
 
-				local valueCell = subRow:AddCell()
-				ResourceManager:RenderDisplayableValue(valueCell, subValue, name)
+					local valueCell = subRow:AddCell()
+					ResourceManager:RenderDisplayableValue(valueCell, subValue, name)
 
-				if #valueCell.Children == 0 then
-					subRow:Destroy()
+					if #valueCell.Children == 0 then
+						subRow:Destroy()
+					end
+				else
+					ResourceManager:RenderDisplayableValue(parent, subValue)
 				end
 			end
-		elseif value ~= "" and (type(value) ~= "number" or value > 0) then
+		elseif (value ~= "" and value ~= "00000000-0000-0000-0000-000000000000") and (type(value) ~= "number" or value > 0) then
+			subTable = Styler:TwoColumnTable(parent)
 			local subRow = subTable:AddRow()
 			subRow:AddCell():AddText(key)
 			subRow:AddCell():AddText(tostring(value))
 		end
 
-		if #subTable.Children == 0 then
+		if subTable and #subTable.Children == 0 then
 			subTable:Destroy()
 		end
 	end

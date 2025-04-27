@@ -1,6 +1,7 @@
 StatRouterProxy = ResourceProxy:new()
 
 ResourceProxy:RegisterResourceProxy("Stats", StatRouterProxy)
+ResourceProxy:RegisterResourceProxy("StatsId", StatRouterProxy)
 
 function StatRouterProxy:RenderDisplayableValue(parent, resourceValue)
 	if resourceValue then
