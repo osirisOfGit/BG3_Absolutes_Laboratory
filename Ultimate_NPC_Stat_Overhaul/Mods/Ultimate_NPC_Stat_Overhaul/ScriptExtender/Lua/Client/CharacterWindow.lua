@@ -5,7 +5,7 @@ CharacterWindow = {}
 function CharacterWindow:BuildWindow(parent, id)
 	local displayTable = parent:AddTable("characterDisplayWindow", 3)
 	displayTable:AddColumn("", "WidthStretch")
-	displayTable:AddColumn("", "WidthFixed")
+	displayTable:AddColumn("", "WidthFixed", 300)
 	displayTable:AddColumn("", "WidthStretch")
 
 	local row = displayTable:AddRow()
