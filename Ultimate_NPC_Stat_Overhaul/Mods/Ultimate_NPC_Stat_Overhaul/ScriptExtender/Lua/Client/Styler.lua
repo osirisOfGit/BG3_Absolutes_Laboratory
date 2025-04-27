@@ -91,7 +91,7 @@ end
 function Styler:TwoColumnTable(parent, id)
 	local displayTable = parent:AddTable("twoCol" .. parent.IDContext .. (id or ""), 2)
 	displayTable.Borders = true
-	displayTable:SetColor("TableBorderStrong", {0.56, 0.46, 0.26, 0.78})
+	displayTable:SetColor("TableBorderStrong", { 0.56, 0.46, 0.26, 0.78 })
 	displayTable:AddColumn("", "WidthFixed")
 	displayTable:AddColumn("", "WidthStretch")
 
@@ -100,12 +100,20 @@ end
 
 ---@param parent ExtuiTreeParent
 ---@param resource Resource
-function Styler:SimpleRecursiveTwoColumnTable(parent, resource)
+---@param resourceType string?
+function Styler:SimpleRecursiveTwoColumnTable(parent, resource, resourceType)
+	if TableUtils:CountElements(resource) >= 10 then
+		parent = parent:AddCollapsingHeader(resourceType or "")
+		parent:SetColor("Header", {1, 1, 1, 0})
+	end
+
 	for key, value in TableUtils:OrderedPairs(resource) do
 		local subTable = Styler:TwoColumnTable(parent)
 
 		if type(value) == "table" then
-			for name, subValue in TableUtils:OrderedPairs(value) do
+			for name, subValue in TableUtils:OrderedPairs(value, function(key)
+				return tonumber(key) or key
+			end) do
 				local subRow = subTable:AddRow()
 				subRow:AddCell():AddText(name)
 

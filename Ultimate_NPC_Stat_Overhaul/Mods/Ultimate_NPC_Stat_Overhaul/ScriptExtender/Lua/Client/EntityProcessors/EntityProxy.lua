@@ -41,7 +41,7 @@ function EntityManager:RenderDisplayableValue(parent, resourceValue, resourceTyp
 			then
 				parent:AddText(tostring(resourceValue))
 			elseif type(resourceValue) == "table" then
-				Styler:SimpleRecursiveTwoColumnTable(parent, resourceValue)
+				Styler:SimpleRecursiveTwoColumnTable(parent, resourceValue, resourceType)
 			end
 		end
 	end, debug.traceback)
