@@ -42,6 +42,13 @@ function Helpers:ClearEmptyTablesInProxyTree(proxyTable)
 	end
 end
 
+function Helpers:ForceGarbageCollection(checkpoint)
+	local memory = collectgarbage("count")
+	collectgarbage("collect")
+	local newMemory = collectgarbage("count")
+	Logger:BasicInfo("Collected %s Kb of memory (%s%%) after %s", memory - newMemory, (newMemory / memory) * 100, checkpoint)
+end
+
 Translator:RegisterTranslation({
 	["From mod '%s' by '%s'"] = "hb46981c098c145978bd8daa53a1453aeb9c0",
 	["Originally from mod '%s' by '%s'"] = "h1d4bb3618c794d8bb495a19db4fd9a52325e",

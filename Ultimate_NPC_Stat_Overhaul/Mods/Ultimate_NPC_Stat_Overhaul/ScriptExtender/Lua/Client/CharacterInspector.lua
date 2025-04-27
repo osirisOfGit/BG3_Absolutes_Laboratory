@@ -34,7 +34,7 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 
 		local templateTab = tabs:AddTabItem("Templates")
 		templateTab:Activate()
-		
+
 		local entityTab = tabs:AddTabItem("Entities")
 
 		Main.selectionTreeCell = tabHeader:AddChildWindow("selectionTree")
@@ -59,13 +59,14 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 		Main.configCell.AlwaysAutoResize = true
 		Main.configCell.ChildAlwaysAutoResize = true
 
-
 		local function recomputeSelections()
 			Main.progressBar.Visible = true
 			Main.progressBar.Value = 0
 
 			Helpers:KillChildren(Main.selectionTreeCell)
 			Helpers:KillChildren(Main.configCell)
+
+			Helpers:ForceGarbageCollection("swapping to viewing " .. Main.typeToPopulate)
 
 			local function doIt(func, secondFunc)
 				local percentageComplete = func()
@@ -163,6 +164,9 @@ function Main.buildOutTree()
 			selectedSelectable = selectable
 
 			Helpers:KillChildren(self.configCell)
+
+			Helpers:ForceGarbageCollection("viewing new entity/template")
+
 			CharacterWindow:BuildWindow(self.configCell, selectable.UserData)
 			self.configCell.ResizeY = true
 			self.configCell:SetScroll({ 0, 0 })
