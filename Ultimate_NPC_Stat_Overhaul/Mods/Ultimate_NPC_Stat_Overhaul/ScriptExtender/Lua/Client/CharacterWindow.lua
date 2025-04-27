@@ -1,8 +1,8 @@
 CharacterWindow = {}
 
 ---@param parent ExtuiTreeParent
----@param templateId string
-function CharacterWindow:BuildWindow(parent, templateId)
+---@param id string
+function CharacterWindow:BuildWindow(parent, id)
 	local displayTable = parent:AddTable("characterDisplayWindow", 3)
 	displayTable:AddColumn("", "WidthStretch")
 	displayTable:AddColumn("", "WidthFixed")
@@ -14,14 +14,14 @@ function CharacterWindow:BuildWindow(parent, templateId)
 	row:AddCell()
 
 	---@type CharacterTemplate
-	local characterTemplate = Ext.Template.GetRootTemplate(templateId)
+	local characterTemplate = Ext.Template.GetRootTemplate(id)
 
 	if characterTemplate then
 		Styler:MiddleAlignedColumnLayout(displayCell, function(ele)
 			ele:AddImage(characterTemplate.Icon, { 128, 128 })
 		end)
 
-		Styler:CheapTextAlign(CharacterIndex.displayNameMappings[templateId], displayCell, "Big")
+		Styler:CheapTextAlign(CharacterIndex.displayNameMappings[id], displayCell, "Big")
 		Styler:CheapTextAlign(characterTemplate.LevelName, displayCell)
 
 		local tabBar = parent:AddTabBar("Tabs")
@@ -38,5 +38,19 @@ function CharacterWindow:BuildWindow(parent, templateId)
 				ResourceManager:RenderDisplayWindow(characterStat, statTab)
 			end
 		end
+	else
+		local entity = Ext.Entity.Get(id)
+
+		Styler:MiddleAlignedColumnLayout(displayCell, function(ele)
+			Channels.GetEntityIcon:RequestToServer({
+				target = id
+			}, function (data)
+				ele:AddImage(data.Result, { 128, 128 })
+			end)
+		end)
+
+		Styler:CheapTextAlign(CharacterIndex.displayNameMappings[id], displayCell, "Big")
+
+		EntityManager:RenderDisplayWindow(entity, parent)
 	end
 end

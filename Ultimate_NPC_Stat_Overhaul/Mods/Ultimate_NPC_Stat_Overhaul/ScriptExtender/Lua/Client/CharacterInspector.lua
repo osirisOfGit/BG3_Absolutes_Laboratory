@@ -1,5 +1,6 @@
 Ext.Require("Client/CharacterWindow.lua")
 Ext.Require("Client/ResourceProcessors/ResourceProxy.lua")
+Ext.Require("Client/EntityProcessors/EntityProxy.lua")
 
 Main = {
 	---@type ExtuiTreeParent
@@ -132,18 +133,18 @@ function Main.buildOutTree()
 
 	selectedSelectable = nil
 
-	local universalSelection = self.selectionTreeCell:AddTree("Acts")
+	local universalSelection = self.selectionTreeCell:AddTree(self.typeToPopulate == "template" and "Acts" or "Entities")
 	universalSelection.NoAutoOpenOnLog = true
 
 	---@param parent ExtuiTree
-	---@param template GUIDSTRING
-	local function buildSelectable(parent, template)
+	---@param id GUIDSTRING
+	local function buildSelectable(parent, id)
 		---@type ExtuiSelectable
 		local selectable = parent:AddSelectable(string.format("%s (%s)",
-			CharacterIndex.displayNameMappings[template],
-			string.sub(template, #template - 5)))
+			CharacterIndex.displayNameMappings[id],
+			string.sub(id, #id - 5)))
 
-		selectable.UserData = template
+		selectable.UserData = id
 
 		selectable.OnClick = function()
 			if selectedSelectable then
@@ -201,7 +202,7 @@ function Main.buildOutTree()
 
 	return coroutine.wrap(function()
 		self.progressBar.Value = 0
-		local maxCount = TableUtils:CountElements(index.acts)
+		local maxCount = TableUtils:CountElements(index.acts or index.entities)
 
 		local count = 0
 		local lastPercentage = 0
@@ -214,31 +215,40 @@ function Main.buildOutTree()
 				coroutine.yield(count / maxCount)
 			end
 		end
-		if parentOption == "None" then
-			buildTree(universalSelection, index.acts, nil, func)
+
+		if self.typeToPopulate == "entities" then
+			for _, entityId in TableUtils:OrderedPairs(index.entities, function (key)
+				return CharacterIndex.displayNameMappings[index.entities[key]] or key
+			end) do
+				buildSelectable(universalSelection, entityId)
+			end
 		else
-			for act, actTemplates in TableUtils:OrderedPairs(index.acts) do
-				local actSelection = universalSelection:AddTree(act)
-				actSelection:SetOpen(false, "Always")
+			if parentOption == "None" then
+				buildTree(universalSelection, index.acts, nil, func)
+			else
+				for act, actTemplates in TableUtils:OrderedPairs(index.acts) do
+					local actSelection = universalSelection:AddTree(act)
+					actSelection:SetOpen(false, "Always")
 
-				if parentOption == "Race" then
-					local parentRaceSelection = actSelection:AddTree("Races")
-					parentRaceSelection.IDContext = act .. "Race"
-					parentRaceSelection:SetOpen(false, "Always")
-					buildTree(parentRaceSelection, index.races, actTemplates)
-				elseif parentOption == "Parent Progression Table" then
-					local parentProgressionTableSelection = actSelection:AddTree("Progression Tables")
-					parentProgressionTableSelection:SetOpen(false, "Always")
-					parentProgressionTableSelection.IDContext = "progression" .. act
-					buildTree(parentProgressionTableSelection, index.progressions, actTemplates)
-				else
-					local parentFactionsSelection = actSelection:AddTree("Parent Factions")
-					parentFactionsSelection:SetOpen(false, "Always")
-					parentFactionsSelection.IDContext = "progression" .. act
-					buildTree(parentFactionsSelection, index.factions, actTemplates)
+					if parentOption == "Race" then
+						local parentRaceSelection = actSelection:AddTree("Races")
+						parentRaceSelection.IDContext = act .. "Race"
+						parentRaceSelection:SetOpen(false, "Always")
+						buildTree(parentRaceSelection, index.races, actTemplates)
+					elseif parentOption == "Parent Progression Table" then
+						local parentProgressionTableSelection = actSelection:AddTree("Progression Tables")
+						parentProgressionTableSelection:SetOpen(false, "Always")
+						parentProgressionTableSelection.IDContext = "progression" .. act
+						buildTree(parentProgressionTableSelection, index.progressions, actTemplates)
+					else
+						local parentFactionsSelection = actSelection:AddTree("Parent Factions")
+						parentFactionsSelection:SetOpen(false, "Always")
+						parentFactionsSelection.IDContext = "progression" .. act
+						buildTree(parentFactionsSelection, index.factions, actTemplates)
+					end
+
+					func()
 				end
-
-				func()
 			end
 		end
 

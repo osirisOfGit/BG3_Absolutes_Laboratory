@@ -67,14 +67,7 @@ EntityHandleProxy.fieldsToParse = {
 	"ServerBoostBase",
 	"ServerBoostTag",
 	"ServerCanStartCombat",
-	"ServerCharacter",
 	"ServerDelayDeathCause",
-	"ServerDisplayNameList",
-	"ServerExperienceGaveOut",
-	"ServerInventoryItemDataPopulated",
-	"ServerIsCurrentOwner",
-	"ServerIsLatestOwner",
-	"ServerIsOriginalOwner",
 	"ServerOsirisTag",
 	"ServerPassiveBase",
 	"ServerPassivePersistentData",
@@ -86,7 +79,6 @@ EntityHandleProxy.fieldsToParse = {
 	"ServerStatusDifficultyModifiers",
 	"ServerTemplateTag",
 	"ShapeshiftHealthReservation",
-	"ShootThroughType",
 	"SpellAiConditions",
 	"SpellBook",
 	"SpellBookCooldowns",
@@ -102,14 +94,14 @@ EntityHandleProxy.fieldsToParse = {
 }
 
 
-ResourceProxy:RegisterResourceProxy("Character", EntityHandleProxy)
+EntityProxy:RegisterResourceProxy("Entity", EntityHandleProxy)
 
-function EntityHandleProxy:RenderDisplayableValue(parent, statString)
-	---@type Character
-	local character = Ext.Stats.Get(statString)
-
-	if character then
-		local statText = Styler:HyperlinkText(parent:AddText(statString))
-		ResourceManager:RenderDisplayWindow(character, statText:Tooltip())
-	end
+---@param entityId GUIDSTRING
+function EntityProxy:RenderDisplayWindow(entityId, parent)
+	Channels.GetEntityDump:RequestToServer({
+		entity = entityId,
+		fields = self.fieldsToParse
+	}, function(data)
+		self:RenderDisplayWindow(data, parent)
+	end)
 end

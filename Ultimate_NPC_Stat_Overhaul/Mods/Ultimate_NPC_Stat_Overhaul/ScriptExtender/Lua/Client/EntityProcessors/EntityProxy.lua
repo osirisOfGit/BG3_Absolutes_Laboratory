@@ -9,8 +9,9 @@ end
 
 EntityManager = ResourceProxy:new()
 
+---@param resource EntityHandle|ComponentHandle
 function EntityManager:RenderDisplayWindow(resource, parent)
-	if Ext.Types.GetObjectType(resource):find("Component") then
+	if type(resource) == "userdata" and Ext.Types.GetObjectType(resource):find("Component") then
 		local success, result = pcall(function(...)
 			proxyRegistry[Ext.Types.GetObjectType(resource)]:RenderDisplayWindow(resource, parent)
 		end)
@@ -48,3 +49,5 @@ function EntityManager:RenderDisplayableValue(parent, resourceValue, resourceTyp
 		Logger:BasicError(result)
 	end
 end
+
+Ext.Require("Client/EntityProcessors/Proxies/Entity.lua")

@@ -254,6 +254,7 @@ end
 ResourceManager = ResourceProxy:new()
 
 function ResourceManager:RenderDisplayWindow(resource, parent)
+	_D(resource)
 	local success, result = pcall(function(...)
 		proxyRegistry[Ext.Types.GetObjectType(resource) == "stats::Object" and resource.ModifierList or Ext.Types.GetObjectType(resource)]:RenderDisplayWindow(resource, parent)
 	end)

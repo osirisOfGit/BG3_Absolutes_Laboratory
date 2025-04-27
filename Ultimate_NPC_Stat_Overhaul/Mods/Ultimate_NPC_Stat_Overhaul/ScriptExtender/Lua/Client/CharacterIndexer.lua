@@ -5,7 +5,8 @@
 ---@alias StatusName string
 
 ---@class CharacterIndex
----@field acts {[LevelName]: GUIDSTRING[]}
+---@field acts {[LevelName]: GUIDSTRING[]}?
+---@field entities GUIDSTRING[]?
 ---@field factions {[Faction]: GUIDSTRING[]}?
 ---@field races {[RaceUUID]: GUIDSTRING[]}
 ---@field progressions {[ProgressionTableId]: GUIDSTRING[]}
@@ -22,6 +23,7 @@ CharacterIndex.templates = {
 
 ---@type CharacterIndex
 CharacterIndex.entities = {
+	entities = {},
 	factions = {},
 	progressions = {},
 	races = {}
@@ -136,6 +138,7 @@ function CharacterIndex:hydrateEntityIndex()
 		for _, entity in ipairs(entities) do
 			if not entity.Player and not entity.PartyMember then
 				local id = entity.Uuid.EntityUuid
+				table.insert(index.entities, id)
 
 				if not self.displayNameMappings[id] then
 					self.displayNameMappings[id] = (entity.DisplayName and entity.DisplayName.Name:Get())
