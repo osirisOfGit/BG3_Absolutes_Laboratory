@@ -1,4 +1,8 @@
+---@class EntityProxy:ResourceProxy
 EntityProxy = ResourceProxy:new()
+
+---@type GUIDSTRING?
+EntityProxy.entityId = nil
 
 ---@type {[string]: ResourceProxy}
 local proxyRegistry = {}
@@ -53,4 +57,5 @@ end
 
 Ext.Require("Client/EntityProcessors/Proxies/Entity.lua")
 Ext.Require("Client/EntityProcessors/Proxies/ActionResources.lua")
+Ext.Require("Client/EntityProcessors/Proxies/BoostContainers.lua")
 Ext.Require("Client/EntityProcessors/Proxies/DisplayStrings.lua")

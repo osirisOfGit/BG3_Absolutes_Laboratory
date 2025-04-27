@@ -91,6 +91,7 @@ end
 function Styler:TwoColumnTable(parent, id)
 	local displayTable = parent:AddTable("twoCol" .. parent.IDContext .. (id or ""), 2)
 	displayTable.Borders = true
+	displayTable:SetColor("TableBorderStrong", {0.56, 0.46, 0.26, 0.78})
 	displayTable:AddColumn("", "WidthFixed")
 	displayTable:AddColumn("", "WidthStretch")
 

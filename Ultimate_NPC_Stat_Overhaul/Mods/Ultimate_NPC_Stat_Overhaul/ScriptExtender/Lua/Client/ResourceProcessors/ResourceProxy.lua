@@ -273,11 +273,7 @@ function ResourceManager:RenderDisplayableValue(parent, resourceValue, resourceT
 			then
 				parent:AddText(tostring(resourceValue))
 			elseif type(resourceValue) == "table" then
-				if resourceValue[1] and type(resourceValue[1]) ~= "table" then
-					parent:AddText(table.concat(resourceValue, "|"))
-				else
-					Styler:SimpleRecursiveTwoColumnTable(parent, resourceValue)
-				end
+				Styler:SimpleRecursiveTwoColumnTable(parent, resourceValue)
 			end
 		end
 	end, debug.traceback)

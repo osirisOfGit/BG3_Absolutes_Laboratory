@@ -35,5 +35,43 @@ Channels.GetEntityDump:SetRequestHandler(function(data, user)
 		end
 	end
 
-	return Ext.Json.Parse(Ext.Json.Stringify(response, {AvoidRecursion = true, IterateUserdata = true, StringifyInternalTypes = true, MaxDepth = 10}))
+	return Ext.Json.Parse(Ext.Json.Stringify(response, { AvoidRecursion = true, IterateUserdata = true, StringifyInternalTypes = true }))
+end)
+
+Channels.GetBoosts:SetRequestHandler(function(data, user)
+	---@type EntityHandle
+	local entity = Ext.Entity.Get(data.target)
+
+	local response = {}
+	if entity then
+		for _, boosts in ipairs(entity.BoostsContainer.Boosts) do
+			response[boosts.Type] = {}
+			for _, boost in ipairs(boosts.Boosts) do
+				local boostTable = {}
+				for key, boostInfo in TableUtils:OrderedPairs(boost:GetAllComponents()) do
+					boostInfo = (type(boostInfo) == "userdata"
+							and (Ext.Types.GetObjectType(boostInfo) == "Entity" and boostInfo:GetAllComponents())
+							or Ext.Types.Serialize(boostInfo))
+						or boostInfo
+
+					if key ~= "ServerReplicationDependency" then
+						if key == "BoostInfo" then
+							boostTable[key] = {
+								Cause = {
+									Type = boostInfo.Cause.Type,
+									Entity = boostInfo.Cause.Entity and boostInfo.Cause.Entity.Uuid and boostInfo.Cause.Entity.Uuid.EntityUuid
+								},
+								Params = boostInfo.Params
+							}
+						else
+							boostTable[key] = boostInfo
+						end
+					end
+				end
+				table.insert(response[boosts.Type], boostTable)
+			end
+		end
+	end
+
+	return response
 end)
