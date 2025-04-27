@@ -30,24 +30,34 @@ function CharacterWindow:BuildWindow(parent, id)
 		local tabBar = parent:AddTabBar("Tabs")
 
 		local entityTab = tabBar:AddTabItem("Entity")
-
-		EntityManager:RenderDisplayWindow(entity, entityTab)
-
-		Channels.GetEntityStat:RequestToServer({ target = id }, function(data)
-			if data.Result then
-				local stat = Ext.Stats.Get(data.Result)
-				if stat then
-					local statTab = tabBar:AddTabItem("Stat")
-					ResourceManager:RenderDisplayWindow(stat, statTab)
-				end
-			end
-		end)
-
-		local template = entity.ClientCharacter.Template
-		if template then
-			local templateTab = tabBar:AddTabItem("Template")
-			ResourceManager:RenderDisplayWindow(template, templateTab)
+		local statTab = tabBar:AddTabItem("Stat")
+		local templateTab = tabBar:AddTabItem("Template")
+		entityTab.OnActivate = function()
+			Helpers:KillChildren(statTab, templateTab)
+			EntityManager:RenderDisplayWindow(entity, entityTab)
 		end
+
+		statTab.OnActivate = function()
+			Helpers:KillChildren(entityTab, templateTab)
+			Channels.GetEntityStat:RequestToServer({ target = id }, function(data)
+				if data.Result then
+					local stat = Ext.Stats.Get(data.Result)
+					if stat then
+						ResourceManager:RenderDisplayWindow(stat, statTab)
+					end
+				end
+			end)
+		end
+
+		templateTab.OnActivate = function()
+			Helpers:KillChildren(statTab, entityTab)
+			local template = entity.ClientCharacter.Template
+			if template then
+				ResourceManager:RenderDisplayWindow(template, templateTab)
+			end
+		end
+
+		entityTab:Activate()
 	else
 		---@type CharacterTemplate
 		local characterTemplate = Ext.Template.GetRootTemplate(id)

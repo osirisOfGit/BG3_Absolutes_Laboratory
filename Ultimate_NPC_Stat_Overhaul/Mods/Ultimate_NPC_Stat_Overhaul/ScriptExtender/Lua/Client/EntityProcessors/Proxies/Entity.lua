@@ -82,7 +82,7 @@ EntityHandleProxy.fieldsToParse = {
 EntityProxy:RegisterResourceProxy("Entity", EntityHandleProxy)
 
 ---@param entity EntityHandle
-function EntityProxy:RenderDisplayWindow(entity, parent)
+function EntityHandleProxy:RenderDisplayWindow(entity, parent)
 	Channels.GetEntityDump:RequestToServer({
 		entity = entity.Uuid.EntityUuid,
 		fields = self.fieldsToParse

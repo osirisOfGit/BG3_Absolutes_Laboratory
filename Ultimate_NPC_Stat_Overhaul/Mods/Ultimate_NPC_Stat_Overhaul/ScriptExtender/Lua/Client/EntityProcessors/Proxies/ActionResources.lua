@@ -1,0 +1,46 @@
+ActionResourcesProxy = EntityProxy:new()
+ActionResourcesProxy.fieldsToParse = {
+	"Amount",
+	"DiceValues",
+	"Level",
+	"MaxAmount",
+	"ReplenishType",
+	"ResourceId",
+	"ResourceUUID",
+	"SubAmounts",
+	"field_28",
+	"field_A8",
+}
+
+EntityProxy:RegisterResourceProxy("ActionResources", ActionResourcesProxy)
+EntityProxy:RegisterResourceProxy("ResourceActionResource", ActionResourcesProxy)
+
+
+---@param resources ActionResourcesComponent
+function ActionResourcesProxy:RenderDisplayableValue(parent, resources, type)
+	if resources.Resources then
+		for resourceId, resource in TableUtils:OrderedPairs(resources.Resources, function(key)
+			local cache = CharacterIndex.displayNameMappings[key]
+			if not cache then
+				---@type ResourceActionResource
+				local resource = Ext.StaticData.Get(key, "ActionResource")
+				local name = resource.DisplayName:Get() or resource.Name
+				CharacterIndex.displayNameMappings[key] = name
+				return name
+			else
+				return CharacterIndex.displayNameMappings[key]
+			end
+		end) do
+			---@type ResourceActionResource
+			local resourceInfo = Ext.StaticData.Get(resourceId, "ActionResource")
+
+			local displayTable = Styler:TwoColumnTable(parent, resourceId)
+			local row = displayTable:AddRow()
+			local displayName = Styler:HyperlinkText(row:AddCell():AddText(CharacterIndex.displayNameMappings[resourceId]))
+
+			self:RenderDisplayWindow(resourceInfo, displayName:Tooltip())
+
+			EntityManager:RenderDisplayableValue(row:AddCell(), resource)
+		end
+	end
+end

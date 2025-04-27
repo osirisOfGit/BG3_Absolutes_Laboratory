@@ -254,9 +254,9 @@ end
 ResourceManager = ResourceProxy:new()
 
 function ResourceManager:RenderDisplayWindow(resource, parent)
-	local success, result = pcall(function(...)
+	local success, result = xpcall(function(...)
 		proxyRegistry[Ext.Types.GetObjectType(resource) == "stats::Object" and resource.ModifierList or Ext.Types.GetObjectType(resource)]:RenderDisplayWindow(resource, parent)
-	end)
+	end, debug.traceback)
 
 	if not success then
 		Logger:BasicError(result)
@@ -264,7 +264,7 @@ function ResourceManager:RenderDisplayWindow(resource, parent)
 end
 
 function ResourceManager:RenderDisplayableValue(parent, resourceValue, resourceType)
-	local success, result = pcall(function(...)
+	local success, result = xpcall(function(...)
 		if proxyRegistry[resourceType] then
 			proxyRegistry[resourceType]:RenderDisplayableValue(parent, resourceValue, resourceType)
 		elseif resourceValue then
@@ -280,7 +280,7 @@ function ResourceManager:RenderDisplayableValue(parent, resourceValue, resourceT
 				end
 			end
 		end
-	end)
+	end, debug.traceback)
 
 	if not success then
 		Logger:BasicError("Error managing resourceType %s : %s", resourceType or type(resourceValue), result)

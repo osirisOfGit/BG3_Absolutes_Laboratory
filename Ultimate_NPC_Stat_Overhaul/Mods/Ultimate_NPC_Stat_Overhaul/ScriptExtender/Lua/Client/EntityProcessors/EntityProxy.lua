@@ -24,8 +24,9 @@ function EntityManager:RenderDisplayWindow(resource, parent)
 	end
 end
 
+---@param resourceValue BaseComponent
 function EntityManager:RenderDisplayableValue(parent, resourceValue, resourceType)
-	local success, result = pcall(function(...)
+	local success, result = xpcall(function(...)
 		if proxyRegistry[resourceType] then
 			proxyRegistry[resourceType]:RenderDisplayableValue(parent, resourceValue, resourceType)
 		elseif ResourceProxy:CanRenderValue(resourceType) then
@@ -43,7 +44,7 @@ function EntityManager:RenderDisplayableValue(parent, resourceValue, resourceTyp
 				end
 			end
 		end
-	end)
+	end, debug.traceback)
 
 	if not success then
 		Logger:BasicError(result)
@@ -51,3 +52,4 @@ function EntityManager:RenderDisplayableValue(parent, resourceValue, resourceTyp
 end
 
 Ext.Require("Client/EntityProcessors/Proxies/Entity.lua")
+Ext.Require("Client/EntityProcessors/Proxies/ActionResources.lua")

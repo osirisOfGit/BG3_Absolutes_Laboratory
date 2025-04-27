@@ -93,7 +93,7 @@ function Styler:TwoColumnTable(parent, id)
 	displayTable.Borders = true
 	displayTable:AddColumn("", "WidthFixed")
 	displayTable:AddColumn("", "WidthStretch")
-	
+
 	return displayTable
 end
 

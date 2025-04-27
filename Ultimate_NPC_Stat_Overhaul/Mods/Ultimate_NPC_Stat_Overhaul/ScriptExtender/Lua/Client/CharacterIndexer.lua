@@ -136,7 +136,7 @@ function CharacterIndex:hydrateEntityIndex()
 		local lastPercentage = 0
 
 		for _, entity in ipairs(entities) do
-			if not entity.Player and not entity.PartyMember then
+			if not entity.Player and not entity.PartyMember and entity:IsAlive() then
 				local id = entity.Uuid.EntityUuid
 				table.insert(index.entities, id)
 
