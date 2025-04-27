@@ -8,6 +8,10 @@ Channels.GetEntityStat:SetRequestHandler(function(data, user)
 	return { Result = entity.Data and entity.Data.StatsId }
 end)
 
+Channels.IsEntityAlive:SetRequestHandler(function(data, user)
+	return { Result = Osi.IsDead(data.target) == 0 }
+end)
+
 Channels.GetEntityDump:SetRequestHandler(function(data, user)
 	---@type EntityHandle
 	local entity = Ext.Entity.Get(data.entity)

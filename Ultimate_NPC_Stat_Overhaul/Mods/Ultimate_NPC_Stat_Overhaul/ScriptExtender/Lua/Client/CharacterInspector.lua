@@ -33,6 +33,8 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 		local tabs = tabHeader:AddTabBar("Main Tabs")
 
 		local templateTab = tabs:AddTabItem("Templates")
+		templateTab:Activate()
+		
 		local entityTab = tabs:AddTabItem("Entities")
 
 		Main.selectionTreeCell = tabHeader:AddChildWindow("selectionTree")
@@ -115,6 +117,14 @@ Ext.ModEvents.BG3MCM["MCM_Mod_Tab_Activated"]:Subscribe(function(payload)
 						end)
 					else
 						doIt(table.unpack(funcs))
+					end
+				else
+					for i, entity in pairs(CharacterIndex.entities.entities) do
+						Channels.IsEntityAlive:RequestToServer({ target = entity }, function(data)
+							if not data.Result then
+								CharacterIndex.entities.entities[i] = nil
+							end
+						end)
 					end
 				end
 			end
@@ -217,7 +227,7 @@ function Main.buildOutTree()
 		end
 
 		if self.typeToPopulate == "entities" then
-			for _, entityId in TableUtils:OrderedPairs(index.entities, function (key)
+			for _, entityId in TableUtils:OrderedPairs(index.entities, function(key)
 				return CharacterIndex.displayNameMappings[index.entities[key]] or key
 			end) do
 				buildSelectable(universalSelection, entityId)
