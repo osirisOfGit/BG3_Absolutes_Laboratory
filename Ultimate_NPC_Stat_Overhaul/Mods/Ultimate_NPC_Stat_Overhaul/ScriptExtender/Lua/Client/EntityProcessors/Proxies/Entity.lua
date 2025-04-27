@@ -66,16 +66,17 @@ EntityHandleProxy.fieldsToParse = {
 
 
 EntityProxy:RegisterResourceProxy("Entity", EntityHandleProxy)
+EntityProxy:RegisterResourceProxy("ItemEntity", EntityHandleProxy)
 
 ---@param entity EntityHandle
 function EntityHandleProxy:RenderDisplayWindow(entity, parent)
-	EntityProxy.entityId = entity.Uuid.EntityUuid
-
 	Channels.GetEntityDump:RequestToServer({
 		entity = entity.Uuid.EntityUuid,
 		fields = self.fieldsToParse
 	}, function(data)
-		local displayTable = Styler:TwoColumnTable(parent, entity.Uuid.EntityUuid)
+		EntityProxy.entityId = entity.Uuid.EntityUuid
+
+		local displayTable = Styler:TwoColumnTable(parent, EntityProxy.entityId)
 		for key, value in TableUtils:OrderedPairs(data) do
 			local row = displayTable:AddRow()
 			row:AddCell():AddText(key)
@@ -86,4 +87,14 @@ function EntityHandleProxy:RenderDisplayWindow(entity, parent)
 			end
 		end
 	end)
+end
+
+function EntityHandleProxy:RenderDisplayableValue(parent, entityId, resourceType)
+	-- Stopping recursion
+	if entityId ~= EntityProxy.entityId then
+		local text = parent:AddText(entityId)
+		EntityHandleProxy:RenderDisplayWindow(Ext.Entity.Get(entityId), text:Tooltip())
+	else
+		parent:AddText("SELF - " .. entityId)
+	end
 end

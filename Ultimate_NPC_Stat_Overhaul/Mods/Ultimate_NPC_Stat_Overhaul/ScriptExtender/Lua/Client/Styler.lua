@@ -110,7 +110,7 @@ function Styler:SimpleRecursiveTwoColumnTable(parent, resource)
 				subRow:AddCell():AddText(name)
 
 				local valueCell = subRow:AddCell()
-				ResourceManager:RenderDisplayableValue(valueCell, subValue, name)
+				EntityManager:RenderDisplayableValue(valueCell, subValue, name)
 
 				if #valueCell.Children == 0 then
 					subRow:Destroy()
@@ -119,7 +119,11 @@ function Styler:SimpleRecursiveTwoColumnTable(parent, resource)
 		elseif (value ~= "" and value ~= "00000000-0000-0000-0000-000000000000") and (type(value) ~= "number" or value > 0) then
 			local subRow = subTable:AddRow()
 			subRow:AddCell():AddText(key)
-			subRow:AddCell():AddText(tostring(value))
+			local displayCell = subRow:AddCell()
+			EntityManager:RenderDisplayableValue(displayCell, value, key)
+			if #displayCell.Children == 0 then
+				displayCell:AddText(tostring(value))
+			end
 		end
 
 		if #subTable.Children == 0 then
