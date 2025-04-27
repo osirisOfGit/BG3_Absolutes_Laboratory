@@ -42,14 +42,16 @@ ResourceProxy:RegisterResourceProxy("PassivesRemoved", PassivesProxy)
 
 function PassivesProxy:RenderDisplayableValue(parent, statString)
 	if statString and statString ~= "" then
+		local passiveTable = {}
 		if type(statString) == "string" then
-			local passiveTable = {}
 			for val in self:SplitSpring(statString) do
 				table.insert(passiveTable, val)
 			end
+		else
+			passiveTable = statString
 		end
 
-		for _, passiveName in ipairs(statString) do
+		for _, passiveName in ipairs(passiveTable) do
 			---@type PassiveData?
 			local passive = Ext.Stats.Get(passiveName)
 

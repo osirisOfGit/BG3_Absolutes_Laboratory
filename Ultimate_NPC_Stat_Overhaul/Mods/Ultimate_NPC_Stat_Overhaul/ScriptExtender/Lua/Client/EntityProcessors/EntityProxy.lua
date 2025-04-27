@@ -53,3 +53,4 @@ end
 
 Ext.Require("Client/EntityProcessors/Proxies/Entity.lua")
 Ext.Require("Client/EntityProcessors/Proxies/ActionResources.lua")
+Ext.Require("Client/EntityProcessors/Proxies/DisplayStrings.lua")
