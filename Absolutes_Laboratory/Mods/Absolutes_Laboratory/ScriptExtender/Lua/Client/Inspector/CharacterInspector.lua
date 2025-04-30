@@ -39,7 +39,7 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 
 		Main.selectionTreeCell = tabHeader:AddChildWindow("selectionTree")
 		Main.selectionTreeCell.ChildAlwaysAutoResize = true
-		Main.selectionTreeCell.Size = { 300, 0 }
+		Main.selectionTreeCell.Size = { 400 * Styler:ScaleFactor(), 0 }
 
 		Main.selectionTreeCell:AddText("Choose Grouping Method").UserData = "keep"
 		Main.templateGroupingCombo = Main.selectionTreeCell:AddCombo("")
@@ -98,39 +98,58 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 
 local hasBeenActivated = false
 
+local function initiateScan()
+	hasBeenActivated = true
+	Main.progressBar.Visible = true
+
+	local function doIt(...)
+		local funcs = { ... }
+		local currentFunc = table.remove(funcs, 1)
+
+		if currentFunc then
+			local percentageComplete = currentFunc()
+			if percentageComplete then
+				Main.progressBar.Value = percentageComplete
+				Ext.Timer.WaitFor(1, function()
+					doIt(currentFunc, table.unpack(funcs))
+				end)
+			else
+				doIt(table.unpack(funcs))
+			end
+		else
+			for i, entity in pairs(CharacterIndex.entities.entities) do
+				Channels.IsEntityAlive:RequestToServer({ target = entity }, function(data)
+					if not data.Result then
+						CharacterIndex.entities.entities[i] = nil
+					end
+				end)
+			end
+		end
+	end
+
+	doIt(CharacterIndex:hydrateTemplateIndex(), CharacterIndex:hydrateEntityIndex(), Main.buildOutTree())
+end
+
+local sessionLoaded
+local menuActivated
+
+Ext.Events.SessionLoaded:Subscribe(function (e)
+	sessionLoaded = true
+	if menuActivated then
+		Logger:BasicInfo("Session loaded after tab activated")
+		initiateScan()
+	end
+end, {Once = true})
+
 Ext.ModEvents.BG3MCM["MCM_Mod_Tab_Activated"]:Subscribe(function(payload)
 	if not hasBeenActivated then
-		-- Mod variables load in after the InsertModMenuTab function runs
 		if ModuleUUID == payload.modUUID then
-			hasBeenActivated = true
-			Main.progressBar.Visible = true
-
-			local function doIt(...)
-				local funcs = { ... }
-				local currentFunc = table.remove(funcs, 1)
-
-				if currentFunc then
-					local percentageComplete = currentFunc()
-					if percentageComplete then
-						Main.progressBar.Value = percentageComplete
-						Ext.Timer.WaitFor(1, function()
-							doIt(currentFunc, table.unpack(funcs))
-						end)
-					else
-						doIt(table.unpack(funcs))
-					end
-				else
-					for i, entity in pairs(CharacterIndex.entities.entities) do
-						Channels.IsEntityAlive:RequestToServer({ target = entity }, function(data)
-							if not data.Result then
-								CharacterIndex.entities.entities[i] = nil
-							end
-						end)
-					end
-				end
+			if not sessionLoaded then
+				menuActivated = true
+			else
+				Logger:BasicInfo("Tab activated after session loaded")
+				initiateScan()
 			end
-
-			doIt(CharacterIndex:hydrateTemplateIndex(), CharacterIndex:hydrateEntityIndex(), Main.buildOutTree())
 		end
 	end
 end)

@@ -91,8 +91,9 @@ end
 function Styler:TwoColumnTable(parent, id)
 	local displayTable = parent:AddTable("twoCol" .. parent.IDContext .. (id or ""), 2)
 	displayTable.Borders = true
+	displayTable.Resizable = true
 	displayTable:SetColor("TableBorderStrong", { 0.56, 0.46, 0.26, 0.78 })
-	displayTable:AddColumn("", "WidthFixed")
+	displayTable:AddColumn("", "WidthFixed", 300 * self:ScaleFactor())
 	displayTable:AddColumn("", "WidthStretch")
 
 	return displayTable
@@ -147,7 +148,7 @@ function Styler:ScaleFactor()
 	return Ext.IMGUI.GetViewportSize()[2] / 1440
 end
 
----@type ExtuiText
+---@param text ExtuiText
 ---@return ExtuiText
 function Styler:HyperlinkText(text)
 	text:SetColor("Text", { 173 / 255, 216 / 255, 230 / 255, 1 })
