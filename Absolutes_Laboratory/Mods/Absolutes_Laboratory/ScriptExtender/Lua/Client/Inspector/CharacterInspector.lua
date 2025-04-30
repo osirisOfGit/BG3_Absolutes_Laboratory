@@ -54,6 +54,7 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 		Main.templateGroupingCombo.SelectedIndex = 0
 
 		Main.configCell = tabHeader:AddChildWindow("configCell")
+		Main.configCell.AlwaysHorizontalScrollbar = true
 		Main.configCell.SameLine = true
 		Main.configCell.NoSavedSettings = true
 		Main.configCell.AlwaysAutoResize = true
