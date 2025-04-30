@@ -16,4 +16,4 @@ Ext.Require("Client/_FormBuilder.lua")
 Ext.Require("Client/Inspector/CharacterIndexer.lua")
 Ext.Require("Client/Inspector/CharacterInspector.lua")
 
-Ext.Require("Client/Mutations/MutationMain.lua")
+-- Ext.Require("Client/Mutations/MutationMain.lua")
