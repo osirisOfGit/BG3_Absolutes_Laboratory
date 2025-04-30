@@ -136,10 +136,18 @@ local menuActivated
 Ext.Events.SessionLoaded:Subscribe(function (e)
 	sessionLoaded = true
 	if menuActivated then
-		Logger:BasicInfo("Session loaded after tab activated")
+		Logger:BasicDebug("Session loaded after tab activated")
 		initiateScan()
 	end
 end, {Once = true})
+
+Ext.Events.ResetCompleted:Subscribe(function (e)
+	sessionLoaded = true
+	if menuActivated then
+		Logger:BasicDebug("Session loaded after tab activated")
+		initiateScan()
+	end
+end)
 
 Ext.ModEvents.BG3MCM["MCM_Mod_Tab_Activated"]:Subscribe(function(payload)
 	if not hasBeenActivated then
@@ -147,7 +155,7 @@ Ext.ModEvents.BG3MCM["MCM_Mod_Tab_Activated"]:Subscribe(function(payload)
 			if not sessionLoaded then
 				menuActivated = true
 			else
-				Logger:BasicInfo("Tab activated after session loaded")
+				Logger:BasicDebug("Tab activated after session loaded")
 				initiateScan()
 			end
 		end

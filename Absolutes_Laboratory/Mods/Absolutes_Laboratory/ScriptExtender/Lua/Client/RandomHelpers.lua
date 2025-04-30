@@ -49,6 +49,17 @@ function Helpers:ForceGarbageCollection(checkpoint)
 	Logger:BasicDebug("Collected %s Kb of memory (%s%%) after %s", memory - newMemory, (newMemory / memory) * 100, checkpoint)
 end
 
+function Helpers:BuildModString(modId)
+	if modId then
+		local mod = Ext.Mod.GetMod(modId)
+		if mod then
+			return string.format("%s (v%s)", mod.Info.Name, table.concat(mod.Info.ModVersion, "."))
+		else
+			return "Invalid Mod Id - " .. modId
+		end
+	end
+end
+
 Translator:RegisterTranslation({
 	["From mod '%s' by '%s'"] = "hb46981c098c145978bd8daa53a1453aeb9c0",
 	["Originally from mod '%s' by '%s'"] = "h1d4bb3618c794d8bb495a19db4fd9a52325e",

@@ -205,10 +205,10 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 			end
 
 			if Ext.Types.GetObjectType(parentResource) == "stats::Object" then
-				parentCell:AddText(string.format("%s | Original Mod: %s ", serializedResource.Name, serializedResource.OriginalModId,
-					serializedResource.ModId ~= serializedResource.OriginalModId and ("| Modified By: " .. serializedResource.ModId) or "")).Font = "Large"
+				parentCell:AddText(string.format("%s | Original Mod: %s ", serializedResource.Name, Helpers:BuildModString(serializedResource.OriginalModId),
+					serializedResource.ModId ~= serializedResource.OriginalModId and ("| Modified By: " .. Helpers:BuildModString(serializedResource.ModId)) or "")).Font = "Large"
 			else
-				parentCell:AddText(string.format("%s | File: %s", serializedResource.Name, serializedResource.FileName:match("Public/(.+)") or "Unknown")).Font = "Large"
+				parentCell:AddText(string.format("%s | File: %s", serializedResource.Name, serializedResource.FileName:gsub("^.*[\\/]Mods[\\/]", ""):gsub("^.*[\\/]Public[\\/]", "") or serializedResource.FileName)).Font = "Large"
 			end
 
 			local statDisplayTable = Styler:TwoColumnTable(parentCell, serializedResource.Name)
@@ -231,13 +231,13 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 			end
 		else
 			if Ext.Types.GetObjectType(serializedResource) == "stats::Object" then
-				parentCell:AddText(string.format("%s | Original Mod: %s ", serializedResource.Name, serializedResource.OriginalModId,
-					serializedResource.ModId ~= serializedResource.OriginalModId and ("| Modified By: " .. serializedResource.ModId) or "")).Font = "Large"
+				parentCell:AddText(string.format("%s | Original Mod: %s ", serializedResource.Name, Helpers:BuildModString(serializedResource.OriginalModId),
+					serializedResource.ModId ~= serializedResource.OriginalModId and ("| Modified By: " .. Helpers:BuildModString(serializedResource.ModId)) or "")).Font = "Large"
 			else
 				if serializedResource.FileName then
 					parentCell:AddText(string.format("%s | File: %s",
 						serializedResource.Name,
-						serializedResource.FileName:gsub("^.*[\\/]Mods[\\/]", "") or "Unknown")).Font = "Large"
+						serializedResource.FileName:gsub("^.*[\\/]Mods[\\/]", ""):gsub("^.*[\\/]Public[\\/]", "") or serializedResource.FileName)).Font = "Large"
 				else
 					parentCell:AddText(string.format("%s", serializedResource.Name or serializedResource.Category)).Font = "Large"
 				end
