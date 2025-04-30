@@ -5,10 +5,10 @@
 		<node id="TextureBank">
 			<children>
 				<node id="Resource">
-					<attribute id="ID" type="FixedString" value="1a207134-98b3-bd85-297b-4bba7e0ae31a" />
-					<attribute id="Name" type="LSString" value="three" />
-					<attribute id="SourceFile" type="LSString" value="Public/Ultimate_NPC_Stat_Overhaul_Rewrite/Assets/Textures/Icons/three.dds" />
-					<attribute id="Template" type="FixedString" value="three" />
+					<attribute id="ID" type="FixedString" value="554e2b5b-2d2f-3ac6-6a9d-37a0b2830370" />
+					<attribute id="Name" type="LSString" value="four" />
+					<attribute id="SourceFile" type="LSString" value="Public/Absolutes_Laboratory/Assets/Textures/Icons/four.dds" />
+					<attribute id="Template" type="FixedString" value="four" />
 					<attribute id="Streaming" type="bool" value="True" />
 					<attribute id="Type" type="int32" value="1" />
 					<attribute id="SRGB" type="bool" value="False" />

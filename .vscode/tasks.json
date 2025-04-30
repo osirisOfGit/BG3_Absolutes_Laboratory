@@ -6,8 +6,8 @@
 		{
 			"label": "bg3Continue",
 			"type": "shell",
-			// mklink /J "D:\GOG\Baldurs Gate 3\Data\Mods\Ultimate_NPC_Stat_Overhaul_Rewrite" "D:\Mods\BG3 Modder MultiTool\Ultimate_NPC_Stat_Overhaul\Ultimate_NPC_Stat_Overhaul_Rewrite\Mods\Ultimate_NPC_Stat_Overhaul_Rewrite"
-			// mklink /J "D:\GOG\Baldurs Gate 3\Data\Public\Ultimate_NPC_Stat_Overhaul_Rewrite" "D:\Mods\BG3 Modder MultiTool\Ultimate_NPC_Stat_Overhaul\Ultimate_NPC_Stat_Overhaul_Rewrite\Public\Ultimate_NPC_Stat_Overhaul_Rewrite"
+			// mklink /J "D:\GOG\Baldurs Gate 3\Data\Mods\Absolutes_Laboratory" "D:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory"
+			// mklink /J "D:\GOG\Baldurs Gate 3\Data\Public\Absolutes_Laboratory" "D:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Public\Absolutes_Laboratory"
 			"windows": {
 				"command": "Start-Process",
 				"args": [
