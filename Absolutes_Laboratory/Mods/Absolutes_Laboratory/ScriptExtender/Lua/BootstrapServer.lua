@@ -6,3 +6,5 @@ Ext.Require("Shared/Utils/_TableUtils.lua")
 Ext.Require("Shared/Channels.lua")
 
 Ext.Require("Server/ClientHelpers.lua")
+
+Ext.Require("Shared/Configurations/_ConfigurationStructure.lua")

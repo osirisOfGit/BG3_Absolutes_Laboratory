@@ -37,6 +37,7 @@ ConfigurationStructure.DynamicClassDefinitions.mutator = {
 
 ---@class Mutation
 ConfigurationStructure.DynamicClassDefinitions.mutations = {
+	description = "",
 	---@type SelectorQuery
 	selectors = {},
 	---@type Mutator[]

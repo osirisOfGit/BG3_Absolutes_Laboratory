@@ -26,6 +26,7 @@ end
 ---@param parent ExtuiTreeParent
 ---@param onSubmitFunc fun(formResults: table<string, string|boolean>)
 ---@param formInputs FormStructure[]
+---@return function
 function FormBuilder:CreateForm(parent, onSubmitFunc, formInputs)
 	Helpers:KillChildren(parent)
 

@@ -10,10 +10,14 @@ Ext.Events.StatsLoaded:Subscribe(function()
 	Logger:ClearLogFile()
 end)
 
+Ext.Require("Shared/Configurations/_ConfigurationStructure.lua")
+
+ConfigurationStructure:InitializeConfig()
+
 Ext.Require("Client/RandomHelpers.lua")
 Ext.Require("Client/Styler.lua")
 Ext.Require("Client/_FormBuilder.lua")
 Ext.Require("Client/Inspector/CharacterIndexer.lua")
 Ext.Require("Client/Inspector/CharacterInspector.lua")
 
--- Ext.Require("Client/Mutations/MutationMain.lua")
+Ext.Require("Client/Mutations/MutationMain.lua")
