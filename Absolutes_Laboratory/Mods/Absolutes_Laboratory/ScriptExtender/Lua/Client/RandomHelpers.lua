@@ -43,10 +43,10 @@ function Helpers:ClearEmptyTablesInProxyTree(proxyTable)
 end
 
 function Helpers:ForceGarbageCollection(checkpoint)
-	local memory = collectgarbage("count")
-	collectgarbage("collect")
-	local newMemory = collectgarbage("count")
-	Logger:BasicDebug("Collected %s Kb of memory (%s%%) after %s", memory - newMemory, (newMemory / memory) * 100, checkpoint)
+	-- local memory = collectgarbage("count")
+	-- collectgarbage("collect")
+	-- local newMemory = collectgarbage("count")
+	-- Logger:BasicDebug("Collected %s Kb of memory (%s%%) after %s", memory - newMemory, (newMemory / memory) * 100, checkpoint)
 end
 
 function Helpers:BuildModString(modId)

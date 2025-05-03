@@ -86,7 +86,7 @@ function CharacterIndex:hydrateTemplateIndex()
 		end
 
 		for id, characterTemplate in pairs(templates) do
-			if characterTemplate.TemplateType == "character" and not string.find(characterTemplate.Name, "Timeline") then
+			if characterTemplate and characterTemplate.TemplateType == "character" and not string.find(characterTemplate.Name, "Timeline") then
 				---@cast characterTemplate CharacterTemplate
 
 				self.displayNameMappings[id] = characterTemplate.DisplayName:Get() or characterTemplate.Name or characterTemplate.TemplateName

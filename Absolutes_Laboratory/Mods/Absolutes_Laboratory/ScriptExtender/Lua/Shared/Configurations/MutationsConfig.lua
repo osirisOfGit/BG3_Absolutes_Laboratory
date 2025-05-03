@@ -6,7 +6,7 @@ ConfigurationStructure.config.mutations = {}
 ConfigurationStructure.DynamicClassDefinitions.selector = {
 	inclusive = true,
 	criteriaCategory = "",
-	criteriaValue = "",
+	criteriaValue = nil,
 	---@type SelectorQuery
 	subSelectors = {}
 }

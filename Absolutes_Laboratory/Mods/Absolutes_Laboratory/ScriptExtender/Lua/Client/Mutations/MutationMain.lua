@@ -1,5 +1,7 @@
 MutationMain = {}
 
+Ext.Require("Client/Mutations/MutationManager.lua")
+
 ---@type ExtuiWindow?
 MutationMain.formBuilderWindow = nil
 
@@ -15,7 +17,7 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Mutations",
 		MutationMain.selectionParent:AddSeparatorText("Your Mutations"):SetStyle("SeparatorTextAlign", 0.5)
 		MutationMain.userFolderGroup = MutationMain.selectionParent:AddGroup("User Folders")
 
-		MutationMain.rulesParent = row:AddCell()
+		MutationMain.mutationParent = row:AddCell()
 
 		MutationMain.formBuilderWindow = Ext.IMGUI.NewWindow("Create a Folder")
 		MutationMain.formBuilderWindow:SetStyle("WindowMinSize", 250)
@@ -39,8 +41,11 @@ function MutationMain:BuildUserFolders()
 		for mutationName, mutation in TableUtils:OrderedPairs(folder.mutations) do
 			---@type ExtuiSelectable
 			local mutationSelectable = folderHeader:AddSelectable(mutationName)
-			mutationSelectable:SetStyle("SelectableTextAlign", 0.2)
 			mutationSelectable:Tooltip():AddText("\t " .. mutation.description)
+
+			mutationSelectable.OnClick = function ()
+				self:BuildMutationDesigner(mutationName, mutation)
+			end
 		end
 
 		folderHeader:AddNewLine()
@@ -118,4 +123,15 @@ function MutationMain:BuildUserFolders()
 			}
 		)
 	end
+end
+
+---@param name string
+---@param mutation Mutation
+function MutationMain:BuildMutationDesigner(name, mutation)
+	Helpers:KillChildren(self.mutationParent)
+
+	Styler:MiddleAlignedColumnLayout(self.mutationParent, function (ele)
+		Styler:CheapTextAlign(name, ele)
+		ele:AddText(mutation.description):SetStyle("Alpha", 0.75)
+	end)
 end
