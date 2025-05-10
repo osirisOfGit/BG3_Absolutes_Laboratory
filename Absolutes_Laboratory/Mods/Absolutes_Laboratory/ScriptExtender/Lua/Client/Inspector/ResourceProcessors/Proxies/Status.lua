@@ -125,7 +125,6 @@ function StatusDataProxy:RenderDisplayableValue(parent, statString)
 					parent:AddText(";").SameLine = true
 				end
 			else
-				Logger:BasicInfo(leftSide)
 				---@type StatusData?
 				local statusData = self:GetStat(leftSide:match("^%s*(.-)%s*$"))
 
