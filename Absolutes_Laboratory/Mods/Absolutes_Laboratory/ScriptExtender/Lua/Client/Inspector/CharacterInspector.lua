@@ -30,6 +30,7 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 
 		-- local row = Main.displayTable:AddRow()
 
+		EntityRecorder:BuildButton(tabHeader)
 		local tabs = tabHeader:AddTabBar("Main Tabs")
 
 		local templateTab = tabs:AddTabItem("Templates")
@@ -100,65 +101,54 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 local hasBeenActivated = false
 
 local function initiateScan()
-	hasBeenActivated = true
-	Main.progressBar.Visible = true
+	if not hasBeenActivated and Main.progressBar then
+		hasBeenActivated = true
+		Main.progressBar.Visible = true
 
-	local function doIt(...)
-		local funcs = { ... }
-		local currentFunc = table.remove(funcs, 1)
+		local function doIt(...)
+			local funcs = { ... }
+			local currentFunc = table.remove(funcs, 1)
 
-		if currentFunc then
-			local percentageComplete = currentFunc()
-			if percentageComplete then
-				Main.progressBar.Value = percentageComplete
-				Ext.Timer.WaitFor(1, function()
-					doIt(currentFunc, table.unpack(funcs))
-				end)
+			if currentFunc then
+				local percentageComplete = currentFunc()
+				if percentageComplete then
+					Main.progressBar.Value = percentageComplete
+					Ext.Timer.WaitFor(1, function()
+						doIt(currentFunc, table.unpack(funcs))
+					end)
+				else
+					doIt(table.unpack(funcs))
+				end
 			else
-				doIt(table.unpack(funcs))
-			end
-		else
-			for i, entity in pairs(CharacterIndex.entities.entities) do
-				Channels.IsEntityAlive:RequestToServer({ target = entity }, function(data)
-					if not data.Result then
-						CharacterIndex.entities.entities[i] = nil
-					end
-				end)
+				for i, entity in pairs(CharacterIndex.entities.entities) do
+					Channels.IsEntityAlive:RequestToServer({ target = entity }, function(data)
+						if not data.Result then
+							CharacterIndex.entities.entities[i] = nil
+						end
+					end)
+				end
 			end
 		end
-	end
 
-	doIt(CharacterIndex:hydrateTemplateIndex(), CharacterIndex:hydrateEntityIndex(), Main.buildOutTree())
+		doIt(CharacterIndex:hydrateTemplateIndex(), CharacterIndex:hydrateEntityIndex(), Main.buildOutTree())
+	end
 end
 
-local sessionLoaded
-local menuActivated
+Ext.Events.SessionLoaded:Subscribe(function(e)
+	Logger:BasicDebug("Session loaded after tab activated")
+	initiateScan()
+end, { Once = true })
 
-Ext.Events.SessionLoaded:Subscribe(function (e)
-	sessionLoaded = true
-	if menuActivated then
-		Logger:BasicDebug("Session loaded after tab activated")
-		initiateScan()
-	end
-end, {Once = true})
-
-Ext.Events.ResetCompleted:Subscribe(function (e)
-	sessionLoaded = true
-	if menuActivated then
-		Logger:BasicDebug("Session loaded after tab activated")
-		initiateScan()
-	end
+Ext.Events.ResetCompleted:Subscribe(function(e)
+	Logger:BasicDebug("Session loaded after tab activated")
+	initiateScan()
 end)
 
 Ext.ModEvents.BG3MCM["MCM_Mod_Tab_Activated"]:Subscribe(function(payload)
 	if not hasBeenActivated then
 		if ModuleUUID == payload.modUUID then
-			if not sessionLoaded then
-				menuActivated = true
-			else
-				Logger:BasicDebug("Tab activated after session loaded")
-				initiateScan()
-			end
+			Logger:BasicDebug("Tab activated after session loaded")
+			initiateScan()
 		end
 	end
 end)
