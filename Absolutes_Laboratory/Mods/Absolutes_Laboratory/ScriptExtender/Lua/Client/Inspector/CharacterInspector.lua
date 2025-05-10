@@ -71,14 +71,16 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 			Helpers:ForceGarbageCollection("swapping to viewing " .. Main.typeToPopulate)
 
 			local function doIt(func, secondFunc)
-				local percentageComplete = func()
-				if percentageComplete then
-					Main.progressBar.Value = percentageComplete
-					Ext.Timer.WaitFor(1, function()
-						doIt(func, secondFunc)
-					end)
-				elseif secondFunc then
-					doIt(secondFunc)
+				if func then
+					local percentageComplete = func()
+					if percentageComplete then
+						Main.progressBar.Value = percentageComplete
+						Ext.Timer.WaitFor(1, function()
+							doIt(func, secondFunc)
+						end)
+					elseif secondFunc then
+						doIt(secondFunc)
+					end
 				end
 			end
 			doIt(Main.buildOutTree())
@@ -119,18 +121,10 @@ local function initiateScan()
 				else
 					doIt(table.unpack(funcs))
 				end
-			else
-				for i, entity in pairs(CharacterIndex.entities.entities) do
-					Channels.IsEntityAlive:RequestToServer({ target = entity }, function(data)
-						if not data.Result then
-							CharacterIndex.entities.entities[i] = nil
-						end
-					end)
-				end
 			end
 		end
 
-		doIt(CharacterIndex:hydrateTemplateIndex(), CharacterIndex:hydrateEntityIndex(), Main.buildOutTree())
+		doIt(CharacterIndex:hydrateTemplateIndex(), Main.buildOutTree())
 	end
 end
 
@@ -162,7 +156,7 @@ function Main.buildOutTree()
 
 	selectedSelectable = nil
 
-	local universalSelection = self.selectionTreeCell:AddTree(self.typeToPopulate == "template" and "Acts" or "Entities")
+	local universalSelection = self.selectionTreeCell:AddTree(self.typeToPopulate == "template" and "Acts" or "Levels")
 	universalSelection.NoAutoOpenOnLog = true
 
 	---@param parent ExtuiTree
@@ -224,17 +218,14 @@ function Main.buildOutTree()
 				progressFunc()
 			end
 		end
-		if #parentTree.Children == 0 then
-			parentTree:Destroy()
-		end
 	end
 
 	local parentOption = self.templateGroupingCombo.Options[self.templateGroupingCombo.SelectedIndex + 1]
-	local index = self.typeToPopulate == "template" and CharacterIndex.templates or CharacterIndex.entities
+	local index = self.typeToPopulate == "template" and CharacterIndex.templates or EntityRecorder:GetEntities()
 
 	return coroutine.wrap(function()
 		self.progressBar.Value = 0
-		local maxCount = TableUtils:CountElements(index.acts or index.entities)
+		local maxCount = TableUtils:CountElements(index.acts or index)
 
 		local count = 0
 		local lastPercentage = 0
@@ -249,10 +240,18 @@ function Main.buildOutTree()
 		end
 
 		if self.typeToPopulate == "entities" then
-			for _, entityId in TableUtils:OrderedPairs(index.entities, function(key)
-				return CharacterIndex.displayNameMappings[index.entities[key]] or key
+			for levelName, entities in TableUtils:OrderedPairs(index, function(key)
+				return EntityRecorder.Levels[key]
 			end) do
-				buildSelectable(universalSelection, entityId)
+				local levelTree = universalSelection:AddTree(levelName)
+				levelTree:SetOpen(false, "Always")
+
+				for entityId, record in TableUtils:OrderedPairs(entities, function(key)
+					return entities[key].Name
+				end) do
+					CharacterIndex.displayNameMappings[entityId] = record.Name
+					buildSelectable(levelTree, entityId)
+				end
 			end
 		else
 			if parentOption == "None" then

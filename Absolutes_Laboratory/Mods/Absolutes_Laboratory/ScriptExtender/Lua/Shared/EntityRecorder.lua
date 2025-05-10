@@ -41,10 +41,25 @@ EntityRecorder.Levels = {
 ---@field Abilities {[string]: number}
 
 if Ext.IsClient() then
+	---@return {[string]: {[GUIDSTRING]: EntityRecord}}
+	function EntityRecorder:GetEntities()
+		return FileUtils:LoadTableFile(self.recorderFilename) or {}
+	end
+
+	---@param entityId GUIDSTRING
+	---@return string? LevelName
+	function EntityRecorder:GetLevelForEntity(entityId)
+		for level, entities in pairs(FileUtils:LoadTableFile(self.recorderFilename) or {}) do
+			if entities[entityId] then
+				return level
+			end
+		end
+	end
+
 	---@param parent ExtuiTreeParent
 	function EntityRecorder:BuildButton(parent)
 		if Ext.ClientNet.IsHost() then
-			local button = parent:AddButton("Index All Entities")
+			local button = parent:AddButton("Index All Alive Character Entities")
 			button:Tooltip():AddText([[
 	 This will teleport you to each level in the game and record all the entities loaded onto the server for that level
 You only need to do this once or after you install mods that would add new entities - a local file will be written containing the results.

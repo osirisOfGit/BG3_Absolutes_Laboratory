@@ -3,7 +3,8 @@ CharacterWindow = {}
 ---@param parent ExtuiTreeParent
 ---@param id string
 function CharacterWindow:BuildWindow(parent, id)
-	local displayTable = parent:AddTable("characterDisplayWindow", 3)
+	local group = parent:AddGroup(parent.IDContext .. "group")
+	local displayTable = group:AddTable("characterDisplayWindow", 3)
 	displayTable:AddColumn("", "WidthStretch")
 	displayTable:AddColumn("", "WidthFixed", 300)
 	displayTable:AddColumn("", "WidthStretch")
@@ -27,7 +28,7 @@ function CharacterWindow:BuildWindow(parent, id)
 
 		Styler:CheapTextAlign(CharacterIndex.displayNameMappings[id], displayCell, "Big")
 
-		local tabBar = parent:AddTabBar("Tabs")
+		local tabBar = group:AddTabBar("Tabs")
 
 		local entityTab = tabBar:AddTabItem("Entity")
 		local statTab = tabBar:AddTabItem("Stat")
@@ -63,6 +64,27 @@ function CharacterWindow:BuildWindow(parent, id)
 		end
 
 		entityTab:Activate()
+	elseif EntityRecorder:GetLevelForEntity(id) then
+		Styler:CheapTextAlign(CharacterIndex.displayNameMappings[id], displayCell, "Big")
+		Styler:MiddleAlignedColumnLayout(displayCell, function(ele)
+			ele:AddButton("Teleport To Level").OnClick = function()
+				Channels.TeleportToLevel:SendToServer({
+					LevelName = EntityRecorder:GetLevelForEntity(id)
+				})
+
+				local sub
+				sub = Ext.Events.GameStateChanged:Subscribe(function(e)
+					---@cast e EsvLuaGameStateChangedEvent
+					if e.ToState == "Running" then
+						Ext.Events.GameStateChanged:Unsubscribe(sub)
+
+						group:Destroy()
+						Helpers:ForceGarbageCollection("Swapped levels to find entity")
+						CharacterWindow:BuildWindow(parent, id)
+					end
+				end)
+			end
+		end)
 	else
 		---@type CharacterTemplate
 		local characterTemplate = Ext.Template.GetRootTemplate(id)
@@ -75,7 +97,7 @@ function CharacterWindow:BuildWindow(parent, id)
 			Styler:CheapTextAlign(CharacterIndex.displayNameMappings[id], displayCell, "Big")
 			Styler:CheapTextAlign(characterTemplate.LevelName, displayCell)
 
-			local tabBar = parent:AddTabBar("Tabs")
+			local tabBar = group:AddTabBar("Tabs")
 
 			local templateTab = tabBar:AddTabItem("Template")
 			ResourceManager:RenderDisplayWindow(characterTemplate, templateTab)
