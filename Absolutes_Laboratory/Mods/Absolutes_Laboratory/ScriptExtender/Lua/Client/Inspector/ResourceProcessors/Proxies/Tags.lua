@@ -23,9 +23,10 @@ function TagsProxy:RenderDisplayableValue(parent, tags, statType)
 			CharacterIndex.displayNameMappings[tag] = tag.DisplayName:Get() or tag.Name
 
 			local hasKids = #parent.Children > 0
-			local tagText = Styler:HyperlinkText(parent:AddText(tag.DisplayName:Get() or tag.Name))
+			local tagText = Styler:HyperlinkText(parent, tag.DisplayName:Get() or tag.Name, function (parent)
+				self:RenderDisplayWindow(tag, parent)
+			end)
 			tagText.SameLine = hasKids;
-			self:RenderDisplayWindow(tag, tagText:Tooltip())
 
 			parent:AddText(self.delimeter).SameLine = true
 		end

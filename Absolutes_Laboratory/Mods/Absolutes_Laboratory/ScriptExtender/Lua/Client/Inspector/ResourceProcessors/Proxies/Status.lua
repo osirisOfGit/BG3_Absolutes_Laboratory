@@ -107,11 +107,12 @@ function StatusDataProxy:RenderDisplayableValue(parent, statString)
 					local hasKids = #parent.Children > 0
 					parent:AddText(leftSide .. ":").SameLine = hasKids
 
-					local text = Styler:HyperlinkText(parent:AddText(rightSide))
+					local text = Styler:HyperlinkText(parent, rightSide, function(parent)
+						self:RenderDisplayWindow(statusData, parent)
+					end)
 					text.SameLine = true
 
 					parent:AddText(";").SameLine = true
-					self:RenderDisplayWindow(statusData, text:Tooltip())
 				end
 			else
 				---@type StatusData?
@@ -120,10 +121,11 @@ function StatusDataProxy:RenderDisplayableValue(parent, statString)
 				if statusData then
 					local hasKids = #parent.Children > 0
 
-					local text = Styler:HyperlinkText(parent:AddText(leftSide .. ";"))
-					text.SameLine = hasKids
+					local text = Styler:HyperlinkText(parent, leftSide .. ";", function(parent)
+						self:RenderDisplayWindow(statusData, parent)
+					end)
 
-					self:RenderDisplayWindow(statusData, text:Tooltip())
+					text.SameLine = hasKids
 				end
 			end
 		end

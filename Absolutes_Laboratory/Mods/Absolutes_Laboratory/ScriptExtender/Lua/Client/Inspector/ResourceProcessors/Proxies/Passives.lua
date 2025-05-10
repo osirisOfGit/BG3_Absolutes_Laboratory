@@ -57,9 +57,10 @@ function PassivesProxy:RenderDisplayableValue(parent, statString)
 
 			if passive then
 				local hasKids = #parent.Children > 0
-				local passiveText = Styler:HyperlinkText(parent:AddText(passiveName))
+				local passiveText = Styler:HyperlinkText(parent, passiveName, function(parent)
+					self:RenderDisplayWindow(passive, parent)
+				end)
 				passiveText.SameLine = hasKids;
-				self:RenderDisplayWindow(passive, passiveText:Tooltip())
 
 				if #passiveTable > 1 then
 					parent:AddText(self.delimeter).SameLine = true

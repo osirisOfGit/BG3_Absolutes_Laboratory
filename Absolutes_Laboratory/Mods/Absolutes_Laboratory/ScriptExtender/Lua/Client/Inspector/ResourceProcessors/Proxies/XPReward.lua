@@ -18,9 +18,11 @@ function XPRewardProxy:RenderDisplayableValue(parent, xpRewardId, statType)
 		CharacterIndex.displayNameMappings[xpReward] = xpReward.Name
 
 		local hasKids = #parent.Children > 0
-		local tagText = Styler:HyperlinkText(parent:AddText(xpReward.Name))
+		local tagText = Styler:HyperlinkText(parent, xpReward.Name, function(parent)
+			self:RenderDisplayWindow(xpReward, parent)
+		end)
+
 		tagText.SameLine = hasKids;
-		self:RenderDisplayWindow(xpReward, tagText:Tooltip())
 
 		parent:AddText(self.delimeter).SameLine = true
 	end
