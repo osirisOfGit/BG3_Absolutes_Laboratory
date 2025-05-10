@@ -12,6 +12,7 @@ TagsProxy.fieldsToParse = {
 
 ResourceProxy:RegisterResourceProxy("Tags", TagsProxy)
 ResourceProxy:RegisterResourceProxy("Tag", TagsProxy)
+ResourceProxy:RegisterResourceProxy("ServerBoostTag", TagsProxy)
 
 ---@param tags string[]
 function TagsProxy:RenderDisplayableValue(parent, tags, statType)
