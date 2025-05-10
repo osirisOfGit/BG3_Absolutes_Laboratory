@@ -176,8 +176,9 @@ function SpellProxy:RenderDisplayableValue(parent, resourceValue)
 		local spell = Ext.Stats.Get(resourceValue)
 
 		if spell then
-			local statText = Styler:HyperlinkText(parent:AddText(resourceValue))
-			ResourceManager:RenderDisplayWindow(spell, statText:Tooltip())
+			Styler:HyperlinkText(parent, resourceValue, function(parent)
+				ResourceManager:RenderDisplayWindow(spell, parent)
+			end)
 		else
 			parent:AddText(resourceValue)
 		end

@@ -15,8 +15,9 @@ function ProgressionContainerProxy:RenderDisplayableValue(parent, progressionEnt
 			for progressionId, progressionEntry in TableUtils:OrderedPairs(progressionSet) do
 				local row = displayTable:AddRow()
 
-				local hyperlinkText = Styler:HyperlinkText(row:AddCell():AddText(CharacterIndex.displayNameMappings[progressionId]))
-				ResourceManager:RenderDisplayWindow(Ext.StaticData.Get(progressionId, "Progression"), hyperlinkText:Tooltip())
+				Styler:HyperlinkText(row:AddCell(), CharacterIndex.displayNameMappings[progressionId], function(parent)
+					ResourceManager:RenderDisplayWindow(Ext.StaticData.Get(progressionId, "Progression"), parent)
+				end)
 
 				local displayCell = row:AddCell()
 				EntityManager:RenderDisplayableValue(displayCell, progressionEntry)

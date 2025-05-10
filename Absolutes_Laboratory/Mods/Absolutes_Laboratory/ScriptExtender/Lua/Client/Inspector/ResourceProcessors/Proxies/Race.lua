@@ -17,7 +17,7 @@ ResourceProxy:RegisterResourceProxy("ParentGuid", RaceProxy)
 
 ---@param raceId string
 function RaceProxy:RenderDisplayableValue(parent, raceId, statType)
- 	---@type ResourceRace?
+	---@type ResourceRace?
 	local race = Ext.StaticData.Get(raceId, "Race")
 
 	if race then
@@ -25,9 +25,10 @@ function RaceProxy:RenderDisplayableValue(parent, raceId, statType)
 
 		if statType ~= "ParentGuid" then
 			local hasKids = #parent.Children > 0
-			local tagText = Styler:HyperlinkText(parent:AddText(race.DisplayName:Get() or race.Name))
+			local tagText = Styler:HyperlinkText(parent, race.DisplayName:Get() or race.Name, function(parent)
+				self:RenderDisplayWindow(race, parent)
+			end)
 			tagText.SameLine = hasKids;
-			self:RenderDisplayWindow(race, tagText:Tooltip())
 
 			parent:AddText(self.delimeter).SameLine = true
 		else

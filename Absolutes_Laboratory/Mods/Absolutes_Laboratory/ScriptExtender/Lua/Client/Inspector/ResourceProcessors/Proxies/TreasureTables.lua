@@ -76,8 +76,9 @@ function TreasureCategoryProxy:RenderDisplayableValue(parent, treasureCategoryNa
 	local treasureCategory = Ext.Stats.TreasureCategory.GetLegacy(treasureCategoryName)
 
 	if treasureCategory then
-		local statText = Styler:HyperlinkText(parent:AddText(treasureCategoryName))
-		self:RenderDisplayWindow(treasureCategory, statText:Tooltip())
+		Styler:HyperlinkText(parent, treasureCategoryName, function(parent)
+			self:RenderDisplayWindow(treasureCategory, parent)
+		end)
 	else
 		parent:AddText(treasureCategoryName)
 	end

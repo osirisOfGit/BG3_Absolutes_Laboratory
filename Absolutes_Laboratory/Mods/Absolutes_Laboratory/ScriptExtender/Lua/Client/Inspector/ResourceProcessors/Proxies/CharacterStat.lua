@@ -61,7 +61,8 @@ function CharacterStatProxy:RenderDisplayableValue(parent, statString)
 	local character = Ext.Stats.Get(statString)
 
 	if character then
-		local statText = Styler:HyperlinkText(parent:AddText(statString))
-		ResourceManager:RenderDisplayWindow(character, statText:Tooltip())
+		Styler:HyperlinkText(parent, statString, function(parent)
+			ResourceManager:RenderDisplayWindow(character, parent)
+		end)
 	end
 end

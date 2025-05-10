@@ -50,9 +50,9 @@ function ActionResourcesProxy:RenderDisplayableValue(parent, resources, resource
 				cache = name
 			end
 
-			local hyperlink = Styler:HyperlinkText(parent:AddText(cache))
-
-			EntityManager:RenderDisplayWindow(resource, hyperlink:Tooltip())
+			Styler:HyperlinkText(parent, cache, function (parent)
+				EntityManager:RenderDisplayWindow(resource, parent)
+			end)
 		else
 			parent:AddText(resources)
 		end
