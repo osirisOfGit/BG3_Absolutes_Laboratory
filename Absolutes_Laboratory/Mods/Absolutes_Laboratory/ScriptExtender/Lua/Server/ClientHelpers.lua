@@ -28,6 +28,7 @@ local function populateBoosts(response, entity)
 
 				if key ~= "ServerReplicationDependency" then
 					if key == "BoostInfo" then
+						---@cast boostInfo BoostInfoComponent
 						boostTable[key] = {
 							Cause = {
 								Type = boostInfo.Cause.Type,
@@ -62,10 +63,11 @@ local function populatePassives(response, entity)
 
 			if key ~= "ServerReplicationDependency" then
 				if key == "Passive" then
+					---@cast passiveInfo PassiveComponent
 					passiveTable[key] = {
 						Passive = {
 							Disabled = passiveInfo.Disabled,
-							Source = passiveInfo.Source,
+							Source = passiveInfo.Source and passiveInfo.Source.StatusID.ID,
 							ToggledOn = passiveInfo.ToggledOn,
 							Type = passiveInfo.Type,
 							ItemEntity = passiveInfo.Item and passiveInfo.Item.Uuid.EntityUuid,
@@ -77,6 +79,18 @@ local function populatePassives(response, entity)
 				end
 			end
 		end
+	end
+end
+
+---@param response table
+---@param entity EntityHandle
+local function populateStatusContainer(response, entity)
+	response["StatusContainer"] = {}
+
+	for _, status in pairs(entity.StatusContainer.Statuses) do
+		---@cast entityHandle EntityHandle
+
+		response["StatusContainer"] = status
 	end
 end
 
@@ -137,6 +151,8 @@ Channels.GetEntityDump:SetRequestHandler(function(data, user)
 					populatePassives(response, entity)
 				elseif componentName == "ProgressionContainer" then
 					populateProgressions(response, entity)
+				elseif componentName == "StatusContainer" then
+					populateStatusContainer(response, entity)
 				else
 					local value = type(field) == "userdata" and Ext.Types.Serialize(field) or field
 
