@@ -38,6 +38,8 @@ if Ext.IsClient() then
 		return displayTable
 	end
 
+	local selectedSelectable
+
 	Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 		--- @param tabHeader ExtuiTreeParent
 		function(tabHeader)
@@ -56,24 +58,31 @@ if Ext.IsClient() then
 
 			local populated
 			local function populate()
-				for _, child in pairs(configCell.Children) do
-					child:Destroy()
-				end
-				local tabBar = configCell:AddTabBar("Tabs")
-				local tab1 = tabBar:AddTabItem("Item 1")
-				tabBar:AddTabItem("Item 2")
-				tabBar:AddTabItem("Item 3")
+				populated = true
+				local tabBar = configCell:AddTabBar("Tabs" ..  tostring(Ext.Math.Random(10)))
+				local tab1 = tabBar:AddTabItem("Item 1" .. tostring(Ext.Math.Random(10)))
+				tabBar:AddTabItem("Item 2".. tostring(Ext.Math.Random(10)))
+				tabBar:AddTabItem("Item 3".. tostring(Ext.Math.Random(10)))
 
-				local mainTable = TwoColumnTable(tab1)
-				for x = 1, 30 do
+				local mainTable = TwoColumnTable(tab1, tostring(Ext.Math.Random(10)))
+				for x = 1, 10 do
 					local row = mainTable:AddRow()
-					row:AddCell():AddText(tostring(x))
+					row:AddCell():AddText(tostring(x).. tostring(Ext.Math.Random(10)))
+
 					for y = 1, 10 do
-						local yTable = TwoColumnTable(row:AddCell())
+						local parent = row:AddCell()
+						if (x % 3) == 0 then
+							parent = parent:AddCollapsingHeader("x" .. tostring(x).. tostring(Ext.Math.Random(10)))
+						end
+						local yTable = TwoColumnTable(parent, tostring(Ext.Math.Random(10)))
 						local yrow = yTable:AddRow()
-						yrow:AddCell():AddText(tostring(y))
+						if (y + x) % 2 == 0 then
+							yrow:AddCell():AddText(tostring(y) .. tostring(Ext.Math.Random(10)))
+						else
+							yrow:AddCell():AddSelectable(tostring(y + x).. tostring(Ext.Math.Random(10)))
+						end
 						for z = 1, 5 do
-							local zTable = TwoColumnTable(yrow:AddCell())
+							local zTable = TwoColumnTable(yrow:AddCell(), tostring(Ext.Math.Random(10)))
 							local zrow = zTable:AddRow()
 							zrow:AddCell():AddText(tostring(z))
 						end
@@ -81,18 +90,23 @@ if Ext.IsClient() then
 				end
 			end
 
-			for i = 1, 20 do
+			for i = 1, 200 do
 				---@type ExtuiSelectable
 				local selectable = selectTree:AddSelectable("Option" .. i)
 
 				selectable.OnClick = function()
+					if selectedSelectable then
+						selectedSelectable.Selected = false
+					end
+					selectedSelectable = selectable
 					for _, child in pairs(configCell.Children) do
 						child:Destroy()
 					end
 
 					MiddleAlignedColumnLayout(configCell, function(ele)
-						ele:AddButton("Change Act").OnClick = function()
-							if not populated then
+						ele:AddImage("e16a220d-a2bf-a2a8-1bfb-eb723d857eb1-_(Icon_Human_Male)", { 128, 128 })
+						if not populated then
+							ele:AddButton("Change Act").OnClick = function()
 								Channels.TeleportToLevel:SendToServer({
 									LevelName = "SCL_Main_A"
 								})
@@ -102,13 +116,12 @@ if Ext.IsClient() then
 									---@cast e EsvLuaGameStateChangedEvent
 									if e.ToState == "Running" then
 										populate()
-										populated = true
 										Ext.Events.GameStateChanged:Unsubscribe(sub)
 									end
 								end)
-							else
-								populate()
 							end
+						else
+							populate()
 						end
 					end)
 				end
