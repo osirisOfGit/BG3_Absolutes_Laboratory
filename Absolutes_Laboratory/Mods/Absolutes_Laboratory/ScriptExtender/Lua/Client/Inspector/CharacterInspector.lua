@@ -180,8 +180,6 @@ function Main.buildOutTree()
 			Helpers:ForceGarbageCollection("viewing new entity/template")
 
 			CharacterWindow:BuildWindow(self.configCell, selectable.UserData)
-			self.configCell.ResizeY = true
-			self.configCell:SetScroll({ 0, 0 })
 		end
 	end
 
@@ -240,17 +238,23 @@ function Main.buildOutTree()
 		end
 
 		if self.typeToPopulate == "entities" then
-			for levelName, entities in TableUtils:OrderedPairs(index, function(key)
-				return EntityRecorder.Levels[key]
-			end) do
+			for levelName, _ in pairs(index) do
 				local levelTree = universalSelection:AddTree(levelName)
 				levelTree:SetOpen(false, "Always")
 
-				for entityId, record in TableUtils:OrderedPairs(entities, function(key)
-					return entities[key].Name
-				end) do
-					CharacterIndex.displayNameMappings[entityId] = record.Name
-					buildSelectable(levelTree, entityId)
+				levelTree.OnExpand = function()
+					local entities = EntityRecorder:GetEntities()[levelName]
+					for entityId, record in TableUtils:OrderedPairs(entities, function(key)
+						return entities[key].Name
+					end) do
+						CharacterIndex.displayNameMappings[entityId] = record.Name
+						buildSelectable(levelTree, entityId)
+					end
+				end
+
+				levelTree.OnCollapse = function ()
+					Helpers:KillChildren(levelTree)
+					selectedSelectable = nil
 				end
 			end
 		else

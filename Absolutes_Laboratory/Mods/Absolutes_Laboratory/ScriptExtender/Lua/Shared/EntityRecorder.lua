@@ -41,9 +41,22 @@ EntityRecorder.Levels = {
 ---@field Abilities {[string]: number}
 
 if Ext.IsClient() then
+	local recordedEntities = setmetatable({}, {
+		__mode = "kv",
+		__pairs = function(t)
+			local cachedData = FileUtils:LoadTableFile(EntityRecorder.recorderFilename) or {}
+			return TableUtils:OrderedPairs(cachedData, function (key)
+				return EntityRecorder.Levels[key]
+			end)
+		end,
+		__index = function(t, k)
+			return (FileUtils:LoadTableFile(EntityRecorder.recorderFilename) or {})[k]
+		end
+	})
+
 	---@return {[string]: {[GUIDSTRING]: EntityRecord}}
 	function EntityRecorder:GetEntities()
-		return FileUtils:LoadTableFile(self.recorderFilename) or {}
+		return recordedEntities
 	end
 
 	---@param entityId GUIDSTRING
