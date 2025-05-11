@@ -29,8 +29,9 @@ function ItemListProxy:RenderDisplayableValue(parent, itemList)
 					local row = displayTable:AddRow()
 					row:AddCell():AddText(key)
 					if key == "TemplateID" and Ext.Template.GetRootTemplate(value) then
-						local templateText = Styler:HyperlinkText(row:AddCell():AddText(value))
-						ResourceManager:RenderDisplayWindow(Ext.Template.GetRootTemplate(value), templateText:Tooltip(), "ItemTemplate")
+						Styler:HyperlinkText(row:AddCell(), value, function(parent)
+							ResourceManager:RenderDisplayWindow(Ext.Template.GetRootTemplate(value), parent, "ItemTemplate")
+						end)
 					else
 						ResourceManager:RenderDisplayableValue(row:AddCell(), tostring(value), key)
 					end

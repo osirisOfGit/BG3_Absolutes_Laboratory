@@ -21,14 +21,6 @@ CharacterIndex.templates = {
 	races = {}
 }
 
----@type CharacterIndex
-CharacterIndex.entities = {
-	entities = {},
-	factions = {},
-	progressions = {},
-	races = {}
-}
-
 ---@type {[string]: string|string[]}
 CharacterIndex.progressionIndex = {}
 
@@ -117,50 +109,6 @@ function CharacterIndex:hydrateTemplateIndex()
 					addToTable(templateIndex.progressions, stat.Progressions, id)
 				end
 			end
-			count = count + 1
-			if math.floor(((count / maxCount) * 100)) > lastPercentage then
-				lastPercentage = math.floor(((count / maxCount) * 100))
-				coroutine.yield(count / maxCount)
-			end
-		end
-	end)
-end
-
-function CharacterIndex:hydrateEntityIndex()
-	local entities = Ext.Entity.GetAllEntitiesWithComponent("ClientCharacter")
-	local maxCount = #entities
-
-	local index = self.entities
-	return coroutine.wrap(function()
-		local count = 0
-		local lastPercentage = 0
-
-		for _, entity in ipairs(entities) do
-			if not entity.Player and not entity.PartyMember then
-				local id = entity.Uuid.EntityUuid
-
-				table.insert(index.entities, id)
-
-				if not self.displayNameMappings[id] then
-					self.displayNameMappings[id] = (entity.DisplayName and entity.DisplayName.Name:Get())
-						or (entity.ClientCharacter.Template and entity.ClientCharacter.Template.DisplayName:Get())
-						or id
-				end
-
-				addToTable(index.factions, entity.Faction and entity.Faction.field_8, id)
-				addToTable(index.races, entity.Race and entity.Race.Race, id)
-
-				if entity.ProgressionContainer then
-					for _, progressionGroup in ipairs(entity.ProgressionContainer.Progressions) do
-						for _, progression in ipairs(progressionGroup) do
-							---@cast progression ProgressionMetaComponent
-
-							addToTable(index.progressions, self.progressionIndex[progression.Progression], id)
-						end
-					end
-				end
-			end
-
 			count = count + 1
 			if math.floor(((count / maxCount) * 100)) > lastPercentage then
 				lastPercentage = math.floor(((count / maxCount) * 100))

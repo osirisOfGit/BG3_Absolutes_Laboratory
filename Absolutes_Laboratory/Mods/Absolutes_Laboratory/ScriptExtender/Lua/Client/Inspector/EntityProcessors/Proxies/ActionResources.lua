@@ -25,16 +25,20 @@ function ActionResourcesProxy:RenderDisplayableValue(parent, resources, resource
 			if not cache then
 				---@type ResourceActionResource
 				local resource = Ext.StaticData.Get(key, "ActionResource")
-				local name = resource.DisplayName:Get() or resource.Name
-				CharacterIndex.displayNameMappings[key] = name
-				return name
+				if resource then
+					local name = resource.DisplayName:Get() or resource.Name
+					CharacterIndex.displayNameMappings[key] = name
+					return name
+				else
+					return CharacterIndex.displayNameMappings[key]
+				end
 			else
 				return CharacterIndex.displayNameMappings[key]
 			end
 		end) do
 			local displayTable = Styler:TwoColumnTable(parent, resourceId)
 			local row = displayTable:AddRow()
-			row:AddCell():AddText(CharacterIndex.displayNameMappings[resourceId])
+			row:AddCell():AddText(CharacterIndex.displayNameMappings[resourceId] or resourceId)
 
 			EntityManager:RenderDisplayableValue(row:AddCell(), resource)
 		end
@@ -50,9 +54,9 @@ function ActionResourcesProxy:RenderDisplayableValue(parent, resources, resource
 				cache = name
 			end
 
-			local hyperlink = Styler:HyperlinkText(parent:AddText(cache))
-
-			EntityManager:RenderDisplayWindow(resource, hyperlink:Tooltip())
+			Styler:HyperlinkText(parent, cache, function(parent)
+				EntityManager:RenderDisplayWindow(resource, parent)
+			end)
 		else
 			parent:AddText(resources)
 		end

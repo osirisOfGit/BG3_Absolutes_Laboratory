@@ -13,7 +13,7 @@ end
 
 EntityManager = ResourceProxy:new()
 
----@param resource EntityHandle|ComponentHandle
+---@param resource EntityHandle|ComponentHandle|ResourceGuidResource
 function EntityManager:RenderDisplayWindow(resource, parent)
 	if type(resource) == "userdata" and (Ext.Types.GetObjectType(resource) == "Entity" or Ext.Types.GetObjectType(resource):find("Component")) then
 		local success, result = pcall(function(...)

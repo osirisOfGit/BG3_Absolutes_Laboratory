@@ -148,9 +148,64 @@ function Styler:ScaleFactor()
 	return Ext.IMGUI.GetViewportSize()[2] / 1440
 end
 
----@param text ExtuiText
----@return ExtuiText
-function Styler:HyperlinkText(text)
-	text:SetColor("Text", { 173 / 255, 216 / 255, 230 / 255, 1 })
-	return text
+---@param parent ExtuiTreeParent
+---@param text string
+---@param tooltipCallback fun(parent: ExtuiTreeParent)
+---@return ExtuiSelectable
+function Styler:HyperlinkText(parent, text, tooltipCallback)
+	---@type ExtuiSelectable
+	local fakeTextSelectable = parent:AddSelectable(text)
+	fakeTextSelectable.Size = {(#text * 10) * Styler:ScaleFactor(), 0}
+
+	fakeTextSelectable:SetColor("ButtonActive", { 1, 1, 1, 0 })
+	fakeTextSelectable:SetColor("ButtonHovered", { 1, 1, 1, 0 })
+	fakeTextSelectable:SetColor("FrameBgHovered", { 1, 1, 1, 0 })
+	fakeTextSelectable:SetColor("FrameBgActive", { 1, 1, 1, 0 })
+	fakeTextSelectable:SetColor("Text", { 173 / 255, 216 / 255, 230 / 255, 1 })
+
+	---@type ExtuiTooltip?
+	local tooltip
+
+	---@type ExtuiWindow?
+	local window
+
+	fakeTextSelectable.OnHoverEnter = function()
+		if tooltip then
+			Helpers:KillChildren(tooltip)
+			Helpers:ForceGarbageCollection("Destroyed Tooltip (in hover enter) for " .. text)
+		end
+		if not window then
+			tooltip = fakeTextSelectable:Tooltip()
+			tooltipCallback(tooltip)
+		else
+			window.Open = true
+			window:SetFocus()
+		end
+	end
+
+	fakeTextSelectable.OnHoverLeave = function()
+		if tooltip then
+			Helpers:KillChildren(tooltip)
+			Helpers:ForceGarbageCollection("Destroyed Tooltip for " .. text)
+		end
+	end
+
+	fakeTextSelectable.OnClick = function()
+		fakeTextSelectable.Selected = false
+
+		window = Ext.IMGUI.NewWindow(text)
+		window.IDContext = parent.IDContext .. text
+		window.Closeable = true
+		window.AlwaysAutoResize = true
+
+		window.OnClose = function ()
+			window:Destroy()
+			window = nil
+			Helpers:ForceGarbageCollection("Destroyed tooltip window for " .. text)
+		end
+
+		tooltipCallback(window)
+	end
+
+	return fakeTextSelectable
 end

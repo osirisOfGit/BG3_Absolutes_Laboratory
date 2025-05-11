@@ -92,13 +92,23 @@ StatusDataProxy.fieldsToParse = {
 
 ResourceProxy:RegisterResourceProxy("StatusData", StatusDataProxy)
 ResourceProxy:RegisterResourceProxy("DifficultyStatuses", StatusDataProxy)
+ResourceProxy:RegisterResourceProxy("StatusContainer", StatusDataProxy)
 
 
 function StatusDataProxy:RenderDisplayableValue(parent, statString)
 	if statString and statString ~= "" then
-		for statGroup in self:SplitSpring(statString) do
+		local statusTable = {}
+		if type(statString) == "string" then
+			for val in self:SplitSpring(statString) do
+				table.insert(statusTable, val)
+			end
+		else
+			statusTable = statString
+		end
+
+		for _, statGroup in ipairs(statusTable) do
 			local leftSide, rightSide = statGroup:match("([^:]*):?(.*)")
-			if rightSide then
+			if rightSide and rightSide ~= "" then
 				rightSide = rightSide:match("^%s*(.-)%s*$")
 				---@type StatusData?
 				local statusData = self:GetStat(rightSide)
@@ -107,11 +117,12 @@ function StatusDataProxy:RenderDisplayableValue(parent, statString)
 					local hasKids = #parent.Children > 0
 					parent:AddText(leftSide .. ":").SameLine = hasKids
 
-					local text = Styler:HyperlinkText(parent:AddText(rightSide))
+					local text = Styler:HyperlinkText(parent, rightSide, function(parent)
+						self:RenderDisplayWindow(statusData, parent)
+					end)
 					text.SameLine = true
 
 					parent:AddText(";").SameLine = true
-					self:RenderDisplayWindow(statusData, text:Tooltip())
 				end
 			else
 				---@type StatusData?
@@ -120,10 +131,11 @@ function StatusDataProxy:RenderDisplayableValue(parent, statString)
 				if statusData then
 					local hasKids = #parent.Children > 0
 
-					local text = Styler:HyperlinkText(parent:AddText(leftSide .. ";"))
-					text.SameLine = hasKids
+					local text = Styler:HyperlinkText(parent, leftSide .. ";", function(parent)
+						self:RenderDisplayWindow(statusData, parent)
+					end)
 
-					self:RenderDisplayWindow(statusData, text:Tooltip())
+					text.SameLine = hasKids
 				end
 			end
 		end

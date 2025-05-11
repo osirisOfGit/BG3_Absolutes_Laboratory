@@ -86,9 +86,9 @@ function Logger:BasicPrint(content, messageType, textColor, customPrefix, rainbo
 
     customPrefix = customPrefix or ModUtils:GetModInfo().Name
     local padding = string.rep(" ", prefixLength - #customPrefix)
-    local message = ConcatOutput(ConcatPrefix(customPrefix .. padding .. "  [" .. Logger.PrintTypes[messageType] .. "]", content))
+    local message = ConcatOutput(ConcatPrefix(customPrefix .. padding .. "  [" .. Logger.PrintTypes[messageType] .. "]" .. " (" .. (Ext.IsClient() and "C" or "S") .. ")", content))
 
-    Logger:LogMessage(ConcatOutput(ConcatPrefix(customPrefix .. "  [" .. Logger.PrintTypes[messageType] .. "]", content)))
+    Logger:LogMessage(ConcatOutput(ConcatPrefix(customPrefix .. "  [" .. Logger.PrintTypes[messageType] .. "]" .. " (" .. (Ext.IsClient() and "C" or "S") .. ")", content)))
     if messageType <= Logger.PrintTypes.INFO then
         local coloredMessage = rainbowText and GetRainbowText(message) or
             string.format("\x1b[%dm%s\x1b[0m", textColorCode, message)

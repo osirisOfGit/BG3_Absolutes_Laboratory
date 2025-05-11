@@ -68,7 +68,7 @@ ResourceProxy:RegisterResourceProxy("resource::Progression", ProgressionProxy)
 
 ---@param progressionTableId string
 function ProgressionProxy:RenderDisplayableValue(parent, progressionTableId, statType)
-	if progressionTableId then
+	if progressionTableId and progressionTableId ~= "00000000-0000-0000-0000-000000000000" then
 		---@type ResourceProgression
 		local progression = Ext.StaticData.Get(progressionTableId, "Progression")
 
@@ -83,13 +83,15 @@ function ProgressionProxy:RenderDisplayableValue(parent, progressionTableId, sta
 				for _, progressionID in TableUtils:OrderedPairs(progressions, function(key)
 					return Ext.StaticData.Get(progressions[key], "Progression").Level or key
 				end) do
-					---@type ResourceProgression
-					local progression = Ext.StaticData.Get(progressionID, "Progression")
+					if progressionID ~= "00000000-0000-0000-0000-000000000000" then
+						---@type ResourceProgression
+						local progression = Ext.StaticData.Get(progressionID, "Progression")
 
-					if progression then
-						local row = table:AddRow()
-						row:AddCell():AddText(progressionID)
-						ResourceManager:RenderDisplayWindow(progression, row:AddCell())
+						if progression then
+							local row = table:AddRow()
+							row:AddCell():AddText(progressionID)
+							ResourceManager:RenderDisplayWindow(progression, row:AddCell())
+						end
 					end
 				end
 			end

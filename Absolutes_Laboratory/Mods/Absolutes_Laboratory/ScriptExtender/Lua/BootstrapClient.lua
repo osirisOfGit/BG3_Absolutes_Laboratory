@@ -5,6 +5,7 @@ Ext.Require("Shared/Utils/_ModUtils.lua")
 Ext.Require("Shared/Utils/_Logger.lua")
 
 Ext.Require("Shared/Channels.lua")
+Ext.Require("Shared/EntityRecorder.lua")
 
 Ext.Events.StatsLoaded:Subscribe(function()
 	Logger:ClearLogFile()
