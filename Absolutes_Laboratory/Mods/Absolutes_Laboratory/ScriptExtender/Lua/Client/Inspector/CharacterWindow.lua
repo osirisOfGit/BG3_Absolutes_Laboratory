@@ -63,6 +63,16 @@ function CharacterWindow:BuildWindow(parent, id)
 		end
 
 		entityTab:Activate()
+	elseif EntityRecorder:GetLevelForEntity(id) then
+		Styler:CheapTextAlign(CharacterIndex.displayNameMappings[id], displayCell, "Big")
+		Styler:MiddleAlignedColumnLayout(displayCell, function(ele)
+			ele:AddButton("Teleport To Level").OnClick = function()
+				Channels.TeleportToLevel:SendToServer({
+					LevelName = EntityRecorder:GetLevelForEntity(id),
+					Id = id
+				})
+			end
+		end)
 	else
 		---@type CharacterTemplate
 		local characterTemplate = Ext.Template.GetRootTemplate(id)

@@ -3,6 +3,10 @@ Channels.GetEntityIcon:SetRequestHandler(function(data, user)
 	return { Result = entity.Icon and entity.Icon.Icon }
 end)
 
+Channels.TeleportToLevel:SetHandler(function (data, user)
+	Osi.TeleportPartiesToLevelWithMovie(data.LevelName, "", "")
+end)
+
 Channels.GetEntityStat:SetRequestHandler(function(data, user)
 	local entity = Ext.Entity.Get(data.target) --[[@as EntityHandle]]
 	return { Result = entity.Data and entity.Data.StatsId }
@@ -67,7 +71,7 @@ local function populatePassives(response, entity)
 					passiveTable[key] = {
 						Passive = {
 							Disabled = passiveInfo.Disabled,
-							Source = passiveInfo.Source and passiveInfo.Source.StatusID.ID,
+							Source = passiveInfo.Source and passiveInfo.Source.StatusID and passiveInfo.Source.StatusID.ID,
 							ToggledOn = passiveInfo.ToggledOn,
 							Type = passiveInfo.Type,
 							ItemEntity = passiveInfo.Item and passiveInfo.Item.Uuid.EntityUuid,

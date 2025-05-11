@@ -15,9 +15,11 @@ Main = {
 	typeToPopulate = "template"
 }
 
+
 Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 	--- @param tabHeader ExtuiTreeParent
 	function(tabHeader)
+		
 		Main.parent = tabHeader
 
 		---@type ExtuiProgressBar
@@ -30,6 +32,7 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 
 		-- local row = Main.displayTable:AddRow()
 
+		EntityRecorder:BuildButton(tabHeader)
 		local tabs = tabHeader:AddTabBar("Main Tabs")
 
 		local templateTab = tabs:AddTabItem("Templates")
@@ -70,14 +73,16 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 			Helpers:ForceGarbageCollection("swapping to viewing " .. Main.typeToPopulate)
 
 			local function doIt(func, secondFunc)
-				local percentageComplete = func()
-				if percentageComplete then
-					Main.progressBar.Value = percentageComplete
-					Ext.Timer.WaitFor(1, function()
-						doIt(func, secondFunc)
-					end)
-				elseif secondFunc then
-					doIt(secondFunc)
+				if func then
+					local percentageComplete = func()
+					if percentageComplete then
+						Main.progressBar.Value = percentageComplete
+						Ext.Timer.WaitFor(1, function()
+							doIt(func, secondFunc)
+						end)
+					elseif secondFunc then
+						doIt(secondFunc)
+					end
 				end
 			end
 			doIt(Main.buildOutTree())
@@ -100,65 +105,46 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 local hasBeenActivated = false
 
 local function initiateScan()
-	hasBeenActivated = true
-	Main.progressBar.Visible = true
+	if not hasBeenActivated and Main.progressBar then
+		hasBeenActivated = true
+		Main.progressBar.Visible = true
 
-	local function doIt(...)
-		local funcs = { ... }
-		local currentFunc = table.remove(funcs, 1)
+		local function doIt(...)
+			local funcs = { ... }
+			local currentFunc = table.remove(funcs, 1)
 
-		if currentFunc then
-			local percentageComplete = currentFunc()
-			if percentageComplete then
-				Main.progressBar.Value = percentageComplete
-				Ext.Timer.WaitFor(1, function()
-					doIt(currentFunc, table.unpack(funcs))
-				end)
-			else
-				doIt(table.unpack(funcs))
-			end
-		else
-			for i, entity in pairs(CharacterIndex.entities.entities) do
-				Channels.IsEntityAlive:RequestToServer({ target = entity }, function(data)
-					if not data.Result then
-						CharacterIndex.entities.entities[i] = nil
-					end
-				end)
+			if currentFunc then
+				local percentageComplete = currentFunc()
+				if percentageComplete then
+					Main.progressBar.Value = percentageComplete
+					Ext.Timer.WaitFor(1, function()
+						doIt(currentFunc, table.unpack(funcs))
+					end)
+				else
+					doIt(table.unpack(funcs))
+				end
 			end
 		end
-	end
 
-	doIt(CharacterIndex:hydrateTemplateIndex(), CharacterIndex:hydrateEntityIndex(), Main.buildOutTree())
+		doIt(CharacterIndex:hydrateTemplateIndex(), Main.buildOutTree())
+	end
 end
 
-local sessionLoaded
-local menuActivated
+Ext.Events.SessionLoaded:Subscribe(function(e)
+	Logger:BasicDebug("Session loaded after tab activated")
+	initiateScan()
+end, { Once = true })
 
-Ext.Events.SessionLoaded:Subscribe(function (e)
-	sessionLoaded = true
-	if menuActivated then
-		Logger:BasicDebug("Session loaded after tab activated")
-		initiateScan()
-	end
-end, {Once = true})
-
-Ext.Events.ResetCompleted:Subscribe(function (e)
-	sessionLoaded = true
-	if menuActivated then
-		Logger:BasicDebug("Session loaded after tab activated")
-		initiateScan()
-	end
+Ext.Events.ResetCompleted:Subscribe(function(e)
+	Logger:BasicDebug("Session loaded after tab activated")
+	initiateScan()
 end)
 
 Ext.ModEvents.BG3MCM["MCM_Mod_Tab_Activated"]:Subscribe(function(payload)
 	if not hasBeenActivated then
 		if ModuleUUID == payload.modUUID then
-			if not sessionLoaded then
-				menuActivated = true
-			else
-				Logger:BasicDebug("Tab activated after session loaded")
-				initiateScan()
-			end
+			Logger:BasicDebug("Tab activated after session loaded")
+			initiateScan()
 		end
 	end
 end)
@@ -172,7 +158,7 @@ function Main.buildOutTree()
 
 	selectedSelectable = nil
 
-	local universalSelection = self.selectionTreeCell:AddTree(self.typeToPopulate == "template" and "Acts" or "Entities")
+	local universalSelection = self.selectionTreeCell:AddTree(self.typeToPopulate == "template" and "Acts" or "Levels")
 	universalSelection.NoAutoOpenOnLog = true
 
 	---@param parent ExtuiTree
@@ -196,8 +182,6 @@ function Main.buildOutTree()
 			Helpers:ForceGarbageCollection("viewing new entity/template")
 
 			CharacterWindow:BuildWindow(self.configCell, selectable.UserData)
-			self.configCell.ResizeY = true
-			self.configCell:SetScroll({ 0, 0 })
 		end
 	end
 
@@ -234,17 +218,14 @@ function Main.buildOutTree()
 				progressFunc()
 			end
 		end
-		if #parentTree.Children == 0 then
-			parentTree:Destroy()
-		end
 	end
 
 	local parentOption = self.templateGroupingCombo.Options[self.templateGroupingCombo.SelectedIndex + 1]
-	local index = self.typeToPopulate == "template" and CharacterIndex.templates or CharacterIndex.entities
+	local index = self.typeToPopulate == "template" and CharacterIndex.templates or EntityRecorder:GetEntities()
 
 	return coroutine.wrap(function()
 		self.progressBar.Value = 0
-		local maxCount = TableUtils:CountElements(index.acts or index.entities)
+		local maxCount = TableUtils:CountElements(index.acts or index)
 
 		local count = 0
 		local lastPercentage = 0
@@ -259,10 +240,24 @@ function Main.buildOutTree()
 		end
 
 		if self.typeToPopulate == "entities" then
-			for _, entityId in TableUtils:OrderedPairs(index.entities, function(key)
-				return CharacterIndex.displayNameMappings[index.entities[key]] or key
-			end) do
-				buildSelectable(universalSelection, entityId)
+			for levelName, _ in pairs(index) do
+				local levelTree = universalSelection:AddTree(levelName)
+				levelTree:SetOpen(false, "Always")
+
+				levelTree.OnExpand = function()
+					local entities = EntityRecorder:GetEntities()[levelName]
+					for entityId, record in TableUtils:OrderedPairs(entities, function(key)
+						return entities[key].Name
+					end) do
+						CharacterIndex.displayNameMappings[entityId] = record.Name
+						buildSelectable(levelTree, entityId)
+					end
+				end
+
+				levelTree.OnCollapse = function ()
+					Helpers:KillChildren(levelTree)
+					selectedSelectable = nil
+				end
 			end
 		else
 			if parentOption == "None" then

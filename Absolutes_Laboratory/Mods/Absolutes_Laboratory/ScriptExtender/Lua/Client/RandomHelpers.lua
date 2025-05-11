@@ -25,6 +25,11 @@ end
 function Helpers:KillChildren(...)
 	for _, parent in pairs({ ... }) do
 		for _, child in pairs(parent.Children) do
+			pcall(function (...)
+				if #child.Children > 0 then
+					self:KillChildren(table.unpack(child.Children))
+				end
+			end)
 			if child.UserData ~= "keep" then
 				child:Destroy()
 			end
