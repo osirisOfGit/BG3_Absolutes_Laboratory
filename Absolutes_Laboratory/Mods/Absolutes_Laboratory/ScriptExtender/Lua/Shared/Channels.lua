@@ -28,8 +28,4 @@ function NetChannel:RequestToClient(data, user, replyCallback) end
 ---@type {[string]: ExtenderNetChannel}
 Channels = {}
 
-Channels.GetEntityDump = Ext.Net.CreateChannel(ModuleUUID, "GetEntityDump")
-Channels.GetEntityIcon = Ext.Net.CreateChannel(ModuleUUID, "GetEntityIcon")
-Channels.IsEntityAlive = Ext.Net.CreateChannel(ModuleUUID, "IsEntityAlive")
-Channels.GetEntityStat = Ext.Net.CreateChannel(ModuleUUID, "GetEntityStat")
 Channels.TeleportToLevel = Ext.Net.CreateChannel(ModuleUUID, "TeleportToLevel")
