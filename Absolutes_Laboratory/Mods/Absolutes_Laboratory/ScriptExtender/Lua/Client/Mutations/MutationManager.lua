@@ -1,6 +1,6 @@
 MutationManager = {}
 
-Ext.Require("Client/Mutations/SelectorInterface.lua")
+Ext.Require("Client/Mutations/Selectors/SelectorInterface.lua")
 
 ---@type {[string]: SelectorInterface}
 MutationManager.selectors = {}

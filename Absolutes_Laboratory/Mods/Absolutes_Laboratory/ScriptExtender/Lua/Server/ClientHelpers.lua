@@ -148,7 +148,7 @@ Channels.GetEntityDump:SetRequestHandler(function(data, user)
 
 	if entity then
 		for componentName, field in pairs(entity:GetAllComponents()) do
-			if TableUtils:ListContains(fieldsToGet, componentName) then
+			if TableUtils:IndexOf(fieldsToGet, componentName) then
 				if componentName == "BoostsContainer" then
 					populateBoosts(response, entity)
 				elseif componentName == "PassiveContainer" then

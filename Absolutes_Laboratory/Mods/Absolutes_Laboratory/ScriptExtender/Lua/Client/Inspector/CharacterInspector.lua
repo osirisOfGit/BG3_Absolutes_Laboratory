@@ -207,7 +207,7 @@ function Main.buildOutTree()
 			for _, resourceTemplate in TableUtils:OrderedPairs(templates, function(key)
 				return CharacterIndex.displayNameMappings[templates[key]]
 			end) do
-				if not templateSuperSet or TableUtils:ListContains(templateSuperSet, resourceTemplate) then
+				if not templateSuperSet or TableUtils:IndexOf(templateSuperSet, resourceTemplate) then
 					buildSelectable(resourceSelection, resourceTemplate)
 				end
 			end

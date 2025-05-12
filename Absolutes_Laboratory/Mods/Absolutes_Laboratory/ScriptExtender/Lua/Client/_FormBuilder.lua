@@ -77,8 +77,8 @@ function FormBuilder:CreateForm(parent, onSubmitFunc, formInputs)
 			resultsView.NoSavedSettings = true
 			resultsView.Visible = false
 			formInput.input.OnChange = function()
-				local contains, key = TableUtils:ListContains(keyToDisplayMap, formInput.input.Text)
-				formInput.input.UserData = (contains and key or formInput.input.Text) == formInput.input.UserData
+				local displayKey = TableUtils:IndexOf(keyToDisplayMap, formInput.input.Text)
+				formInput.input.UserData = (displayKey or formInput.input.Text) == formInput.input.UserData
 					and formInput.input.UserData
 					or nil
 
