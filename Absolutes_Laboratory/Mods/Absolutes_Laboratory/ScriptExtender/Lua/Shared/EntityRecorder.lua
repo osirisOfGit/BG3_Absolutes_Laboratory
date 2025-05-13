@@ -233,7 +233,6 @@ else
 				Tracker = recorderTracker
 			})
 			recorderTracker = nil
-			Helpers:ForceGarbageCollection("Post Entity Recording")
 		end
 	end
 end

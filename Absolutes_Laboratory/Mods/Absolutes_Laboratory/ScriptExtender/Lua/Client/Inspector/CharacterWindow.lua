@@ -34,13 +34,11 @@ function CharacterWindow:BuildWindow(parent, id)
 		local templateTab = tabBar:AddTabItem("Template")
 		entityTab.OnActivate = function()
 			Helpers:KillChildren(statTab, templateTab)
-			Helpers:ForceGarbageCollection("swapping to entity view for " .. CharacterIndex.displayNameMappings[id])
 			EntityManager:RenderDisplayWindow(entity, entityTab)
 		end
 
 		statTab.OnActivate = function()
 			Helpers:KillChildren(entityTab, templateTab)
-			Helpers:ForceGarbageCollection("swapping to stat view for " .. CharacterIndex.displayNameMappings[id])
 
 			Channels.GetEntityStat:RequestToServer({ target = id }, function(data)
 				if data.Result then
@@ -54,8 +52,7 @@ function CharacterWindow:BuildWindow(parent, id)
 
 		templateTab.OnActivate = function()
 			Helpers:KillChildren(statTab, entityTab)
-			Helpers:ForceGarbageCollection("swapping to template view for " .. CharacterIndex.displayNameMappings[id])
-
+			
 			local template = entity.ClientCharacter.Template
 			if template then
 				ResourceManager:RenderDisplayWindow(template, templateTab)

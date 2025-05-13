@@ -25,11 +25,6 @@ end
 function Helpers:KillChildren(...)
 	for _, parent in pairs({ ... }) do
 		for _, child in pairs(parent.Children) do
-			pcall(function (...)
-				if #child.Children > 0 then
-					self:KillChildren(table.unpack(child.Children))
-				end
-			end)
 			if child.UserData ~= "keep" then
 				child:Destroy()
 			end
@@ -45,13 +40,6 @@ function Helpers:ClearEmptyTablesInProxyTree(proxyTable)
 			Helpers:ClearEmptyTablesInProxyTree(parentTable)
 		end
 	end
-end
-
-function Helpers:ForceGarbageCollection(checkpoint)
-	-- local memory = collectgarbage("count")
-	-- collectgarbage("collect")
-	-- local newMemory = collectgarbage("count")
-	-- Logger:BasicDebug("Collected %s Kb of memory (%s%%) after %s", memory - newMemory, (newMemory / memory) * 100, checkpoint)
 end
 
 function Helpers:BuildModString(modId)
