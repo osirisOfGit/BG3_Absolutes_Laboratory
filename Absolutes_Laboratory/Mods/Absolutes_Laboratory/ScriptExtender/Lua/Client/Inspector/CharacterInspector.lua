@@ -19,7 +19,6 @@ Main = {
 Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 	--- @param tabHeader ExtuiTreeParent
 	function(tabHeader)
-		
 		Main.parent = tabHeader
 
 		---@type ExtuiProgressBar
@@ -36,7 +35,6 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 		local tabs = tabHeader:AddTabBar("Main Tabs")
 
 		local templateTab = tabs:AddTabItem("Templates")
-		templateTab:Activate()
 
 		local entityTab = tabs:AddTabItem("Entities")
 
@@ -103,7 +101,7 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 local hasBeenActivated = false
 
 local function initiateScan()
-	if not hasBeenActivated and Main.progressBar then
+	if not hasBeenActivated then
 		hasBeenActivated = true
 		Main.progressBar.Visible = true
 
@@ -127,23 +125,15 @@ local function initiateScan()
 		doIt(CharacterIndex:hydrateTemplateIndex(), Main.buildOutTree())
 	end
 end
-
-Ext.Events.SessionLoaded:Subscribe(function(e)
-	Logger:BasicDebug("Session loaded after tab activated")
-	initiateScan()
-end, { Once = true })
-
 Ext.Events.ResetCompleted:Subscribe(function(e)
 	Logger:BasicDebug("Session loaded after tab activated")
 	initiateScan()
 end)
 
 Ext.ModEvents.BG3MCM["MCM_Mod_Tab_Activated"]:Subscribe(function(payload)
-	if not hasBeenActivated then
-		if ModuleUUID == payload.modUUID then
-			Logger:BasicDebug("Tab activated after session loaded")
-			initiateScan()
-		end
+	if ModuleUUID == payload.modUUID then
+		Logger:BasicDebug("Tab activated after session loaded")
+		initiateScan()
 	end
 end)
 
@@ -250,7 +240,7 @@ function Main.buildOutTree()
 					end
 				end
 
-				levelTree.OnCollapse = function ()
+				levelTree.OnCollapse = function()
 					Helpers:KillChildren(levelTree)
 					selectedSelectable = nil
 				end

@@ -1,5 +1,5 @@
 {
-    "RequiredVersion": 23,
+    "RequiredVersion": 25,
     "ModTable": "Absolutes_Laboratory",
     "FeatureFlags": ["Lua"]
 }
