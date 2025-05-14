@@ -195,3 +195,15 @@ function TableUtils:CountElements(tbl)
 	end
 	return count
 end
+
+--- Converts all stringified number indexes in a table to their numerical equivalents
+---@param tbl table
+function TableUtils:ConvertStringifiedNumberIndexes(tbl)
+	for key, value in TableUtils:OrderedPairs(tbl) do
+		local numericKey = tonumber(key)
+		if numericKey then
+			tbl[key] = nil
+			tbl[numericKey] = value
+		end
+	end
+end

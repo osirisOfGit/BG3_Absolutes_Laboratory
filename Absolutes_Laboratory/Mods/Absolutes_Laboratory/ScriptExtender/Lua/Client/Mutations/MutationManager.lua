@@ -25,6 +25,8 @@ function MutationManager:RenderMutationManager(parent, existingMutation)
 	local row = managerTable:AddRow()
 
 	local selectorColumn = row:AddCell()
+	Styler:CheapTextAlign("Selectors", selectorColumn, "Big").UserData = "keep"
+
 	self:RenderSelectors(selectorColumn, existingMutation.selectors)
 
 	local mutationColumn = row:AddCell()
@@ -33,13 +35,10 @@ end
 ---@param parent ExtuiTreeParent
 ---@param existingSelector SelectorQuery
 function MutationManager:RenderSelectors(parent, existingSelector)
-	Helpers:KillChildren(parent)
-
 	local selectorQueryTable = parent:AddTable("selectorQuery", 2)
 	selectorQueryTable:AddColumn("", "WidthFixed")
 	selectorQueryTable:AddColumn("", "WidthStretch")
-	selectorQueryTable.BordersInnerH = true
-	selectorQueryTable.BordersInnerV = true
+	selectorQueryTable.Borders = true
 
 	for i, selectorEntry in TableUtils:OrderedPairs(existingSelector) do
 		local row = selectorQueryTable:AddRow()
@@ -48,32 +47,52 @@ function MutationManager:RenderSelectors(parent, existingSelector)
 		local entryCell = row:AddCell()
 
 		local choiceCombo = entrySwapperCell:AddCombo("")
-		choiceCombo.Options = { "And/Or", "Selector" }
-		choiceCombo.SelectedIndex = type(selectorEntry) == "string" and 0 or 1
+		choiceCombo.Options = { "Selector", i > 1 and "And/Or" or nil }
+		choiceCombo.SelectedIndex = type(selectorEntry) == "string" and 1 or 0
 
 		choiceCombo.OnChange = function()
-			if choiceCombo.SelectedIndex == 0 then
+			existingSelector[i] = nil
+			if choiceCombo.SelectedIndex == 1 then
 				existingSelector[i] = "AND"
 			else
 				existingSelector[i] = TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.selector)
 			end
+			Helpers:KillChildren(parent)
 			self:RenderSelectors(parent, existingSelector)
 		end
 
 		local deleteButton = entrySwapperCell:AddButton("Delete")
 		deleteButton.SameLine = true
-		deleteButton.OnClick = function ()
-			table.remove(existingSelector, i)
+		deleteButton.OnClick = function()
+			local nonproxyCopy = {}
+			-- Pairs returns the non-proxy version of the configuration structure, but ipairs don't, so we do this nonsense to not
+			-- insert the proxy tabls into the non-proxy backend
+			for n, v in pairs(existingSelector) do
+				nonproxyCopy[n] = v
+			end
+			table.remove(nonproxyCopy, i)
+			if type(nonproxyCopy[1]) == "string" then
+				table.remove(nonproxyCopy, 1)
+			end
+
+			for x in ipairs(existingSelector) do
+					existingSelector[x] = nil
+					existingSelector[x] = nonproxyCopy[x]
+			end
+			existingSelector[#existingSelector] = nil
+
+			Helpers:KillChildren(parent)
 			self:RenderSelectors(parent, existingSelector)
 		end
 
-		if choiceCombo.SelectedIndex == 0 then
+		if choiceCombo.SelectedIndex == 1 then
 			local grouperCombo = entryCell:AddCombo("")
 			grouperCombo.Options = { "AND", "OR" }
 			grouperCombo.SelectedIndex = selectorEntry == "AND" and 0 or 1
 			grouperCombo.WidthFitPreview = true
 
 			grouperCombo.OnChange = function()
+				existingSelector[i] = nil
 				existingSelector[i] = grouperCombo.Options[grouperCombo.SelectedIndex + 1]
 			end
 		else
@@ -87,31 +106,31 @@ function MutationManager:RenderSelectors(parent, existingSelector)
 			selectorCombo.SelectedIndex = selectorEntry.criteriaCategory and (TableUtils:IndexOf(opts, selectorEntry.criteriaCategory) - 1) or -1
 
 			local selectorGroup = entryCell:AddGroup("selector")
+			selectorGroup.SameLine = true
 
 			selectorCombo.OnChange = function()
 				Helpers:KillChildren(selectorGroup)
-				existingSelector[i] = TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.selector)
+				selectorEntry.criteriaValue = nil
 
-				existingSelector[i].criteriaCategory = selectorCombo.Options[selectorCombo.SelectedIndex + 1]
-				self.selectors[selectorCombo.Options[selectorCombo.SelectedIndex + 1]]:renderSelector(selectorGroup, existingSelector[i], function(selector)
-					existingSelector[i] = selector
-				end)
+				selectorEntry.criteriaCategory = selectorCombo.Options[selectorCombo.SelectedIndex + 1]
+				self.selectors[selectorEntry.criteriaCategory]:renderSelector(selectorGroup, selectorEntry)
+				self:RenderSelectors(selectorGroup:AddGroup("SubSelectors"), selectorEntry.subSelectors)
 			end
 
 			if selectorEntry.criteriaCategory then
-				self.selectors[selectorEntry.criteriaCategory]:renderSelector(selectorGroup, selectorEntry, function(selector)
-					existingSelector[i] = selector
-				end)
-
-				self:RenderSelectors(selectorGroup, selectorEntry.subSelectors)
+				self.selectors[selectorEntry.criteriaCategory]:renderSelector(selectorGroup, selectorEntry)
+				self:RenderSelectors(selectorGroup:AddGroup("SubSelectors"), selectorEntry.subSelectors)
 			end
 		end
 	end
 
-	Styler:MiddleAlignedColumnLayout(parent, function (ele)
+	Styler:MiddleAlignedColumnLayout(parent, function(ele)
 		local addNewEntryButton = ele:AddButton("Add New Entry")
-		addNewEntryButton.OnClick = function ()
-			table.insert(existingSelector, "AND")
+		addNewEntryButton.OnClick = function()
+			table.insert(existingSelector,
+				(#existingSelector <= 1 or type(existingSelector[#existingSelector]) == "string") and
+				TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.selector) or "AND")
+			Helpers:KillChildren(parent)
 			self:RenderSelectors(parent, existingSelector)
 		end
 	end)

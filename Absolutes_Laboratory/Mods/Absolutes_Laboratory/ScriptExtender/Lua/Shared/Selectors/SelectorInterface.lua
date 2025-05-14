@@ -23,8 +23,7 @@ end
 
 ---@param parent ExtuiTreeParent
 ---@param existingSelector Selector?
----@param onChangeFunc fun(selector: Selector)
-function SelectorInterface:renderSelector(parent, existingSelector, onChangeFunc) end
+function SelectorInterface:renderSelector(parent, existingSelector) end
 
 ---@param selector Selector
 ---@return fun(entity: EntityRecord): boolean

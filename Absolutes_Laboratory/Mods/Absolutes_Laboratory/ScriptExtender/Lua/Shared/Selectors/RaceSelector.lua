@@ -83,8 +83,7 @@ end
 
 ---@param parent ExtuiTreeParent
 ---@param existingSelector RaceSelector?
----@param onChangeFunc fun(selector: RaceSelector)
-function RaceSelector:renderSelector(parent, existingSelector, onChangeFunc)
+function RaceSelector:renderSelector(parent, existingSelector)
 	---@type RaceSelector
 	local selector = existingSelector
 	selector.criteriaValue = selector.criteriaValue or {}
@@ -102,7 +101,7 @@ function RaceSelector:renderSelector(parent, existingSelector, onChangeFunc)
 	subRaceCombo.IDContext = "subRace"
 	subRaceCombo.WidthFitPreview = true
 	subRaceCombo.Options = buildSubraceOpts(racesWithSubraces[selector.criteriaValue and selector.criteriaValue["RaceId"]])
-	subRaceCombo.SelectedIndex = selector.criteriaValue["SubRaceId"] and (TableUtils:IndexOf(subRaceOpts, translationMap[selector.criteriaValue["SubRaceId"]]) - 1) or 0
+	subRaceCombo.SelectedIndex = selector.criteriaValue["SubRaceId"] and ((TableUtils:IndexOf(subRaceCombo.Options, translationMap[selector.criteriaValue["SubRaceId"]]) or 1) - 1) or 0
 	subRaceCombo.Visible = raceCombo.SelectedIndex > 0 and #subRaceCombo.Options > 1
 
 	raceCombo.OnChange = function()
@@ -118,18 +117,13 @@ function RaceSelector:renderSelector(parent, existingSelector, onChangeFunc)
 			subRaceCombo.Options = {}
 			subRaceCombo.Visible = false
 		end
-		onChangeFunc(selector)
 	end
 
 	subRaceCombo.OnChange = function()
 		if subRaceCombo.SelectedIndex > 0 then
 			selector.criteriaValue["SubRaceId"] = translationMap[subRaceCombo.Options[subRaceCombo.SelectedIndex + 1]]
-
-			onChangeFunc(selector)
 		else
 			selector.criteriaValue["SubRaceId"] = nil
-
-			onChangeFunc(selector)
 		end
 	end
 end
