@@ -1,10 +1,11 @@
 RaceSelector = SelectorInterface:new("Race")
 
----@alias RaceId string
----@alias SubRaceId string
+---@class RaceCriteria
+---@field RaceId string
+---@field SubRaceIds string[]
 
 ---@class RaceSelector : Selector
----@field criteriaValue {["RaceId"|"SubRaceId"]: RaceId|SubRaceId}
+---@field criteriaValue RaceCriteria
 
 ---@type {[string]: string[]}
 local racesWithSubraces = {}
@@ -65,18 +66,43 @@ local function initialize()
 	end
 end
 
-local function buildSubraceOpts(subRaces)
-	local newSubraceOpts = {"ALL"}
+---@param subRaces string[]
+---@param parent ExtuiTable
+---@param selectedSubRaces string[]
+local function buildSubraceOpts(subRaces, parent, selectedSubRaces)
+	Helpers:KillChildren(parent)
 
+	local columnIndex = 0
 	if subRaces then
-		for _, subRace in ipairs(subRaceOpts) do
-			if TableUtils:IndexOf(subRaces, translationMap[subRace]) then
-				table.insert(newSubraceOpts, subRace)
+		local row = parent:AddRow()
+		local cells = {row:AddCell(), row:AddCell(), row:AddCell()}
+
+		local selectAll = not selectedSubRaces()
+		for _, subRace in TableUtils:OrderedPairs(subRaces, function (key)
+			return translationMap[subRaces[key]]
+		end) do
+			columnIndex = columnIndex + 1
+
+			parent = cells[columnIndex % 3] or cells[3]
+
+			local select = parent:AddCheckbox(translationMap[subRace])
+
+			if selectAll then
+				select.Checked = true
+				table.insert(selectedSubRaces, subRace)
+			else
+				select.Checked = TableUtils:IndexOf(selectedSubRaces, subRace) ~= nil
+			end
+
+			select.OnChange = function ()
+				if select.Checked then
+					table.insert(selectedSubRaces, subRace)
+				else
+					selectedSubRaces[TableUtils:IndexOf(selectedSubRaces, subRace)] = nil
+				end
 			end
 		end
 	end
-
-	return newSubraceOpts
 end
 
 ---@param parent ExtuiTreeParent
@@ -84,7 +110,10 @@ end
 function RaceSelector:renderSelector(parent, existingSelector)
 	---@type RaceSelector
 	local selector = existingSelector
-	selector.criteriaValue = selector.criteriaValue or {}
+	selector.criteriaValue = selector.criteriaValue or {
+		["RaceId"] = nil,
+		["SubRaceIds"] = {}
+	} --[[@as RaceCriteria]]
 
 	initialize()
 
@@ -92,36 +121,23 @@ function RaceSelector:renderSelector(parent, existingSelector)
 	raceCombo.IDContext = "race"
 	raceCombo.WidthFitPreview = true
 	raceCombo.Options = raceOpts
-	raceCombo.SelectedIndex = selector.criteriaValue["RaceId"] and (TableUtils:IndexOf(raceOpts, translationMap[selector.criteriaValue["RaceId"]]) - 1) or 0
+	raceCombo.SelectedIndex = selector.criteriaValue.RaceId and (TableUtils:IndexOf(raceOpts, translationMap[selector.criteriaValue.RaceId]) - 1) or 0
 
-	local subRaceCombo = parent:AddCombo("")
-	subRaceCombo.SameLine = true
-	subRaceCombo.IDContext = "subRace"
-	subRaceCombo.WidthFitPreview = true
-	subRaceCombo.Options = buildSubraceOpts(racesWithSubraces[selector.criteriaValue and selector.criteriaValue["RaceId"]])
-	subRaceCombo.SelectedIndex = selector.criteriaValue["SubRaceId"] and ((TableUtils:IndexOf(subRaceCombo.Options, translationMap[selector.criteriaValue["SubRaceId"]]) or 1) - 1) or 0
-	subRaceCombo.Visible = raceCombo.SelectedIndex > 0 and #subRaceCombo.Options > 1
+	local subRaceGroup = parent:AddTable("SubRaces", 3)
+	subRaceGroup.SizingFixedFit = true
+	buildSubraceOpts(racesWithSubraces[selector.criteriaValue.RaceId], subRaceGroup, selector.criteriaValue.SubRaceIds)
 
 	raceCombo.OnChange = function()
 		if raceCombo.SelectedIndex > 0 then
-			selector.criteriaValue["RaceId"] = translationMap[raceOpts[raceCombo.SelectedIndex + 1]]
+			selector.criteriaValue.RaceId = translationMap[raceOpts[raceCombo.SelectedIndex + 1]]
 
-			subRaceCombo.Options = buildSubraceOpts(racesWithSubraces[selector.criteriaValue["RaceId"]])
-			subRaceCombo.Visible = #subRaceCombo.Options > 1
-			subRaceCombo.SelectedIndex = 0
+			selector.criteriaValue.SubRaceIds = nil
+			selector.criteriaValue.SubRaceIds = {}
+			buildSubraceOpts(racesWithSubraces[selector.criteriaValue.RaceId],subRaceGroup, selector.criteriaValue.SubRaceIds)
 		else
-			selector.criteriaValue["RaceId"] = nil
-			selector.criteriaValue["SubRaceId"] = nil
-			subRaceCombo.Options = {}
-			subRaceCombo.Visible = false
-		end
-	end
-
-	subRaceCombo.OnChange = function()
-		if subRaceCombo.SelectedIndex > 0 then
-			selector.criteriaValue["SubRaceId"] = translationMap[subRaceCombo.Options[subRaceCombo.SelectedIndex + 1]]
-		else
-			selector.criteriaValue["SubRaceId"] = nil
+			selector.criteriaValue.RaceId = nil
+			selector.criteriaValue.SubRaceIds = nil
+			selector.criteriaValue.SubRaceIds = {}
 		end
 	end
 end
