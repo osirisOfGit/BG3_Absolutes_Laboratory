@@ -47,7 +47,7 @@ function MutationManager:RenderSelectors(parent, existingSelector)
 		local entryCell = row:AddCell()
 
 		local choiceCombo = entrySwapperCell:AddCombo("")
-		choiceCombo.Options = { "Selector", i > 1 and "And/Or" or nil }
+		choiceCombo.Options = { "Selector", (i > 1 and type(existingSelector[i -1]) ~= "string") and "And/Or" or nil }
 		choiceCombo.SelectedIndex = type(selectorEntry) == "string" and 1 or 0
 
 		choiceCombo.OnChange = function()

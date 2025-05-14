@@ -61,14 +61,12 @@ local function initialize()
 		end
 
 		table.sort(raceOpts)
-		table.insert(raceOpts, 1, "N/A")
 		table.sort(subRaceOpts)
-		table.insert(subRaceOpts, 1, "N/A")
 	end
 end
 
 local function buildSubraceOpts(subRaces)
-	local newSubraceOpts = {"N/A"}
+	local newSubraceOpts = {"ALL"}
 
 	if subRaces then
 		for _, subRace in ipairs(subRaceOpts) do
