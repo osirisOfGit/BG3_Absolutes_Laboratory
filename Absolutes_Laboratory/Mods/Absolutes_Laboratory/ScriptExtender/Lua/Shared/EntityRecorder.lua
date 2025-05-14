@@ -162,7 +162,7 @@ else
 		local recorderTracker = FileUtils:LoadTableFile(EntityRecorder.trackerFilename)
 
 		if next(recorderTracker) then
-			for l, levelName in ipairs(self.Levels) do
+			for _, levelName in ipairs(self.Levels) do
 				if type(recorderTracker[levelName]) == "string" then
 					if level ~= levelName then
 						Osi.TeleportPartiesToLevelWithMovie(levelName, "", "")
@@ -178,9 +178,11 @@ else
 						})
 
 						for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-							if Osi.IsDead(entity.Uuid.EntityUuid) == 0 and not TableUtils:ListContains(recordedLevels, function(value)
+							if Osi.IsDead(entity.Uuid.EntityUuid) == 0
+								and not TableUtils:ListContains(recordedLevels, function(value)
 									return value[entity.Uuid.EntityUuid]
-								end) then
+								end)
+							then
 								recordedEntities[entity.Uuid.EntityUuid] = {}
 								local entityRecord = recordedEntities[entity.Uuid.EntityUuid]
 
@@ -221,7 +223,6 @@ else
 				Tracker = recorderTracker
 			})
 			recorderTracker = nil
-			Helpers:ForceGarbageCollection("Post Entity Recording")
 		end
 	end
 end

@@ -70,8 +70,6 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 			Helpers:KillChildren(Main.selectionTreeCell)
 			Helpers:KillChildren(Main.configCell)
 
-			Helpers:ForceGarbageCollection("swapping to viewing " .. Main.typeToPopulate)
-
 			local function doIt(func, secondFunc)
 				if func then
 					local percentageComplete = func()
@@ -178,8 +176,6 @@ function Main.buildOutTree()
 			selectedSelectable = selectable
 
 			Helpers:KillChildren(self.configCell)
-
-			Helpers:ForceGarbageCollection("viewing new entity/template")
 
 			CharacterWindow:BuildWindow(self.configCell, selectable.UserData)
 		end

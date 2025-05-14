@@ -172,7 +172,6 @@ function Styler:HyperlinkText(parent, text, tooltipCallback)
 	fakeTextSelectable.OnHoverEnter = function()
 		if tooltip then
 			Helpers:KillChildren(tooltip)
-			Helpers:ForceGarbageCollection("Destroyed Tooltip (in hover enter) for " .. text)
 		end
 		if not window then
 			tooltip = fakeTextSelectable:Tooltip()
@@ -186,7 +185,6 @@ function Styler:HyperlinkText(parent, text, tooltipCallback)
 	fakeTextSelectable.OnHoverLeave = function()
 		if tooltip then
 			Helpers:KillChildren(tooltip)
-			Helpers:ForceGarbageCollection("Destroyed Tooltip for " .. text)
 		end
 	end
 
@@ -201,7 +199,6 @@ function Styler:HyperlinkText(parent, text, tooltipCallback)
 		window.OnClose = function ()
 			window:Destroy()
 			window = nil
-			Helpers:ForceGarbageCollection("Destroyed tooltip window for " .. text)
 		end
 
 		tooltipCallback(window)
