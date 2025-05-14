@@ -66,7 +66,9 @@ function MutationMain:BuildUserFolders()
 			FormBuilder:CreateForm(self.formBuilderWindow, function(formResults)
 					folder.mutations[formResults.Name] = {
 						description = formResults.Description,
-					}
+						selectors = {},
+						mutators = {}
+					} --[[@as Mutation]]
 
 					self.formBuilderWindow.Open = false
 					self:BuildUserFolders()
@@ -134,4 +136,6 @@ function MutationMain:BuildMutationDesigner(name, mutation)
 		Styler:CheapTextAlign(name, ele)
 		ele:AddText(mutation.description):SetStyle("Alpha", 0.75)
 	end)
+
+	MutationManager:RenderMutationManager(self.mutationParent, mutation)
 end

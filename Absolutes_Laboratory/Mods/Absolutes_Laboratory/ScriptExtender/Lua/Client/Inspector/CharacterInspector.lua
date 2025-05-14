@@ -101,7 +101,7 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 local hasBeenActivated = false
 
 local function initiateScan()
-	if not hasBeenActivated then
+	if not hasBeenActivated and Main.progressBar then
 		hasBeenActivated = true
 		Main.progressBar.Visible = true
 

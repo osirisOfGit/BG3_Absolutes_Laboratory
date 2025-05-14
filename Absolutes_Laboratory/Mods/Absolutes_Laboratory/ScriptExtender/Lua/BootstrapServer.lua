@@ -9,3 +9,5 @@ Ext.Require("Shared/EntityRecorder.lua")
 Ext.Require("Server/ClientHelpers.lua")
 
 Ext.Require("Shared/Configurations/_ConfigurationStructure.lua")
+
+Ext.Require("Shared/Selectors/SelectorInterface.lua")

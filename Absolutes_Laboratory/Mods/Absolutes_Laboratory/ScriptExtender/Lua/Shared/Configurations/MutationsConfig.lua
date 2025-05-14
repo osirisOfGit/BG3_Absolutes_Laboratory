@@ -5,7 +5,7 @@ ConfigurationStructure.config.mutations = {}
 ---@class Selector
 ConfigurationStructure.DynamicClassDefinitions.selector = {
 	inclusive = true,
-	criteriaCategory = "",
+	criteriaCategory = nil,
 	criteriaValue = nil,
 	---@type SelectorQuery
 	subSelectors = {}
@@ -13,7 +13,7 @@ ConfigurationStructure.DynamicClassDefinitions.selector = {
 
 ---@alias SelectorGrouper "AND"|"OR"
 
----@alias SelectorQuery {[SelectorGrouper] : Selector}
+---@alias SelectorQuery (SelectorGrouper|Selector)[]
 
 --#endregion
 
