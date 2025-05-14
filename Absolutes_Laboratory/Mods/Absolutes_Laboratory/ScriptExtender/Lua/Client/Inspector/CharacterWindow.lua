@@ -53,7 +53,7 @@ function CharacterWindow:BuildWindow(parent, id)
 
 		templateTab.OnActivate = function()
 			Helpers:KillChildren(statTab, entityTab)
-			
+
 			local template = entity.ClientCharacter.Template
 			if template then
 				ResourceManager:RenderDisplayWindow(template, templateTab)
@@ -62,28 +62,35 @@ function CharacterWindow:BuildWindow(parent, id)
 
 		entityTab:Activate()
 		return
-	elseif EntityRecorder:GetLevelForEntity(id) then
-		if not Ext.Template.GetRootTemplate(id) then
-			Styler:CheapTextAlign(CharacterIndex.displayNameMappings[id], displayCell, "Big")
-		end
-		Styler:MiddleAlignedColumnLayout(displayCell, function(ele)
-			ele:AddButton("Teleport To Level").OnClick = function()
-				Channels.TeleportToLevel:SendToServer({
-					LevelName = EntityRecorder:GetLevelForEntity(id),
-					Id = id
-				})
-
-				local sub
-				sub = Ext.Events.GameStateChanged:Subscribe(function(e)
-					---@cast e EclLuaGameStateChangedEvent
-					if e.ToState == "Running" then
-						Ext.Events.GameStateChanged:Unsubscribe(sub)
-						Helpers:KillChildren(group)
-						self:BuildWindow(parent, id)
-					end
+	else
+		local entityLevel = EntityRecorder:GetLevelForEntity(id)
+		if entityLevel then
+			if not Ext.Template.GetRootTemplate(id) then
+				Styler:MiddleAlignedColumnLayout(displayCell, function(ele)
+					ele:AddImage(EntityRecorder:GetEntities()[entityLevel][id].Icon, { 128, 128 })
 				end)
+
+				Styler:CheapTextAlign(CharacterIndex.displayNameMappings[id], displayCell, "Big")
 			end
-		end)
+			Styler:MiddleAlignedColumnLayout(displayCell, function(ele)
+				ele:AddButton("Teleport To Level").OnClick = function()
+					Channels.TeleportToLevel:SendToServer({
+						LevelName = EntityRecorder:GetLevelForEntity(id),
+						Id = id
+					})
+
+					local sub
+					sub = Ext.Events.GameStateChanged:Subscribe(function(e)
+						---@cast e EclLuaGameStateChangedEvent
+						if e.ToState == "Running" then
+							Ext.Events.GameStateChanged:Unsubscribe(sub)
+							Helpers:KillChildren(group)
+							self:BuildWindow(parent, id)
+						end
+					end)
+				end
+			end)
+		end
 	end
 
 	---@type CharacterTemplate

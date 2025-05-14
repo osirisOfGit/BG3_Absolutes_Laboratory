@@ -37,6 +37,7 @@ EntityRecorder.Levels = {
 ---@field Tags TAG[]
 ---@field Stat string
 ---@field Abilities {[string]: number}
+---@field Icon string
 
 if Ext.IsClient() then
 	local recordedEntities = setmetatable({}, {
@@ -179,7 +180,7 @@ else
 
 						for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
 							if Osi.IsDead(entity.Uuid.EntityUuid) == 0
-								and not TableUtils:ListContains(recordedLevels, function(value)
+								and not TableUtils:IndexOf(recordedLevels, function(value)
 									return value[entity.Uuid.EntityUuid]
 								end)
 							then
@@ -190,6 +191,7 @@ else
 									or (entity.ServerCharacter.Template and entity.ServerCharacter.Template.DisplayName:Get())
 									or entity.Uuid.EntityUuid
 
+								entityRecord.Icon = entity.Icon.Icon
 								entityRecord.Race = entity.Race.Race
 								entityRecord.Faction = entity.Faction.field_8
 								entityRecord.Stat = entity.Data.StatsId
