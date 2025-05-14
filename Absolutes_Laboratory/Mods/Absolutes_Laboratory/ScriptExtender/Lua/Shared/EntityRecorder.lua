@@ -8,26 +8,24 @@ EntityRecorder.trackerFilename = "recorderTracker.json"
 
 -- Thanks Aahz
 EntityRecorder.Levels = {
-	[1] = "Global",     -- global level
-	[2] = "TUT_Avernus_C", -- nautiloid
-	[3] = "WLD_Main_A", -- beach, grove, goblin camp, underdark
-	[4] = "CRE_Main_A", -- mountain pass, creche
-	[5] = "SCL_Main_A", -- shadow cursed lands
-	[6] = "INT_Main_A", -- camp before baldur's gate
-	[7] = "BGO_Main_A", -- rivington, wyrm's crossing
-	[8] = "CTY_Main_A", -- lower city, sewers
-	[9] = "IRN_Main_A", -- iron throne
-	[10] = "END_Main",  -- morphic pool
-	Global = 1,
-	TUT_Avernus_C = 2,
-	WLD_Main_A = 3,
-	CRE_Main_A = 4,
-	SCL_Main_A = 5,
-	INT_Main_A = 6,
-	BGO_Main_A = 7,
-	CTY_Main_A = 8,
-	IRN_Main_A = 9,
-	END_Main = 10,
+	[1] = "TUT_Avernus_C", -- nautiloid
+	[2] = "WLD_Main_A", -- beach, grove, goblin camp, underdark
+	[3] = "CRE_Main_A", -- mountain pass, creche
+	[4] = "SCL_Main_A", -- shadow cursed lands
+	[5] = "INT_Main_A", -- camp before baldur's gate
+	[6] = "BGO_Main_A", -- rivington, wyrm's crossing
+	[7] = "CTY_Main_A", -- lower city, sewers
+	[8] = "IRN_Main_A", -- iron throne
+	[9] = "END_Main",   -- morphic pool
+	TUT_Avernus_C = 1,
+	WLD_Main_A = 2,
+	CRE_Main_A = 3,
+	SCL_Main_A = 4,
+	INT_Main_A = 5,
+	BGO_Main_A = 6,
+	CTY_Main_A = 7,
+	IRN_Main_A = 8,
+	END_Main = 9,
 }
 
 ---@class EntityRecord
@@ -45,7 +43,7 @@ if Ext.IsClient() then
 		__mode = "kv",
 		__pairs = function(t)
 			local cachedData = FileUtils:LoadTableFile(EntityRecorder.recorderFilename) or {}
-			return TableUtils:OrderedPairs(cachedData, function (key)
+			return TableUtils:OrderedPairs(cachedData, function(key)
 				return EntityRecorder.Levels[key]
 			end)
 		end,
@@ -166,7 +164,7 @@ else
 		if next(recorderTracker) then
 			for l, levelName in ipairs(self.Levels) do
 				if type(recorderTracker[levelName]) == "string" then
-					if level ~= levelName and levelName ~= "Global" then
+					if level ~= levelName then
 						Osi.TeleportPartiesToLevelWithMovie(levelName, "", "")
 						return
 					else
@@ -179,20 +177,10 @@ else
 							LevelName = levelName,
 						})
 
-						local entities = {}
-
-						if levelName == "Global" then
-							for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("IsGlobal")) do
-								if entity.ServerCharacter then
-									table.insert(entities, entity)
-								end
-							end
-						else
-							entities = Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")
-						end
-
-						for _, entity in ipairs(entities) do
-							if Osi.IsDead(entity.Uuid.EntityUuid) == 0 and (levelName == "Global" or not entity.IsGlobal) then
+						for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
+							if Osi.IsDead(entity.Uuid.EntityUuid) == 0 and not TableUtils:ListContains(recordedLevels, function(value)
+									return value[entity.Uuid.EntityUuid]
+								end) then
 								recordedEntities[entity.Uuid.EntityUuid] = {}
 								local entityRecord = recordedEntities[entity.Uuid.EntityUuid]
 

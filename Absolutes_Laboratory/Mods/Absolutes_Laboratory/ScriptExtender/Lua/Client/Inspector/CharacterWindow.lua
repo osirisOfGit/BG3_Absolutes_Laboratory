@@ -3,7 +3,8 @@ CharacterWindow = {}
 ---@param parent ExtuiTreeParent
 ---@param id string
 function CharacterWindow:BuildWindow(parent, id)
-	local displayTable = parent:AddTable("characterDisplayWindow", 3)
+	local group = parent:AddGroup("CharacterWindow")
+	local displayTable = group:AddTable("characterDisplayWindow", 3)
 	displayTable:AddColumn("", "WidthStretch")
 	displayTable:AddColumn("", "WidthFixed", 300)
 	displayTable:AddColumn("", "WidthStretch")
@@ -27,7 +28,7 @@ function CharacterWindow:BuildWindow(parent, id)
 
 		Styler:CheapTextAlign(CharacterIndex.displayNameMappings[id], displayCell, "Big")
 
-		local tabBar = parent:AddTabBar("Tabs")
+		local tabBar = group:AddTabBar("Tabs")
 
 		local entityTab = tabBar:AddTabItem("Entity")
 		local statTab = tabBar:AddTabItem("Stat")
@@ -63,41 +64,54 @@ function CharacterWindow:BuildWindow(parent, id)
 		end
 
 		entityTab:Activate()
+		return
 	elseif EntityRecorder:GetLevelForEntity(id) then
-		Styler:CheapTextAlign(CharacterIndex.displayNameMappings[id], displayCell, "Big")
+		if not Ext.Template.GetRootTemplate(id) then
+			Styler:CheapTextAlign(CharacterIndex.displayNameMappings[id], displayCell, "Big")
+		end
 		Styler:MiddleAlignedColumnLayout(displayCell, function(ele)
 			ele:AddButton("Teleport To Level").OnClick = function()
 				Channels.TeleportToLevel:SendToServer({
 					LevelName = EntityRecorder:GetLevelForEntity(id),
 					Id = id
 				})
+
+				local sub
+				sub = Ext.Events.GameStateChanged:Subscribe(function(e)
+					---@cast e EclLuaGameStateChangedEvent
+					if e.ToState == "Running" then
+						Ext.Events.GameStateChanged:Unsubscribe(sub)
+						Helpers:KillChildren(group)
+						self:BuildWindow(parent, id)
+					end
+				end)
 			end
 		end)
-	else
-		---@type CharacterTemplate
-		local characterTemplate = Ext.Template.GetRootTemplate(id)
+	end
 
-		if characterTemplate then
-			Styler:MiddleAlignedColumnLayout(displayCell, function(ele)
-				ele:AddImage(characterTemplate.Icon, { 128, 128 })
-			end)
+	---@type CharacterTemplate
+	local characterTemplate = Ext.Template.GetRootTemplate(id)
 
-			Styler:CheapTextAlign(CharacterIndex.displayNameMappings[id], displayCell, "Big")
-			Styler:CheapTextAlign(characterTemplate.LevelName, displayCell)
+	if characterTemplate then
+		Styler:MiddleAlignedColumnLayout(displayCell, function(ele)
+			ele:AddImage(characterTemplate.Icon, { 128, 128 })
+		end)
 
-			local tabBar = parent:AddTabBar("Tabs")
+		Styler:CheapTextAlign(CharacterIndex.displayNameMappings[id], displayCell, "Big")
+		Styler:CheapTextAlign(characterTemplate.LevelName, displayCell)
 
-			local templateTab = tabBar:AddTabItem("Template")
-			ResourceManager:RenderDisplayWindow(characterTemplate, templateTab)
+		local tabBar = group:AddTabBar("Tabs")
 
-			if characterTemplate.Stats and characterTemplate.Stats ~= "" then
-				local statTab = tabBar:AddTabItem("Stats")
-				---@type Character
-				local characterStat = Ext.Stats.Get(characterTemplate.Stats)
+		local templateTab = tabBar:AddTabItem("Template")
+		ResourceManager:RenderDisplayWindow(characterTemplate, templateTab)
 
-				if characterStat then
-					ResourceManager:RenderDisplayWindow(characterStat, statTab)
-				end
+		if characterTemplate.Stats and characterTemplate.Stats ~= "" then
+			local statTab = tabBar:AddTabItem("Stats")
+			---@type Character
+			local characterStat = Ext.Stats.Get(characterTemplate.Stats)
+
+			if characterStat then
+				ResourceManager:RenderDisplayWindow(characterStat, statTab)
 			end
 		end
 	end

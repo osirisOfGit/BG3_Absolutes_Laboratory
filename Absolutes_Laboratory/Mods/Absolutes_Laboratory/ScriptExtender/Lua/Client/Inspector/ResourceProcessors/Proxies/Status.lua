@@ -93,6 +93,7 @@ StatusDataProxy.fieldsToParse = {
 ResourceProxy:RegisterResourceProxy("StatusData", StatusDataProxy)
 ResourceProxy:RegisterResourceProxy("DifficultyStatuses", StatusDataProxy)
 ResourceProxy:RegisterResourceProxy("StatusContainer", StatusDataProxy)
+ResourceProxy:RegisterResourceProxy("StatusList", StatusDataProxy)
 
 
 function StatusDataProxy:RenderDisplayableValue(parent, statString)
@@ -131,11 +132,12 @@ function StatusDataProxy:RenderDisplayableValue(parent, statString)
 				if statusData then
 					local hasKids = #parent.Children > 0
 
-					local text = Styler:HyperlinkText(parent, leftSide .. ";", function(parent)
+					local text = Styler:HyperlinkText(parent, leftSide, function(parent)
 						self:RenderDisplayWindow(statusData, parent)
 					end)
 
 					text.SameLine = hasKids
+					parent:AddText(";").SameLine = true
 				end
 			end
 		end
