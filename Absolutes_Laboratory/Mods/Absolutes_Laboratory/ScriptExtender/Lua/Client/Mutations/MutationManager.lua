@@ -26,6 +26,9 @@ function MutationManager:RenderMutationManager(parent, existingMutation)
 
 	local selectorColumn = row:AddCell()
 	Styler:CheapTextAlign("Selectors", selectorColumn, "Big").UserData = "keep"
+	Styler:MiddleAlignedColumnLayout(selectorColumn, function(ele)
+		local dryRunButton = ele:AddButton("Dry Run Selectors")
+	end)
 
 	self:RenderSelectors(selectorColumn, existingMutation.selectors)
 
@@ -47,7 +50,7 @@ function MutationManager:RenderSelectors(parent, existingSelector)
 		local entryCell = row:AddCell()
 
 		local choiceCombo = entrySwapperCell:AddCombo("")
-		choiceCombo.Options = { "Selector", (i > 1 and type(existingSelector[i -1]) ~= "string") and "And/Or" or nil }
+		choiceCombo.Options = { "Selector", (i > 1 and type(existingSelector[i - 1]) ~= "string") and "And/Or" or nil }
 		choiceCombo.SelectedIndex = type(selectorEntry) == "string" and 1 or 0
 
 		choiceCombo.OnChange = function()
@@ -76,8 +79,8 @@ function MutationManager:RenderSelectors(parent, existingSelector)
 			end
 
 			for x in ipairs(existingSelector) do
-					existingSelector[x] = nil
-					existingSelector[x] = nonproxyCopy[x]
+				existingSelector[x] = nil
+				existingSelector[x] = nonproxyCopy[x]
 			end
 			existingSelector[#existingSelector] = nil
 
@@ -96,7 +99,16 @@ function MutationManager:RenderSelectors(parent, existingSelector)
 				existingSelector[i] = grouperCombo.Options[grouperCombo.SelectedIndex + 1]
 			end
 		else
+			---@cast selectorEntry Selector
+
+			local inclusiveBox = entryCell:AddCheckbox("Inclusive")
+			inclusiveBox.Checked = selectorEntry.inclusive
+			inclusiveBox.OnChange = function()
+				selectorEntry.inclusive = inclusiveBox.Checked
+			end
+
 			local selectorCombo = entryCell:AddCombo("")
+			selectorCombo.SameLine = true
 			selectorCombo.WidthFitPreview = true
 			local opts = {}
 			for selectorName in TableUtils:OrderedPairs(self.selectors) do
