@@ -28,6 +28,29 @@ function MutationManager:RenderMutationManager(parent, existingMutation)
 	Styler:CheapTextAlign("Selectors", selectorColumn, "Big").UserData = "keep"
 	Styler:MiddleAlignedColumnLayout(selectorColumn, function(ele)
 		local dryRunButton = ele:AddButton("Dry Run Selectors")
+
+		dryRunButton.OnClick = function ()
+			local predicate = SelectorInterface:createComposedPredicate(existingMutation.selectors._real)
+
+			---@type {[string]: [GUIDSTRING]}
+			local results = {}
+			local resultCounter = 0
+			for level, entities in pairs(EntityRecorder:GetEntities()) do
+				for entity, record in pairs(entities) do
+					if predicate:Test(record) then
+						if not results[level] then
+							results[level] = {}
+						end
+
+						table.insert(results[level], entity)
+
+						resultCounter = resultCounter + 1
+					end
+				end
+			end
+
+			Logger:BasicInfo("Got %s results", resultCounter)
+		end
 	end)
 
 	self:RenderSelectors(selectorColumn, existingMutation.selectors)

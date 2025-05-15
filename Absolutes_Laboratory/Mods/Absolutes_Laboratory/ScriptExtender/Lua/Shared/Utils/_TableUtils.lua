@@ -134,7 +134,7 @@ end
 ---@generic K, V
 ---@param list table<K, V>
 ---@param str string|fun(value: V): boolean
----@return V?
+---@return K?
 function TableUtils:IndexOf(list, str)
 	for i, value in pairs(list) do
 		if type(str) == "string" then

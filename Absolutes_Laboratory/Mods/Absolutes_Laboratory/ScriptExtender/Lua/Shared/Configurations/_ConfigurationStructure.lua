@@ -13,6 +13,8 @@ local informedUserOfHostRestriction = false
 -- any additional logic for letting the server know there were changes. Only works for this implementation -
 -- too fragile for general use
 function ConfigurationStructure:generate_recursive_metatable(proxy_table, real_table)
+	proxy_table._real = real_table
+
 	return setmetatable(proxy_table, {
 		-- don't use the proxy table during pairs() so we don't have to exclude any proxy fields
 		__pairs = function(this_table)

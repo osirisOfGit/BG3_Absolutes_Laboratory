@@ -98,7 +98,7 @@ local function buildSubraceOpts(subRaces, parent, selectedSubRaces)
 				if select.Checked then
 					table.insert(selectedSubRaces, subRace)
 				else
-					selectedSubRaces[TableUtils:IndexOf(selectedSubRaces, subRace)] = nil
+					table.remove(selectedSubRaces, TableUtils:IndexOf(selectedSubRaces, subRace))
 				end
 			end
 		end
@@ -143,21 +143,24 @@ function RaceSelector:renderSelector(parent, existingSelector)
 end
 
 ---@param selector RaceSelector
-RaceSelector.predicate = SelectorPredicate:new(function(entity, selector)
+---@return fun(entity: EntityHandle|EntityRecord):boolean
+function RaceSelector:predicate(selector)
 	local criteriaValue = selector.criteriaValue
 
-	local race
-	if type(entity) == "userdata" then
-		---@cast entity EntityHandle
-		race = entity.Race.Race
-	else
-		---@cast entity EntityRecord
-		race = entity.Race
-	end
+	return function(entity)
+		local race
+		if type(entity) == "userdata" then
+			---@cast entity EntityHandle
+			race = entity.Race.Race
+		else
+			---@cast entity EntityRecord
+			race = entity.Race
+		end
 
-	if not next(criteriaValue.SubRaceIds) then
-		return race == criteriaValue.RaceId
-	else
-		return TableUtils:IndexOf(criteriaValue.SubRaceIds, race) ~= nil
+		if not next(criteriaValue.SubRaceIds) then
+			return race == criteriaValue.RaceId
+		else
+			return TableUtils:IndexOf(criteriaValue.SubRaceIds, race) ~= nil
+		end
 	end
-end)
+end
