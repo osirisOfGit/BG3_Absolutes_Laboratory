@@ -46,9 +46,14 @@ function MutationManager:RenderMutationManager(parent, existingMutation)
 			local predicate = SelectorInterface:createComposedPredicate(existingMutation.selectors._real)
 
 			local maxCols = 10
-			---@type {[string]: {[GUIDSTRING]: EntityRecord}}
 			local resultCounter = 0
 			for level, entities in pairs(EntityRecorder:GetEntities()) do
+				local header = resultsWindow:AddCollapsingHeader(level)
+				header.IDContext = level .. "##x"
+				header:SetColor("Header", { 1, 1, 1, 0 })
+				header.Font = "Large"
+				header.DefaultOpen = true
+
 				local columnCounter = 0
 
 				for entity, record in TableUtils:OrderedPairs(entities, function(key)
@@ -58,9 +63,10 @@ function MutationManager:RenderMutationManager(parent, existingMutation)
 						resultCounter = resultCounter + 1
 						columnCounter = columnCounter + 1
 
-						local group = resultsWindow:AddChildWindow(level .. entity)
+						local group = header:AddChildWindow(level .. entity)
+						group.Font = "Medium"
 						group.NoSavedSettings = true
-						group.Size = {128, 100}
+						group.Size = {100, 100}
 						group.SameLine = columnCounter > 1 and columnCounter % maxCols ~= 1
 
 						Styler:MiddleAlignedColumnLayout(group, function (ele)
@@ -73,13 +79,19 @@ function MutationManager:RenderMutationManager(parent, existingMutation)
 						local hyperlink = Styler:HyperlinkText(group, record.Name, function(parent)
 							CharacterWindow:BuildWindow(parent, entity)
 						end)
+						hyperlink.Font = "Small"
 						hyperlink:SetStyle("SelectableTextAlign", 0.5)
 						hyperlink.Size = { 0, 0 }
 					end
 				end
+				if columnCounter == 0 then
+					header:Destroy()
+				else
+					header.Label = string.format("%s - %s Results", header.Label, columnCounter)
+				end
 			end
 
-			Logger:BasicInfo("Got %s results", resultCounter)
+			resultsWindow.Label = string.format("%s - %s Results", resultsWindow.Label, resultCounter)
 		end
 	end)
 
