@@ -173,8 +173,6 @@ function Styler:HyperlinkText(parent, text, tooltipCallback)
 	---@type ExtuiWindow?
 	local window
 
-	local hoverLeaveTimer
-
 	fakeTextSelectable.OnHoverEnter = function()
 		if not window then
 			if not tooltip then
