@@ -64,6 +64,7 @@ end
 
 ---@param parent ExtuiTreeParent
 ---@param ... fun(ele: ExtuiTableCell)|string
+---@return ExtuiTable
 function Styler:MiddleAlignedColumnLayout(parent, ...)
 	local table = parent:AddTable("", 3)
 	table.NoSavedSettings = true
@@ -84,12 +85,15 @@ function Styler:MiddleAlignedColumnLayout(parent, ...)
 
 		row:AddCell()
 	end
+
+	return table
 end
 
 ---@param parent ExtuiTreeParent
 ---@return ExtuiTable
 function Styler:TwoColumnTable(parent, id)
 	local displayTable = parent:AddTable("twoCol" .. parent.IDContext .. (id or ""), 2)
+	displayTable.NoSavedSettings = true
 	displayTable.Borders = true
 	displayTable.Resizable = true
 	displayTable:SetColor("TableBorderStrong", { 0.56, 0.46, 0.26, 0.78 })
@@ -155,7 +159,7 @@ end
 function Styler:HyperlinkText(parent, text, tooltipCallback)
 	---@type ExtuiSelectable
 	local fakeTextSelectable = parent:AddSelectable(text)
-	fakeTextSelectable.Size = {(#text * 10) * Styler:ScaleFactor(), 0}
+	fakeTextSelectable.Size = { (#text * 10) * Styler:ScaleFactor(), 0 }
 
 	fakeTextSelectable:SetColor("ButtonActive", { 1, 1, 1, 0 })
 	fakeTextSelectable:SetColor("ButtonHovered", { 1, 1, 1, 0 })
@@ -169,13 +173,14 @@ function Styler:HyperlinkText(parent, text, tooltipCallback)
 	---@type ExtuiWindow?
 	local window
 
+	local hoverLeaveTimer
+
 	fakeTextSelectable.OnHoverEnter = function()
-		if tooltip then
-			Helpers:KillChildren(tooltip)
-		end
 		if not window then
-			tooltip = fakeTextSelectable:Tooltip()
-			tooltipCallback(tooltip)
+			if not tooltip then
+				tooltip = fakeTextSelectable:Tooltip()
+				tooltipCallback(tooltip)
+			end
 		else
 			window.Open = true
 			window:SetFocus()
@@ -183,7 +188,7 @@ function Styler:HyperlinkText(parent, text, tooltipCallback)
 	end
 
 	fakeTextSelectable.OnHoverLeave = function()
-		if tooltip then
+		if tooltip and not tooltip.Visible then
 			Helpers:KillChildren(tooltip)
 		end
 	end
@@ -196,7 +201,7 @@ function Styler:HyperlinkText(parent, text, tooltipCallback)
 		window.Closeable = true
 		window.AlwaysAutoResize = true
 
-		window.OnClose = function ()
+		window.OnClose = function()
 			window:Destroy()
 			window = nil
 		end

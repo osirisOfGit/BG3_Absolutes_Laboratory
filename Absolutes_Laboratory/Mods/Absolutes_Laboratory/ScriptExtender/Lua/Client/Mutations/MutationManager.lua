@@ -45,34 +45,36 @@ function MutationManager:RenderMutationManager(parent, existingMutation)
 
 			local predicate = SelectorInterface:createComposedPredicate(existingMutation.selectors._real)
 
+			local maxCols = 10
 			---@type {[string]: {[GUIDSTRING]: EntityRecord}}
 			local resultCounter = 0
 			for level, entities in pairs(EntityRecorder:GetEntities()) do
-				local resultsTable = resultsWindow:AddTable("results", 8)
-				local row = resultsTable:AddRow()
-				local cells = {}
-				for i = 1, resultsTable.Columns do
-					table.insert(cells, row:AddCell())
-				end
+				local columnCounter = 0
 
 				for entity, record in TableUtils:OrderedPairs(entities, function(key)
 					return entities[key].Name
 				end) do
 					if predicate:Test(record) then
 						resultCounter = resultCounter + 1
-						---@type ExtuiGroup
-						local group = (cells[resultCounter % resultsTable.Columns] or cells[resultsTable.Columns]):AddGroup(entity)
-						Styler:MiddleAlignedColumnLayout(group, function(ele)
+						columnCounter = columnCounter + 1
+
+						local group = resultsWindow:AddChildWindow(level .. entity)
+						group.NoSavedSettings = true
+						group.Size = {128, 100}
+						group.SameLine = columnCounter > 1 and columnCounter % maxCols ~= 1
+
+						Styler:MiddleAlignedColumnLayout(group, function (ele)
 							local image = ele:AddImage(record.Icon, { 64, 64 })
 							if image.ImageData.Icon == "" then
 								ele:AddImage("Item_Unknown", { 64, 64 })
 							end
 						end)
+
 						local hyperlink = Styler:HyperlinkText(group, record.Name, function(parent)
 							CharacterWindow:BuildWindow(parent, entity)
 						end)
 						hyperlink:SetStyle("SelectableTextAlign", 0.5)
-						hyperlink.Size = {64, 0}
+						hyperlink.Size = { 0, 0 }
 					end
 				end
 			end
