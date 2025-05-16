@@ -29,22 +29,50 @@ function MutationManager:RenderMutationManager(parent, existingMutation)
 	Styler:MiddleAlignedColumnLayout(selectorColumn, function(ele)
 		local dryRunButton = ele:AddButton("Dry Run Selectors")
 
-		dryRunButton.OnClick = function ()
+		---@type ExtuiWindow
+		local resultsWindow
+
+		dryRunButton.OnClick = function()
+			if not resultsWindow then
+				resultsWindow = Ext.IMGUI.NewWindow("Dry Run Results")
+				resultsWindow.Closeable = true
+				resultsWindow.AlwaysAutoResize = true
+			else
+				resultsWindow.Open = true
+				resultsWindow:SetFocus()
+				Helpers:KillChildren(resultsWindow)
+			end
+
 			local predicate = SelectorInterface:createComposedPredicate(existingMutation.selectors._real)
 
-			---@type {[string]: [GUIDSTRING]}
-			local results = {}
+			---@type {[string]: {[GUIDSTRING]: EntityRecord}}
 			local resultCounter = 0
 			for level, entities in pairs(EntityRecorder:GetEntities()) do
-				for entity, record in pairs(entities) do
+				local resultsTable = resultsWindow:AddTable("results", 8)
+				local row = resultsTable:AddRow()
+				local cells = {}
+				for i = 1, resultsTable.Columns do
+					table.insert(cells, row:AddCell())
+				end
+
+				for entity, record in TableUtils:OrderedPairs(entities, function(key)
+					return entities[key].Name
+				end) do
 					if predicate:Test(record) then
-						if not results[level] then
-							results[level] = {}
-						end
-
-						table.insert(results[level], entity)
-
 						resultCounter = resultCounter + 1
+						---@type ExtuiGroup
+						local group = (cells[resultCounter % resultsTable.Columns] or cells[resultsTable.Columns]):AddGroup(entity)
+						Styler:MiddleAlignedColumnLayout(group, function(ele)
+							local image = ele:AddImage(record.Icon, { 64, 64 })
+							if image.ImageData.Icon == "" then
+								ele:AddImage("Item_Unknown", { 64, 64 })
+							end
+						end)
+						local hyperlink = Styler:HyperlinkText(group, record.Name, function(parent)
+							CharacterWindow:BuildWindow(parent, entity)
+						end)
+						hyperlink:SetStyle("SelectableTextAlign", 0.5)
+						hyperlink.Size = {64, 0}
 					end
 				end
 			end
