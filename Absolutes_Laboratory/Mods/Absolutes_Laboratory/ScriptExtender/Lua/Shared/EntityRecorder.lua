@@ -28,6 +28,8 @@ EntityRecorder.Levels = {
 	END_Main = 9,
 }
 
+
+
 ---@class EntityRecord
 ---@field Name string
 ---@field Template GUIDSTRING

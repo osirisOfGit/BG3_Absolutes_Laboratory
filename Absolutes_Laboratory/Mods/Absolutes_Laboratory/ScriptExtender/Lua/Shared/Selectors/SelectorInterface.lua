@@ -48,25 +48,29 @@ function SelectorPredicate:Test(entity)
 	return self.func(entity)
 end
 
----@param f SelectorPredicate
+---@param f1 SelectorPredicate
+---@param f2 SelectorPredicate
 ---@return SelectorPredicate
-function SelectorPredicate:And(f)
+function SelectorPredicate.And(f1, f2)
 	return SelectorPredicate:new(function(entity)
-		return self:Test(entity) and f:Test(entity)
+		return f1:Test(entity) and f2:Test(entity)
+	end)
+end
+
+---@param f1 SelectorPredicate
+---@param f2 SelectorPredicate
+---@return SelectorPredicate
+function SelectorPredicate.Or(f1, f2)
+	return SelectorPredicate:new(function(entity)
+		return f1:Test(entity) or f2:Test(entity)
 	end)
 end
 
 ---@param f SelectorPredicate
 ---@return SelectorPredicate
-function SelectorPredicate:Or(f)
+function SelectorPredicate.Negate(f)
 	return SelectorPredicate:new(function(entity)
-		return self:Test(entity) or f:Test(entity)
-	end)
-end
-
-function SelectorPredicate:Negate()
-	return SelectorPredicate:new(function(entity)
-		return not self:Test(entity)
+		return not f:Test(entity)
 	end)
 end
 
@@ -103,7 +107,7 @@ function SelectorInterface:createComposedPredicate(selectorQuery)
 			local selectorPred = SelectorPredicate:new(selectorImpl:predicate(selector))
 
 			if next(selector.subSelectors) then
-				selectorPred:And(self:createComposedPredicate(selector.subSelectors))
+				selectorPred = selectorPred:And(self:createComposedPredicate(selector.subSelectors))
 			end
 
 			if not selector.inclusive then
@@ -134,3 +138,4 @@ function SelectorInterface:createComposedPredicate(selectorQuery)
 end
 
 Ext.Require("Shared/Selectors/RaceSelector.lua")
+Ext.Require("Shared/Selectors/TagSelector.lua")

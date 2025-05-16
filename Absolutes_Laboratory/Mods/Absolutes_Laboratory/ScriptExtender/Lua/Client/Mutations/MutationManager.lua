@@ -183,7 +183,6 @@ function MutationManager:RenderSelectors(parent, existingSelector)
 			selectorCombo.SelectedIndex = selectorEntry.criteriaCategory and (TableUtils:IndexOf(opts, selectorEntry.criteriaCategory) - 1) or -1
 
 			local selectorGroup = entryCell:AddGroup("selector")
-			selectorGroup.SameLine = true
 
 			selectorCombo.OnChange = function()
 				Helpers:KillChildren(selectorGroup)

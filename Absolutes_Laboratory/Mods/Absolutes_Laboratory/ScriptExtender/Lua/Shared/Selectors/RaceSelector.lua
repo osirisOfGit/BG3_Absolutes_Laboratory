@@ -75,7 +75,10 @@ local function buildSubraceOpts(subRaces, parent, selectedSubRaces)
 	local columnIndex = 0
 	if subRaces then
 		local row = parent:AddRow()
-		local cells = { row:AddCell(), row:AddCell(), row:AddCell() }
+		local cells = { }
+		for i = 0, parent.Columns do
+			table.insert(cells, row:AddCell())
+		end
 
 		local selectAll = not selectedSubRaces()
 		for _, subRace in TableUtils:OrderedPairs(subRaces, function(key)
@@ -83,7 +86,7 @@ local function buildSubraceOpts(subRaces, parent, selectedSubRaces)
 		end) do
 			columnIndex = columnIndex + 1
 
-			parent = cells[columnIndex % 3] or cells[3]
+			local parent = cells[columnIndex % parent.Columns] or cells[parent.Columns]
 
 			local select = parent:AddCheckbox(translationMap[subRace])
 
@@ -123,7 +126,7 @@ function RaceSelector:renderSelector(parent, existingSelector)
 	raceCombo.Options = raceOpts
 	raceCombo.SelectedIndex = selector.criteriaValue.RaceId and (TableUtils:IndexOf(raceOpts, translationMap[selector.criteriaValue.RaceId]) - 1) or 0
 
-	local subRaceGroup = parent:AddTable("SubRaces", 3)
+	local subRaceGroup = parent:AddTable("SubRaces", 5)
 	subRaceGroup.SizingFixedFit = true
 	buildSubraceOpts(racesWithSubraces[selector.criteriaValue.RaceId], subRaceGroup, selector.criteriaValue.SubRaceIds)
 
