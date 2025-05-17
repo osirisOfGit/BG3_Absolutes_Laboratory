@@ -181,7 +181,7 @@ else
 						})
 
 						for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-							if Osi.IsDead(entity.Uuid.EntityUuid) == 0
+							if not entity.DeadByDefault
 								and not TableUtils:IndexOf(recordedLevels, function(value)
 									return value[entity.Uuid.EntityUuid]
 								end)

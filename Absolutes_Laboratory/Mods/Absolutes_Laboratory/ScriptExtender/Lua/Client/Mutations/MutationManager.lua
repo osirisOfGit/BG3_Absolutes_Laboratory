@@ -50,7 +50,6 @@ function MutationManager:RenderMutationManager(parent, existingMutation)
 			local resultCounter = 0
 			for level, entities in pairs(EntityRecorder:GetEntities()) do
 				local header = resultsWindow:AddCollapsingHeader(level)
-				header.IDContext = level .. "##x"
 				header:SetColor("Header", { 1, 1, 1, 0 })
 				header.Font = "Large"
 				header.DefaultOpen = true
