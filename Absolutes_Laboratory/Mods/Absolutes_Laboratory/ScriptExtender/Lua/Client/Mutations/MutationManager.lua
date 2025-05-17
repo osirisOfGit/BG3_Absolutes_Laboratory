@@ -186,6 +186,7 @@ function MutationManager:RenderSelectors(parent, existingSelector)
 
 			selectorCombo.OnChange = function()
 				Helpers:KillChildren(selectorGroup)
+				selectorEntry.criteriaValue.delete = true
 				selectorEntry.criteriaValue = nil
 
 				selectorEntry.criteriaCategory = selectorCombo.Options[selectorCombo.SelectedIndex + 1]

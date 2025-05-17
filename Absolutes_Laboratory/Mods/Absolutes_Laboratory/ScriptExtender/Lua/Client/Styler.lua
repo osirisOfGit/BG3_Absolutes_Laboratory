@@ -12,24 +12,25 @@ Styler = {}
 ---@return ExtuiTree, fun(count: number)
 function Styler:DynamicLabelTree(tree)
 	local label = tree.Label
+	tree.Label = tree.Label .. "###" .. tree.Label
 	tree.DefaultOpen = true
-	tree:SetOpen(false, "Always")
+	-- tree:SetOpen(false, "Always")
 
 	tree.SpanFullWidth = true
 
-	local isOpen = false
-	tree.OnClick = function()
-		isOpen = not isOpen
-	end
+	-- local isOpen = false
+	-- tree.OnClick = function()
+	-- 	isOpen = not isOpen
+	-- end
 
-	tree.OnCollapse = function()
-		tree:SetOpen(isOpen, "Always")
-	end
+	-- tree.OnCollapse = function()
+	-- 	tree:SetOpen(isOpen, "Always")
+	-- end
 
 	return tree, function(count)
-		tree.Label = label .. (count > 0 and (" - " .. count .. " " .. Translator:translate("selected")) or "")
-		tree.DefaultOpen = true
-		tree:SetOpen(isOpen, "Always")
+		tree.Label = label .. (count > 0 and (" - " .. count .. " " .. Translator:translate("selected")) or "") .. "###" .. label
+		-- tree.DefaultOpen = true
+		-- tree:SetOpen(isOpen, "Always")
 	end
 end
 
@@ -155,11 +156,14 @@ end
 ---@param parent ExtuiTreeParent
 ---@param text string
 ---@param tooltipCallback fun(parent: ExtuiTreeParent)
+---@param limitSize boolean?
 ---@return ExtuiSelectable
-function Styler:HyperlinkText(parent, text, tooltipCallback)
+function Styler:HyperlinkText(parent, text, tooltipCallback, limitSize)
 	---@type ExtuiSelectable
 	local fakeTextSelectable = parent:AddSelectable(text)
-	fakeTextSelectable.Size = { (#text * 10) * Styler:ScaleFactor(), 0 }
+	if limitSize then
+		fakeTextSelectable.Size = { (#text * 10) * Styler:ScaleFactor(), 0 }
+	end
 
 	fakeTextSelectable:SetColor("ButtonActive", { 1, 1, 1, 0 })
 	fakeTextSelectable:SetColor("ButtonHovered", { 1, 1, 1, 0 })
