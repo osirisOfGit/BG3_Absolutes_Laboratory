@@ -14,7 +14,7 @@ function MutationManager:registerMutator(name, mutator)
 	self.mutators[name] = mutator
 end
 
-Ext.Require("Shared/Selectors/SelectorInterface.lua")
+Ext.Require("Shared/Mutations/Selectors/SelectorInterface.lua")
 
 ---@param parent ExtuiTreeParent
 ---@param existingMutation Mutation

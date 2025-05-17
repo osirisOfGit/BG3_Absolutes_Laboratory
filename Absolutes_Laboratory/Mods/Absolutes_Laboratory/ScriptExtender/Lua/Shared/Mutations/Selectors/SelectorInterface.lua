@@ -137,8 +137,8 @@ function SelectorInterface:createComposedPredicate(selectorQuery)
 	return predicate
 end
 
-Ext.Require("Shared/Selectors/RaceSelector.lua")
-Ext.Require("Shared/Selectors/TagSelector.lua")
-Ext.Require("Shared/Selectors/TemplateSelector.lua")
-Ext.Require("Shared/Selectors/StatSelector.lua")
-Ext.Require("Shared/Selectors/FactionSelector.lua")
+Ext.Require("Shared/Mutations/Selectors/RaceSelector.lua")
+Ext.Require("Shared/Mutations/Selectors/TagSelector.lua")
+Ext.Require("Shared/Mutations/Selectors/TemplateSelector.lua")
+Ext.Require("Shared/Mutations/Selectors/StatSelector.lua")
+Ext.Require("Shared/Mutations/Selectors/FactionSelector.lua")

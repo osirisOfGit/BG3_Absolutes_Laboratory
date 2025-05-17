@@ -10,4 +10,4 @@ Ext.Require("Server/ClientHelpers.lua")
 
 Ext.Require("Shared/Configurations/_ConfigurationStructure.lua")
 
-Ext.Require("Shared/Selectors/SelectorInterface.lua")
+Ext.Require("Shared/Mutations/Selectors/SelectorInterface.lua")
