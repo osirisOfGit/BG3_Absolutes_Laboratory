@@ -46,7 +46,9 @@ local function displayChildTemplates(parent, templateId)
 	if childRelationships[templateId] then
 		local displayTable = Styler:TwoColumnTable(parent, "children" .. templateId)
 
-		for _, childId in pairs(childRelationships[templateId]) do
+		for _, childId in TableUtils:OrderedPairs(childRelationships[templateId], function (key)
+			return translationMap[childRelationships[templateId][key]]
+		end) do
 			local row = displayTable:AddRow()
 			Styler:HyperlinkText(row:AddCell(), translationMap[childId], function(parent)
 				ResourceManager:RenderDisplayWindow(Ext.Template.GetTemplate(childId), parent)
@@ -54,6 +56,22 @@ local function displayChildTemplates(parent, templateId)
 			displayChildTemplates(row:AddCell(), childId)
 		end
 	end
+end
+
+---@param templateId GUIDSTRING
+---@param indent string?
+---@return string
+local function buildChildTemplatesString(templateId, indent)
+	indent = indent or ""
+	local result = indent .. (indent ~= "" and "_" or "") .. translationMap[templateId] .. "\n"
+	if childRelationships[templateId] then
+		for _, childId in TableUtils:OrderedPairs(childRelationships[templateId], function (key)
+			return translationMap[childRelationships[templateId][key]]
+		end) do
+			result = result .. buildChildTemplatesString(childId, indent .. string.rep(" ", #translationMap[templateId]) .. "|")
+		end
+	end
+	return result
 end
 
 ---@param existingSelector TemplateSelector
@@ -114,6 +132,9 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 						local window = Ext.IMGUI.NewWindow("Child Templates for " .. translationMap[templateCriteria.id])
 						window.Closeable = true
 						window.AlwaysAutoResize = true
+						window:AddButton("Export tree to file").OnClick = function ()
+							FileUtils:SaveStringContentToFile(translationMap[templateCriteria.id] .. ".txt", buildChildTemplatesString(templateCriteria.id))
+						end
 
 						displayChildTemplates(window, templateCriteria.id)
 						includeChildrenCheckbox.Checked = templateCriteria.includeChildren
