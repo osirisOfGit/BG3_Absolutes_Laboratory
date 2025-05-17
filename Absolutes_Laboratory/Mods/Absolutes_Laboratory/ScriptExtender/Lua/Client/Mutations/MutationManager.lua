@@ -91,6 +91,10 @@ function MutationManager:RenderMutationManager(parent, existingMutation)
 				end
 			end
 
+			if resultCounter == 0 then
+				resultsWindow:AddText("No Entities Selected").Font = "Large"
+			end
+
 			resultsWindow.Label = string.format("%s - %s Results", "Dry Run", resultCounter)
 		end
 	end).UserData = "keep"

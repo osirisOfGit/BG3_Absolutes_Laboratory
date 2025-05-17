@@ -60,6 +60,7 @@ function TagSelector:renderSelector(parent, existingSelector)
 			local delete = Styler:ImageButton(tagDisplay:AddImageButton("delete" .. tag, "ico_red_x", {16, 16}))
 			delete.OnClick = function ()
 				table.remove(existingSelector.criteriaValue, TableUtils:IndexOf(existingSelector.criteriaValue, tag))
+				updateFunc(#existingSelector.criteriaValue)
 				displaySelectedTags()
 			end
 			local text = tagDisplay:AddText(translationMap[tag])
