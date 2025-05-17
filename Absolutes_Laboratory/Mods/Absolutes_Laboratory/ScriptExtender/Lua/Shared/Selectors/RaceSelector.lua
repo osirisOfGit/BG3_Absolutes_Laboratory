@@ -161,7 +161,13 @@ function RaceSelector:predicate(selector)
 		end
 
 		if not next(criteriaValue.SubRaceIds) then
-			return race == criteriaValue.RaceId
+			if race == criteriaValue.RaceId then
+				return true
+			else
+				---@type ResourceRace
+				local raceResource = Ext.StaticData.Get(race, "Race")
+				return raceResource.ParentGuid == criteriaValue.RaceId
+			end
 		else
 			return TableUtils:IndexOf(criteriaValue.SubRaceIds, race) ~= nil
 		end
