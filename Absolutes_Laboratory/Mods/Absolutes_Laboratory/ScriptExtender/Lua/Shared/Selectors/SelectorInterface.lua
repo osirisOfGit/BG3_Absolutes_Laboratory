@@ -75,7 +75,7 @@ function SelectorPredicate.Negate(f)
 end
 
 ---@param selector Selector
----@return fun(entity: EntityHandle|EntityRecord): boolean
+---@return fun(entity: (EntityHandle|EntityRecord)): boolean
 function SelectorInterface:predicate(selector) end
 
 ---@param selectorQuery SelectorQuery

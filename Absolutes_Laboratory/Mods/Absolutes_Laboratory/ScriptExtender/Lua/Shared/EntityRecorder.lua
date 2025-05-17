@@ -197,7 +197,7 @@ else
 								entityRecord.Race = entity.Race.Race
 								entityRecord.Faction = entity.Faction.field_8
 								entityRecord.Stat = entity.Data.StatsId
-								entityRecord.Template = entity.ServerCharacter.Template.Id
+								entityRecord.Template = entity.ServerCharacter.Template.TemplateName
 								entityRecord.Tags = entity.Tag.Tags
 								entityRecord.Abilities = {}
 								for abilityId, val in ipairs(entity.BaseStats.BaseAbilities) do

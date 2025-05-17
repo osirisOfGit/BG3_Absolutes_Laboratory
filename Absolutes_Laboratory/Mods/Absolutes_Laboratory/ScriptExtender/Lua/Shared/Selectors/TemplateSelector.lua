@@ -215,3 +215,68 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 	end
 	updateFunc(#existingSelector.criteriaValue)
 end
+
+---@param charTemplate CharacterTemplate
+---@param templateToMatch GUIDSTRING
+---@return boolean?
+local function checkParent(charTemplate, templateToMatch, templateCache)
+	if charTemplate then
+		table.insert(templateCache, charTemplate.Id)
+
+		if charTemplate.Id == templateToMatch then
+			return true
+		elseif charTemplate.ParentTemplateId ~= "00000000-0000-0000-0000-000000000000" then
+			return checkParent(Ext.Template.GetTemplate(charTemplate.ParentTemplateId), templateToMatch, templateCache)
+		end
+	end
+end
+
+---@param selector TemplateSelector
+---@return fun(entity: EntityHandle|EntityRecord): boolean
+function TemplateSelector:predicate(selector)
+	return function(entity)
+		local criteria = selector.criteriaValue
+
+		local parentTemplates = {}
+		if type(entity) == "userdata" then
+			---@cast entity EntityHandle
+			for _, templateCriteria in pairs(criteria) do
+				if entity.ServerCharacter.Template.Id == templateCriteria.id then
+					return true
+				elseif templateCriteria.includeChildren then
+					if next(parentTemplates) then
+						if TableUtils:IndexOf(parentTemplates, templateCriteria.id) then
+							return true
+						end
+					elseif entity.ServerCharacter.Template.ParentTemplateId ~= "00000000-0000-0000-0000-000000000000"
+						and checkParent(Ext.Template.GetTemplate(entity.ServerCharacter.Template.ParentTemplateId), templateCriteria.id, parentTemplates)
+					then
+						return true
+					end
+				end
+			end
+		else
+			---@cast entity EntityRecord
+			for _, templateCriteria in pairs(criteria) do
+				if entity.Template == templateCriteria.id then
+					return true
+				elseif templateCriteria.includeChildren then
+					if next(parentTemplates) then
+						if TableUtils:IndexOf(parentTemplates, templateCriteria.id) then
+							return true
+						end
+					else
+						local charTemplate = Ext.Template.GetTemplate(entity.Template)
+						if charTemplate and charTemplate.ParentTemplateId ~= "00000000-0000-0000-0000-000000000000"
+							and checkParent(Ext.Template.GetTemplate(charTemplate.ParentTemplateId), templateCriteria.id, parentTemplates)
+						then
+							return true
+						end
+					end
+				end
+			end
+		end
+
+		return false
+	end
+end

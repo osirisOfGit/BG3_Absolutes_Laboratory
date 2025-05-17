@@ -28,6 +28,7 @@ function MutationManager:RenderMutationManager(parent, existingMutation)
 	Styler:CheapTextAlign("Selectors", selectorColumn, "Big").UserData = "keep"
 	Styler:MiddleAlignedColumnLayout(selectorColumn, function(ele)
 		local dryRunButton = ele:AddButton("Dry Run Selectors")
+		dryRunButton.UserData = "keep"
 
 		---@type ExtuiWindow
 		local resultsWindow
@@ -91,7 +92,7 @@ function MutationManager:RenderMutationManager(parent, existingMutation)
 				end
 			end
 
-			resultsWindow.Label = string.format("%s - %s Results", resultsWindow.Label, resultCounter)
+			resultsWindow.Label = string.format("%s - %s Results", "Dry Run", resultCounter)
 		end
 	end)
 
