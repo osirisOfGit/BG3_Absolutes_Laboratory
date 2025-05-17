@@ -35,7 +35,7 @@ function MutationManager:RenderMutationManager(parent, existingMutation)
 
 		dryRunButton.OnClick = function()
 			if not resultsWindow then
-				resultsWindow = Ext.IMGUI.NewWindow("Dry Run Results")
+				resultsWindow = Ext.IMGUI.NewWindow("Dry Run Results###resultswindow")
 				resultsWindow.Closeable = true
 				resultsWindow.AlwaysAutoResize = true
 			else
@@ -95,7 +95,7 @@ function MutationManager:RenderMutationManager(parent, existingMutation)
 				resultsWindow:AddText("No Entities Selected").Font = "Large"
 			end
 
-			resultsWindow.Label = string.format("%s - %s Results", "Dry Run", resultCounter)
+			resultsWindow.Label = string.format("%s - %s Results###resultswindow", "Dry Run", resultCounter)
 		end
 	end).UserData = "keep"
 
