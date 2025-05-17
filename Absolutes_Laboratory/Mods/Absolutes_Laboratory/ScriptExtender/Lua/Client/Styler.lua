@@ -137,12 +137,12 @@ end
 ---@param parent ExtuiTreeParent
 ---@param text string
 ---@param tooltipCallback fun(parent: ExtuiTreeParent)
----@param limitSize boolean?
+---@param freeSize boolean?
 ---@return ExtuiSelectable
-function Styler:HyperlinkText(parent, text, tooltipCallback, limitSize)
+function Styler:HyperlinkText(parent, text, tooltipCallback, freeSize)
 	---@type ExtuiSelectable
 	local fakeTextSelectable = parent:AddSelectable(text)
-	if limitSize then
+	if not freeSize then
 		fakeTextSelectable.Size = { (#text * 10) * Styler:ScaleFactor(), 0 }
 	end
 

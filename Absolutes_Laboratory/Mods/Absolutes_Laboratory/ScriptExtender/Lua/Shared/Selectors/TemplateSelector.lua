@@ -46,13 +46,13 @@ local function displayChildTemplates(parent, templateId)
 	if childRelationships[templateId] then
 		local displayTable = Styler:TwoColumnTable(parent, "children" .. templateId)
 
-		for _, childId in TableUtils:OrderedPairs(childRelationships[templateId], function (key)
+		for _, childId in TableUtils:OrderedPairs(childRelationships[templateId], function(key)
 			return translationMap[childRelationships[templateId][key]]
 		end) do
 			local row = displayTable:AddRow()
 			Styler:HyperlinkText(row:AddCell(), translationMap[childId], function(parent)
 				ResourceManager:RenderDisplayWindow(Ext.Template.GetTemplate(childId), parent)
-			end)
+			end, true)
 			displayChildTemplates(row:AddCell(), childId)
 		end
 	end
@@ -63,12 +63,12 @@ end
 ---@return string
 local function buildChildTemplatesString(templateId, indent)
 	indent = indent or ""
-	local result = indent .. (indent ~= "" and "_" or "") .. translationMap[templateId] .. "\n"
+	local result = indent .. (indent ~= "" and "-- " or "") .. translationMap[templateId] .. "\n"
 	if childRelationships[templateId] then
-		for _, childId in TableUtils:OrderedPairs(childRelationships[templateId], function (key)
+		for _, childId in TableUtils:OrderedPairs(childRelationships[templateId], function(key)
 			return translationMap[childRelationships[templateId][key]]
 		end) do
-			result = result .. buildChildTemplatesString(childId, indent .. string.rep(" ", #translationMap[templateId]) .. "|")
+			result = result .. buildChildTemplatesString(childId, indent .. string.rep(" ", 3) .. "|")
 		end
 	end
 	return result
@@ -132,7 +132,7 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 						local window = Ext.IMGUI.NewWindow("Child Templates for " .. translationMap[templateCriteria.id])
 						window.Closeable = true
 						window.AlwaysAutoResize = true
-						window:AddButton("Export tree to file").OnClick = function ()
+						window:AddButton("Export tree to file").OnClick = function()
 							FileUtils:SaveStringContentToFile(translationMap[templateCriteria.id] .. ".txt", buildChildTemplatesString(templateCriteria.id))
 						end
 
@@ -146,9 +146,9 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 				templateDisplay:AddDummy(38, 32).SameLine = true
 			end
 
-			local text = templateDisplay:AddText(translationMap[templateCriteria.id])
-			text.SameLine = true
-			ResourceManager:RenderDisplayWindow(Ext.Template.GetTemplate(templateCriteria.id), text:Tooltip())
+			Styler:HyperlinkText(templateDisplay, translationMap[templateCriteria.id], function(parent)
+				ResourceManager:RenderDisplayWindow(Ext.Template.GetTemplate(templateCriteria.id), parent)
+			end, true).SameLine = true
 		end
 	end
 
@@ -166,7 +166,7 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 				or string.upper(template):find(filter)
 			then
 				---@type ExtuiSelectable
-				local select = templateGroup:AddSelectable(translationMap[template])
+				local select = templateGroup:AddSelectable(translationMap[template] .. "##select")
 				select.UserData = template
 				select.Selected = TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
 					return value.id == template
@@ -193,9 +193,14 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 							includeChildren = false
 						} --[[@as TemplateCriteria]])
 					else
-						table.remove(existingSelector.criteriaValue, TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
+						local i = TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
 							return value.id == template
-						end))
+						end)
+
+						for x = i, TableUtils:CountElements(existingSelector.criteriaValue) do
+							existingSelector.criteriaValue[x].delete = true
+							existingSelector.criteriaValue[x] = TableUtils:DeeplyCopyTable(existingSelector.criteriaValue._real[x + 1])
+						end
 					end
 					displaySelectedTemplates()
 					updateFunc(#existingSelector.criteriaValue)
