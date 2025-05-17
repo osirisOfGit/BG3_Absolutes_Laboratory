@@ -66,10 +66,10 @@ function MutationManager:RenderMutationManager(parent, existingMutation)
 						local group = header:AddChildWindow(level .. entity)
 						group.Font = "Medium"
 						group.NoSavedSettings = true
-						group.Size = {100, 100}
+						group.Size = { 100, 100 }
 						group.SameLine = columnCounter > 1 and columnCounter % maxCols ~= 1
 
-						Styler:MiddleAlignedColumnLayout(group, function (ele)
+						Styler:MiddleAlignedColumnLayout(group, function(ele)
 							local image = ele:AddImage(record.Icon, { 64, 64 })
 							if image.ImageData.Icon == "" then
 								ele:AddImage("Item_Unknown", { 64, 64 })
@@ -93,7 +93,7 @@ function MutationManager:RenderMutationManager(parent, existingMutation)
 
 			resultsWindow.Label = string.format("%s - %s Results", "Dry Run", resultCounter)
 		end
-	end)
+	end).UserData = "keep"
 
 	self:RenderSelectors(selectorColumn, existingMutation.selectors)
 
@@ -186,8 +186,10 @@ function MutationManager:RenderSelectors(parent, existingSelector)
 
 			selectorCombo.OnChange = function()
 				Helpers:KillChildren(selectorGroup)
-				selectorEntry.criteriaValue.delete = true
-				selectorEntry.criteriaValue = nil
+				if selectorEntry.criteriaValue then
+					selectorEntry.criteriaValue.delete = true
+					selectorEntry.criteriaValue = nil
+				end
 
 				selectorEntry.criteriaCategory = selectorCombo.Options[selectorCombo.SelectedIndex + 1]
 				self.selectors[selectorEntry.criteriaCategory]:renderSelector(selectorGroup, selectorEntry)
