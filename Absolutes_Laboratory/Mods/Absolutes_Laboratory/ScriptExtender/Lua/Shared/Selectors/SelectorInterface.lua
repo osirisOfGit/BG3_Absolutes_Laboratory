@@ -140,3 +140,4 @@ end
 Ext.Require("Shared/Selectors/RaceSelector.lua")
 Ext.Require("Shared/Selectors/TagSelector.lua")
 Ext.Require("Shared/Selectors/TemplateSelector.lua")
+Ext.Require("Shared/Selectors/StatSelector.lua")
