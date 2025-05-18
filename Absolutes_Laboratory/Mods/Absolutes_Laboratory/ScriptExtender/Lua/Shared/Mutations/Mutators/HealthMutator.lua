@@ -139,5 +139,58 @@ function HealthMutator:renderModifiers(parent, modifiers)
 		end
 	end
 	--#endregion
-	
+
+	--#region Character Level
+	---@type HealthClassLevelModifier
+	local xpRewardLevelModifier = modifiers["XPReward"] or {
+		value = 0,
+		extraData = {}
+	} --[[@as HealthClassLevelModifier]]
+
+	modifiers["XPReward"] = xpRewardLevelModifier
+
+	xpRewardLevelModifier.extraData = xpRewardLevelModifier.extraData or {}
+
+	local xpLevelInfoText = parent:AddSeparatorText("XPReward Modifiers ( ? )")
+	xpLevelInfoText:SetStyle("SeparatorTextAlign", 0, 0.3)
+	xpLevelInfoText:SetStyle("Alpha", 1)
+	xpLevelInfoText:Tooltip():AddText(
+		"\t Set the XPReward Categories at which the modifier changes - for example, setting the modifier to 10% for Elites\nwhen the base modifier is 5% means the modifier will be 5% for Civilians/Combat and 10% levels for elites and above")
+
+	parent:AddText("Each XPReward level adds")
+	local baseXPLevelMod = parent:AddInputInt("% to the % Base Health Mutator##xpRewardLevel", xpRewardLevelModifier.value)
+	baseXPLevelMod.ItemWidth = 40
+	baseXPLevelMod.SameLine = true
+	baseXPLevelMod.OnChange = function()
+		xpRewardLevelModifier.value = baseXPLevelMod.Value[1]
+	end
+
+	local xpLevelTable = parent:AddTable("xpRewardModifierCustomizer", 2)
+	local xpHeaders = xpLevelTable:AddRow()
+	xpHeaders.Headers = true
+	xpHeaders:AddCell():AddText("XPReward")
+	xpHeaders:AddCell():AddText("% Modifier")
+
+	for _, xpReward in ipairs(Ext.StaticData.GetAll("ExperienceReward")) do
+		---@type ResourceExperienceRewards
+		local xpRewardResource = Ext.StaticData.Get(xpReward, "ExperienceReward")
+		if xpRewardResource.LevelSource > 0 then
+			local row = xpLevelTable:AddRow()
+			local levelCell = row:AddCell()
+
+
+			Styler:HyperlinkText(levelCell, xpRewardResource.Name, function(parent)
+				ResourceManager:RenderDisplayWindow(xpRewardResource, parent)
+			end)
+
+			xpRewardLevelModifier.extraData[xpReward] = xpRewardLevelModifier.extraData[xpReward] or 0
+			local modInput = row:AddCell():AddInputInt("##" .. xpReward, xpRewardLevelModifier.extraData[xpReward])
+
+			modInput.OnDeactivate = function()
+				xpRewardLevelModifier.extraData[xpRewardLevelModifier] = modInput.Value[1]
+			end
+		end
+	end
+
+	--#endregion
 end

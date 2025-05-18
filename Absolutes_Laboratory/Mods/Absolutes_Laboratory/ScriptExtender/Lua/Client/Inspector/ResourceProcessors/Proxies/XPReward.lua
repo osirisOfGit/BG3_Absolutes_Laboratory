@@ -8,11 +8,12 @@ XPRewardProxy.fieldsToParse = {
 }
 
 ResourceProxy:RegisterResourceProxy("XPReward", XPRewardProxy)
+ResourceProxy:RegisterResourceProxy("resource::ExperienceRewards", XPRewardProxy)
 
 ---@param xpRewardId string
 function XPRewardProxy:RenderDisplayableValue(parent, xpRewardId, statType)
 	---@type ResourceExperienceRewards?
-	local xpReward = Ext.StaticData.Get(xpRewardId, "ExperienceReward")
+	local xpReward = type(xpRewardId) == "string" and Ext.StaticData.Get(xpRewardId, "ExperienceReward") or xpRewardId
 
 	if xpReward then
 		CharacterIndex.displayNameMappings[xpReward] = xpReward.Name
