@@ -32,7 +32,7 @@ function MutatorInterface:new(name)
 end
 
 ---@param parent ExtuiTreeParent
----@param mutator MutatorInterface
+---@param mutator Mutator
 function MutatorInterface:renderMutator(parent, mutator) end
 
 ---@param parent ExtuiTreeParent
@@ -46,3 +46,5 @@ function MutatorInterface:applyMutator(entity, entityVar) end
 ---@param entity EntityHandle
 ---@param entityVar MutatorEntityVar
 function MutatorInterface:undoMutator(entity, entityVar) end
+
+Ext.Require("Shared/Mutations/Mutators/HealthMutator.lua")

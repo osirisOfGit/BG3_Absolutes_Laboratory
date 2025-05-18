@@ -2,6 +2,7 @@ MutationManager = {}
 
 ---@type {[string]: SelectorInterface}
 MutationManager.selectors = {}
+---@type {[string]: MutatorInterface}
 MutationManager.mutators = {}
 
 ---@param name string
@@ -15,6 +16,7 @@ function MutationManager:registerMutator(name, mutator)
 end
 
 Ext.Require("Shared/Mutations/Selectors/SelectorInterface.lua")
+Ext.Require("Shared/Mutations/Mutators/MutatorInterface.lua")
 
 ---@param parent ExtuiTreeParent
 ---@param existingMutation Mutation
@@ -101,7 +103,9 @@ function MutationManager:RenderMutationManager(parent, existingMutation)
 
 	self:RenderSelectors(selectorColumn, existingMutation.selectors)
 
-	local mutationColumn = row:AddCell()
+	local mutatorColumn = row:AddCell()
+	Styler:CheapTextAlign("Mutators", mutatorColumn, "Big").UserData = "keep"
+	self:RenderMutators(mutatorColumn, existingMutation.mutators)
 end
 
 ---@param parent ExtuiTreeParent
@@ -215,6 +219,72 @@ function MutationManager:RenderSelectors(parent, existingSelector)
 				TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.selector) or "AND")
 			Helpers:KillChildren(parent)
 			self:RenderSelectors(parent, existingSelector)
+		end
+	end)
+end
+
+---@param parent ExtuiTreeParent
+---@param mutators Mutator[]
+function MutationManager:RenderMutators(parent, mutators)
+	local mutatorTable = Styler:TwoColumnTable(parent, "Mutators")
+	mutatorTable.ColumnDefs[1].Width = 20
+	mutatorTable.BordersV = false
+	mutatorTable.Resizable = false
+	mutatorTable.Borders = false
+	mutatorTable.BordersH = true
+
+	for i, mutator in TableUtils:OrderedPairs(mutators) do
+		local row = mutatorTable:AddRow()
+		local delete = Styler:ImageButton(row:AddCell():AddImageButton("delete" .. mutator.targetProperty, "ico_red_x", { 16, 16 }))
+		delete.OnClick = function()
+			for x = i, TableUtils:CountElements(mutators) do
+				mutators[x].delete = true
+				mutators[x] = TableUtils:DeeplyCopyTable(mutators._real[x + 1])
+			end
+			Helpers:KillChildren(parent)
+			self:RenderMutators(parent, mutators)
+		end
+
+		local mutatorCell = row:AddCell()
+
+		local mutatorCombo = mutatorCell:AddCombo("")
+		mutatorCombo.WidthFitPreview = true
+		local opts = {}
+		local selectedIndex = -1
+		for mutatorName in TableUtils:OrderedPairs(self.mutators) do
+			if mutatorName == mutator.targetProperty or  not TableUtils:IndexOf(mutators, function(value)
+					return value.targetProperty == mutatorName
+				end)
+			then
+				table.insert(opts, mutatorName)
+				if mutatorName == mutator.targetProperty then
+					selectedIndex = #opts - 1
+				end
+			end
+		end
+		mutatorCombo.Options = opts
+		mutatorCombo.SelectedIndex = selectedIndex
+
+		mutatorCombo.OnChange = function()
+			mutator.targetProperty = mutatorCombo.Options[mutatorCombo.SelectedIndex + 1]
+			mutator.modifiers = {}
+			mutator.values = nil
+			self.mutators[mutator.targetProperty]:renderMutator(mutatorCell, mutator)
+		end
+
+		if mutator.targetProperty and mutator.targetProperty ~= "" then
+			self.mutators[mutator.targetProperty]:renderMutator(mutatorCell, mutator)
+		end
+	end
+
+	Styler:MiddleAlignedColumnLayout(parent, function(ele)
+		local addNewEntryButton = ele:AddButton("+")
+		addNewEntryButton.OnClick = function()
+			table.insert(mutators,
+				TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.mutator))
+
+			Helpers:KillChildren(parent)
+			self:RenderMutators(parent, mutators)
 		end
 	end)
 end
