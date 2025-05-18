@@ -155,7 +155,7 @@ function HealthMutator:renderModifiers(parent, modifiers)
 	xpLevelInfoText:SetStyle("SeparatorTextAlign", 0, 0.3)
 	xpLevelInfoText:SetStyle("Alpha", 1)
 	xpLevelInfoText:Tooltip():AddText(
-		"\t Set the XPReward Categories at which the modifier changes - for example, setting the modifier to 10% for Elites\nwhen the base modifier is 5% means the modifier will be 5% for Civilians/Combat and 10% levels for elites and above")
+		"\t Set the XPReward Categories at which the modifier changes - for example, setting the modifier to 10% for Elites\nwhen the base modifier is 5% means the modifier will be 5% for Pack/Combatant and 10% levels for elites and above")
 
 	parent:AddText("Each XPReward level adds")
 	local baseXPLevelMod = parent:AddInputInt("% to the % Base Health Mutator##xpRewardLevel", xpRewardLevelModifier.value)
