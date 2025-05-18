@@ -217,7 +217,7 @@ end
 local function calculateCharacterLevelModifier(mutatorModifier, characterLevel)
 	local cMod = mutatorModifier.extraData[characterLevel]
 	if not cMod then
-		for i = characterLevel - 1, 0 do
+		for i = characterLevel - 1, 0, -1 do
 			cMod = mutatorModifier.extraData[i]
 			if cMod then
 				break
@@ -234,7 +234,7 @@ end
 local function calculateGameLevelModifier(mutatorModifier, gameLevel)
 	local gMod = mutatorModifier.extraData[gameLevel]
 	if not gMod then
-		for i = TableUtils:IndexOf(EntityRecorder.Levels, gameLevel) - 1, 0 do
+		for i = TableUtils:IndexOf(EntityRecorder.Levels, gameLevel) - 1, 1, -1 do
 			gMod = mutatorModifier.extraData[EntityRecorder.Levels[i]]
 			if gMod then
 				break
@@ -263,7 +263,7 @@ local function calculateXPRewardLevelModifier(mutatorModifier, xpRewardId)
 
 	local xMod = mutatorModifier.extraData[xpRewardId]
 	if not xMod then
-		for i = TableUtils:IndexOf(xpRewardList, xpRewardId) - 1, 0 do
+		for i = TableUtils:IndexOf(xpRewardList, xpRewardId) - 1, 0, -1 do
 			xMod = mutatorModifier.extraData[xpRewardList[i]]
 			if xMod then
 				break
@@ -287,6 +287,10 @@ function HealthMutator:previewResult(mutator)
 		window.Open = true
 		window:SetFocus()
 		Helpers:KillChildren(window)
+	end
+
+	window:AddButton("Refresh").OnClick = function ()
+		self:previewResult(mutator)
 	end
 
 	window:AddText("Base Health of Character:")
@@ -336,7 +340,7 @@ function HealthMutator:previewResult(mutator)
 			for _, gameLevel in ipairs(EntityRecorder.Levels) do
 				local gameMod = calculateGameLevelModifier(mutator.modifiers["GameLevel"], gameLevel)
 				local percentToAdd = (mutator.values + (characterMod + gameMod + xPRewardMod)) / 100
-				row:AddCell():AddText(tostring(healthInput.Value[1] + (healthInput.Value[1] * percentToAdd)))
+				row:AddCell():AddText(tostring(math.floor(healthInput.Value[1] + (healthInput.Value[1] * percentToAdd))))
 			end
 		end
 	end
