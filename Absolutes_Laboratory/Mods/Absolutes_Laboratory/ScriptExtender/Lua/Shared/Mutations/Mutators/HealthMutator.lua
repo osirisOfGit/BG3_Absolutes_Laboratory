@@ -128,14 +128,12 @@ function HealthMutator:renderModifiers(parent, modifiers)
 		local row = gLevelTable:AddRow()
 		local levelCell = row:AddCell()
 
-		gameLevelModifier.extraData[level] = gameLevelModifier.extraData[level] or 0
-
 		levelCell:AddText(level)
 
-		local modInput = row:AddCell():AddInputInt("##" .. level, gameLevelModifier.extraData[level])
+		local modInput = row:AddCell():AddInputInt("##" .. level, gameLevelModifier.extraData[level] or 0)
 
 		modInput.OnDeactivate = function()
-			gameLevelModifier.extraData[gameLevelModifier.extraData[level]] = modInput.Value[1]
+			gameLevelModifier.extraData[level] = modInput.Value[1] > 0 and modInput.Value[1] or nil
 		end
 	end
 	--#endregion
@@ -183,11 +181,10 @@ function HealthMutator:renderModifiers(parent, modifiers)
 				ResourceManager:RenderDisplayWindow(xpRewardResource, parent)
 			end)
 
-			xpRewardLevelModifier.extraData[xpReward] = xpRewardLevelModifier.extraData[xpReward] or 0
-			local modInput = row:AddCell():AddInputInt("##" .. xpReward, xpRewardLevelModifier.extraData[xpReward])
+			local modInput = row:AddCell():AddInputInt("##" .. xpReward, xpRewardLevelModifier.extraData[xpReward] or 0)
 
 			modInput.OnDeactivate = function()
-				xpRewardLevelModifier.extraData[xpRewardLevelModifier] = modInput.Value[1]
+				xpRewardLevelModifier.extraData[xpReward] = modInput.Value[1] > 0 and modInput.Value[1] or nil
 			end
 		end
 	end
