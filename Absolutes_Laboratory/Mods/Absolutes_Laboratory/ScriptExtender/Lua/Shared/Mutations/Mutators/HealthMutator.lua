@@ -13,7 +13,7 @@ function HealthMutator:renderMutator(parent, mutator)
 		mutator.values = 10
 	end
 
-	parent:AddText("% Base Health Increase")
+	parent:AddText("Base Health Increases by ")
 	local input = parent:AddInputInt("%", mutator.values)
 	input.ItemWidth = 40
 	input.SameLine = true
