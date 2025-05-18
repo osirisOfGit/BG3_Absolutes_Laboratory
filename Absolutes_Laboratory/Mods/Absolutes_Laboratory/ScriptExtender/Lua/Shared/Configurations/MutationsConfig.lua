@@ -21,16 +21,16 @@ ConfigurationStructure.DynamicClassDefinitions.selector = {
 
 ---@class MutationModifier
 ConfigurationStructure.DynamicClassDefinitions.modifier = {
-	criteriaKey = "",
-	modifierValue = ""
+	value = "",
+	extraData = {}
 }
 
 ---@class Mutator
 ConfigurationStructure.DynamicClassDefinitions.mutator = {
 	targetProperty = "",
-	values = {},
-	---@type MutationModifier?
-	modifier = nil
+	values = nil,
+	---@type {[string]: MutationModifier}?
+	modifiers = nil
 }
 
 --#endregion
