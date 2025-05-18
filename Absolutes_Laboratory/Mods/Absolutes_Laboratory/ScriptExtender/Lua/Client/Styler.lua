@@ -5,10 +5,8 @@ Styler = {}
 function Styler:DynamicLabelTree(tree)
 	local label = tree.Label
 	tree.Label = tree.Label .. "###" .. tree.Label
-	tree.DefaultOpen = true
-
+	tree.DefaultOpen = false
 	tree.SpanFullWidth = true
-
 
 	return tree, function(count)
 		tree.Label = label .. (count > 0 and (" - " .. count .. " " .. Translator:translate("selected")) or "") .. "###" .. label

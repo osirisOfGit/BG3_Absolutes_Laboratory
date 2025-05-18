@@ -1,6 +1,6 @@
 MutationMain = {}
 
-Ext.Require("Client/Mutations/MutationManager.lua")
+Ext.Require("Client/Mutations/MutationDesigner.lua")
 
 ---@type ExtuiWindow?
 MutationMain.formBuilderWindow = nil
@@ -8,7 +8,12 @@ MutationMain.formBuilderWindow = nil
 Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Mutations",
 	--- @param tabHeader ExtuiTreeParent
 	function(tabHeader)
-		local parentTable = Styler:TwoColumnTable(tabHeader, "mutationsMain")
+		local mutationTab = tabHeader:AddTabBar("Mutations")
+
+		local buildTab = mutationTab:AddTabItem("Designer")
+		local profileTab = mutationTab:AddTabItem("Profiles")
+		local parentTable = Styler:TwoColumnTable(buildTab, "mutationsMain")
+		parentTable.Borders = false
 
 		local row = parentTable:AddRow()
 
