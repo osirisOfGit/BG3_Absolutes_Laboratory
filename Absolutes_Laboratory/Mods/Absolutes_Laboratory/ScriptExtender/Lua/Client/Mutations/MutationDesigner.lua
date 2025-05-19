@@ -252,7 +252,7 @@ function MutationManager:RenderMutators(parent, mutators)
 		local opts = {}
 		local selectedIndex = -1
 		for mutatorName in TableUtils:OrderedPairs(self.mutators) do
-			if mutatorName == mutator.targetProperty or  not TableUtils:IndexOf(mutators, function(value)
+			if mutatorName == mutator.targetProperty or not TableUtils:IndexOf(mutators, function(value)
 					return value.targetProperty == mutatorName
 				end)
 			then

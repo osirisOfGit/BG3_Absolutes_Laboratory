@@ -1,6 +1,10 @@
 MutationMain = {}
 
+---@type "Designer"|"Profiles"
+MutationMain.ActiveTab = "Designer"
+
 Ext.Require("Client/Mutations/MutationDesigner.lua")
+Ext.Require("Client/Mutations/MutationProfileManager.lua")
 
 ---@type ExtuiWindow?
 MutationMain.formBuilderWindow = nil
@@ -10,9 +14,19 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Mutations",
 	function(tabHeader)
 		local mutationTab = tabHeader:AddTabBar("Mutations")
 
-		local buildTab = mutationTab:AddTabItem("Designer")
-		local profileTab = mutationTab:AddTabItem("Profiles")
-		local parentTable = Styler:TwoColumnTable(buildTab, "mutationsMain")
+		local designerTab = mutationTab:AddTabItem("Designer")
+		designerTab.OnActivate = function()
+			MutationMain.ActiveTab = "Designer"
+			MutationMain:BuildUserFolders()
+		end
+		designerTab:Activate()
+		mutationTab:AddTabItem("Profiles").OnActivate = function()
+			MutationMain.ActiveTab = "Profiles"
+			MutationMain:BuildUserFolders()
+			MutationMain:BuildProfileManager()
+		end
+
+		local parentTable = Styler:TwoColumnTable(tabHeader, "mutationsMain")
 		parentTable.Borders = false
 
 		local row = parentTable:AddRow()
@@ -47,33 +61,76 @@ function MutationMain:BuildUserFolders()
 			---@type ExtuiSelectable
 			local mutationSelectable = folderHeader:AddSelectable(mutationName)
 			mutationSelectable:Tooltip():AddText("\t " .. mutation.description)
-
-			mutationSelectable.OnClick = function ()
-				self:BuildMutationDesigner(mutationName, mutation)
+			if self.ActiveTab == "Designer" then
+				mutationSelectable.OnClick = function()
+					self:BuildMutationDesigner(mutationName, mutation)
+				end
 			end
 		end
 
-		folderHeader:AddNewLine()
+		if self.ActiveTab == "Designer" then
+			folderHeader:AddNewLine()
+
+			---@type ExtuiSelectable
+			local createMutationButton = folderHeader:AddSelectable("Create Mutation")
+			createMutationButton:SetStyle("SelectableTextAlign", 0.5)
+
+			createMutationButton.OnClick = function()
+				createMutationButton.Selected = false
+
+				self.formBuilderWindow.Label = "Create a Mutation"
+				Helpers:KillChildren(self.formBuilderWindow)
+				self.formBuilderWindow.Open = true
+				self.formBuilderWindow:SetFocus()
+
+
+				FormBuilder:CreateForm(self.formBuilderWindow, function(formResults)
+						folder.mutations[formResults.Name] = {
+							description = formResults.Description,
+							selectors = {},
+							mutators = {}
+						} --[[@as Mutation]]
+
+						self.formBuilderWindow.Open = false
+						self:BuildUserFolders()
+					end,
+					{
+						{
+							label = "Name",
+							type = "Text",
+							errorMessageIfEmpty = "Required Field"
+						},
+						{
+							label = "Description",
+							type = "Multiline"
+						}
+					}
+				)
+			end
+		end
+	end
+
+	if self.ActiveTab == "Designer" then
+		self.userFolderGroup:AddNewLine()
 
 		---@type ExtuiSelectable
-		local createMutationButton = folderHeader:AddSelectable("Create Mutation")
-		createMutationButton:SetStyle("SelectableTextAlign", 0.5)
+		local createFolderButton = self.userFolderGroup:AddSelectable("Create Folder")
+		createFolderButton:SetStyle("SelectableTextAlign", 0.5)
 
-		createMutationButton.OnClick = function()
-			createMutationButton.Selected = false
+		createFolderButton.OnClick = function()
+			createFolderButton.Selected = false
 
-			self.formBuilderWindow.Label = "Create a Mutation"
+			self.formBuilderWindow.Label = "Create a Folder"
 			Helpers:KillChildren(self.formBuilderWindow)
 			self.formBuilderWindow.Open = true
 			self.formBuilderWindow:SetFocus()
 
 
 			FormBuilder:CreateForm(self.formBuilderWindow, function(formResults)
-					folder.mutations[formResults.Name] = {
+					ConfigurationStructure.config.mutations.folders[formResults.Name] = {
 						description = formResults.Description,
-						selectors = {},
-						mutators = {}
-					} --[[@as Mutation]]
+						mutations = {}
+					} --[[@as MutationFolder]]
 
 					self.formBuilderWindow.Open = false
 					self:BuildUserFolders()
@@ -92,44 +149,6 @@ function MutationMain:BuildUserFolders()
 			)
 		end
 	end
-
-	self.userFolderGroup:AddNewLine()
-
-	---@type ExtuiSelectable
-	local createFolderButton = self.userFolderGroup:AddSelectable("Create Folder")
-	createFolderButton:SetStyle("SelectableTextAlign", 0.5)
-
-	createFolderButton.OnClick = function()
-		createFolderButton.Selected = false
-
-		self.formBuilderWindow.Label = "Create a Folder"
-		Helpers:KillChildren(self.formBuilderWindow)
-		self.formBuilderWindow.Open = true
-		self.formBuilderWindow:SetFocus()
-
-
-		FormBuilder:CreateForm(self.formBuilderWindow, function(formResults)
-				ConfigurationStructure.config.mutations.folders[formResults.Name] = {
-					description = formResults.Description,
-					mutations = {}
-				} --[[@as MutationFolder]]
-
-				self.formBuilderWindow.Open = false
-				self:BuildUserFolders()
-			end,
-			{
-				{
-					label = "Name",
-					type = "Text",
-					errorMessageIfEmpty = "Required Field"
-				},
-				{
-					label = "Description",
-					type = "Multiline"
-				}
-			}
-		)
-	end
 end
 
 ---@param name string
@@ -137,10 +156,66 @@ end
 function MutationMain:BuildMutationDesigner(name, mutation)
 	Helpers:KillChildren(self.mutationParent)
 
-	Styler:MiddleAlignedColumnLayout(self.mutationParent, function (ele)
+	Styler:MiddleAlignedColumnLayout(self.mutationParent, function(ele)
 		Styler:CheapTextAlign(name, ele)
 		ele:AddText(mutation.description):SetStyle("Alpha", 0.75)
 	end)
 
 	MutationManager:RenderMutationManager(self.mutationParent, mutation)
+end
+
+function MutationMain:BuildProfileManager(activeProfile)
+	Helpers:KillChildren(self.mutationParent)
+
+	Styler:MiddleAlignedColumnLayout(self.mutationParent, function(ele)
+		ele:AddText("Active Profile")
+		local profileCombo = ele:AddCombo("")
+		profileCombo.SameLine = true
+		profileCombo.WidthFitPreview = true
+
+		local opt = {}
+		for profileName in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
+			table.insert(opt, profileName)
+		end
+		profileCombo.Options = opt
+
+		local createProfileButton = ele:AddButton("+")
+		createProfileButton.SameLine = true
+
+		createProfileButton.OnClick = function()
+			self.formBuilderWindow.Label = "Create a new Profile"
+			Helpers:KillChildren(self.formBuilderWindow)
+			self.formBuilderWindow.Open = true
+			self.formBuilderWindow:SetFocus()
+
+			FormBuilder:CreateForm(self.formBuilderWindow, function(formResults)
+					ConfigurationStructure.config.mutations.profiles[formResults.Name] = {
+						description = formResults.Description,
+						defaultActive = formResults.defaultActive,
+						mutationRules = {}
+					} --[[@as MutationProfile]]
+
+					self.formBuilderWindow.Open = false
+					self:BuildProfileManager()
+				end,
+				{
+					{
+						label = "Name",
+						type = "Text",
+						errorMessageIfEmpty = "Required Field"
+					},
+					{
+						label = "Description",
+						type = "Multiline"
+					},
+					{
+						label = "Active By Default for New Games?",
+						propertyField = "defaultActive",
+						type = "Checkbox",
+						defaultValue = false
+					}
+				}
+			)
+		end
+	end)
 end

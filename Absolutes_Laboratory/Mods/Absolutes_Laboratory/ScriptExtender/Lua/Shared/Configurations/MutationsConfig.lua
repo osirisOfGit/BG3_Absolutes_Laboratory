@@ -57,3 +57,32 @@ ConfigurationStructure.DynamicClassDefinitions.folders = {
 
 ---@type {[FolderName] : MutationFolder}
 ConfigurationStructure.config.mutations.folders = {}
+
+
+--#region Profiles 
+
+---@class MutationProfile
+ConfigurationStructure.DynamicClassDefinitions.profile = {
+	description = "",
+	defaultActive = false,
+	---@type MutationProfileRule[]
+	mutationRules = {},
+}
+
+---@class MutationProfileRule
+ConfigurationStructure.DynamicClassDefinitions.profileMutationRule = {
+	---@type FolderName
+	mutationFolder = "",
+	---@type MutationName
+	mutationName = "",
+	---@type string?
+	modId = nil,
+	---@type string? 
+	modName = nil,
+	---@type boolean
+	additive = false
+}
+
+---@type {[string]: MutationProfile}
+ConfigurationStructure.config.mutations.profiles = {}
+--#endregion
