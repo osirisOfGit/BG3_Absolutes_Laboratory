@@ -9,11 +9,13 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Mutations",
 		local mutationTab = tabHeader:AddTabBar("Mutations")
 
 		local designerTab = mutationTab:AddTabItem("Designer")
+		MutationDesigner:BuildMutationView(designerTab)
 		designerTab.OnActivate = function()
 			MutationDesigner:BuildMutationView(designerTab)
 		end
 		designerTab:Activate()
-		mutationTab:AddTabItem("Profiles").OnActivate = function()
-			MutationProfileManager:BuildProfileView(mutationTab)
+		local profileTab = mutationTab:AddTabItem("Profiles")
+		profileTab.OnActivate = function()
+			MutationProfileManager:BuildProfileView(profileTab)
 		end
 	end)

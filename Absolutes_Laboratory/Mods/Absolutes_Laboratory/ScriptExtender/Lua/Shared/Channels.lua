@@ -1,28 +1,28 @@
 ---@class ExtenderNetChannel
 ---@field Module string
 ---@field Channel string
----@field RequestHandler fun(data:table, user:integer):table
----@field MessageHandler fun(data:table, user:integer)
----@field SendToServer fun(self:ExtenderNetChannel, data:table)
----@field SendToClient fun(self:ExtenderNetChannel, data:table, user:integer|Guid)
----@field Broadcast fun(self:ExtenderNetChannel, data:table, excludeCharacter?:Guid)
+---@field RequestHandler fun(data:any?, user:integer):any?
+---@field MessageHandler fun(data:any?, user:integer)
+---@field SendToServer fun(self:ExtenderNetChannel, data:any?)
+---@field SendToClient fun(self:ExtenderNetChannel, data:any?, user:integer|Guid)
+---@field Broadcast fun(self:ExtenderNetChannel, data:any?, excludeCharacter?:Guid)
 local NetChannel = {}
 
 ---Sets MessageHandler
----@param callback fun(data:table, user:integer)
+---@param callback fun(data:any?, user:integer)
 function NetChannel:SetHandler(callback) end
 
 ---Sets RequestHandler
----@param callback fun(data:table, user:integer):table
+---@param callback fun(data:any?, user:integer):any?
 function NetChannel:SetRequestHandler(callback) end
 
----@param data table
----@param replyCallback fun(data:table)
+---@param data any?
+---@param replyCallback fun(data:any?)
 function NetChannel:RequestToServer(data, replyCallback) end
 
----@param data table
+---@param data any?
 ---@param user integer|Guid
----@param replyCallback fun(data:table)
+---@param replyCallback fun(data:any?)
 function NetChannel:RequestToClient(data, user, replyCallback) end
 
 ---@type {[string]: ExtenderNetChannel}
@@ -33,3 +33,6 @@ Channels.GetEntityIcon = Ext.Net.CreateChannel(ModuleUUID, "GetEntityIcon")
 Channels.IsEntityAlive = Ext.Net.CreateChannel(ModuleUUID, "IsEntityAlive")
 Channels.GetEntityStat = Ext.Net.CreateChannel(ModuleUUID, "GetEntityStat")
 Channels.TeleportToLevel = Ext.Net.CreateChannel(ModuleUUID, "TeleportToLevel")
+
+
+Channels.ActivateMutationProfile = Ext.Net.CreateChannel(ModuleUUID, "ActivateMutationProfile")

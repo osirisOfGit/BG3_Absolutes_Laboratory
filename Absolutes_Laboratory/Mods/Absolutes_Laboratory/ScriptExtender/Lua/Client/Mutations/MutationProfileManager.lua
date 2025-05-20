@@ -1,3 +1,14 @@
+Ext.Vars.RegisterModVariable(ModuleUUID, "ActiveMutationProfile", {
+	Server = true,
+	Client = true,
+	WriteableOnServer = true,
+	WriteableOnClient = true,
+	SyncToClient = true,
+	SyncToServer = true,
+	---@type ExtuiWindow?
+	formBuilderWindow = nil
+})
+
 MutationProfileManager = {
 	---@type ExtuiGroup
 	selectionParent = nil,
@@ -7,9 +18,16 @@ MutationProfileManager = {
 	profileGroup = nil
 }
 
+---@type string?
+local activeProfileName
+
 ---@param parent ExtuiTreeParent
 function MutationProfileManager:init(parent)
 	if not self.userFolderGroup then
+		if not activeProfileName then
+			activeProfileName = Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile
+		end
+
 		local parentTable = Styler:TwoColumnTable(parent, "mutationsMain")
 		parentTable.Borders = false
 
@@ -28,8 +46,18 @@ function MutationProfileManager:init(parent)
 					for _, mutation in pairs(ele.Children) do
 						---@cast mutation ExtuiSelectable
 
-						if mutation.UserData.mutation == dropped.UserData.mutationName then
+						if mutation.UserData.mutationName == dropped.UserData.mutationName then
 							mutation.SelectableDisabled = false
+
+							for _, mutationRule in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles[activeProfileName].mutationRules) do
+								if mutationRule.mutationName == dropped.UserData.mutationName and mutationRule.mutationFolder == dropped.UserData.mutationFolder then
+									mutationRule.delete = true
+									break
+								end
+							end
+
+							self:BuildProfileManager()
+							return
 						end
 					end
 				end
@@ -37,12 +65,16 @@ function MutationProfileManager:init(parent)
 		end
 
 		self.profileParent = row:AddCell()
+
+		self.formBuilderWindow = Ext.IMGUI.NewWindow("Create a Profile")
+		self.formBuilderWindow:SetStyle("WindowMinSize", 250)
+		self.formBuilderWindow.Open = false
+		self.formBuilderWindow.Closeable = true
 	end
 end
 
 ---@param parent ExtuiTreeParent
----@param activeProfileName string?
-function MutationProfileManager:BuildProfileView(parent, activeProfileName)
+function MutationProfileManager:BuildProfileView(parent)
 	self:init(parent)
 	Helpers:KillChildren(self.userFolderGroup)
 
@@ -61,8 +93,8 @@ function MutationProfileManager:BuildProfileView(parent, activeProfileName)
 			mutationSelectable.CanDrag = true
 			mutationSelectable.DragDropType = "MutationRules"
 			mutationSelectable.UserData = {
-				folder = folderName,
-				mutation = mutationName
+				mutationFolder = folderName,
+				mutationName = mutationName
 			}
 
 			---@param selectable ExtuiSelectable
@@ -99,15 +131,13 @@ function MutationProfileManager:BuildProfileView(parent, activeProfileName)
 			end
 		end
 		profileCombo.Options = opt
-		profileCombo.SelectedIndex = sIndex
+		profileCombo.SelectedIndex = sIndex - 1
 		profileCombo.OnChange = function()
-			MutationProfileManager:BuildProfileManager(
-				profiles[profileCombo.Options[profileCombo.SelectedIndex + 1]]
-			)
-		end
+			local profileName = profileCombo.Options[profileCombo.SelectedIndex + 1]
 
-		if activeProfileName then
-			MutationProfileManager:BuildProfileManager(profiles[activeProfileName])
+			Channels.ActivateMutationProfile:SendToServer(profileName)
+			Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = profileName
+			MutationProfileManager:BuildProfileManager(profiles[profileName])
 		end
 
 		local createProfileButton = ele:AddButton("+")
@@ -134,7 +164,14 @@ function MutationProfileManager:BuildProfileView(parent, activeProfileName)
 						end
 					end
 					self.formBuilderWindow.Open = false
-					self:BuildProfileManager(profiles[formResults.Name])
+
+					local profileName = formResults.Name
+					activeProfileName = profileName
+					Channels.ActivateMutationProfile:SendToServer(profileName)
+					Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = profileName
+					MutationProfileManager:BuildProfileManager(profiles[profileName])
+
+					self:BuildProfileManager()
 				end,
 				{
 					{
@@ -155,12 +192,21 @@ function MutationProfileManager:BuildProfileView(parent, activeProfileName)
 				}
 			)
 		end
-	end)
+	end).UserData = "keep"
+
+	self:BuildProfileManager()
 end
 
----@param activeProfle MutationProfile
-function MutationProfileManager:BuildProfileManager(activeProfle)
+function MutationProfileManager:BuildProfileManager()
 	Helpers:KillChildren(self.profileParent)
+
+	---@type MutationProfile
+	local activeProfile
+	if activeProfileName then
+		activeProfile = ConfigurationStructure.config.mutations.profiles[activeProfileName]
+	else
+		return
+	end
 
 	local counter = 0
 	for _, mutationFolder in pairs(ConfigurationStructure.config.mutations.folders) do
@@ -170,20 +216,52 @@ function MutationProfileManager:BuildProfileManager(activeProfle)
 			local row = self.profileParent:AddGroup("MutationGroup" .. counter)
 			row.UserData = counter
 			row.DragDropType = "MutationRules"
-			row.OnDragDrop = function(cell, dropped)
-				dropped.SelectableDisabled = true
-				activeProfle.mutationRules[tonumber(cell.UserData)] = {
+			---@param row ExtuiGroup
+			---@param dropped ExtuiSelectable|ExtuiButton
+			row.OnDragDrop = function(row, dropped)
+				if tonumber(dropped.ParentElement.UserData) then
+					activeProfile.mutationRules[dropped.ParentElement.UserData].delete = true
+					if activeProfile.mutationRules[row.UserData] then
+						activeProfile.mutationRules[dropped.ParentElement.UserData] = activeProfile.mutationRules[row.UserData]._real
+					end
+				else
+					dropped.SelectableDisabled = true
+
+					if activeProfile.mutationRules[row.UserData] then
+						local removeRule = activeProfile.mutationRules[row.UserData]
+						for _, ele in pairs(self.userFolderGroup.Children) do
+							---@cast ele ExtuiCollapsingHeader
+							if ele.UserData == removeRule.mutationFolder then
+								for _, mutation in pairs(ele.Children) do
+									---@cast mutation ExtuiSelectable
+
+									if mutation.UserData.mutationName == removeRule.mutationName then
+										mutation.SelectableDisabled = false
+										goto continue
+									end
+								end
+							end
+						end
+						::continue::
+					end
+				end
+
+				if activeProfile.mutationRules[row.UserData] then
+					activeProfile.mutationRules[row.UserData].delete = true
+				end
+
+				activeProfile.mutationRules[row.UserData] = {
 					additive = false,
-					mutationFolder = dropped.UserData.folder,
-					mutationName = dropped.UserData.mutation,
+					mutationFolder = dropped.UserData.mutationFolder,
+					mutationName = dropped.UserData.mutationName,
 				}
-				self:BuildProfileManager(activeProfle)
+				self:BuildProfileManager()
 			end
 
 			row:AddText(tostring(counter) .. ".")
 
-			if activeProfle.mutationRules[counter] then
-				local mutationRule = activeProfle.mutationRules[counter]
+			if activeProfile.mutationRules[counter] then
+				local mutationRule = activeProfile.mutationRules[counter]
 
 				local mutationCell = row:AddButton(mutationRule.mutationFolder .. "/" .. mutationRule.mutationName)
 				mutationCell.UserData = mutationRule._real
@@ -193,8 +271,7 @@ function MutationProfileManager:BuildProfileManager(activeProfle)
 				---@param button ExtuiButton
 				---@param preview ExtuiTreeParent
 				mutationCell.OnDragStart = function(button, preview)
-					button.Disabled = true
-					activeProfle.mutationRules[tonumber(row.UserData)].delete = true
+					preview:AddText(button.Label)
 				end
 			else
 				local cell = row:AddButton((" "):rep(15) .. "##" .. counter)

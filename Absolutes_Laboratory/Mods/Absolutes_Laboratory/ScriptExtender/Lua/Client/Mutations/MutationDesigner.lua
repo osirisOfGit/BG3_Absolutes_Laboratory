@@ -28,10 +28,10 @@ function MutationDesigner:init(parent)
 
 		self.mutationParent = row:AddCell()
 
-		MutationDesigner.formBuilderWindow = Ext.IMGUI.NewWindow("Create a Folder")
-		MutationDesigner.formBuilderWindow:SetStyle("WindowMinSize", 250)
-		MutationDesigner.formBuilderWindow.Open = false
-		MutationDesigner.formBuilderWindow.Closeable = true
+		self.formBuilderWindow = Ext.IMGUI.NewWindow("Create a Folder")
+		self.formBuilderWindow:SetStyle("WindowMinSize", 250)
+		self.formBuilderWindow.Open = false
+		self.formBuilderWindow.Closeable = true
 	end
 end
 
