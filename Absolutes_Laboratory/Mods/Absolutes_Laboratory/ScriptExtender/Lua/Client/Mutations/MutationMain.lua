@@ -65,6 +65,16 @@ function MutationMain:BuildUserFolders()
 				mutationSelectable.OnClick = function()
 					self:BuildMutationDesigner(mutationName, mutation)
 				end
+			else
+				mutationSelectable.CanDrag = true
+				mutationSelectable.DragDropType = folderName .. "/" .. mutationName
+				mutationSelectable.UserData = {
+					folder = folderName,
+					mutation = mutationName
+				}
+				mutationSelectable.OnDragStart = function (selectable, preview)
+					_D("Started dragging" .. mutationName)
+				end
 			end
 		end
 
@@ -164,7 +174,9 @@ function MutationMain:BuildMutationDesigner(name, mutation)
 	MutationManager:RenderMutationManager(self.mutationParent, mutation)
 end
 
-function MutationMain:BuildProfileManager(activeProfile)
+---@param activeProfileName string?
+function MutationMain:BuildProfileManager(activeProfileName)
+	local profiles = ConfigurationStructure.config.mutations.profiles
 	Helpers:KillChildren(self.mutationParent)
 
 	Styler:MiddleAlignedColumnLayout(self.mutationParent, function(ele)
@@ -173,11 +185,26 @@ function MutationMain:BuildProfileManager(activeProfile)
 		profileCombo.SameLine = true
 		profileCombo.WidthFitPreview = true
 
+		local sIndex = -1
 		local opt = {}
-		for profileName in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
+		for profileName in TableUtils:OrderedPairs(profiles) do
 			table.insert(opt, profileName)
+			if profileName == activeProfileName then
+				sIndex = #opt
+			end
 		end
 		profileCombo.Options = opt
+		profileCombo.SelectedIndex = sIndex
+		profileCombo.OnChange = function()
+			MutationProfileManager:BuildProfileManager(
+				self.mutationParent,
+				profiles[profileCombo.Options[profileCombo.SelectedIndex + 1]]
+			)
+		end
+
+		if activeProfileName then
+			MutationProfileManager:BuildProfileManager(self.mutationParent, profiles[activeProfileName])
+		end
 
 		local createProfileButton = ele:AddButton("+")
 		createProfileButton.SameLine = true
@@ -189,14 +216,21 @@ function MutationMain:BuildProfileManager(activeProfile)
 			self.formBuilderWindow:SetFocus()
 
 			FormBuilder:CreateForm(self.formBuilderWindow, function(formResults)
-					ConfigurationStructure.config.mutations.profiles[formResults.Name] = {
+					profiles[formResults.Name] = {
 						description = formResults.Description,
 						defaultActive = formResults.defaultActive,
 						mutationRules = {}
 					} --[[@as MutationProfile]]
 
+					if formResults.defaultActive then
+						for name, profile in pairs(profiles) do
+							if name ~= formResults.Name then
+								profile.defaultActive = false
+							end
+						end
+					end
 					self.formBuilderWindow.Open = false
-					self:BuildProfileManager()
+					self:BuildProfileManager(formResults.Name)
 				end,
 				{
 					{
