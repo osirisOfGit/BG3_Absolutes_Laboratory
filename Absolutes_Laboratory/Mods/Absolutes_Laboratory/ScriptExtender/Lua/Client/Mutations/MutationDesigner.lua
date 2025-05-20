@@ -1,27 +1,145 @@
-MutationManager = {}
-
----@type {[string]: SelectorInterface}
-MutationManager.selectors = {}
----@type {[string]: MutatorInterface}
-MutationManager.mutators = {}
-
----@param name string
----@param selector SelectorInterface
-function MutationManager:registerSelector(name, selector)
-	self.selectors[name] = selector
-end
-
-function MutationManager:registerMutator(name, mutator)
-	self.mutators[name] = mutator
-end
+MutationDesigner = {
+	---@type ExtuiGroup
+	selectionParent = nil,
+	---@type ExtuiGroup
+	userFolderGroup = nil,
+	---@type ExtuiGroup
+	profileGroup = nil,
+	---@type ExtuiWindow?
+	formBuilderWindow = nil
+}
 
 Ext.Require("Shared/Mutations/Selectors/SelectorInterface.lua")
 Ext.Require("Shared/Mutations/Mutators/MutatorInterface.lua")
 
 ---@param parent ExtuiTreeParent
+function MutationDesigner:init(parent)
+	if not self.userFolderGroup then
+		local parentTable = Styler:TwoColumnTable(parent, "mutationsMain")
+		parentTable.Borders = false
+
+		local row = parentTable:AddRow()
+
+		self.selectionParent = row:AddCell():AddChildWindow("selectionParent")
+
+		self.selectionParent:AddSeparatorText("Your Mutations"):SetStyle("SeparatorTextAlign", 0.5)
+
+		self.userFolderGroup = self.selectionParent:AddGroup("User Folders")
+
+		self.mutationParent = row:AddCell()
+
+		MutationDesigner.formBuilderWindow = Ext.IMGUI.NewWindow("Create a Folder")
+		MutationDesigner.formBuilderWindow:SetStyle("WindowMinSize", 250)
+		MutationDesigner.formBuilderWindow.Open = false
+		MutationDesigner.formBuilderWindow.Closeable = true
+	end
+end
+
+---@param parent ExtuiTreeParent
+function MutationDesigner:BuildMutationView(parent)
+	self:init(parent)
+
+	Helpers:KillChildren(self.userFolderGroup)
+
+	local folders = ConfigurationStructure.config.mutations.folders
+
+	for folderName, folder in TableUtils:OrderedPairs(folders) do
+		local folderHeader = self.userFolderGroup:AddCollapsingHeader(folderName)
+		folderHeader.UserData = folderName
+		folderHeader:SetColor("Header", { 1, 1, 1, 0 })
+		folderHeader:Tooltip():AddText("\t " .. folder.description)
+
+		for mutationName, mutation in TableUtils:OrderedPairs(folder.mutations) do
+			---@type ExtuiSelectable
+			local mutationSelectable = folderHeader:AddSelectable(mutationName)
+			mutationSelectable:Tooltip():AddText("\t " .. mutation.description)
+			mutationSelectable.OnClick = function()
+				Helpers:KillChildren(self.mutationParent)
+				self:RenderMutationManager(mutation)
+			end
+		end
+		folderHeader:AddNewLine()
+
+		---@type ExtuiSelectable
+		local createMutationButton = folderHeader:AddSelectable("Create Mutation")
+		createMutationButton:SetStyle("SelectableTextAlign", 0.5)
+
+		createMutationButton.OnClick = function()
+			createMutationButton.Selected = false
+
+			self.formBuilderWindow.Label = "Create a Mutation"
+			Helpers:KillChildren(self.formBuilderWindow)
+			self.formBuilderWindow.Open = true
+			self.formBuilderWindow:SetFocus()
+
+
+			FormBuilder:CreateForm(self.formBuilderWindow, function(formResults)
+					folder.mutations[formResults.Name] = {
+						description = formResults.Description,
+						selectors = {},
+						mutators = {}
+					} --[[@as Mutation]]
+
+					self.formBuilderWindow.Open = false
+					self:BuildUserFolders()
+				end,
+				{
+					{
+						label = "Name",
+						type = "Text",
+						errorMessageIfEmpty = "Required Field"
+					},
+					{
+						label = "Description",
+						type = "Multiline"
+					}
+				}
+			)
+		end
+	end
+
+	self.userFolderGroup:AddNewLine()
+
+	---@type ExtuiSelectable
+	local createFolderButton = self.userFolderGroup:AddSelectable("Create Folder")
+	createFolderButton:SetStyle("SelectableTextAlign", 0.5)
+
+	createFolderButton.OnClick = function()
+		createFolderButton.Selected = false
+
+		self.formBuilderWindow.Label = "Create a Folder"
+		Helpers:KillChildren(self.formBuilderWindow)
+		self.formBuilderWindow.Open = true
+		self.formBuilderWindow:SetFocus()
+
+
+		FormBuilder:CreateForm(self.formBuilderWindow, function(formResults)
+				ConfigurationStructure.config.mutations.folders[formResults.Name] = {
+					description = formResults.Description,
+					mutations = {}
+				} --[[@as MutationFolder]]
+
+				self.formBuilderWindow.Open = false
+				self:BuildUserFolders()
+			end,
+			{
+				{
+					label = "Name",
+					type = "Text",
+					errorMessageIfEmpty = "Required Field"
+				},
+				{
+					label = "Description",
+					type = "Multiline"
+				}
+			}
+		)
+	end
+end
+
 ---@param existingMutation Mutation
-function MutationManager:RenderMutationManager(parent, existingMutation)
-	local managerTable = parent:AddTable("ManagerTable", 2)
+function MutationDesigner:RenderMutationManager(existingMutation)
+	local managerTable = self.mutationParent:AddTable("ManagerTable", 2)
 	managerTable.Borders = true
 
 	local row = managerTable:AddRow()
@@ -110,7 +228,7 @@ end
 
 ---@param parent ExtuiTreeParent
 ---@param existingSelector SelectorQuery
-function MutationManager:RenderSelectors(parent, existingSelector)
+function MutationDesigner:RenderSelectors(parent, existingSelector)
 	local selectorQueryTable = parent:AddTable("selectorQuery", 2)
 	selectorQueryTable:AddColumn("", "WidthFixed")
 	selectorQueryTable:AddColumn("", "WidthStretch")
@@ -184,7 +302,7 @@ function MutationManager:RenderSelectors(parent, existingSelector)
 			selectorCombo.SameLine = true
 			selectorCombo.WidthFitPreview = true
 			local opts = {}
-			for selectorName in TableUtils:OrderedPairs(self.selectors) do
+			for selectorName in TableUtils:OrderedPairs(SelectorInterface.registeredSelectors) do
 				table.insert(opts, selectorName)
 			end
 			selectorCombo.Options = opts
@@ -200,12 +318,12 @@ function MutationManager:RenderSelectors(parent, existingSelector)
 				end
 
 				selectorEntry.criteriaCategory = selectorCombo.Options[selectorCombo.SelectedIndex + 1]
-				self.selectors[selectorEntry.criteriaCategory]:renderSelector(selectorGroup, selectorEntry)
+				SelectorInterface.registeredSelectors[selectorEntry.criteriaCategory]:renderSelector(selectorGroup, selectorEntry)
 				self:RenderSelectors(selectorGroup:AddGroup("SubSelectors"), selectorEntry.subSelectors)
 			end
 
 			if selectorEntry.criteriaCategory then
-				self.selectors[selectorEntry.criteriaCategory]:renderSelector(selectorGroup, selectorEntry)
+				SelectorInterface.registeredSelectors[selectorEntry.criteriaCategory]:renderSelector(selectorGroup, selectorEntry)
 				self:RenderSelectors(selectorGroup:AddGroup("SubSelectors"), selectorEntry.subSelectors)
 			end
 		end
@@ -225,7 +343,7 @@ end
 
 ---@param parent ExtuiTreeParent
 ---@param mutators Mutator[]
-function MutationManager:RenderMutators(parent, mutators)
+function MutationDesigner:RenderMutators(parent, mutators)
 	local mutatorTable = Styler:TwoColumnTable(parent, "Mutators")
 	mutatorTable.ColumnDefs[1].Width = 20
 	mutatorTable.BordersV = false
@@ -251,7 +369,7 @@ function MutationManager:RenderMutators(parent, mutators)
 		mutatorCombo.WidthFitPreview = true
 		local opts = {}
 		local selectedIndex = -1
-		for mutatorName in TableUtils:OrderedPairs(self.mutators) do
+		for mutatorName in TableUtils:OrderedPairs(MutatorInterface.registeredMutators) do
 			if mutatorName == mutator.targetProperty or not TableUtils:IndexOf(mutators, function(value)
 					return value.targetProperty == mutatorName
 				end)
@@ -269,11 +387,11 @@ function MutationManager:RenderMutators(parent, mutators)
 			mutator.targetProperty = mutatorCombo.Options[mutatorCombo.SelectedIndex + 1]
 			mutator.modifiers = {}
 			mutator.values = nil
-			self.mutators[mutator.targetProperty]:renderMutator(mutatorCell, mutator)
+			MutatorInterface.registeredMutators[mutator.targetProperty]:renderMutator(mutatorCell, mutator)
 		end
 
 		if mutator.targetProperty and mutator.targetProperty ~= "" then
-			self.mutators[mutator.targetProperty]:renderMutator(mutatorCell, mutator)
+			MutatorInterface.registeredMutators[mutator.targetProperty]:renderMutator(mutatorCell, mutator)
 		end
 	end
 

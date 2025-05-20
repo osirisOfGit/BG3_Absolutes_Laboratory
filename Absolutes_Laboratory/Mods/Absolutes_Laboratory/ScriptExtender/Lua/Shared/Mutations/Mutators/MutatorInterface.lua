@@ -23,9 +23,6 @@ function MutatorInterface:new(name)
 	setmetatable(instance, self)
 	self.__index = self
 
-	if Ext.IsClient() then
-		MutationManager:registerMutator(name, instance)
-	end
 	MutatorInterface.registeredMutators[name] = instance
 
 	return instance

@@ -13,9 +13,6 @@ function SelectorInterface:new(name)
 	setmetatable(instance, self)
 	self.__index = self
 
-	if Ext.IsClient() then
-		MutationManager:registerSelector(name, instance)
-	end
 	SelectorInterface.registeredSelectors[name] = instance
 
 	return instance
