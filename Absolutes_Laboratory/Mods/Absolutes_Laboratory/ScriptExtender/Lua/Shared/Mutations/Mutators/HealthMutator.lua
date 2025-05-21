@@ -262,7 +262,7 @@ local function calculateXPRewardLevelModifier(mutatorModifier, xpRewardId)
 	end
 
 	local xMod = mutatorModifier.extraData[xpRewardId]
-	if not xMod then
+	if not xMod and TableUtils:IndexOf(xpRewardList, xpRewardId) then
 		for i = TableUtils:IndexOf(xpRewardList, xpRewardId) - 1, 0, -1 do
 			xMod = mutatorModifier.extraData[xpRewardList[i]]
 			if xMod then
@@ -271,7 +271,7 @@ local function calculateXPRewardLevelModifier(mutatorModifier, xpRewardId)
 		end
 	end
 
-	return (xMod or mutatorModifier.value) * TableUtils:IndexOf(xpRewardList, xpRewardId)
+	return (xMod or mutatorModifier.value) * (TableUtils:IndexOf(xpRewardList, xpRewardId) or 0)
 end
 
 ---@type ExtuiWindow?
@@ -289,7 +289,7 @@ function HealthMutator:previewResult(mutator)
 		Helpers:KillChildren(window)
 	end
 
-	window:AddButton("Refresh").OnClick = function ()
+	window:AddButton("Refresh").OnClick = function()
 		self:previewResult(mutator)
 	end
 
@@ -353,4 +353,49 @@ function HealthMutator:previewResult(mutator)
 	end
 
 	buildMatrix()
+end
+
+function HealthMutator:applyMutator(entity, entityVar)
+	---@type HealthMutator
+	local mutator = entityVar.appliedMutators[self.name]
+
+	---@type Character
+	local charStat = Ext.Stats.Get(entity.Data.StatsId)
+
+	---@type number?
+	local xPRewardMod
+	if charStat.XPReward then
+		xPRewardMod = calculateXPRewardLevelModifier(mutator.modifiers["XPReward"], charStat.XPReward)
+	end
+
+	local gameLevelMod = calculateGameLevelModifier(mutator.modifiers["GameLevel"], entity.Level.LevelName)
+	local characterMod = calculateCharacterLevelModifier(mutator.modifiers["CharacterLevel"], entity.AvailableLevel.Level)
+	local percentageToAdd = (mutator.values + (characterMod + gameLevelMod + xPRewardMod)) / 100
+
+	entityVar.originalValues[self.name] = entity.Health.MaxHp
+
+	local currentHealthPercentage = 1 - (entity.Health.Hp / entity.Health.MaxHp)
+
+	entity.Health.MaxHp = math.floor(entity.Health.MaxHp + (entity.Health.MaxHp * percentageToAdd))
+	entity.Health.Hp = entity.Health.MaxHp - (entity.Health.MaxHp * currentHealthPercentage)
+
+	entity:Replicate("Health")
+end
+
+function HealthMutator:undoMutator(entity, entityVar)
+	local healthPercentage = (entity.Health.Hp / entity.Health.MaxHp)
+
+	local originalMaxHp = entity.Health.MaxHp
+
+	entity.Health.MaxHp = entityVar.originalValues[self.name]
+	entity.Health.Hp = entity.Health.MaxHp - (entity.Health.MaxHp * healthPercentage)
+
+	entity:Replicate("Health")
+
+	Logger:BasicTrace("Undid Health Mutator, reverting max health of %s to %s (current health: %s)",
+		entity.ServerCharacter.Template.Name .. "_" .. entity.Uuid.EntityUuid,
+		originalMaxHp,
+		entity.Health.MaxHp,
+		entity.Health.Hp
+	)
 end

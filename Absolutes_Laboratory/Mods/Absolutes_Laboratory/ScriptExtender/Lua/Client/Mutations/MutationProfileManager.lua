@@ -5,8 +5,7 @@ Ext.Vars.RegisterModVariable(ModuleUUID, "ActiveMutationProfile", {
 	WriteableOnClient = true,
 	SyncToClient = true,
 	SyncToServer = true,
-	---@type ExtuiWindow?
-	formBuilderWindow = nil
+	SyncOnWrite = true
 })
 
 MutationProfileManager = {
@@ -15,7 +14,9 @@ MutationProfileManager = {
 	---@type ExtuiGroup
 	userFolderGroup = nil,
 	---@type ExtuiGroup
-	profileGroup = nil
+	profileGroup = nil,
+	---@type ExtuiWindow?
+	formBuilderWindow = nil
 }
 
 ---@type string?
