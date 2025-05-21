@@ -65,17 +65,10 @@ function CharacterWindow:BuildWindow(parent, id)
 	else
 		local entityLevel = EntityRecorder:GetLevelForEntity(id)
 		if entityLevel then
-			if not Ext.Template.GetRootTemplate(id) then
-				Styler:MiddleAlignedColumnLayout(displayCell, function(ele)
-					ele:AddImage(EntityRecorder:GetEntities()[entityLevel][id].Icon, { 128, 128 })
-				end)
-
-				Styler:CheapTextAlign(CharacterIndex.displayNameMappings[id], displayCell, "Big")
-			end
 			Styler:MiddleAlignedColumnLayout(displayCell, function(ele)
 				ele:AddButton("Teleport To Level").OnClick = function()
 					Channels.TeleportToLevel:SendToServer({
-						LevelName = EntityRecorder:GetLevelForEntity(id),
+						LevelName = entityLevel,
 						Id = id
 					})
 
@@ -93,8 +86,9 @@ function CharacterWindow:BuildWindow(parent, id)
 		end
 	end
 
+	local entityRecord = EntityRecorder:GetEntity(id)
 	---@type CharacterTemplate
-	local characterTemplate = Ext.Template.GetRootTemplate(id)
+	local characterTemplate = entityRecord and Ext.Template.GetRootTemplate(entityRecord.Template) or Ext.Template.GetRootTemplate(id)
 
 	if characterTemplate then
 		Styler:MiddleAlignedColumnLayout(displayCell, function(ele)

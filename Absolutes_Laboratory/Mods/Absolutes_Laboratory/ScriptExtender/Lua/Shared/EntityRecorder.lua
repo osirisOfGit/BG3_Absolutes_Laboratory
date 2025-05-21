@@ -42,6 +42,7 @@ EntityRecorder.Levels = {
 ---@field Icon string
 
 if Ext.IsClient() then
+	---@type {[string]: {[GUIDSTRING]: EntityRecord}}
 	local recordedEntities = setmetatable({}, {
 		__mode = "kv",
 		__pairs = function(t)
@@ -58,6 +59,14 @@ if Ext.IsClient() then
 	---@return {[string]: {[GUIDSTRING]: EntityRecord}}
 	function EntityRecorder:GetEntities()
 		return recordedEntities
+	end
+
+	---@param entityId string
+	---@return EntityRecord?
+	function EntityRecorder:GetEntity(entityId)
+		local level = self:GetLevelForEntity(entityId)
+
+		return level and recordedEntities[level][entityId]
 	end
 
 	---@param entityId GUIDSTRING
