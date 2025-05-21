@@ -30,7 +30,7 @@ function CharacterWindow:BuildWindow(parent, id)
 			end)
 		end)
 
-		Styler:CheapTextAlign((entity.DisplayName and entity.DisplayName.Name:Get()) or entity.ClientCharacter.Template.Name, displayCell, "Big")
+		Styler:CheapTextAlign((entity.DisplayName and entity.DisplayName.Name:Get()) or entity.ClientCharacter.Template.DisplayName:Get() or entity.ClientCharacter.Template.Name, displayCell, "Big")
 
 		local tabBar = group:AddTabBar("Tabs")
 
