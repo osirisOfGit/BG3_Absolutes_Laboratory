@@ -26,7 +26,7 @@ function CharacterWindow:BuildWindow(parent, id)
 			end)
 		end)
 
-		Styler:CheapTextAlign(CharacterIndex.displayNameMappings[id], displayCell, "Big")
+		Styler:CheapTextAlign((entity.DisplayName and entity.DisplayName.Name:Get()) or entity.ClientCharacter.Template.Name, displayCell, "Big")
 
 		local tabBar = group:AddTabBar("Tabs")
 
@@ -95,7 +95,7 @@ function CharacterWindow:BuildWindow(parent, id)
 			ele:AddImage(characterTemplate.Icon, { 128, 128 })
 		end)
 
-		Styler:CheapTextAlign(CharacterIndex.displayNameMappings[id], displayCell, "Big")
+		Styler:CheapTextAlign(entityRecord and entityRecord.Name or characterTemplate.DisplayName:Get() or characterTemplate.Name, displayCell, "Big")
 		Styler:CheapTextAlign(characterTemplate.LevelName, displayCell)
 
 		local tabBar = group:AddTabBar("Tabs")

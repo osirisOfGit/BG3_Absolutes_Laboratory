@@ -16,29 +16,30 @@ EntityProxy:RegisterResourceProxy("ActionResources", ActionResourcesProxy)
 EntityProxy:RegisterResourceProxy("PreferredCastingResource", ActionResourcesProxy)
 EntityProxy:RegisterResourceProxy("ResourceActionResource", ActionResourcesProxy)
 
+local displayNameCache = {}
 
 ---@param resources {[string]: ActionResourceEntry[]}
 function ActionResourcesProxy:RenderDisplayableValue(parent, resources, resourceType)
 	if type(resources) == "table" then
 		for resourceId, resource in TableUtils:OrderedPairs(resources, function(key)
-			local cache = CharacterIndex.displayNameMappings[key]
+			local cache = displayNameCache[key]
 			if not cache then
 				---@type ResourceActionResource
 				local resource = Ext.StaticData.Get(key, "ActionResource")
 				if resource then
 					local name = resource.DisplayName:Get() or resource.Name
-					CharacterIndex.displayNameMappings[key] = name
+					displayNameCache[key] = name
 					return name
 				else
-					return CharacterIndex.displayNameMappings[key]
+					return displayNameCache[key]
 				end
 			else
-				return CharacterIndex.displayNameMappings[key]
+				return displayNameCache[key]
 			end
 		end) do
 			local displayTable = Styler:TwoColumnTable(parent, resourceId)
 			local row = displayTable:AddRow()
-			row:AddCell():AddText(CharacterIndex.displayNameMappings[resourceId] or resourceId)
+			row:AddCell():AddText(displayNameCache[resourceId] or resourceId)
 
 			EntityManager:RenderDisplayableValue(row:AddCell(), resource)
 		end
@@ -47,10 +48,10 @@ function ActionResourcesProxy:RenderDisplayableValue(parent, resources, resource
 		local resource = Ext.StaticData.Get(resources, "ActionResource")
 
 		if resource then
-			local cache = CharacterIndex.displayNameMappings[resources]
+			local cache = displayNameCache[resources]
 			if not cache then
 				local name = resource.DisplayName:Get() or resource.Name
-				CharacterIndex.displayNameMappings[resources] = name
+				displayNameCache[resources] = name
 				cache = name
 			end
 

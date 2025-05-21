@@ -21,8 +21,6 @@ function RaceProxy:RenderDisplayableValue(parent, raceId, statType)
 	local race = Ext.StaticData.Get(raceId, "Race")
 
 	if race then
-		CharacterIndex.displayNameMappings[race] = race.DisplayName:Get() or race.Name
-
 		if statType ~= "ParentGuid" then
 			local hasKids = #parent.Children > 0
 			local tagText = Styler:HyperlinkText(parent, race.DisplayName:Get() or race.Name, function(parent)

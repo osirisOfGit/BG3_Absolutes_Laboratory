@@ -16,8 +16,6 @@ function XPRewardProxy:RenderDisplayableValue(parent, xpRewardId, statType)
 	local xpReward = type(xpRewardId) == "string" and Ext.StaticData.Get(xpRewardId, "ExperienceReward") or xpRewardId
 
 	if xpReward then
-		CharacterIndex.displayNameMappings[xpReward] = xpReward.Name
-
 		local hasKids = #parent.Children > 0
 		local tagText = Styler:HyperlinkText(parent, xpReward.Name, function(parent)
 			self:RenderDisplayWindow(xpReward, parent)

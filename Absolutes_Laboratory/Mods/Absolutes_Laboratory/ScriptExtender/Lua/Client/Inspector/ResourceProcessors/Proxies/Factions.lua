@@ -10,16 +10,12 @@ ResourceProxy:RegisterResourceProxy("Faction", FactionsProxy)
 ResourceProxy:RegisterResourceProxy("resource::Faction", FactionsProxy)
 
 ---@param faction GUIDSTRING
-function FactionsProxy:RenderDisplayableValue(parent, faction, statType)
+function FactionsProxy:RenderDisplayableValue(parent, faction)
 	if type(faction) == "string" then
 		if #faction == 36 then
 			FactionsProxy:RenderDisplayWindow(Ext.StaticData.Get(faction, "Faction"), parent)
 		else
-			if CharacterIndex.displayNameMappings[faction] then
-				parent:AddText(string.format("%s (%s)", CharacterIndex.displayNameMappings[faction], faction))
-			else
-				parent:AddText(faction)
-			end
+			parent:AddText(faction)
 		end
 	end
 end
