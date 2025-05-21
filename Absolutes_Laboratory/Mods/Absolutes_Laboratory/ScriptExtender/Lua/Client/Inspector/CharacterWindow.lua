@@ -22,7 +22,11 @@ function CharacterWindow:BuildWindow(parent, id)
 			Channels.GetEntityIcon:RequestToServer({
 				target = id
 			}, function(data)
-				ele:AddImage(data.Result, { 128, 128 })
+				local image = ele:AddImage(data.Result, { 128, 128 })
+				if image.ImageData.Icon == "" then
+					image:Destroy()
+					ele:AddImage("Item_Unknown", { 128, 128 })
+				end
 			end)
 		end)
 
@@ -92,7 +96,11 @@ function CharacterWindow:BuildWindow(parent, id)
 
 	if characterTemplate then
 		Styler:MiddleAlignedColumnLayout(displayCell, function(ele)
-			ele:AddImage(characterTemplate.Icon, { 128, 128 })
+			local image = ele:AddImage(characterTemplate.Icon, { 128, 128 })
+			if image.ImageData.Icon == "" then
+				image:Destroy()
+				ele:AddImage("Item_Unknown", { 128, 128 })
+			end
 		end)
 
 		Styler:CheapTextAlign(entityRecord and entityRecord.Name or characterTemplate.DisplayName:Get() or characterTemplate.Name, displayCell, "Big")

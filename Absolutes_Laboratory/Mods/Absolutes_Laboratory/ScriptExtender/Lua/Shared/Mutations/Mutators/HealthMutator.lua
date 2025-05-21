@@ -368,7 +368,7 @@ function HealthMutator:applyMutator(entity, entityVar)
 		xPRewardMod = calculateXPRewardLevelModifier(mutator.modifiers["XPReward"], charStat.XPReward)
 	end
 
-	local gameLevelMod = calculateGameLevelModifier(mutator.modifiers["GameLevel"], entity.Level.LevelName)
+	local gameLevelMod = entity.Level and calculateGameLevelModifier(mutator.modifiers["GameLevel"], entity.Level.LevelName) or 0
 	local characterMod = calculateCharacterLevelModifier(mutator.modifiers["CharacterLevel"], entity.AvailableLevel.Level)
 	local percentageToAdd = (mutator.values + (characterMod + gameLevelMod + xPRewardMod)) / 100
 

@@ -50,7 +50,7 @@ function MutatorInterface:applyMutator(entity, entityVar)
 		end, debug.traceback)
 
 		if not success then
-			Logger:BasicError("Failed to apply mutator %s - %s", mutatorName, error)
+			Logger:BasicError("Failed to apply mutator %s to %s - %s", mutatorName, entity.Uuid.EntityUuid, error)
 		end
 	end
 end
@@ -64,7 +64,7 @@ function MutatorInterface:undoMutator(entity, entityVar)
 		end, debug.traceback)
 
 		if not success then
-			Logger:BasicError("Failed to undo mutator %s - %s", mutatorName, error)
+			Logger:BasicError("Failed to undo mutator %s to %s - %s", mutatorName, entity.Uuid.EntityUuid, error)
 		end
 	end
 	entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS] = nil
