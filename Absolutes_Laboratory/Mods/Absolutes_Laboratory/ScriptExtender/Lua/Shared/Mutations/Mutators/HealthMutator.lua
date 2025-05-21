@@ -383,7 +383,7 @@ function HealthMutator:applyMutator(entity, entityVar)
 end
 
 function HealthMutator:undoMutator(entity, entityVar)
-	local healthPercentage = (entity.Health.Hp / entity.Health.MaxHp)
+	local healthPercentage = 1 - (entity.Health.Hp / entity.Health.MaxHp)
 
 	local originalMaxHp = entity.Health.MaxHp
 
