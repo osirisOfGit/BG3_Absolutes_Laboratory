@@ -165,12 +165,16 @@ SpellProxy.fieldsToParse = {
 }
 
 ResourceProxy:RegisterResourceProxy("Spell", SpellProxy)
+ResourceProxy:RegisterResourceProxy("SpellId", SpellProxy)
 ResourceProxy:RegisterResourceProxy("SpellData", SpellProxy)
 ResourceProxy:RegisterResourceProxy("Prototype", SpellProxy)
 ResourceProxy:RegisterResourceProxy("OriginatorPrototype", SpellProxy)
 
 ---@param resourceValue string
 function SpellProxy:RenderDisplayableValue(parent, resourceValue)
+	if type(resourceValue) == "table" then
+		resourceValue = next(resourceValue)
+	end
 	if resourceValue then
 		---@type SpellData
 		local spell = Ext.Stats.Get(resourceValue)

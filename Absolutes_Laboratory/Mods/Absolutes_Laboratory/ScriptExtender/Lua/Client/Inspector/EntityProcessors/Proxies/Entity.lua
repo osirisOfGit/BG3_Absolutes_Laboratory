@@ -96,8 +96,9 @@ end
 function EntityHandleProxy:RenderDisplayableValue(parent, entityId, resourceType)
 	-- Stopping recursion
 	if entityId ~= EntityProxy.entityId then
-		local text = parent:AddText(entityId)
-		EntityHandleProxy:RenderDisplayWindow(Ext.Entity.Get(entityId), text:Tooltip())
+		Styler:HyperlinkText(parent, entityId, function(parent)
+			EntityHandleProxy:RenderDisplayWindow(Ext.Entity.Get(entityId), parent:Tooltip())
+		end)
 	else
 		parent:AddText("SELF - " .. entityId)
 	end
