@@ -37,10 +37,6 @@ local activeMutationView
 ---@param parent ExtuiTreeParent
 function MutationProfileManager:init(parent)
 	if not self.userFolderGroup then
-		if not activeProfileName then
-			activeProfileName = Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile
-		end
-
 		local parentTable = Styler:TwoColumnTable(parent, "mutationsMain")
 		parentTable.Borders = false
 		parentTable.Resizable = false
@@ -149,6 +145,10 @@ function MutationProfileManager:init(parent)
 end
 
 function MutationProfileManager:BuildProfileView()
+	if not activeProfileName then
+		activeProfileName = Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile
+	end
+
 	activeMutationView = nil
 
 	Helpers:KillChildren(self.userFolderGroup)
@@ -472,7 +472,7 @@ function MutationProfileManager:BuildRuleManager()
 
 					Styler:MiddleAlignedColumnLayout(self.mutationDesigner, function(ele)
 						ele:AddText(mutationRule.mutationFolder .. "/" .. mutationRule.mutationName).Font = "Big"
-					end)
+					end).SameLine = true
 					MutationDesigner:RenderMutationManager(self.mutationDesigner, mutation)
 				end
 			else
