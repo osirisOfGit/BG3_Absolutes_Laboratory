@@ -361,8 +361,11 @@ function MutationProfileManager:BuildProfileManager()
 	self:BuildRuleManager()
 end
 
-function MutationProfileManager:BuildRuleManager()
+---@param lastMutationActive string?
+function MutationProfileManager:BuildRuleManager(lastMutationActive)
 	Helpers:KillChildren(self.rulesOrderGroup, self.mutationDesigner)
+	activeMutationView = nil
+
 	---@type MutationProfile
 	local activeProfile
 	if activeProfileName then
@@ -418,15 +421,44 @@ function MutationProfileManager:BuildRuleManager()
 					mutationFolder = dropped.UserData.mutationFolder,
 					mutationName = dropped.UserData.mutationName,
 				}
-				activeMutationView = nil
 
-				self:BuildRuleManager()
+				self:BuildRuleManager(activeMutationView and activeMutationView.Label)
 			end
 
-			row:AddText(tostring(counter) .. ".")
+			local orderNumberInput = row:AddInputInt("##" .. counter, counter)
+			orderNumberInput.AutoSelectAll = true
+			orderNumberInput.ItemWidth = 40
 
 			if activeProfile.mutationRules[counter] then
 				local mutationRule = activeProfile.mutationRules[counter]
+
+				orderNumberInput.OnDeactivate = function()
+					if activeProfile.mutationRules[orderNumberInput.Value[1]] then
+						local ruletoRemove = activeProfile.mutationRules[orderNumberInput.Value[1]]
+
+						for _, ele in pairs(self.userFolderGroup.Children) do
+							---@cast ele ExtuiCollapsingHeader
+							if ele.UserData == ruletoRemove.mutationFolder then
+								for _, mutation in pairs(ele.Children) do
+									---@cast mutation ExtuiSelectable
+
+									if mutation.UserData.mutationName == ruletoRemove.mutationName then
+										mutation.SelectableDisabled = false
+										goto continue
+									end
+								end
+							end
+						end
+						::continue::
+
+						ruletoRemove.delete = true
+					end
+
+					activeProfile.mutationRules[orderNumberInput.Value[1]] = mutationRule._real
+					mutationRule.delete = true
+
+					self:BuildRuleManager(activeMutationView and activeMutationView.Label)
+				end
 
 				local mutationCell = row:AddButton(mutationRule.mutationFolder .. "/" .. mutationRule.mutationName)
 				mutationCell.UserData = mutationRule._real
@@ -473,9 +505,17 @@ function MutationProfileManager:BuildRuleManager()
 					Styler:MiddleAlignedColumnLayout(self.mutationDesigner, function(ele)
 						ele:AddText(mutationRule.mutationFolder .. "/" .. mutationRule.mutationName).Font = "Big"
 					end).SameLine = true
+
 					MutationDesigner:RenderMutationManager(self.mutationDesigner, mutation)
 				end
+
+				if mutationCell.Label == lastMutationActive then
+					mutationCell:OnClick()
+					activeMutationView = mutationCell
+				end
 			else
+				orderNumberInput.Disabled = true
+
 				local cell = row:AddButton((" "):rep(15) .. "##" .. counter)
 				cell.SameLine = true
 			end
