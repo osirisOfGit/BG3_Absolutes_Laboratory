@@ -64,7 +64,7 @@ function MutationProfileExecutor:ExecuteProfile()
 					MutatorInterface:applyMutator(entity, entityVar)
 				end
 
-				entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS] = entityVar
+				entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS] = next(entityVar.appliedMutators) and entityVar or nil
 			end
 		end
 	else
