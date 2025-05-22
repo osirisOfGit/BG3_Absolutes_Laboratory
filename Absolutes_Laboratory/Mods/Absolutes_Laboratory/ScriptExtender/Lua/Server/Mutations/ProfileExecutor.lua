@@ -50,11 +50,11 @@ function MutationProfileExecutor:ExecuteProfile()
 								else
 									entityVar.appliedMutators[mutator.targetProperty] = { entityVar.appliedMutators[mutator.targetProperty], mutator }
 								end
-								
+
 								entityVar.appliedMutatorsPath[mutator.targetProperty][i] = mProfileRule
 							else
 								entityVar.appliedMutators[mutator.targetProperty] = mutator
-								entityVar.appliedMutatorsPath[mutator.targetProperty] = {[i] = mProfileRule}
+								entityVar.appliedMutatorsPath[mutator.targetProperty] = { [i] = mProfileRule }
 							end
 						end
 					end
