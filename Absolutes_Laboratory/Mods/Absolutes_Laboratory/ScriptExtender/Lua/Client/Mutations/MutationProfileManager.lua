@@ -105,7 +105,7 @@ function MutationProfileManager:init(parent)
 		self.profileManagerParent = nil
 		Styler:MiddleAlignedColumnLayout(rightPanel, function(ele)
 			self.profileManagerParent = ele
-		end)
+		end).SameLine = true
 
 		rightPanel:AddSeparator()
 		self.profileRulesParent = Styler:TwoColumnTable(rightPanel)
@@ -433,6 +433,13 @@ function MutationProfileManager:BuildRuleManager()
 				mutationCell.SameLine = true
 				mutationCell.CanDrag = true
 				mutationCell.DragDropType = "MutationRules"
+
+				local mutation = ConfigurationStructure.config.mutations.folders[mutationRule.mutationFolder].mutations[mutationRule.mutationName]
+				if not mutation.selectors() or not mutation.mutators() then
+					mutationCell:SetColor("Button", { 1, 0.02, 0, 0.4 })
+					mutationCell:Tooltip():AddText("Missing a defined selector or mutator!")
+				end
+
 				---@param button ExtuiButton
 				---@param preview ExtuiTreeParent
 				mutationCell.OnDragStart = function(button, preview)
@@ -442,10 +449,17 @@ function MutationProfileManager:BuildRuleManager()
 				mutationCell.OnClick = function()
 					Helpers:KillChildren(self.mutationDesigner)
 
+					local mutation = ConfigurationStructure.config.mutations.folders[mutationRule.mutationFolder].mutations[mutationRule.mutationName]
+
 					if activeMutationView then
 						if activeMutationView.Handle then
-							-- https://github.com/Norbyte/bg3se/blob/f8b982125c6c1997ceab2d65cfaa3c1a04908ea6/BG3Extender/Extender/Client/IMGUI/IMGUI.cpp#L1901C34-L1901C60
-							activeMutationView:SetColor("Button", { 0.46, 0.40, 0.29, 0.5 })
+							if not mutation.selectors() or not mutation.mutators() then
+								mutationCell:SetColor("Button", { 1, 0.02, 0, 0.4 })
+							else
+								-- https://github.com/Norbyte/bg3se/blob/f8b982125c6c1997ceab2d65cfaa3c1a04908ea6/BG3Extender/Extender/Client/IMGUI/IMGUI.cpp#L1901C34-L1901C60
+								activeMutationView:SetColor("Button", { 0.46, 0.40, 0.29, 0.5 })
+							end
+
 							if activeMutationView.Handle == mutationCell.Handle then
 								activeMutationView = nil
 								return
@@ -456,7 +470,6 @@ function MutationProfileManager:BuildRuleManager()
 					activeMutationView = mutationCell
 					mutationCell:SetColor("Button", { 0.64, 0.40, 0.28, 0.5 })
 
-					local mutation = ConfigurationStructure.config.mutations.folders[mutationRule.mutationFolder].mutations[mutationRule.mutationName]
 					Styler:MiddleAlignedColumnLayout(self.mutationDesigner, function(ele)
 						ele:AddText(mutationRule.mutationFolder .. "/" .. mutationRule.mutationName).Font = "Big"
 					end)

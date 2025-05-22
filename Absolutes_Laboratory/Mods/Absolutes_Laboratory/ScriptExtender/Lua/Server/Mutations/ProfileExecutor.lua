@@ -24,11 +24,11 @@ function MutationProfileExecutor:ExecuteProfile()
 
 			if not entity.DeadByDefault and not entity.PartyMember then
 				---@type MutatorEntityVar
-				local entityVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS] or {
+				local entityVar = {
 					appliedMutators = {},
 					appliedMutatorsPath = {},
 					originalValues = {}
-				} --[[@as MutatorEntityVar]]
+				}
 
 				for i, mProfileRule in ipairs(activeProfile.mutationRules) do
 					local mutation = config.folders[mProfileRule.mutationFolder].mutations[mProfileRule.mutationName]
@@ -39,7 +39,7 @@ function MutationProfileExecutor:ExecuteProfile()
 						cachedSelectors[mProfileRule.mutationFolder][mProfileRule.mutationName] = SelectorInterface:createComposedPredicate(mutation.selectors)
 					end
 
-					if cachedSelectors[mProfileRule.mutationFolder][mProfileRule.mutationName]:Test(entity) then
+					if cachedSelectors[mProfileRule.mutationFolder][mProfileRule.mutationName] and cachedSelectors[mProfileRule.mutationFolder][mProfileRule.mutationName]:Test(entity) then
 						for _, mutator in pairs(mutation.mutators) do
 							if entityVar.appliedMutators[mutator.targetProperty]
 								and mProfileRule.additive
