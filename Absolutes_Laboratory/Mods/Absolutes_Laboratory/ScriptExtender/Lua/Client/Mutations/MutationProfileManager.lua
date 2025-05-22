@@ -433,29 +433,31 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 				local mutationRule = activeProfile.mutationRules[counter]
 
 				orderNumberInput.OnDeactivate = function()
-					if activeProfile.mutationRules[orderNumberInput.Value[1]] then
-						local ruletoRemove = activeProfile.mutationRules[orderNumberInput.Value[1]]
+					if orderNumberInput.Value[1] <= counter and orderNumberInput.Value[1] > 0 then
+						if activeProfile.mutationRules[orderNumberInput.Value[1]] then
+							local ruletoRemove = activeProfile.mutationRules[orderNumberInput.Value[1]]
 
-						for _, ele in pairs(self.userFolderGroup.Children) do
-							---@cast ele ExtuiCollapsingHeader
-							if ele.UserData == ruletoRemove.mutationFolder then
-								for _, mutation in pairs(ele.Children) do
-									---@cast mutation ExtuiSelectable
+							for _, ele in pairs(self.userFolderGroup.Children) do
+								---@cast ele ExtuiCollapsingHeader
+								if ele.UserData == ruletoRemove.mutationFolder then
+									for _, mutation in pairs(ele.Children) do
+										---@cast mutation ExtuiSelectable
 
-									if mutation.UserData.mutationName == ruletoRemove.mutationName then
-										mutation.SelectableDisabled = false
-										goto continue
+										if mutation.UserData.mutationName == ruletoRemove.mutationName then
+											mutation.SelectableDisabled = false
+											goto continue
+										end
 									end
 								end
 							end
+							::continue::
+
+							ruletoRemove.delete = true
 						end
-						::continue::
 
-						ruletoRemove.delete = true
+						activeProfile.mutationRules[orderNumberInput.Value[1]] = mutationRule._real
+						mutationRule.delete = true
 					end
-
-					activeProfile.mutationRules[orderNumberInput.Value[1]] = mutationRule._real
-					mutationRule.delete = true
 
 					self:BuildRuleManager(activeMutationView and activeMutationView.Label)
 				end
