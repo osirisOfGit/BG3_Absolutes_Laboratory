@@ -92,38 +92,34 @@ function Styler:SimpleRecursiveTwoColumnTable(parent, resource, resourceType)
 		parent:SetColor("Header", { 1, 1, 1, 0 })
 	end
 
+	local subTable = Styler:TwoColumnTable(parent)
 	for key, value in TableUtils:OrderedPairs(resource, function(key)
 		return tonumber(key) or key
 	end) do
-		local subTable = Styler:TwoColumnTable(parent)
+		local row = subTable:AddRow()
 
 		if type(value) == "table" then
-			for name, subValue in TableUtils:OrderedPairs(value, function(key)
-				return tonumber(key) or key
-			end) do
-				local subRow = subTable:AddRow()
-				subRow:AddCell():AddText(name)
+			row:AddCell():AddText(tostring(key))
 
-				local valueCell = subRow:AddCell()
-				EntityManager:RenderDisplayableValue(valueCell, subValue, name)
-
-				if #valueCell.Children == 0 then
-					subRow:Destroy()
-				end
+			local valueCell = row:AddCell()
+			EntityManager:RenderDisplayableValue(valueCell, value, key)
+			if #valueCell.Children == 0 then
+				row:Destroy()
 			end
-		elseif (value ~= "" and value ~= "00000000-0000-0000-0000-000000000000") and (type(value) ~= "number" or value > 0) then
-			local subRow = subTable:AddRow()
-			subRow:AddCell():AddText(key)
-			local displayCell = subRow:AddCell()
+		elseif (value ~= "" and value ~= "00000000-0000-0000-0000-000000000000") and (not tonumber(value) or tonumber(value) > 0) then
+			row:AddCell():AddText(key)
+			local displayCell = row:AddCell()
 			EntityManager:RenderDisplayableValue(displayCell, value, key)
 			if #displayCell.Children == 0 then
 				displayCell:AddText(tostring(value))
 			end
+		else
+			row:Destroy()
 		end
+	end
 
-		if #subTable.Children == 0 then
-			subTable:Destroy()
-		end
+	if #subTable.Children == 0 then
+		subTable:Destroy()
 	end
 end
 

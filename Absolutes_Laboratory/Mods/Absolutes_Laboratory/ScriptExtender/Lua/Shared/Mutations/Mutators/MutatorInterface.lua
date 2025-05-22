@@ -6,7 +6,8 @@
 ABSOLUTES_LABORATORY_MUTATIONS = "Absolutes_Laboratory_Mutations"
 Ext.Vars.RegisterUserVariable(ABSOLUTES_LABORATORY_MUTATIONS, {
 	Server = true,
-	Client = true
+	Client = true,
+	SyncToClient = true
 })
 
 ---@class MutatorInterface

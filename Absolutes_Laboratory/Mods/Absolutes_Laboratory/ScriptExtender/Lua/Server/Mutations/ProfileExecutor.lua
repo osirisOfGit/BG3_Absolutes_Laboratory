@@ -30,7 +30,7 @@ function MutationProfileExecutor:ExecuteProfile()
 					originalValues = {}
 				} --[[@as MutatorEntityVar]]
 
-				for _, mProfileRule in ipairs(activeProfile.mutationRules) do
+				for i, mProfileRule in ipairs(activeProfile.mutationRules) do
 					local mutation = config.folders[mProfileRule.mutationFolder].mutations[mProfileRule.mutationName]
 					if not cachedSelectors[mProfileRule.mutationFolder] then
 						cachedSelectors[mProfileRule.mutationFolder] = {}
@@ -43,14 +43,18 @@ function MutationProfileExecutor:ExecuteProfile()
 						for _, mutator in pairs(mutation.mutators) do
 							if entityVar.appliedMutators[mutator.targetProperty]
 								and mProfileRule.additive
-								and MutatorInterface.registeredMutators[mutator.targetProperty]:canBeAdditive(mutator) then
+								and MutatorInterface.registeredMutators[mutator.targetProperty]:canBeAdditive(mutator)
+							then
 								if type(entityVar.appliedMutators[mutator.targetProperty]) == "table" then
 									table.insert(entityVar.appliedMutators[mutator.targetProperty], mutator)
 								else
 									entityVar.appliedMutators[mutator.targetProperty] = { entityVar.appliedMutators[mutator.targetProperty], mutator }
 								end
+								
+								entityVar.appliedMutatorsPath[mutator.targetProperty][i] = mProfileRule
 							else
 								entityVar.appliedMutators[mutator.targetProperty] = mutator
+								entityVar.appliedMutatorsPath[mutator.targetProperty] = {[i] = mProfileRule}
 							end
 						end
 					end
@@ -80,7 +84,7 @@ Channels.ActivateMutationProfile:SetHandler(function(data, user)
 
 end)
 
-Ext.Osiris.RegisterListener("LevelGameplayReady", 2, "after", function (levelName, isEditorMode)
+Ext.Osiris.RegisterListener("LevelGameplayReady", 2, "after", function(levelName, isEditorMode)
 	if levelName == "SYS_CC_I" then return end
 
 	MutationProfileExecutor:ExecuteProfile()
