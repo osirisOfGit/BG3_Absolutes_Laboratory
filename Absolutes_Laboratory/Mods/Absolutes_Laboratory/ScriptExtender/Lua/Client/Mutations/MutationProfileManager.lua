@@ -34,7 +34,7 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Mutations",
 ---@type ExtuiButton?
 local activeMutationView
 
----@param parent ExtuiTreeParent?
+---@param parent ExtuiTreeParent
 function MutationProfileManager:init(parent)
 	if not self.userFolderGroup then
 		if not activeProfileName then
@@ -43,6 +43,8 @@ function MutationProfileManager:init(parent)
 
 		local parentTable = Styler:TwoColumnTable(parent, "mutationsMain")
 		parentTable.Borders = false
+		parentTable.Resizable = false
+		parentTable.ColumnDefs[1].Width = 300 * Styler:ScaleFactor()
 
 		local row = parentTable:AddRow()
 
@@ -79,20 +81,66 @@ function MutationProfileManager:init(parent)
 		end
 
 		local rightPanel = row:AddCell()
+		local collapseExpandUserFoldersButton = rightPanel:AddButton("<<")
+		collapseExpandUserFoldersButton.OnClick = function()
+			Helpers:CollapseExpand(
+				collapseExpandUserFoldersButton.Label == "<<",
+				300 * Styler:ScaleFactor(),
+				function(width)
+					if width then
+						parentTable.ColumnDefs[1].Width = width
+					end
+					return parentTable.ColumnDefs[1].Width
+				end,
+				self.selectionParent,
+				function()
+					if collapseExpandUserFoldersButton.Label == "<<" then
+						collapseExpandUserFoldersButton.Label = ">>"
+					else
+						collapseExpandUserFoldersButton.Label = "<<"
+					end
+				end)
+		end
+
 		self.profileManagerParent = nil
 		Styler:MiddleAlignedColumnLayout(rightPanel, function(ele)
 			self.profileManagerParent = ele
 		end)
 
+		rightPanel:AddSeparator()
 		self.profileRulesParent = Styler:TwoColumnTable(rightPanel)
 		self.profileRulesParent.Borders = false
 		self.profileRulesParent.Resizable = false
 		self.profileRulesParent.ColumnDefs[1].Width = 300 * Styler:ScaleFactor()
+
 		local profileRulesRow = self.profileRulesParent:AddRow()
 
 		self.rulesOrderGroup = profileRulesRow:AddCell():AddChildWindow("RulesOrder")
 
 		self.mutationDesigner = profileRulesRow:AddCell():AddChildWindow("MutationDesigner")
+		local collapseExpandRulesOrderButton = self.mutationDesigner:AddButton("<<")
+		collapseExpandRulesOrderButton.UserData = "keep"
+
+		collapseExpandRulesOrderButton.OnClick = function()
+			Helpers:CollapseExpand(
+				collapseExpandRulesOrderButton.Label == "<<",
+				300 * Styler:ScaleFactor(),
+				function(width)
+					if width then
+						self.profileRulesParent.ColumnDefs[1].Width = width
+					end
+					return self.profileRulesParent.ColumnDefs[1].Width
+				end,
+				self.rulesOrderGroup,
+				function()
+					if collapseExpandRulesOrderButton.Label == "<<" then
+						collapseExpandRulesOrderButton.Label = ">>"
+					else
+						collapseExpandRulesOrderButton.Label = "<<"
+					end
+				end)
+		end
+
 		self.formBuilderWindow = Ext.IMGUI.NewWindow("Create a Profile")
 		self.formBuilderWindow:SetStyle("WindowMinSize", 250)
 		self.formBuilderWindow.Open = false
