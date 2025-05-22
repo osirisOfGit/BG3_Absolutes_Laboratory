@@ -55,7 +55,7 @@ function MutationDesigner:BuildMutationView(parent)
 			mutationSelectable:Tooltip():AddText("\t " .. mutation.description)
 			mutationSelectable.OnClick = function()
 				Helpers:KillChildren(self.mutationParent)
-				self:RenderMutationManager(mutation)
+				self:RenderMutationManager(self.mutationParent, mutation)
 			end
 		end
 		folderHeader:AddNewLine()
@@ -137,9 +137,10 @@ function MutationDesigner:BuildMutationView(parent)
 	end
 end
 
+---@param parent ExtuiTreeParent
 ---@param existingMutation Mutation
-function MutationDesigner:RenderMutationManager(existingMutation)
-	local managerTable = self.mutationParent:AddTable("ManagerTable", 2)
+function MutationDesigner:RenderMutationManager(parent, existingMutation)
+	local managerTable = parent:AddTable("ManagerTable", 2)
 	managerTable.Borders = true
 
 	local row = managerTable:AddRow()

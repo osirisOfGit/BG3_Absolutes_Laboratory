@@ -80,10 +80,6 @@ function MutationProfileExecutor:ExecuteProfile()
 	end
 end
 
-Channels.ActivateMutationProfile:SetHandler(function(data, user)
-
-end)
-
 Ext.Osiris.RegisterListener("LevelGameplayReady", 2, "after", function(levelName, isEditorMode)
 	if levelName == "SYS_CC_I" then return end
 
