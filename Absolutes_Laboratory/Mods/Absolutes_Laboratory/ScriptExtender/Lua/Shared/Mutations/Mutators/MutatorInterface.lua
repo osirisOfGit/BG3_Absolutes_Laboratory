@@ -39,8 +39,10 @@ function MutatorInterface:renderMutator(parent, mutator) end
 function MutatorInterface:renderModifiers(parent, modifiers) end
 
 ---@param mutator Mutator
----@return boolean?
-function MutatorInterface:canBeAdditive(mutator) end
+---@return boolean
+function MutatorInterface:canBeAdditive(mutator)
+	return false
+end
 
 ---@param entity EntityHandle
 ---@param entityVar MutatorEntityVar

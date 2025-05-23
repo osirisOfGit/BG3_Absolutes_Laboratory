@@ -517,6 +517,17 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 					mutationCell:OnClick()
 					activeMutationView = mutationCell
 				end
+
+				if TableUtils:IndexOf(mutation.mutators, function(value)
+						return MutatorInterface.registeredMutators[value.targetProperty]:canBeAdditive(value)
+					end)
+				then
+					local additiveCheckbox = row:AddCheckbox("", mutationRule.additive)
+					additiveCheckbox.SameLine = true
+					additiveCheckbox.OnChange = function()
+						mutationRule.additive = additiveCheckbox.Checked
+					end
+				end
 			else
 				orderNumberInput.Disabled = true
 
