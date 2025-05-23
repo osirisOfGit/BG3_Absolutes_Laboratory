@@ -432,6 +432,8 @@ function MutationProfileManager:BuildProfileView()
 end
 
 function MutationProfileManager:BuildProfileManager()
+	local lastMutation = activeMutationView and activeMutationView.Label
+	activeMutationView = nil
 	local profiles = ConfigurationStructure.config.mutations.profiles
 	Helpers:KillChildren(self.profileManagerParent, self.rulesOrderGroup, self.mutationDesigner)
 
@@ -457,10 +459,10 @@ function MutationProfileManager:BuildProfileManager()
 		self:BuildProfileView()
 	end
 
-	local createProfileButton = self.profileManagerParent:AddButton("+")
-	createProfileButton.SameLine = true
+	local manageProfileButton = self.profileManagerParent:AddButton("Manage")
+	local manageProfilePopup = self.profileManagerParent:AddPopup("Manage Profiles")
 
-	createProfileButton.OnClick = function()
+	manageProfilePopup:AddSelectable("Create Profile").OnClick = function()
 		self.formBuilderWindow.Label = "Create a new Profile"
 		Helpers:KillChildren(self.formBuilderWindow)
 		self.formBuilderWindow.Open = true
@@ -486,7 +488,7 @@ function MutationProfileManager:BuildProfileManager()
 				activeProfileName = profileName
 				Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = profileName
 
-				self:BuildRuleManager()
+				self:BuildProfileManager()
 			end,
 			{
 				{
@@ -508,7 +510,77 @@ function MutationProfileManager:BuildProfileManager()
 		)
 	end
 
-	self:BuildRuleManager(activeMutationView and activeMutationView.Label)
+	for profileName, profile in TableUtils:OrderedPairs(profiles) do
+		---@type ExtuiMenu
+		local profileMenu = manageProfilePopup:AddMenu(profileName)
+		profileMenu:AddItem("Edit").OnClick = function()
+			self.formBuilderWindow.Label = "Edit " .. profileName
+			Helpers:KillChildren(self.formBuilderWindow)
+			self.formBuilderWindow.Open = true
+			self.formBuilderWindow:SetFocus()
+			FormBuilder:CreateForm(self.formBuilderWindow, function(formResults)
+					profile.description = formResults.Description
+					profile.defaultActive = formResults.defaultActive
+
+					if profileName ~= formResults.Name then
+						if activeProfileName == profileName then
+							activeProfileName = formResults.Name
+							Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = activeProfileName
+						end
+						profiles[formResults.Name] = profile._real
+						profile.delete = true
+					end
+
+					if formResults.defaultActive then
+						for name, profile in pairs(profiles) do
+							if name ~= formResults.Name then
+								profile.defaultActive = false
+							end
+						end
+					end
+
+					self.formBuilderWindow.Open = false
+
+					self:BuildProfileManager()
+				end,
+				{
+					{
+						label = "Name",
+						type = "Text",
+						errorMessageIfEmpty = "Required Field",
+						defaultValue = profileName
+					},
+					{
+						label = "Description",
+						type = "Multiline",
+						defaultValue = profile.description
+					},
+					{
+						label = "Active By Default for New Games?",
+						propertyField = "defaultActive",
+						type = "Checkbox",
+						defaultValue = profile.defaultActive
+					}
+				}
+			)
+		end
+		profileMenu:AddItem("Delete").OnClick = function()
+			profile.delete = true
+			if activeProfileName == profileName then
+				activeProfileName = nil
+				Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = activeProfileName
+			end
+			self:BuildProfileManager()
+		end
+	end
+
+	manageProfileButton.SameLine = true
+
+	manageProfileButton.OnClick = function()
+		manageProfilePopup:Open()
+	end
+
+	self:BuildRuleManager(lastMutation)
 end
 
 ---@param lastMutationActive string?
