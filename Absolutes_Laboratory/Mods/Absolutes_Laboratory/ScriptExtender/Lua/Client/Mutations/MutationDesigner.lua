@@ -91,6 +91,7 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 
 	local mutatorColumn = row:AddCell()
 	Styler:CheapTextAlign("Mutators", mutatorColumn, "Big").UserData = "keep"
+	mutatorColumn:AddDummy(16, 40)
 	self:RenderMutators(mutatorColumn, existingMutation.mutators)
 end
 
