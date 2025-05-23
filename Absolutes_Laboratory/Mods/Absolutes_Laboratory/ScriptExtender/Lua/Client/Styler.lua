@@ -113,7 +113,7 @@ function Styler:SimpleRecursiveTwoColumnTable(parent, resource, resourceType)
 			local displayCell = row:AddCell()
 			EntityManager:RenderDisplayableValue(displayCell, value, key)
 			if #displayCell.Children == 0 then
-				displayCell:AddText(tostring(value))
+				Styler:SelectableText(displayCell, resourceType, tostring(value))
 			end
 		else
 			row:Destroy()
@@ -123,6 +123,18 @@ function Styler:SimpleRecursiveTwoColumnTable(parent, resource, resourceType)
 	if #subTable.Children == 0 then
 		subTable:Destroy()
 	end
+end
+
+---@param parent ExtuiTreeParent
+---@param id string?
+---@param text string
+---@return ExtuiInputText
+function Styler:SelectableText(parent, id, text)
+	local inputText = parent:AddInputText("##" .. (id or text), tostring(text))
+	inputText.AutoSelectAll = true
+	inputText.ItemReadOnly = true
+	inputText:SetColor("FrameBg", {1, 1, 1, 0})
+	return inputText
 end
 
 function Styler:ScaleFactor()

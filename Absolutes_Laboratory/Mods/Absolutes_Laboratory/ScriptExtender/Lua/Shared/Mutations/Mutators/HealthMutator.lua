@@ -1,6 +1,5 @@
 HealthMutator = MutatorInterface:new("Health")
 
-
 ---@alias HealthModifierKeys "CharacterLevel"|"GameLevel"|"XPReward"
 
 ---@class HealthMutator : Mutator

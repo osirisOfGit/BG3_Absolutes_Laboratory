@@ -31,7 +31,7 @@ function FactionsProxy:RenderDisplayWindow(faction, parent)
 			if key == "ParentGuid" and value ~= "00000000-0000-0000-0000-000000000000" then
 				self:RenderDisplayWindow(Ext.StaticData.Get(value, "Faction"), row:AddCell())
 			else
-				row:AddCell():AddText(value)
+				Styler:SelectableText(row:AddCell(), key, tostring(value))
 			end
 		end
 	end
