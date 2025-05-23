@@ -13,6 +13,7 @@ TagsProxy.fieldsToParse = {
 ResourceProxy:RegisterResourceProxy("Tags", TagsProxy)
 ResourceProxy:RegisterResourceProxy("Tag", TagsProxy)
 ResourceProxy:RegisterResourceProxy("ServerBoostTag", TagsProxy)
+ResourceProxy:RegisterResourceProxy("resource::Tag", TagsProxy)
 
 ---@param tags string[]
 function TagsProxy:RenderDisplayableValue(parent, tags, statType)
@@ -21,8 +22,6 @@ function TagsProxy:RenderDisplayableValue(parent, tags, statType)
 		local tag = Ext.StaticData.Get(tagId, "Tag")
 
 		if tag then
-			CharacterIndex.displayNameMappings[tag] = tag.DisplayName:Get() or tag.Name
-
 			local hasKids = #parent.Children > 0
 			local tagText = Styler:HyperlinkText(parent, tag.DisplayName:Get() or tag.Name, function (parent)
 				self:RenderDisplayWindow(tag, parent)

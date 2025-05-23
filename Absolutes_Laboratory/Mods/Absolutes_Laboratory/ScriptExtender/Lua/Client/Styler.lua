@@ -1,35 +1,15 @@
 Styler = {}
 
---- OKAY, so, this fucker.
---- Changing a label for tree elements in this flavour of IMGUI recomputes the _internal_ id, which is different from the IDContext
---- For Tree Elements, the internal id is based exclusively on the label. Change the label, change the id, it behaves like you just created it again
---- If the default open is false and it hasn't seen this id before, guess what, tree element collapses on you even if you didn't click it
---- If it has seen this ID before, it'll set the state to its last known state, and if the filter has 5 selected, but another filter removes 1 possible option, it closes/opens on you
---- I tried using a separate text element with absolute positioning and overlap, but collapsible tree elements are actually two distinct ui elements - only one shows when it's collapsed,
---- but when you open it the main "collapsible" element gets shunted down a row and the "collapsible" is replaced by a totally separate element. This means any elements next to the initial
---- element get shunted down a row alongside the original collapsible - using visible hacks on the text element was ugly and would briefly show the element to users on each label change
 ---@param tree ExtuiTree
 ---@return ExtuiTree, fun(count: number)
 function Styler:DynamicLabelTree(tree)
 	local label = tree.Label
-	tree.DefaultOpen = true
-	tree:SetOpen(false, "Always")
-
+	tree.Label = tree.Label .. "###" .. tree.Label
+	tree.DefaultOpen = false
 	tree.SpanFullWidth = true
 
-	local isOpen = false
-	tree.OnClick = function()
-		isOpen = not isOpen
-	end
-
-	tree.OnCollapse = function()
-		tree:SetOpen(isOpen, "Always")
-	end
-
 	return tree, function(count)
-		tree.Label = label .. (count > 0 and (" - " .. count .. " " .. Translator:translate("selected")) or "")
-		tree.DefaultOpen = true
-		tree:SetOpen(isOpen, "Always")
+		tree.Label = label .. (count > 0 and (" - " .. count .. " " .. Translator:translate("selected")) or "") .. "###" .. label
 	end
 end
 
@@ -64,6 +44,7 @@ end
 
 ---@param parent ExtuiTreeParent
 ---@param ... fun(ele: ExtuiTableCell)|string
+---@return ExtuiTable
 function Styler:MiddleAlignedColumnLayout(parent, ...)
 	local table = parent:AddTable("", 3)
 	table.NoSavedSettings = true
@@ -84,16 +65,19 @@ function Styler:MiddleAlignedColumnLayout(parent, ...)
 
 		row:AddCell()
 	end
+
+	return table
 end
 
 ---@param parent ExtuiTreeParent
 ---@return ExtuiTable
 function Styler:TwoColumnTable(parent, id)
 	local displayTable = parent:AddTable("twoCol" .. parent.IDContext .. (id or ""), 2)
+	displayTable.NoSavedSettings = true
 	displayTable.Borders = true
 	displayTable.Resizable = true
 	displayTable:SetColor("TableBorderStrong", { 0.56, 0.46, 0.26, 0.78 })
-	displayTable:AddColumn("", "WidthFixed", 300 * self:ScaleFactor())
+	displayTable:AddColumn("", "WidthFixed")
 	displayTable:AddColumn("", "WidthStretch")
 
 	return displayTable
@@ -108,38 +92,36 @@ function Styler:SimpleRecursiveTwoColumnTable(parent, resource, resourceType)
 		parent:SetColor("Header", { 1, 1, 1, 0 })
 	end
 
+	local subTable = Styler:TwoColumnTable(parent)
+	subTable.Borders = false
+	subTable.BordersInnerH = true
 	for key, value in TableUtils:OrderedPairs(resource, function(key)
 		return tonumber(key) or key
 	end) do
-		local subTable = Styler:TwoColumnTable(parent)
+		local row = subTable:AddRow()
 
 		if type(value) == "table" then
-			for name, subValue in TableUtils:OrderedPairs(value, function(key)
-				return tonumber(key) or key
-			end) do
-				local subRow = subTable:AddRow()
-				subRow:AddCell():AddText(name)
+			row:AddCell():AddText(tostring(key))
 
-				local valueCell = subRow:AddCell()
-				EntityManager:RenderDisplayableValue(valueCell, subValue, name)
-
-				if #valueCell.Children == 0 then
-					subRow:Destroy()
-				end
+			local valueCell = row:AddCell()
+			EntityManager:RenderDisplayableValue(valueCell, value, key)
+			if #valueCell.Children == 0 then
+				row:Destroy()
 			end
-		elseif (value ~= "" and value ~= "00000000-0000-0000-0000-000000000000") and (type(value) ~= "number" or value > 0) then
-			local subRow = subTable:AddRow()
-			subRow:AddCell():AddText(key)
-			local displayCell = subRow:AddCell()
+		elseif (value ~= "" and value ~= "00000000-0000-0000-0000-000000000000") and (not tonumber(value) or tonumber(value) > 0) then
+			row:AddCell():AddText(key)
+			local displayCell = row:AddCell()
 			EntityManager:RenderDisplayableValue(displayCell, value, key)
 			if #displayCell.Children == 0 then
-				displayCell:AddText(tostring(value)).TextWrapPos = 800 * self:ScaleFactor()
+				displayCell:AddText(tostring(value))
 			end
+		else
+			row:Destroy()
 		end
+	end
 
-		if #subTable.Children == 0 then
-			subTable:Destroy()
-		end
+	if #subTable.Children == 0 then
+		subTable:Destroy()
 	end
 end
 
@@ -151,17 +133,26 @@ end
 ---@param parent ExtuiTreeParent
 ---@param text string
 ---@param tooltipCallback fun(parent: ExtuiTreeParent)
+---@param freeSize boolean?
 ---@return ExtuiSelectable
-function Styler:HyperlinkText(parent, text, tooltipCallback)
-	---@type ExtuiSelectable
-	local fakeTextSelectable = parent:AddSelectable(text)
-	fakeTextSelectable.Size = {(#text * 10) * Styler:ScaleFactor(), 0}
+function Styler:HyperlinkText(parent, text, tooltipCallback, freeSize)
+	local fakeTextSelectable
+	if Ext.Utils.Version() >= 25 then
+		---@type ExtuiTextLink
+		fakeTextSelectable = parent:AddTextLink(text)
+	else
+		---@type ExtuiSelectable
+		fakeTextSelectable = parent:AddSelectable(text)
+		if not freeSize then
+			fakeTextSelectable.Size = { (#text * 10) * Styler:ScaleFactor(), 0 }
+		end
 
-	fakeTextSelectable:SetColor("ButtonActive", { 1, 1, 1, 0 })
-	fakeTextSelectable:SetColor("ButtonHovered", { 1, 1, 1, 0 })
-	fakeTextSelectable:SetColor("FrameBgHovered", { 1, 1, 1, 0 })
-	fakeTextSelectable:SetColor("FrameBgActive", { 1, 1, 1, 0 })
-	fakeTextSelectable:SetColor("Text", { 173 / 255, 216 / 255, 230 / 255, 1 })
+		fakeTextSelectable:SetColor("ButtonActive", { 1, 1, 1, 0 })
+		fakeTextSelectable:SetColor("ButtonHovered", { 1, 1, 1, 0 })
+		fakeTextSelectable:SetColor("FrameBgHovered", { 1, 1, 1, 0 })
+		fakeTextSelectable:SetColor("FrameBgActive", { 1, 1, 1, 0 })
+		fakeTextSelectable:SetColor("Text", { 173 / 255, 216 / 255, 230 / 255, 1 })
+	end
 
 	---@type ExtuiTooltip?
 	local tooltip
@@ -170,12 +161,11 @@ function Styler:HyperlinkText(parent, text, tooltipCallback)
 	local window
 
 	fakeTextSelectable.OnHoverEnter = function()
-		if tooltip then
-			Helpers:KillChildren(tooltip)
-		end
 		if not window then
-			tooltip = fakeTextSelectable:Tooltip()
-			tooltipCallback(tooltip)
+			if not tooltip then
+				tooltip = fakeTextSelectable:Tooltip()
+				tooltipCallback(tooltip)
+			end
 		else
 			window.Open = true
 			window:SetFocus()
@@ -183,20 +173,22 @@ function Styler:HyperlinkText(parent, text, tooltipCallback)
 	end
 
 	fakeTextSelectable.OnHoverLeave = function()
-		if tooltip then
+		if tooltip and not tooltip.Visible then
 			Helpers:KillChildren(tooltip)
 		end
 	end
 
 	fakeTextSelectable.OnClick = function()
-		fakeTextSelectable.Selected = false
+		if Ext.Utils.Version() < 25 then
+			fakeTextSelectable.Selected = false
+		end
 
 		window = Ext.IMGUI.NewWindow(text)
 		window.IDContext = parent.IDContext .. text
 		window.Closeable = true
 		window.AlwaysAutoResize = true
 
-		window.OnClose = function ()
+		window.OnClose = function()
 			window:Destroy()
 			window = nil
 		end

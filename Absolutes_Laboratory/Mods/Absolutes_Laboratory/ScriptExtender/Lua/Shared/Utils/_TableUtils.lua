@@ -134,20 +134,19 @@ end
 ---@generic K, V
 ---@param list table<K, V>
 ---@param str string|fun(value: V): boolean
----@return boolean, V?
-function TableUtils:ListContains(list, str)
+---@return K?
+function TableUtils:IndexOf(list, str)
 	for i, value in pairs(list) do
 		if type(str) == "string" then
 			if value == str then
-				return true, i
+				return i
 			end
 		elseif type(str) == "function" then
 			if str(value) then
-				return true, i
+				return i
 			end
 		end
 	end
-	return false
 end
 
 --- Returns a pairs()-like iterator that iterates over multiple tables sequentially
@@ -195,4 +194,16 @@ function TableUtils:CountElements(tbl)
 		count = count + 1
 	end
 	return count
+end
+
+--- Converts all stringified number indexes in a table to their numerical equivalents
+---@param tbl table
+function TableUtils:ConvertStringifiedNumberIndexes(tbl)
+	for key, value in TableUtils:OrderedPairs(tbl) do
+		local numericKey = tonumber(key)
+		if numericKey then
+			tbl[key] = nil
+			tbl[numericKey] = value
+		end
+	end
 end

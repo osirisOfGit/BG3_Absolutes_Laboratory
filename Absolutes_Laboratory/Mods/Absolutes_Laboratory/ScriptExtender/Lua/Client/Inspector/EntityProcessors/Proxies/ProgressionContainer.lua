@@ -2,7 +2,6 @@ ProgressionContainerProxy = EntityProxy:new()
 
 EntityProxy:RegisterResourceProxy("ProgressionContainer", ProgressionContainerProxy)
 
-
 ---@param progressionEntries {[number]: {[string]: BoostEntry}}
 function ProgressionContainerProxy:RenderDisplayableValue(parent, progressionEntries)
 	if progressionEntries then
@@ -15,8 +14,10 @@ function ProgressionContainerProxy:RenderDisplayableValue(parent, progressionEnt
 			for progressionId, progressionEntry in TableUtils:OrderedPairs(progressionSet) do
 				local row = displayTable:AddRow()
 
-				Styler:HyperlinkText(row:AddCell(), CharacterIndex.displayNameMappings[progressionId], function(parent)
-					ResourceManager:RenderDisplayWindow(Ext.StaticData.Get(progressionId, "Progression"), parent)
+				---@type ResourceProgression
+				local progression = Ext.StaticData.Get(progressionId, "Progression")
+				Styler:HyperlinkText(row:AddCell(), progression.Name, function(parent)
+					ResourceManager:RenderDisplayWindow(progression, parent)
 				end)
 
 				local displayCell = row:AddCell()

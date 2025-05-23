@@ -21,38 +21,11 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 	function(tabHeader)
 		Main.parent = tabHeader
 
-		---@type ExtuiProgressBar
-		Main.progressBar = tabHeader:AddProgressBar()
-		Main.progressBar.Visible = false
-
-		-- Main.displayTable = tabHeader:AddTable("allConfigs", 2)
-		-- Main.displayTable:AddColumn("", "WidthFixed")
-		-- Main.displayTable:AddColumn("", "WidthStretch")
-
-		-- local row = Main.displayTable:AddRow()
-
 		EntityRecorder:BuildButton(tabHeader)
-		local tabs = tabHeader:AddTabBar("Main Tabs")
-
-		local templateTab = tabs:AddTabItem("Templates")
-
-		local entityTab = tabs:AddTabItem("Entities")
 
 		Main.selectionTreeCell = tabHeader:AddChildWindow("selectionTree")
 		Main.selectionTreeCell.ChildAlwaysAutoResize = true
 		Main.selectionTreeCell.Size = { 400 * Styler:ScaleFactor(), 0 }
-
-		Main.selectionTreeCell:AddText("Choose Grouping Method").UserData = "keep"
-		Main.templateGroupingCombo = Main.selectionTreeCell:AddCombo("")
-		Main.templateGroupingCombo.UserData = "keep"
-		Main.templateGroupingCombo.SameLine = true
-		Main.templateGroupingCombo.Options = {
-			"None",
-			"Faction",
-			"Race",
-			"Parent Progression Table"
-		}
-		Main.templateGroupingCombo.SelectedIndex = 0
 
 		Main.configCell = tabHeader:AddChildWindow("configCell")
 		Main.configCell.AlwaysHorizontalScrollbar = true
@@ -61,100 +34,26 @@ Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 		Main.configCell.AlwaysAutoResize = true
 		Main.configCell.ChildAlwaysAutoResize = true
 
-		local function recomputeSelections()
-			Main.progressBar.Visible = true
-			Main.progressBar.Value = 0
-
-			Helpers:KillChildren(Main.selectionTreeCell)
-			Helpers:KillChildren(Main.configCell)
-
-			local function doIt(func, secondFunc)
-				if func then
-					local percentageComplete = func()
-					if percentageComplete then
-						Main.progressBar.Value = percentageComplete
-						Ext.Timer.WaitFor(1, function()
-							doIt(func, secondFunc)
-						end)
-					elseif secondFunc then
-						doIt(secondFunc)
-					end
-				end
-			end
-			doIt(Main.buildOutTree())
-		end
-
-		Main.templateGroupingCombo.OnChange = recomputeSelections
-
-		templateTab.OnActivate = function()
-			Main.typeToPopulate = "template"
-			recomputeSelections()
-		end
-
-		entityTab.OnActivate = function()
-			Main.typeToPopulate = "entities"
-			recomputeSelections()
-		end
+		Main:buildOutTree()
 	end
 )
 
-local hasBeenActivated = false
-
-local function initiateScan()
-	if not hasBeenActivated then
-		hasBeenActivated = true
-		Main.progressBar.Visible = true
-
-		local function doIt(...)
-			local funcs = { ... }
-			local currentFunc = table.remove(funcs, 1)
-
-			if currentFunc then
-				local percentageComplete = currentFunc()
-				if percentageComplete then
-					Main.progressBar.Value = percentageComplete
-					Ext.Timer.WaitFor(1, function()
-						doIt(currentFunc, table.unpack(funcs))
-					end)
-				else
-					doIt(table.unpack(funcs))
-				end
-			end
-		end
-
-		doIt(CharacterIndex:hydrateTemplateIndex(), Main.buildOutTree())
-	end
-end
-Ext.Events.ResetCompleted:Subscribe(function(e)
-	Logger:BasicDebug("Session loaded after tab activated")
-	initiateScan()
-end)
-
-Ext.ModEvents.BG3MCM["MCM_Mod_Tab_Activated"]:Subscribe(function(payload)
-	if ModuleUUID == payload.modUUID then
-		Logger:BasicDebug("Tab activated after session loaded")
-		initiateScan()
-	end
-end)
-
----@type ExtuiSelectable
+---@type ExtuiSelectable?
 local selectedSelectable
 
----@return fun():number
 function Main.buildOutTree()
 	local self = Main
 
-	selectedSelectable = nil
-
-	local universalSelection = self.selectionTreeCell:AddTree(self.typeToPopulate == "template" and "Acts" or "Levels")
+	local universalSelection = self.selectionTreeCell:AddTree("Levels")
 	universalSelection.NoAutoOpenOnLog = true
 
 	---@param parent ExtuiTree
 	---@param id GUIDSTRING
-	local function buildSelectable(parent, id)
+	---@param displayName string
+	local function buildSelectable(parent, id, displayName)
 		---@type ExtuiSelectable
 		local selectable = parent:AddSelectable(string.format("%s (%s)",
-			CharacterIndex.displayNameMappings[id],
+			displayName,
 			string.sub(id, #id - 5)))
 
 		selectable.UserData = id
@@ -171,110 +70,21 @@ function Main.buildOutTree()
 		end
 	end
 
-	---@param parentTree ExtuiTree
-	---@param templateMap {[string]: string[]}
-	---@param templateSuperSet string[]?
-	---@param progressFunc fun()?
-	local function buildTree(parentTree, templateMap, templateSuperSet, progressFunc)
-		for resourceId, templates in TableUtils:OrderedPairs(templateMap, function(key)
-			return CharacterIndex.displayNameMappings[key]
-		end) do
-			local resourceSelection
-			if not templateSuperSet then
-				resourceSelection = parentTree:AddTree(resourceId)
-			else
-				resourceSelection = parentTree:AddTree(string.format("%s (%s)", (CharacterIndex.displayNameMappings[resourceId] or resourceId),
-					string.sub(resourceId, #resourceId - 5)))
-			end
-			resourceSelection:SetOpen(false, "Always")
-			resourceSelection.UserData = resourceId
-			resourceSelection.IDContext = resourceId .. parentTree.IDContext
+	for levelName, entities in pairs(EntityRecorder:GetEntities()) do
+		local levelTree = universalSelection:AddTree(levelName)
+		levelTree:SetOpen(false, "Always")
 
-			for _, resourceTemplate in TableUtils:OrderedPairs(templates, function(key)
-				return CharacterIndex.displayNameMappings[templates[key]]
+		levelTree.OnExpand = function()
+			for entityId in TableUtils:OrderedPairs(entities, function(key)
+				return entities[key].Name
 			end) do
-				if not templateSuperSet or TableUtils:ListContains(templateSuperSet, resourceTemplate) then
-					buildSelectable(resourceSelection, resourceTemplate)
-				end
+				buildSelectable(levelTree, entityId, entities[entityId].Name)
 			end
-			if #resourceSelection.Children == 0 then
-				resourceSelection:Destroy()
-			end
-			if progressFunc then
-				progressFunc()
-			end
+		end
+
+		levelTree.OnCollapse = function()
+			Helpers:KillChildren(levelTree)
+			selectedSelectable = nil
 		end
 	end
-
-	local parentOption = self.templateGroupingCombo.Options[self.templateGroupingCombo.SelectedIndex + 1]
-	local index = self.typeToPopulate == "template" and CharacterIndex.templates or EntityRecorder:GetEntities()
-
-	return coroutine.wrap(function()
-		self.progressBar.Value = 0
-		local maxCount = TableUtils:CountElements(index.acts or index)
-
-		local count = 0
-		local lastPercentage = 0
-
-		local func = function()
-			count = count + 1
-
-			if math.floor(((count / maxCount) * 100)) > lastPercentage then
-				lastPercentage = math.floor(((count / maxCount) * 100))
-				coroutine.yield(count / maxCount)
-			end
-		end
-
-		if self.typeToPopulate == "entities" then
-			for levelName, _ in pairs(index) do
-				local levelTree = universalSelection:AddTree(levelName)
-				levelTree:SetOpen(false, "Always")
-
-				levelTree.OnExpand = function()
-					local entities = EntityRecorder:GetEntities()[levelName]
-					for entityId, record in TableUtils:OrderedPairs(entities, function(key)
-						return entities[key].Name
-					end) do
-						CharacterIndex.displayNameMappings[entityId] = record.Name
-						buildSelectable(levelTree, entityId)
-					end
-				end
-
-				levelTree.OnCollapse = function()
-					Helpers:KillChildren(levelTree)
-					selectedSelectable = nil
-				end
-			end
-		else
-			if parentOption == "None" then
-				buildTree(universalSelection, index.acts, nil, func)
-			else
-				for act, actTemplates in TableUtils:OrderedPairs(index.acts) do
-					local actSelection = universalSelection:AddTree(act)
-					actSelection:SetOpen(false, "Always")
-
-					if parentOption == "Race" then
-						local parentRaceSelection = actSelection:AddTree("Races")
-						parentRaceSelection.IDContext = act .. "Race"
-						parentRaceSelection:SetOpen(false, "Always")
-						buildTree(parentRaceSelection, index.races, actTemplates)
-					elseif parentOption == "Parent Progression Table" then
-						local parentProgressionTableSelection = actSelection:AddTree("Progression Tables")
-						parentProgressionTableSelection:SetOpen(false, "Always")
-						parentProgressionTableSelection.IDContext = "progression" .. act
-						buildTree(parentProgressionTableSelection, index.progressions, actTemplates)
-					else
-						local parentFactionsSelection = actSelection:AddTree("Parent Factions")
-						parentFactionsSelection:SetOpen(false, "Always")
-						parentFactionsSelection.IDContext = "progression" .. act
-						buildTree(parentFactionsSelection, index.factions, actTemplates)
-					end
-
-					func()
-				end
-			end
-		end
-
-		self.progressBar.Visible = false
-	end)
 end

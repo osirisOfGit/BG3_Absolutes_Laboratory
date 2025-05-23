@@ -13,6 +13,8 @@ local informedUserOfHostRestriction = false
 -- any additional logic for letting the server know there were changes. Only works for this implementation -
 -- too fragile for general use
 function ConfigurationStructure:generate_recursive_metatable(proxy_table, real_table)
+	proxy_table._real = real_table
+
 	return setmetatable(proxy_table, {
 		-- don't use the proxy table during pairs() so we don't have to exclude any proxy fields
 		__pairs = function(this_table)
@@ -37,6 +39,10 @@ function ConfigurationStructure:generate_recursive_metatable(proxy_table, real_t
 						real_table[key] = nil
 					end
 				else
+					if type(key) == "string" and tonumber(key) and math.type(tonumber(key)) == "integer" then
+						key = tonumber(key)
+					end
+
 					real_table[key] = value
 					if type(value) == "table" then
 						rawset(proxy_table, key, self:generate_recursive_metatable(
@@ -86,10 +92,14 @@ ConfigurationStructure.DynamicClassDefinitions = {}
 --- @class Configuration
 ConfigurationStructure.config = ConfigurationStructure:generate_recursive_metatable({}, real_config_table)
 
-Ext.Require("Shared/Configurations/.lua")
+Ext.Require("Shared/Configurations/MutationsConfig.lua")
 
 local function CopyConfigsIntoReal(table_from_file, proxy_table)
 	for key, value in pairs(table_from_file) do
+		if type(key) == "string" and tonumber(key) and math.type(tonumber(key)) == "integer" then
+			key = tonumber(key)
+		end
+
 		local default_value = proxy_table[key]
 		-- if default_value then
 		if type(value) == "table" then

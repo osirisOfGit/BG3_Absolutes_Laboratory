@@ -28,6 +28,8 @@ EntityRecorder.Levels = {
 	END_Main = 9,
 }
 
+
+
 ---@class EntityRecord
 ---@field Name string
 ---@field Template GUIDSTRING
@@ -37,8 +39,10 @@ EntityRecorder.Levels = {
 ---@field Tags TAG[]
 ---@field Stat string
 ---@field Abilities {[string]: number}
+---@field Icon string
 
 if Ext.IsClient() then
+	---@type {[string]: {[GUIDSTRING]: EntityRecord}}
 	local recordedEntities = setmetatable({}, {
 		__mode = "kv",
 		__pairs = function(t)
@@ -55,6 +59,14 @@ if Ext.IsClient() then
 	---@return {[string]: {[GUIDSTRING]: EntityRecord}}
 	function EntityRecorder:GetEntities()
 		return recordedEntities
+	end
+
+	---@param entityId string
+	---@return EntityRecord?
+	function EntityRecorder:GetEntity(entityId)
+		local level = self:GetLevelForEntity(entityId)
+
+		return level and recordedEntities[level][entityId]
 	end
 
 	---@param entityId GUIDSTRING
@@ -178,8 +190,8 @@ else
 						})
 
 						for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-							if Osi.IsDead(entity.Uuid.EntityUuid) == 0
-								and not TableUtils:ListContains(recordedLevels, function(value)
+							if not entity.DeadByDefault
+								and not TableUtils:IndexOf(recordedLevels, function(value)
 									return value[entity.Uuid.EntityUuid]
 								end)
 							then
@@ -190,10 +202,11 @@ else
 									or (entity.ServerCharacter.Template and entity.ServerCharacter.Template.DisplayName:Get())
 									or entity.Uuid.EntityUuid
 
+								entityRecord.Icon = entity.Icon.Icon
 								entityRecord.Race = entity.Race.Race
 								entityRecord.Faction = entity.Faction.field_8
 								entityRecord.Stat = entity.Data.StatsId
-								entityRecord.Template = entity.ServerCharacter.Template.Id
+								entityRecord.Template = entity.ServerCharacter.Template.TemplateName
 								entityRecord.Tags = entity.Tag.Tags
 								entityRecord.Abilities = {}
 								for abilityId, val in ipairs(entity.BaseStats.BaseAbilities) do

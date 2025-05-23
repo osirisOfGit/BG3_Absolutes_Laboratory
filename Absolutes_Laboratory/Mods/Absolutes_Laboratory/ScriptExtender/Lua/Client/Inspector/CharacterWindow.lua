@@ -22,11 +22,16 @@ function CharacterWindow:BuildWindow(parent, id)
 			Channels.GetEntityIcon:RequestToServer({
 				target = id
 			}, function(data)
-				ele:AddImage(data.Result, { 128, 128 })
+				local image = ele:AddImage(data.Result, { 128, 128 })
+				if image.ImageData.Icon == "" then
+					image:Destroy()
+					ele:AddImage("Item_Unknown", { 128, 128 })
+				end
 			end)
 		end)
 
-		Styler:CheapTextAlign(CharacterIndex.displayNameMappings[id], displayCell, "Big")
+		Styler:CheapTextAlign((entity.DisplayName and entity.DisplayName.Name:Get()) or entity.ClientCharacter.Template.DisplayName:Get() or entity.ClientCharacter.Template.Name,
+			displayCell, "Big")
 
 		local tabBar = group:AddTabBar("Tabs")
 
@@ -60,41 +65,83 @@ function CharacterWindow:BuildWindow(parent, id)
 			end
 		end
 
+		if entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS] then
+			local mutationTab = tabBar:AddTabItem("Mutations")
+			mutationTab.OnActivate = function()
+				Helpers:KillChildren(mutationTab)
+
+				---@type MutatorEntityVar
+				local entityVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS]
+
+				local displayTable = Styler:TwoColumnTable(mutationTab)
+				for targetProperty in TableUtils:OrderedPairs(entityVar.appliedMutators) do
+					local row = displayTable:AddRow()
+					row:AddCell():AddText(targetProperty)
+
+					local displayCell = row:AddCell()
+
+					local appliedMutators = Styler:TwoColumnTable(displayCell, "appliedMutators" .. targetProperty)
+					local aMRow = appliedMutators:AddRow()
+					aMRow:AddCell():AddText("Applied Mutators")
+					Styler:SimpleRecursiveTwoColumnTable(aMRow:AddCell(), entityVar.appliedMutators[targetProperty])
+
+					local appliedMutatorRules = Styler:TwoColumnTable(displayCell, "appliedMutatorRules" .. targetProperty)
+					local aMRRow = appliedMutatorRules:AddRow()
+					aMRRow:AddCell():AddText("Applied Mutator Rules")
+					Styler:SimpleRecursiveTwoColumnTable(aMRRow:AddCell(), entityVar.appliedMutatorsPath[targetProperty])
+
+					local originalValue = Styler:TwoColumnTable(displayCell, "originalValues" .. targetProperty)
+					local oVRow = originalValue:AddRow()
+					oVRow:AddCell():AddText("Original Values")
+					if type(entityVar.originalValues[targetProperty]) == "table" then
+						Styler:SimpleRecursiveTwoColumnTable(oVRow:AddCell(), entityVar.originalValues[targetProperty])
+					else
+						oVRow:AddCell():AddText(tostring(entityVar.originalValues[targetProperty]))
+					end
+				end
+			end
+		end
+
 		entityTab:Activate()
 		return
-	elseif EntityRecorder:GetLevelForEntity(id) then
-		if not Ext.Template.GetRootTemplate(id) then
-			Styler:CheapTextAlign(CharacterIndex.displayNameMappings[id], displayCell, "Big")
-		end
-		Styler:MiddleAlignedColumnLayout(displayCell, function(ele)
-			ele:AddButton("Teleport To Level").OnClick = function()
-				Channels.TeleportToLevel:SendToServer({
-					LevelName = EntityRecorder:GetLevelForEntity(id),
-					Id = id
-				})
+	else
+		local entityLevel = EntityRecorder:GetLevelForEntity(id)
+		if entityLevel then
+			Styler:MiddleAlignedColumnLayout(displayCell, function(ele)
+				ele:AddButton("Teleport To Level").OnClick = function()
+					Channels.TeleportToLevel:SendToServer({
+						LevelName = entityLevel,
+						Id = id
+					})
 
-				local sub
-				sub = Ext.Events.GameStateChanged:Subscribe(function(e)
-					---@cast e EclLuaGameStateChangedEvent
-					if e.ToState == "Running" then
-						Ext.Events.GameStateChanged:Unsubscribe(sub)
-						Helpers:KillChildren(group)
-						self:BuildWindow(parent, id)
-					end
-				end)
-			end
-		end)
+					local sub
+					sub = Ext.Events.GameStateChanged:Subscribe(function(e)
+						---@cast e EclLuaGameStateChangedEvent
+						if e.ToState == "Running" then
+							Ext.Events.GameStateChanged:Unsubscribe(sub)
+							Helpers:KillChildren(group)
+							self:BuildWindow(parent, id)
+						end
+					end)
+				end
+			end)
+		end
 	end
 
+	local entityRecord = EntityRecorder:GetEntity(id)
 	---@type CharacterTemplate
-	local characterTemplate = Ext.Template.GetRootTemplate(id)
+	local characterTemplate = entityRecord and Ext.Template.GetRootTemplate(entityRecord.Template) or Ext.Template.GetRootTemplate(id)
 
 	if characterTemplate then
 		Styler:MiddleAlignedColumnLayout(displayCell, function(ele)
-			ele:AddImage(characterTemplate.Icon, { 128, 128 })
+			local image = ele:AddImage(characterTemplate.Icon, { 128, 128 })
+			if image.ImageData.Icon == "" then
+				image:Destroy()
+				ele:AddImage("Item_Unknown", { 128, 128 })
+			end
 		end)
 
-		Styler:CheapTextAlign(CharacterIndex.displayNameMappings[id], displayCell, "Big")
+		Styler:CheapTextAlign(entityRecord and entityRecord.Name or characterTemplate.DisplayName:Get() or characterTemplate.Name, displayCell, "Big")
 		Styler:CheapTextAlign(characterTemplate.LevelName, displayCell)
 
 		local tabBar = group:AddTabBar("Tabs")
