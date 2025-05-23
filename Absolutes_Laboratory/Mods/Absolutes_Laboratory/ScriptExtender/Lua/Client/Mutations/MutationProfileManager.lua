@@ -380,7 +380,7 @@ function MutationProfileManager:BuildProfileView()
 		end
 
 		---@type ExtuiSelectable
-		local manageFolderButton = folderHeader:AddSelectable("Manage Folder")
+		local manageFolderButton = folderHeader:AddSelectable("Manage Folder##" .. folderName)
 		manageFolderButton:SetStyle("SelectableTextAlign", 0.5)
 
 		manageFolderButton.OnClick = function()
