@@ -633,34 +633,50 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 				end
 
 				mutationCell.OnClick = function()
-					Helpers:KillChildren(self.mutationDesigner)
+					if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
+						for _, ele in pairs(self.userFolderGroup.Children) do
+							---@cast ele ExtuiCollapsingHeader
+							if ele.UserData == mutationRule.mutationFolder then
+								for _, mutation in pairs(ele.Children) do
+									---@cast mutation ExtuiSelectable
 
-					local mutation = ConfigurationStructure.config.mutations.folders[mutationRule.mutationFolder].mutations[mutationRule.mutationName]
-
-					if activeMutationView then
-						if activeMutationView.Handle then
-							if not mutation.selectors() or not mutation.mutators() then
-								mutationCell:SetColor("Button", { 1, 0.02, 0, 0.4 })
-							else
-								-- https://github.com/Norbyte/bg3se/blob/f8b982125c6c1997ceab2d65cfaa3c1a04908ea6/BG3Extender/Extender/Client/IMGUI/IMGUI.cpp#L1901C34-L1901C60
-								activeMutationView:SetColor("Button", { 0.46, 0.40, 0.29, 0.5 })
-							end
-
-							if activeMutationView.Handle == mutationCell.Handle then
-								activeMutationView = nil
-								return
+									if mutation.UserData and mutation.UserData.mutationName == mutationRule.mutationName then
+										mutation:OnClick()
+										return
+									end
+								end
 							end
 						end
+					else
+						Helpers:KillChildren(self.mutationDesigner)
+
+						local mutation = ConfigurationStructure.config.mutations.folders[mutationRule.mutationFolder].mutations[mutationRule.mutationName]
+
+						if activeMutationView then
+							if activeMutationView.Handle then
+								if not mutation.selectors() or not mutation.mutators() then
+									mutationCell:SetColor("Button", { 1, 0.02, 0, 0.4 })
+								else
+									-- https://github.com/Norbyte/bg3se/blob/f8b982125c6c1997ceab2d65cfaa3c1a04908ea6/BG3Extender/Extender/Client/IMGUI/IMGUI.cpp#L1901C34-L1901C60
+									activeMutationView:SetColor("Button", { 0.46, 0.40, 0.29, 0.5 })
+								end
+
+								if activeMutationView.Handle == mutationCell.Handle then
+									activeMutationView = nil
+									return
+								end
+							end
+						end
+
+						activeMutationView = mutationCell
+						mutationCell:SetColor("Button", { 0.64, 0.40, 0.28, 0.5 })
+
+						Styler:MiddleAlignedColumnLayout(self.mutationDesigner, function(ele)
+							ele:AddText(mutationRule.mutationFolder .. "/" .. mutationRule.mutationName).Font = "Big"
+						end).SameLine = true
+
+						MutationDesigner:RenderMutationManager(self.mutationDesigner, mutation)
 					end
-
-					activeMutationView = mutationCell
-					mutationCell:SetColor("Button", { 0.64, 0.40, 0.28, 0.5 })
-
-					Styler:MiddleAlignedColumnLayout(self.mutationDesigner, function(ele)
-						ele:AddText(mutationRule.mutationFolder .. "/" .. mutationRule.mutationName).Font = "Big"
-					end).SameLine = true
-
-					MutationDesigner:RenderMutationManager(self.mutationDesigner, mutation)
 				end
 
 				if mutationCell.Label == lastMutationActive then
