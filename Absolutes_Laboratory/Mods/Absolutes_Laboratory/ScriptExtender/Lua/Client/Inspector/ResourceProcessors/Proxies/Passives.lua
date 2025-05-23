@@ -36,6 +36,7 @@ PassivesProxy.fieldsToParse = {
 }
 
 ResourceProxy:RegisterResourceProxy("Passives", PassivesProxy)
+ResourceProxy:RegisterResourceProxy("PassiveData", PassivesProxy)
 ResourceProxy:RegisterResourceProxy("ServerPassiveBase", PassivesProxy)
 ResourceProxy:RegisterResourceProxy("PassivesAdded", PassivesProxy)
 ResourceProxy:RegisterResourceProxy("PassivesRemoved", PassivesProxy)

@@ -89,10 +89,14 @@ local function buildDisplayTable(resource, propertiesToRender, statDisplayTable)
 				if statValue and (statValue ~= "No" and statValue ~= "None" and statValue ~= "Empty") then
 					leftCell:AddText(fieldEntry)
 
-					ResourceManager:RenderDisplayableValue(rightCell, statValue, fieldEntry)
 					if fieldEntry == "Icon" then
-						rightCell:AddImage(statValue, { 32, 32 }).SameLine = true
+						rightCell:AddImage(statValue, { 32, 32 })
 					end
+					ResourceManager:RenderDisplayableValue(
+						rightCell,
+						type(resource[fieldEntry]) == "userdata" and resource[fieldEntry] or statValue,
+						type(resource[fieldEntry]) == "userdata" and Ext.Types.GetObjectType(resource[fieldEntry]) or fieldEntry,
+						fieldEntry == "Icon")
 				end
 			elseif type(fieldEntry) == "table" then
 				for _, fieldName in TableUtils:OrderedPairs(fieldEntry) do
@@ -268,7 +272,7 @@ function ResourceManager:RenderDisplayWindow(resource, parent)
 	end
 end
 
-function ResourceManager:RenderDisplayableValue(parent, resourceValue, resourceType)
+function ResourceManager:RenderDisplayableValue(parent, resourceValue, resourceType, sameLine)
 	local success, result = xpcall(function(...)
 		if proxyRegistry[resourceType] then
 			proxyRegistry[resourceType]:RenderDisplayableValue(parent, resourceValue, resourceType)
@@ -276,7 +280,7 @@ function ResourceManager:RenderDisplayableValue(parent, resourceValue, resourceT
 			if (type(resourceValue) == "string" and resourceValue ~= "" and resourceValue ~= "00000000-0000-0000-0000-000000000000")
 				or (type(resourceValue) == "number" and resourceValue > 0)
 			then
-				Styler:SelectableText(parent, tostring(resourceType), tostring(resourceValue))
+				Styler:SelectableText(parent, tostring(resourceType), tostring(resourceValue)).SameLine = sameLine
 			elseif type(resourceValue) == "table" then
 				Styler:SimpleRecursiveTwoColumnTable(parent, resourceValue, resourceType)
 			end
@@ -301,6 +305,7 @@ Ext.Require("Client/Inspector/ResourceProcessors/Proxies/Progressions.lua")
 --- Stat Stuff
 Ext.Require("Client/Inspector/ResourceProcessors/Proxies/StatParser.lua")
 Ext.Require("Client/Inspector/ResourceProcessors/Proxies/ItemList.lua")
+Ext.Require("Client/Inspector/ResourceProcessors/Proxies/Functors.lua")
 Ext.Require("Client/Inspector/ResourceProcessors/Proxies/Status.lua")
 Ext.Require("Client/Inspector/ResourceProcessors/Proxies/ActionResource.lua")
 Ext.Require("Client/Inspector/ResourceProcessors/Proxies/Passives.lua")
