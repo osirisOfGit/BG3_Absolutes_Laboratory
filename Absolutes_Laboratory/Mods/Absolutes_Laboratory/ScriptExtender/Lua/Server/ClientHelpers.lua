@@ -120,6 +120,7 @@ local function populateProgressions(response, entity)
 				if key ~= "ServerReplicationDependency" then
 					if key == "ProgressionMeta" then
 						---@cast value ProgressionMetaComponent
+						value = Ext.Types.Serialize(value)
 
 						progressionTable[key] = {
 							ClassLevel = value.ClassLevel,

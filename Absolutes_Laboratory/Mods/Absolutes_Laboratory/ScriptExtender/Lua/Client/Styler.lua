@@ -77,7 +77,7 @@ function Styler:TwoColumnTable(parent, id)
 	displayTable.Borders = true
 	displayTable.Resizable = true
 	displayTable:SetColor("TableBorderStrong", { 0.56, 0.46, 0.26, 0.78 })
-	displayTable:AddColumn("", "WidthFixed", 300 * self:ScaleFactor())
+	displayTable:AddColumn("", "WidthFixed")
 	displayTable:AddColumn("", "WidthStretch")
 
 	return displayTable
@@ -93,6 +93,8 @@ function Styler:SimpleRecursiveTwoColumnTable(parent, resource, resourceType)
 	end
 
 	local subTable = Styler:TwoColumnTable(parent)
+	subTable.Borders = false
+	subTable.BordersInnerH = true
 	for key, value in TableUtils:OrderedPairs(resource, function(key)
 		return tonumber(key) or key
 	end) do
@@ -134,17 +136,23 @@ end
 ---@param freeSize boolean?
 ---@return ExtuiSelectable
 function Styler:HyperlinkText(parent, text, tooltipCallback, freeSize)
-	---@type ExtuiSelectable
-	local fakeTextSelectable = parent:AddSelectable(text)
-	if not freeSize then
-		fakeTextSelectable.Size = { (#text * 10) * Styler:ScaleFactor(), 0 }
-	end
+	local fakeTextSelectable
+	if Ext.Utils.Version() >= 25 then
+		---@type ExtuiTextLink
+		fakeTextSelectable = parent:AddTextLink(text)
+	else
+		---@type ExtuiSelectable
+		fakeTextSelectable = parent:AddSelectable(text)
+		if not freeSize then
+			fakeTextSelectable.Size = { (#text * 10) * Styler:ScaleFactor(), 0 }
+		end
 
-	fakeTextSelectable:SetColor("ButtonActive", { 1, 1, 1, 0 })
-	fakeTextSelectable:SetColor("ButtonHovered", { 1, 1, 1, 0 })
-	fakeTextSelectable:SetColor("FrameBgHovered", { 1, 1, 1, 0 })
-	fakeTextSelectable:SetColor("FrameBgActive", { 1, 1, 1, 0 })
-	fakeTextSelectable:SetColor("Text", { 173 / 255, 216 / 255, 230 / 255, 1 })
+		fakeTextSelectable:SetColor("ButtonActive", { 1, 1, 1, 0 })
+		fakeTextSelectable:SetColor("ButtonHovered", { 1, 1, 1, 0 })
+		fakeTextSelectable:SetColor("FrameBgHovered", { 1, 1, 1, 0 })
+		fakeTextSelectable:SetColor("FrameBgActive", { 1, 1, 1, 0 })
+		fakeTextSelectable:SetColor("Text", { 173 / 255, 216 / 255, 230 / 255, 1 })
+	end
 
 	---@type ExtuiTooltip?
 	local tooltip
@@ -171,7 +179,9 @@ function Styler:HyperlinkText(parent, text, tooltipCallback, freeSize)
 	end
 
 	fakeTextSelectable.OnClick = function()
-		fakeTextSelectable.Selected = false
+		if Ext.Utils.Version() < 25 then
+			fakeTextSelectable.Selected = false
+		end
 
 		window = Ext.IMGUI.NewWindow(text)
 		window.IDContext = parent.IDContext .. text
