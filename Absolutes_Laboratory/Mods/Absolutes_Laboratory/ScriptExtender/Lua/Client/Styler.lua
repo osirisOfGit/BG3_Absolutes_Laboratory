@@ -87,11 +87,6 @@ end
 ---@param resource Resource
 ---@param resourceType string?
 function Styler:SimpleRecursiveTwoColumnTable(parent, resource, resourceType)
-	if TableUtils:CountElements(resource) >= 10 and #parent.Children >= 1 then
-		parent = parent:AddCollapsingHeader(resourceType or "")
-		parent:SetColor("Header", { 1, 1, 1, 0 })
-	end
-
 	local subTable = Styler:TwoColumnTable(parent)
 	subTable.Borders = false
 	subTable.BordersInnerH = true
@@ -122,6 +117,11 @@ function Styler:SimpleRecursiveTwoColumnTable(parent, resource, resourceType)
 
 	if #subTable.Children == 0 then
 		subTable:Destroy()
+	elseif #subTable.Children >= 10 then
+		parent:DetachChild(subTable)
+		parent = parent:AddCollapsingHeader(resourceType or "")
+		parent:AttachChild(subTable)
+		parent:SetColor("Header", { 1, 1, 1, 0 })
 	end
 end
 
@@ -133,8 +133,8 @@ function Styler:SelectableText(parent, id, text)
 	local inputText = parent:AddInputText("##" .. (id or text), tostring(text))
 	inputText.AutoSelectAll = true
 	inputText.ItemReadOnly = true
-	inputText.SizeHint = {#text * 15, 0}
-	inputText:SetColor("FrameBg", {1, 1, 1, 0})
+	inputText.SizeHint = { #text * 15, 0 }
+	inputText:SetColor("FrameBg", { 1, 1, 1, 0 })
 	return inputText
 end
 

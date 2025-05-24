@@ -26,12 +26,14 @@ local registeredFunctorTypes = {}
 local function parseHyperlinks(parent, text)
 	local list = {}
 
+	text = text:gsub("%'", "")
 	for wordOrNonAlnum in text:gmatch("([%w%._]+)") do
 		table.insert(list, wordOrNonAlnum)
 	end
 
 	local label = ""
 	local counter = 0
+	local newlined = false
 	for i, section in ipairs(list) do
 		local resourceText, resource
 
@@ -43,12 +45,16 @@ local function parseHyperlinks(parent, text)
 
 			resourceText = list[i + 1]
 			resource = Ext.StaticData.Get(levelMapMap[resourceText], "LevelMap")
+		elseif section == "ApplyStatus" then
+			resourceText = list[i + 1]
+			resource = Ext.Stats.Get(resourceText)
 		end
 
 		if resourceText then
 			section = section .. "("
-			parent:AddText(label .. section).SameLine = not label:find("IF")
-			counter = counter + #section
+			parent:AddText(label .. section).SameLine = newlined
+			newlined = true
+			counter = counter + #section + #resourceText
 			label = ""
 
 			local hyperLink = Styler:HyperlinkText(parent, resourceText, function(parent)
@@ -57,15 +63,13 @@ local function parseHyperlinks(parent, text)
 			hyperLink.SameLine = true
 			hyperLink.AllowDuplicateId = true
 
-			counter = counter + (#hyperLink.Label)
-
 			table.remove(list, i + 1)
 		else
 			counter = counter + #section
 			label = label .. section
 		end
 
-		local nextChars = text:sub(counter):match("([^%w%']+)%w")
+		local nextChars = text:match("[^%w]+", counter)
 		counter = counter + (nextChars and #nextChars or 0)
 		label = label .. (nextChars or "")
 	end
@@ -74,7 +78,7 @@ local function parseHyperlinks(parent, text)
 		counter = counter + (nextChars and #nextChars or 0)
 		label = label .. (nextChars or "")
 
-		parent:AddText(label).SameLine = true
+		parent:AddText(label).SameLine = newlined
 	end
 end
 
@@ -121,6 +125,12 @@ registeredFunctorTypes["ApplyStatus"] = function(functor)
 		functor.StatusSpecificParam3 > -1 and functor.StatusSpecificParam3 or 0)
 
 	return text
+end
+
+
+---@param functor StatsExecuteWeaponFunctorsFunctor
+registeredFunctorTypes["ExecuteWeaponFunctors"] = function (functor)
+	return string.format("%s(%s)", functor.TypeId, functor.WeaponType)
 end
 
 --[[
