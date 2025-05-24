@@ -74,3 +74,4 @@ function MutatorInterface:undoMutator(entity, entityVar)
 end
 
 Ext.Require("Shared/Mutations/Mutators/HealthMutator.lua")
+Ext.Require("Shared/Mutations/Mutators/SpellList/SpellListMutator.lua")
