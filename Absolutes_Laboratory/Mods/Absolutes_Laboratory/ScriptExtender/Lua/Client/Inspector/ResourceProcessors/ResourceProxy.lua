@@ -285,7 +285,7 @@ function ResourceManager:RenderDisplayableValue(parent, resourceValue, resourceT
 			if (type(resourceValue) == "string" and resourceValue ~= "" and resourceValue ~= "00000000-0000-0000-0000-000000000000")
 				or (type(resourceValue) == "number" and resourceValue > 0)
 			then
-				Styler:SelectableText(parent, tostring(resourceType), tostring(resourceValue)).SameLine = sameLine
+				Styler:SelectableText(parent, tostring(resourceType), tostring(resourceValue)).SameLine = sameLine or false
 			elseif type(resourceValue) == "table" then
 				Styler:SimpleRecursiveTwoColumnTable(parent, resourceValue, resourceType)
 			end
