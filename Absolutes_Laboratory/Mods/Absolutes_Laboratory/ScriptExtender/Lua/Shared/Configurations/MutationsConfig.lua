@@ -86,3 +86,36 @@ ConfigurationStructure.DynamicClassDefinitions.profileMutationRule = {
 ---@type {[string]: MutationProfile}
 ConfigurationStructure.config.mutations.profiles = {}
 --#endregion
+
+--#region SpellList
+---@type {[Guid]: SpellList}
+ConfigurationStructure.config.mutations.spellLists = {}
+
+---@alias SpellName string
+
+---@class SpellListAbilityScoreCondition
+---@field comparator "gte"|"lte"
+---@field abilityId AbilityId
+---@field value number
+
+---@class SpellListCriteriaEntry
+---@field isOneOfClasses string[]?
+---@field abilityCondition SpellListAbilityScoreCondition[]?
+
+---@class SpellList
+ConfigurationStructure.DynamicClassDefinitions.leveledSpellList = {
+	name = "",
+	description = "",
+	---@type Guid?
+	modId = nil,
+	---@type SpellName[]?
+	guaranteed = {},
+	---@type SpellName[]?
+	randomized = {},
+	---@type SpellName[]?
+	startOfCombatOnly = {},
+	---@type SpellListCriteriaEntry?
+	criteria = {}
+}
+
+--#endregion
