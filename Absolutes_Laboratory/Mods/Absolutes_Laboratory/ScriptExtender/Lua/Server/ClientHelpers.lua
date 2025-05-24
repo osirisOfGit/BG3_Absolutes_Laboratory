@@ -7,6 +7,14 @@ Channels.TeleportToLevel:SetHandler(function (data, user)
 	Osi.TeleportPartiesToLevelWithMovie(data.LevelName, "", "")
 end)
 
+Channels.TeleportToEntity:SetHandler(function (data, user)
+	Osi.TeleportTo(Osi.GetHostCharacter(), data)
+end)
+
+Channels.TeleportEntityToHost:SetHandler(function (data, user)
+	 Osi.AppearAt(data, Osi.GetHostCharacter(), 0, "", "")
+end)
+
 Channels.GetEntityStat:SetRequestHandler(function(data, user)
 	local entity = Ext.Entity.Get(data.target) --[[@as EntityHandle]]
 	return { Result = entity.Data and entity.Data.StatsId }

@@ -22,6 +22,13 @@ function CharacterWindow:BuildWindow(parent, id)
 			Channels.GetEntityIcon:RequestToServer({
 				target = id
 			}, function(data)
+				ele:AddButton("Teleport To Entity").OnClick = function()
+					Channels.TeleportToEntity:SendToServer(id)
+				end
+				ele:AddButton("Teleport Entity To You").OnClick = function()
+					Channels.TeleportEntityToHost:SendToServer(id)
+				end
+
 				local image = ele:AddImage(data.Result, { 128, 128 })
 				if image.ImageData.Icon == "" then
 					image:Destroy()

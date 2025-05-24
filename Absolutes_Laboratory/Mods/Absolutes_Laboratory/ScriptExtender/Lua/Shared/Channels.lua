@@ -33,6 +33,8 @@ Channels.GetEntityIcon = Ext.Net.CreateChannel(ModuleUUID, "GetEntityIcon")
 Channels.IsEntityAlive = Ext.Net.CreateChannel(ModuleUUID, "IsEntityAlive")
 Channels.GetEntityStat = Ext.Net.CreateChannel(ModuleUUID, "GetEntityStat")
 Channels.TeleportToLevel = Ext.Net.CreateChannel(ModuleUUID, "TeleportToLevel")
+Channels.TeleportToEntity = Ext.Net.CreateChannel(ModuleUUID, "TeleportToEntity")
+Channels.TeleportEntityToHost = Ext.Net.CreateChannel(ModuleUUID, "TeleportEntityToHost")
 
 
 Channels.ActivateMutationProfile = Ext.Net.CreateChannel(ModuleUUID, "ActivateMutationProfile")
