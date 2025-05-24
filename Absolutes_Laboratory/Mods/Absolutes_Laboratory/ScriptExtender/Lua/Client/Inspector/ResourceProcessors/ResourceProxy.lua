@@ -263,7 +263,12 @@ ResourceManager = ResourceProxy:new()
 function ResourceManager:RenderDisplayWindow(resource, parent)
 	if resource then
 		local success, result = xpcall(function(...)
-			proxyRegistry[Ext.Types.GetObjectType(resource) == "stats::Object" and resource.ModifierList or Ext.Types.GetObjectType(resource)]:RenderDisplayWindow(resource, parent)
+			if proxyRegistry[Ext.Types.GetObjectType(resource) == "stats::Object" and resource.ModifierList or Ext.Types.GetObjectType(resource)] then
+				proxyRegistry[Ext.Types.GetObjectType(resource) == "stats::Object" and resource.ModifierList or Ext.Types.GetObjectType(resource)]:RenderDisplayWindow(resource,
+				parent)
+			else
+				self:RenderDisplayableValue(parent, Ext.Types.Serialize(resource))
+			end
 		end, debug.traceback)
 
 		if not success then
