@@ -1,6 +1,9 @@
 ---@class MutationsConfig
 ConfigurationStructure.config.mutations = {}
 
+---@class MutationSettings
+ConfigurationStructure.config.mutations.settings = {}
+
 --#region Selectors
 ---@class Selector
 ConfigurationStructure.DynamicClassDefinitions.selector = {
@@ -118,9 +121,23 @@ ConfigurationStructure.DynamicClassDefinitions.leveledSpellList = {
 		randomized = {},
 		---@type SpellName[][]?
 		startOfCombatOnly = {},
+		---@type SpellName[][]?
+		onLoadOnly = {},
+		---@type SpellName[][]?
+		blackListed = {}
 	},
 	---@type SpellListCriteriaEntry?
 	criteria = {}
+}
+
+ConfigurationStructure.config.mutations.settings.spellLists = {
+	subListColours  = {
+		guaranteed = {0, 138, 172, 0.8},
+		randomized = {124, 14, 43, 0},
+		startOfCombatOnly = {217, 118, 6, 0.8},
+		onLoadOnly = {217, 179, 6, 0.8},
+		blackListed = {1, 1, 1, 1},
+	}
 }
 
 --#endregion

@@ -1,5 +1,17 @@
 SpellListDesigner = {}
 
+---@class SpellSubListIndex
+---@field name string
+---@field colour number[]
+
+---@type {[string] : SpellSubListIndex}
+SpellListDesigner.subListIndex = {
+	["guaranteed"] = { name = "Guaranteed", colour = {} },
+	["randomized"] = { name = "Randomized", colour = {} },
+	["startOfCombatOnly"] = { name = "Cast On Combat Start", colour = {} },
+	["onLoadOnly"] = { name = "Cast On Level Load", colour = {} }
+}
+
 ---@type ExtuiWindow?
 SpellListDesigner.spellListDesignerWindow = nil
 
@@ -13,6 +25,8 @@ SpellListDesigner.displayTable = nil
 local activeSpellList
 
 function SpellListDesigner:buildSpellDesignerWindow(activeList)
+	local spellLists = ConfigurationStructure.config.mutations.spellLists
+
 	if not self.spellListDesignerWindow then
 		self.spellListDesignerWindow = Ext.IMGUI.NewWindow("Spell List Designer")
 		self.spellListDesignerWindow.Closeable = true
@@ -38,11 +52,38 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 		SpellListDesigner.designer = row:AddCell():AddChildWindow("designer")
 		self.designer.NoSavedSettings = true
 		self.designer.ChildAlwaysAutoResize = true
+		self.designer.Visible = false
 
 		SpellListDesigner.progressionBrowser = row:AddCell():AddChildWindow("progressionBrowser")
 		self.progressionBrowser.NoSavedSettings = true
 		self.progressionBrowser.Visible = false
 		self.progressionBrowser.ChildAlwaysAutoResize = true
+
+		local colorSettings = self.designer:AddGroup("colorSetting")
+		colorSettings.UserData = "keep"
+		colorSettings:AddText("Click A Color To Change It"):SetStyle("Alpha", 0.6)
+
+		for subListName, colour in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.settings.spellLists.subListColours, function(key)
+			return self.subListIndex[key].name
+		end) do
+			self.subListIndex[subListName].colour = Styler:ConvertRGBAToIMGUI(colour._real)
+			local colorEditer = colorSettings:AddColorEdit(
+				self.subListIndex[subListName].name,
+				{ 1, 1, 1 }
+			)
+			colorEditer.AlphaBar = true
+			colorEditer.Color = self.subListIndex[subListName].colour
+			colorEditer.NoInputs = true
+			colorEditer.OnChange = function(colorEdit)
+				---@cast colorEdit ExtuiColorEdit
+				for i, color in ipairs(colorEdit.Color) do
+					colour[i] = color
+				end
+				self.subListIndex[subListName].colour = colorEdit.Color
+				Helpers:KillChildren(self.designer)
+				self:buildSpellListDesigner(spellLists[activeSpellList.UserData])
+			end
+		end
 	else
 		Helpers:KillChildren(self.lists, self.designer)
 		self.spellListDesignerWindow.Open = true
@@ -50,8 +91,6 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 		self.designer.Size = { 0, 0 }
 		activeSpellList = nil
 	end
-
-	local spellLists = ConfigurationStructure.config.mutations.spellLists
 
 	self.lists:AddSeparatorText("Your SpellLists"):SetStyle("SeparatorTextAlign", 0.5)
 
@@ -67,6 +106,7 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 				activeSpellList.Selected = false
 				Helpers:KillChildren(self.designer)
 			end
+			self.designer.Visible = true
 
 			activeSpellList = spellListSelect
 
@@ -118,14 +158,28 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 	local classCriteriaGroup = criteriaSection:AddGroup("classCriteria")
 	local abilityCriteriaGroup = criteriaSection:AddGroup("abilityCriteria")
 
-	local copyFromProgressionButton = self.designer:AddButton("Open Progression Browser")
-	copyFromProgressionButton.OnClick = function()
+	local progressionBrowserButton = self.designer:AddButton("Open Progression Browser")
+	progressionBrowserButton.OnClick = function()
 		self.displayTable.ColumnDefs[3].Width = 400 * Styler:ScaleFactor()
 		self.progressionBrowser.Visible = true
 		self:buildProgressionBrowser(spellList)
+		Ext.Timer.WaitFor(10, function()
+			Helpers:KillChildren(self.designer)
+			self:buildSpellListDesigner(spellList)
+		end)
+	end
+
+	if self.designer.LastSize[1] == 0 then
+		Ext.Timer.WaitFor(10, function()
+			Helpers:KillChildren(self.designer)
+			self:buildSpellListDesigner(spellList)
+		end)
+		return
 	end
 
 	local leveledListGroup = self.designer:AddGroup("leveledLists")
+
+	local popup = self.designer:AddPopup("SpellActionPopup")
 
 	for i = 1, 30 do
 		local listGroup = leveledListGroup:AddGroup("list" .. i)
@@ -138,30 +192,54 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 		spellGroup.UserData = i
 
 		local counter = 0
-		for subListName, subList in pairs(spellList.subLists) do
+		for subListName, subList in TableUtils:OrderedPairs(spellList.subLists, function(key)
+			return self.subListIndex[key].name
+		end) do
+			---@cast subList SpellName[][]
 			if subList[i] then
-				for _, spellName in TableUtils:OrderedPairs(subList[i], function(key)
+				for sI, spellName in TableUtils:OrderedPairs(subList[i], function(key)
 					return subList[i][key]
 				end) do
 					---@type SpellData
 					local spellData = Ext.Stats.Get(spellName)
 
 					local spellImage = spellGroup:AddImageButton(spellName .. "##" .. i, spellData.Icon, { 48, 48 })
-					spellImage.SameLine = (counter) % math.floor(self.designer.LastSize[1] / 60) ~= 0
+					spellImage.SameLine = (counter) % math.floor((self.designer.LastSize[1]) / 60) ~= 0
+					spellImage:SetColor("Button", self.subListIndex[subListName].colour)
+
+					spellImage.OnClick = function()
+						Helpers:KillChildren(popup)
+						popup:Open()
+						for subListCategory, index in TableUtils:OrderedPairs(self.subListIndex) do
+							if subListCategory ~= subListName then
+								popup:AddSelectable("Set As " .. index.name .. "##" .. i).OnClick = function()
+									spellList.subLists[subListCategory] = spellList.subLists[subListCategory] or {}
+									spellList.subLists[subListCategory][i] = spellList.subLists[subListCategory][i] or {}
+									table.insert(spellList.subLists[subListCategory][i], spellName)
+									subList[i][sI] = nil
+
+									self:buildSpellDesignerWindow(activeSpellList and activeSpellList.UserData)
+								end
+							end
+						end
+					end
 
 					local tooltip = spellImage:Tooltip()
 
 					spellImage.OnHoverEnter = function()
+						Helpers:KillChildren(tooltip)
 						if Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
 							ResourceManager:RenderDisplayWindow(spellData, tooltip)
 						else
-							tooltip:AddText(spellName)
+							tooltip:AddText("\t " .. spellName)
+							tooltip:AddText("\t " .. self.subListIndex[subListName].name)
 						end
 					end
 
 					spellImage.OnHoverLeave = function()
 						Helpers:KillChildren(tooltip)
-						tooltip:AddText(spellName)
+						tooltip:AddText("\t " .. spellName)
+						tooltip:AddText("\t " .. self.subListIndex[subListName].name)
 					end
 
 					counter = counter + 1

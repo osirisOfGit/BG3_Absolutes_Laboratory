@@ -211,3 +211,13 @@ function Styler:HyperlinkText(parent, text, tooltipCallback, freeSize)
 
 	return fakeTextSelectable
 end
+
+---@param colour number[]
+function Styler:ConvertRGBAToIMGUI(colour)
+	for i, col in ipairs(colour) do
+		if i < 4 and col > 1 then
+			colour[i] = col / 255
+		end
+	end
+	return colour
+end
