@@ -1,5 +1,47 @@
 SpellListDesigner = {}
 
+---@type {[string]: SpellName[][]}
+SpellListDesigner.progressions = {}
+
+SpellListDesigner.progressionTranslation = {}
+
+function SpellListDesigner:buildProgressionIndex()
+	if not next(self.progressions) then
+		for _, progressionId in pairs(Ext.StaticData.GetAll("Progression")) do
+			---@type ResourceProgression
+			local progression = Ext.StaticData.Get(progressionId, "Progression")
+			if progression.AddSpells and next(Ext.Types.Serialize(progression.AddSpells))
+				or progression.SelectSpells and next(Ext.Types.Serialize(progression.SelectSpells))
+			then
+				if not self.progressionTranslation[progression.Name] then
+					self.progressionTranslation[progression.Name] = progression.TableUUID
+				end
+				self.progressionTranslation[progression.TableUUID] = progression.Name
+
+				self.progressions[progression.Name] = self.progressions[progression.Name] or {}
+				self.progressions[progression.Name][progression.Level] = self.progressions[progression.Name][progression.Level] or {}
+
+				for _, addSpellMeta in TableUtils:CombinedPairs(progression.AddSpells, progression.SelectSpells) do
+					---@type ResourceSpellList
+					local progSpellList = Ext.StaticData.Get(addSpellMeta.SpellUUID, "SpellList")
+
+					for _, spellName in pairs(progSpellList.Spells) do
+						if not TableUtils:IndexOf(self.progressions[progression.Name], function(value)
+								return TableUtils:IndexOf(value, spellName) ~= nil
+							end)
+						then
+							table.insert(self.progressions[progression.Name][progression.Level], spellName)
+						end
+					end
+				end
+				if self.progressions[progression.Name][progression.Level] and #self.progressions[progression.Name][progression.Level] == 0 then
+					self.progressions[progression.Name][progression.Level] = nil
+				end
+			end
+		end
+	end
+end
+
 ---@class SpellSubListIndex
 ---@field name string
 ---@field description string
@@ -113,6 +155,10 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 
 			activeSpellList = spellListSelect
 
+			if spellList.progressions and next(spellList.progressions) then
+				self:buildProgressionIndex()
+			end
+
 			self:buildSpellListDesigner(spellList)
 		end
 
@@ -186,29 +232,38 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 
 	local popup = self.designer:AddPopup("SpellActionPopup")
 
-	for i = 1, 30 do
-		local listGroup = leveledListGroup:AddGroup("list" .. i)
-		listGroup:SetColor("Border", { 1, 0, 0, 1 })
-
-		listGroup:AddText(tostring(i) .. (i < 10 and "  " or ""))
-
-		local spellGroup = listGroup:AddGroup("spells")
-		spellGroup.SameLine = true
-		spellGroup.UserData = i
-
+	---@param parentGroup ExtuiGroup
+	---@param subLists SpellSubLists
+	---@param level number
+	---@param progressionTableId string?
+	local function buildSpellListFromSubList(parentGroup, subLists, level, progressionTableId)
 		local counter = 0
-		for subListName, subList in TableUtils:OrderedPairs(spellList.subLists, function(key)
+		if progressionTableId and not subLists.randomized then
+			subLists.randomized = {}
+		end
+		for subListName, subList in TableUtils:OrderedPairs(subLists._real, function(key)
 			return self.subListIndex[key].name
 		end) do
+			if subListName == "randomized" and progressionTableId and self.progressions[self.progressionTranslation[progressionTableId]][level] then
+				-- So additions to linked progressions don't get stored to the config
+				subList = { [level] = {} }
+
+				for _, spellName in pairs(self.progressions[self.progressionTranslation[progressionTableId]][level]) do
+					if not self:CheckIfSpellIsInSpellListLevel(spellList, spellName, level) then
+						table.insert(subList[level], spellName)
+					end
+				end
+			end
+
 			---@cast subList SpellName[][]
-			if subList[i] then
-				for sI, spellName in TableUtils:OrderedPairs(subList[i], function(key)
-					return subList[i][key]
+			if subList[level] then
+				for sI, spellName in TableUtils:OrderedPairs(subList[level], function(key)
+					return subList[level][key]
 				end) do
 					---@type SpellData
 					local spellData = Ext.Stats.Get(spellName)
 
-					local spellImage = spellGroup:AddImageButton(spellName .. "##" .. i, spellData.Icon, { 48, 48 })
+					local spellImage = parentGroup:AddImageButton(spellName .. "##" .. level, spellData.Icon, { 48, 48 })
 					spellImage.SameLine = (counter) % math.floor((self.designer.LastSize[1]) / 60) ~= 0
 					spellImage:SetColor("Button", self.subListIndex[subListName].colour)
 
@@ -227,15 +282,26 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 							Helpers:KillChildren(popup)
 							popup:Open()
 							for subListCategory, index in TableUtils:OrderedPairs(self.subListIndex) do
-								if subListCategory ~= subListName and (subListCategory ~= "blackListed") then
-									popup:AddSelectable("Set As " .. index.name .. "##" .. i).OnClick = function()
-										spellList.subLists[subListCategory] = spellList.subLists[subListCategory] or {}
-										spellList.subLists[subListCategory][i] = spellList.subLists[subListCategory][i] or {}
-										table.insert(spellList.subLists[subListCategory][i], spellName)
-										subList[i][sI] = nil
+								if subListCategory ~= subListName and (subListCategory ~= "blackListed" or progressionTableId) then
+									popup:AddSelectable("Set As " .. index.name .. "##" .. level).OnClick = function()
+										if subListCategory ~= "randomized" or not progressionTableId then
+											subLists[subListCategory] = subLists[subListCategory] or {}
+											subLists[subListCategory][level] = subLists[subListCategory][level] or {}
+											table.insert(subLists[subListCategory][level], spellName)
+										end
+										if subList[level] then
+											subList[level][sI] = nil
+										end
 
 										self:buildSpellDesignerWindow(activeSpellList and activeSpellList.UserData)
 									end
+								end
+							end
+
+							if not progressionTableId then
+								popup:AddSelectable("Remove").OnClick = function()
+									subLists[subListName][level][sI] = nil
+									self:buildSpellDesignerWindow(activeSpellList and activeSpellList.UserData)
 								end
 							end
 						end
@@ -263,54 +329,36 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 				end
 			end
 		end
+	end
+
+	for i = 1, 30 do
+		local listGroup = leveledListGroup:AddGroup("list" .. i)
+		listGroup:SetColor("Border", { 1, 0, 0, 1 })
+
+		listGroup:AddText(tostring(i) .. (i < 10 and "  " or ""))
+
+		local spellGroup = listGroup:AddGroup("spells")
+		spellGroup.SameLine = true
+		spellGroup.UserData = i
+
+		buildSpellListFromSubList(spellGroup, spellList.subLists, i)
+
+		if spellList.progressions then
+			for progressionTableId, subLists in TableUtils:OrderedPairs(spellList.progressions) do
+				buildSpellListFromSubList(spellGroup, subLists, i, progressionTableId)
+			end
+		end
+
 		if #spellGroup.Children == 0 then
 			spellGroup:AddDummy(56, 56)
 		end
-		listGroup:AddSeparatorText(""):SetStyle("SeparatorTextBorderSize", 10)
+		listGroup:AddSeparatorText(""):SetStyle("SeparatorTextBorderSize", 100)
 	end
 end
 
----@type {[string]: SpellName[][]}
-local progressions = {}
-
-local progressionNameToTable = {}
-
 ---@param spellList SpellList
 function SpellListDesigner:buildProgressionBrowser(spellList)
-	if not next(progressions) then
-		for _, progressionId in pairs(Ext.StaticData.GetAll("Progression")) do
-			---@type ResourceProgression
-			local progression = Ext.StaticData.Get(progressionId, "Progression")
-			if progression.AddSpells and next(Ext.Types.Serialize(progression.AddSpells))
-				or progression.SelectSpells and next(Ext.Types.Serialize(progression.SelectSpells))
-			then
-				if not progressionNameToTable[progression.Name] then
-					progressionNameToTable[progression.Name] = progression.TableUUID
-				end
-
-				progressions[progression.Name] = progressions[progression.Name] or {}
-				progressions[progression.Name][progression.Level] = progressions[progression.Name][progression.Level] or {}
-
-				for _, addSpellMeta in TableUtils:CombinedPairs(progression.AddSpells, progression.SelectSpells) do
-					---@type ResourceSpellList
-					local progSpellList = Ext.StaticData.Get(addSpellMeta.SpellUUID, "SpellList")
-
-					for _, spellName in pairs(progSpellList.Spells) do
-						if not TableUtils:IndexOf(progressions[progression.Name], function(value)
-								return TableUtils:IndexOf(value, spellName) ~= nil
-							end)
-						then
-							table.insert(progressions[progression.Name][progression.Level], spellName)
-						end
-					end
-				end
-				if progressions[progression.Name][progression.Level] and #progressions[progression.Name][progression.Level] == 0 then
-					progressions[progression.Name][progression.Level] = nil
-				end
-			end
-		end
-	end
-
+	self:buildProgressionIndex()
 	Helpers:KillChildren(self.progressionBrowser)
 
 	local searchBox = self.progressionBrowser:AddInputText("")
@@ -330,7 +378,7 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 
 			local value = string.upper(searchBox.Text)
 
-			for progressionName, list in TableUtils:OrderedPairs(progressions) do
+			for progressionName, list in TableUtils:OrderedPairs(self.progressions) do
 				if progressionName:upper():find(value) then
 					---@type ExtuiSelectable
 					local select = resultsGroup:AddSelectable(progressionName)
@@ -354,10 +402,7 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 										spellList.subLists.randomized[level] = {}
 									end
 									for _, spell in pairs(spells) do
-										if not TableUtils:IndexOf(spellList.subLists.randomized[level], spell)
-											and not TableUtils:IndexOf(spellList.subLists.guaranteed[level], spell)
-											and not TableUtils:IndexOf(spellList.subLists.startOfCombatOnly[level], spell)
-										then
+										if not self:CheckIfSpellIsInSpellListLevel(spellList, spell, level) then
 											table.insert(spellList.subLists.randomized[level], spell)
 										end
 									end
@@ -366,8 +411,19 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 								self:buildSpellDesignerWindow(activeSpellList and activeSpellList.UserData)
 							end
 
-							local linkButton = ele:AddButton("Link")
+							local tableUUID = self.progressionTranslation[progressionName]
+							local hasProgression = spellList.progressions and spellList.progressions[tableUUID]
+							local linkButton = ele:AddButton(hasProgression and "Unlink" or "Link")
 							linkButton.SameLine = true
+							linkButton.OnClick = function()
+								if hasProgression then
+									spellList.progressions[tableUUID].delete = true
+								else
+									spellList.progressions = spellList.progressions or {}
+									spellList.progressions[tableUUID] = TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.leveledSpellList.subLists)
+								end
+								self:buildSpellDesignerWindow(activeSpellList and activeSpellList.UserData)
+							end
 						end)
 
 						local progTable = Styler:TwoColumnTable(levelView, progressionName)
@@ -393,4 +449,28 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 		end)
 	end
 	searchBox.OnActivate = searchBox.OnChange
+end
+
+---@param spellList SpellList
+---@param spellName string
+---@param level number
+---@return boolean
+function SpellListDesigner:CheckIfSpellIsInSpellListLevel(spellList, spellName, level)
+	local predicate = function(value)
+		for _, subList in pairs(value) do
+			if subList[level] and TableUtils:IndexOf(subList[level], spellName) ~= nil then
+				return true
+			end
+		end
+	end
+
+	if TableUtils:IndexOf(spellList.subLists, predicate) then
+		return true
+	elseif spellList.progressions then
+		if TableUtils:IndexOf(spellList.progressions, predicate) then
+			return true
+		end
+	end
+
+	return false
 end
