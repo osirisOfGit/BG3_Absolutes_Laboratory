@@ -59,7 +59,7 @@ ConfigurationStructure.DynamicClassDefinitions.folders = {
 ConfigurationStructure.config.mutations.folders = {}
 
 
---#region Profiles 
+--#region Profiles
 
 ---@class MutationProfile
 ConfigurationStructure.DynamicClassDefinitions.profile = {
@@ -77,7 +77,7 @@ ConfigurationStructure.DynamicClassDefinitions.profileMutationRule = {
 	mutationName = "",
 	---@type string?
 	modId = nil,
-	---@type string? 
+	---@type string?
 	modName = nil,
 	---@type boolean
 	additive = false
@@ -108,13 +108,17 @@ ConfigurationStructure.DynamicClassDefinitions.leveledSpellList = {
 	description = "",
 	---@type Guid?
 	modId = nil,
-	progression = false,
-	---@type SpellName[][]?
-	guaranteed = {},
-	---@type SpellName[][]?
-	randomized = {},
-	---@type SpellName[][]?
-	startOfCombatOnly = {},
+	---@type {[Guid]: SpellSubLists}?
+	progressions = nil,
+	---@class SpellSubLists
+	subLists = {
+		---@type SpellName[][]?
+		guaranteed = {},
+		---@type SpellName[][]?
+		randomized = {},
+		---@type SpellName[][]?
+		startOfCombatOnly = {},
+	},
 	---@type SpellListCriteriaEntry?
 	criteria = {}
 }

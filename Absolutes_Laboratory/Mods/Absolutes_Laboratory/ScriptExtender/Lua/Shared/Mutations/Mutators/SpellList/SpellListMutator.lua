@@ -8,7 +8,7 @@ SpellListMutator = MutatorInterface:new("SpellList")
 ---@param mutator SpellListMutator
 function SpellListMutator:renderMutator(parent, mutator)
 	parent:AddButton("Open SpellList Designer").OnClick = function()
-		SpellListDesigner:buildSpellDesignerWindow(parent)
+		SpellListDesigner:buildSpellDesignerWindow()
 	end
 end
 
