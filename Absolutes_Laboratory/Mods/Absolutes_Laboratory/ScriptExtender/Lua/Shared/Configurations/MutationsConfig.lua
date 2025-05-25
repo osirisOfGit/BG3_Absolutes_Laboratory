@@ -136,7 +136,7 @@ ConfigurationStructure.config.mutations.settings.spellLists = {
 		randomized = {124, 14, 43, 0},
 		startOfCombatOnly = {217, 118, 6, 0.8},
 		onLoadOnly = {217, 179, 6, 0.8},
-		blackListed = {1, 1, 1, 1},
+		blackListed = {0, 0, 0, 1},
 	}
 }
 

@@ -2,14 +2,16 @@ SpellListDesigner = {}
 
 ---@class SpellSubListIndex
 ---@field name string
+---@field description string
 ---@field colour number[]
 
 ---@type {[string] : SpellSubListIndex}
 SpellListDesigner.subListIndex = {
-	["guaranteed"] = { name = "Guaranteed", colour = {} },
-	["randomized"] = { name = "Randomized", colour = {} },
-	["startOfCombatOnly"] = { name = "Cast On Combat Start", colour = {} },
-	["onLoadOnly"] = { name = "Cast On Level Load", colour = {} }
+	["guaranteed"] = { name = "Guaranteed", description = "Will always be assigned to an enemy that is assigned level or higher", colour = {} },
+	["randomized"] = { name = "Randomized", description = "Will be placed into a pool of spells assigned to the same level to be randomly chosen per the mutator's config", colour = {} },
+	["startOfCombatOnly"] = { name = "Cast On Combat Start", description = "Will only be cast on combat start - will not be added to the entity's spellList", colour = {} },
+	["onLoadOnly"] = { name = "Cast On Level Load", description = "Will be cast as soon as the mutator is applied - will not be added to the entity's spellList", colour = {} },
+	["blackListed"] = { name = "Blacklisted", description = "Only available for spells added via a linked progression - will prevent this spell from being added to the entity's spellList or cast by the entity", colour = {} }
 }
 
 ---@type ExtuiWindow?
@@ -61,7 +63,7 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 
 		local colorSettings = self.designer:AddGroup("colorSetting")
 		colorSettings.UserData = "keep"
-		colorSettings:AddText("Click A Color To Change It"):SetStyle("Alpha", 0.6)
+		colorSettings:AddText("Click A Color To Change It, Hover for Tooltips"):SetStyle("Alpha", 0.6)
 
 		for subListName, colour in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.settings.spellLists.subListColours, function(key)
 			return self.subListIndex[key].name
@@ -74,6 +76,7 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 			colorEditer.AlphaBar = true
 			colorEditer.Color = self.subListIndex[subListName].colour
 			colorEditer.NoInputs = true
+			colorEditer:Tooltip():AddText("\t " .. self.subListIndex[subListName].description)
 			colorEditer.OnChange = function(colorEdit)
 				---@cast colorEdit ExtuiColorEdit
 				for i, color in ipairs(colorEdit.Color) do
@@ -151,7 +154,9 @@ end
 
 ---@param spellList SpellList
 function SpellListDesigner:buildSpellListDesigner(spellList)
-	Styler:CheapTextAlign(spellList.name, self.designer):Tooltip():AddText("\t " .. spellList.description).TextWrapPos = 800 * Styler:ScaleFactor()
+	local headerTitle = Styler:CheapTextAlign(spellList.name, self.designer)
+	headerTitle.Font = "Big"
+	headerTitle:Tooltip():AddText("\t " .. spellList.description).TextWrapPos = 800 * Styler:ScaleFactor()
 
 	local criteriaSection = self.designer:AddCollapsingHeader("Entity Eligibility Criteria")
 
@@ -208,17 +213,29 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 					spellImage:SetColor("Button", self.subListIndex[subListName].colour)
 
 					spellImage.OnClick = function()
-						Helpers:KillChildren(popup)
-						popup:Open()
-						for subListCategory, index in TableUtils:OrderedPairs(self.subListIndex) do
-							if subListCategory ~= subListName then
-								popup:AddSelectable("Set As " .. index.name .. "##" .. i).OnClick = function()
-									spellList.subLists[subListCategory] = spellList.subLists[subListCategory] or {}
-									spellList.subLists[subListCategory][i] = spellList.subLists[subListCategory][i] or {}
-									table.insert(spellList.subLists[subListCategory][i], spellName)
-									subList[i][sI] = nil
+						if Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
+							local window = Ext.IMGUI.NewWindow(spellName)
+							window.Closeable = true
+							window.AlwaysAutoResize = true
 
-									self:buildSpellDesignerWindow(activeSpellList and activeSpellList.UserData)
+							window.OnClose = function()
+								window:Destroy()
+								window = nil
+							end
+							ResourceManager:RenderDisplayWindow(spellData, window)
+						else
+							Helpers:KillChildren(popup)
+							popup:Open()
+							for subListCategory, index in TableUtils:OrderedPairs(self.subListIndex) do
+								if subListCategory ~= subListName and (subListCategory ~= "blackListed") then
+									popup:AddSelectable("Set As " .. index.name .. "##" .. i).OnClick = function()
+										spellList.subLists[subListCategory] = spellList.subLists[subListCategory] or {}
+										spellList.subLists[subListCategory][i] = spellList.subLists[subListCategory][i] or {}
+										table.insert(spellList.subLists[subListCategory][i], spellName)
+										subList[i][sI] = nil
+
+										self:buildSpellDesignerWindow(activeSpellList and activeSpellList.UserData)
+									end
 								end
 							end
 						end

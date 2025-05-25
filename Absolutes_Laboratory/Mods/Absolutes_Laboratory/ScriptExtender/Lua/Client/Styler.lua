@@ -147,7 +147,7 @@ end
 ---@param text string
 ---@param tooltipCallback fun(parent: ExtuiTreeParent)
 ---@param freeSize boolean?
----@return ExtuiSelectable
+---@return ExtuiSelectable|ExtuiTextLink
 function Styler:HyperlinkText(parent, text, tooltipCallback, freeSize)
 	local fakeTextSelectable
 	if Ext.Utils.Version() >= 25 then
@@ -167,49 +167,62 @@ function Styler:HyperlinkText(parent, text, tooltipCallback, freeSize)
 		fakeTextSelectable:SetColor("Text", { 173 / 255, 216 / 255, 230 / 255, 1 })
 	end
 
+	self:HyperlinkRenderable(fakeTextSelectable, text, nil, tooltipCallback)
+
+	return fakeTextSelectable
+end
+
+---@generic T:ExtuiStyledRenderable
+---@param renderable T
+---@param item string
+---@param modifier InputModifier?
+---@param callback fun(parent: ExtuiTreeParent)
+---@return T
+function Styler:HyperlinkRenderable(renderable, item, modifier, callback)
 	---@type ExtuiTooltip?
 	local tooltip
 
 	---@type ExtuiWindow?
 	local window
 
-	fakeTextSelectable.OnHoverEnter = function()
-		if not window then
-			if not tooltip then
-				tooltip = fakeTextSelectable:Tooltip()
-				tooltipCallback(tooltip)
+	renderable.OnHoverEnter = function()
+		if not modifier or Ext.ClientInput.GetInputManager().PressedModifiers == modifier then
+			if not window then
+				if not tooltip then
+					tooltip = renderable:Tooltip()
+					callback(tooltip)
+				end
+			else
+				window.Open = true
+				window:SetFocus()
 			end
-		else
-			window.Open = true
-			window:SetFocus()
 		end
 	end
 
-	fakeTextSelectable.OnHoverLeave = function()
+	renderable.OnHoverLeave = function()
 		if tooltip and not tooltip.Visible then
 			Helpers:KillChildren(tooltip)
 		end
 	end
 
-	fakeTextSelectable.OnClick = function()
-		if Ext.Utils.Version() < 25 then
-			fakeTextSelectable.Selected = false
+	renderable.OnClick = function()
+		if not modifier or Ext.ClientInput.GetInputManager().PressedModifiers == modifier then
+			window = Ext.IMGUI.NewWindow(item)
+			window.Closeable = true
+			window.AlwaysAutoResize = true
+
+			window.OnClose = function()
+				window:Destroy()
+				window = nil
+			end
+
+			callback(window)
+			return true
 		end
-
-		window = Ext.IMGUI.NewWindow(text)
-		window.IDContext = parent.IDContext .. text
-		window.Closeable = true
-		window.AlwaysAutoResize = true
-
-		window.OnClose = function()
-			window:Destroy()
-			window = nil
-		end
-
-		tooltipCallback(window)
+		return false
 	end
 
-	return fakeTextSelectable
+	return renderable
 end
 
 ---@param colour number[]
