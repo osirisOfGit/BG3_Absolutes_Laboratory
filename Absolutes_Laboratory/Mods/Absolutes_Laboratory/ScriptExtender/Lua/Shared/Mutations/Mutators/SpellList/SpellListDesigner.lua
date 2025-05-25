@@ -232,6 +232,9 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 
 	local popup = self.designer:AddPopup("SpellActionPopup")
 
+	---@type SpellName[][]
+	local spellCacheForProgressions = {}
+
 	---@param parentGroup ExtuiGroup
 	---@param subLists SpellSubLists
 	---@param level number
@@ -250,7 +253,11 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 
 				for _, spellName in pairs(self.progressions[self.progressionTranslation[progressionTableId]][level]) do
 					if not self:CheckIfSpellIsInSpellListLevel(spellList, spellName, level) then
-						table.insert(subList[level], spellName)
+						if not TableUtils:IndexOf(spellCacheForProgressions[level], spellName) then
+							table.insert(subList[level], spellName)
+							spellCacheForProgressions[level] = spellCacheForProgressions[level] or {}
+							table.insert(spellCacheForProgressions[level], spellName)
+						end
 					end
 				end
 			end
@@ -316,6 +323,9 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 						else
 							tooltip:AddText("\t " .. spellName)
 							tooltip:AddText("\t " .. self.subListIndex[subListName].name)
+							if progressionTableId then
+								tooltip:AddText("\t  Linked from Progression " .. self.progressionTranslation[progressionTableId])
+							end
 						end
 					end
 
@@ -323,6 +333,9 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 						Helpers:KillChildren(tooltip)
 						tooltip:AddText("\t " .. spellName)
 						tooltip:AddText("\t " .. self.subListIndex[subListName].name)
+						if progressionTableId then
+							tooltip:AddText("\t Linked from Progression: " .. self.progressionTranslation[progressionTableId])
+						end
 					end
 
 					counter = counter + 1
@@ -412,16 +425,19 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 							end
 
 							local tableUUID = self.progressionTranslation[progressionName]
-							local hasProgression = spellList.progressions and spellList.progressions[tableUUID]
+							local hasProgression = (spellList.progressions and spellList.progressions[tableUUID]) ~= nil
 							local linkButton = ele:AddButton(hasProgression and "Unlink" or "Link")
 							linkButton.SameLine = true
 							linkButton.OnClick = function()
 								if hasProgression then
 									spellList.progressions[tableUUID].delete = true
+									linkButton.Label = "Link"
 								else
+									linkButton.Label = "Unlink"
 									spellList.progressions = spellList.progressions or {}
 									spellList.progressions[tableUUID] = TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.leveledSpellList.subLists)
 								end
+								hasProgression = not hasProgression
 								self:buildSpellDesignerWindow(activeSpellList and activeSpellList.UserData)
 							end
 						end)
