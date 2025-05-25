@@ -108,6 +108,7 @@ ConfigurationStructure.DynamicClassDefinitions.leveledSpellList = {
 	description = "",
 	---@type Guid?
 	modId = nil,
+	progression = false,
 	---@type SpellName[][]?
 	guaranteed = {},
 	---@type SpellName[][]?
