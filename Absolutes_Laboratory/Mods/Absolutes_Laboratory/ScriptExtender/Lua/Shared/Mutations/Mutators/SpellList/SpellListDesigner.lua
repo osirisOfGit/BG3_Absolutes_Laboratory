@@ -5,7 +5,8 @@ SpellListDesigner.selectedSpells = {
 	spells = {},
 	---@type ExtuiImageButton[]
 	handles = {},
-	context = "Main"
+	context = "Main",
+	linkedSpells = false
 }
 
 ---@type {[string]: SpellName[][]}
@@ -275,12 +276,13 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 				local spellData = Ext.Stats.Get(spellName)
 
 				local spellImage = parentGroup:AddImageButton(spellName .. "##" .. level, spellData.Icon, { 48, 48 })
-				spellImage.SameLine = #parentGroup.Children > 0 and ((#parentGroup.Children - 1) % math.floor((self.designer.LastSize[1]) / 60) ~= 0)
+				spellImage.SameLine = #parentGroup.Children > 0 and ((#parentGroup.Children - 1) % math.floor((self.designer.LastSize[1]) / 63) ~= 0)
 				spellImage:SetColor("Button", self.subListIndex[subListName].colour)
 				spellImage.UserData = {
 					spellName = spellName,
 					subListName = subListName,
-					level = level
+					level = level,
+					progressionTableId = progressionTableId
 				} --[[@as SpellHandle]]
 
 				if not progressionTableId then
@@ -312,8 +314,11 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 							window = nil
 						end
 						ResourceManager:RenderDisplayWindow(spellData, window)
-					elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" and not progressionTableId then
-						if self.selectedSpells.context ~= "Main" then
+					elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
+						if self.selectedSpells.context ~= "Main"
+							or (self.selectedSpells.linkedSpells and not progressionTableId)
+							or (not self.selectedSpells.linkedSpells and progressionTableId)
+						then
 							self.selectedSpells.context = "Main"
 							self.selectedSpells.spells = {}
 							for _, handle in pairs(self.selectedSpells.handles) do
@@ -325,6 +330,13 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 							end
 							self.selectedSpells.handles = {}
 						end
+
+						if progressionTableId then
+							self.selectedSpells.linkedSpells = true
+						else
+							self.selectedSpells.linkedSpells = false
+						end
+
 						table.insert(self.selectedSpells.spells, spellImage.UserData)
 						table.insert(self.selectedSpells.handles, spellImage)
 						spellImage:SetColor("Button", { 0, 1, 0, .8 })
@@ -346,14 +358,39 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 						for subListCategory, index in TableUtils:OrderedPairs(self.subListIndex) do
 							if subListCategory ~= subListName and (subListCategory ~= "blackListed" or progressionTableId) then
 								popup:AddSelectable("Set As " .. index.name .. "##" .. level).OnClick = function()
-									if subListCategory ~= "randomized" or not progressionTableId then
-										subLists[subListCategory] = subLists[subListCategory] or {}
-										table.insert(subLists[subListCategory], spellName)
-									end
-									if subList then
-										subList[sI] = nil
+									---@type SpellHandle[]
+									local handles = {}
+									if self.selectedSpells.context == "Main" and #self.selectedSpells.spells > 0 then
+										handles = self.selectedSpells.spells
 									end
 
+									if not TableUtils:IndexOf(handles, function(value)
+											return value.spellName == spellName
+										end)
+									then
+										table.insert(handles, spellImage.UserData)
+									end
+
+									for _, handle in pairs(handles) do
+										---@type SpellSubLists
+										local subList = spellList.levels[handle.level][handle.progressionTableId and "linkedProgressions" or "selectedSpells"]
+										if handle.progressionTableId then
+											subList = subList[handle.progressionTableId]
+										end
+
+										if subListCategory ~= "randomized" or not progressionTableId then
+											subList[subListCategory] = subList[subListCategory] or {}
+											table.insert(subList[subListCategory], handle.spellName)
+										end
+										if handle.subListName then
+											local index = TableUtils:IndexOf(subList[handle.subListName], handle.spellName)
+											if index then
+												subList[handle.subListName][index] = nil
+											end
+										end
+									end
+									self.selectedSpells.handles = {}
+									self.selectedSpells.spells = {}
 									self:buildSpellDesignerWindow(activeSpellList and activeSpellList.UserData)
 								end
 							end
@@ -398,7 +435,7 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 	for level = 1, 30 do
 		local listGroup = leveledListGroup:AddGroup("list" .. level)
 		listGroup:SetColor("Border", { 1, 0, 0, 1 })
-		listGroup:AddText(tostring(level) .. (level < 10 and "  " or ""))
+		listGroup:AddText(tostring(level) .. (level < 10 and "  " or "")).Font = "Big"
 		listGroup.UserData = level
 		listGroup.DragDropType = "SpellReorder"
 		local spellGroup = listGroup:AddGroup("spells")
@@ -409,9 +446,17 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 				buildSpellListFromSubList(spellGroup, spellList.levels[level].selectedSpells, level)
 			end
 
-			if spellList.levels[level].linkedProgressions then
+			if spellList.levels[level].linkedProgressions and next(spellList.levels[level].linkedProgressions) then
+				local sep = spellGroup:AddSeparatorText("Linked Progressions")
+				local progGroup = spellGroup:AddGroup("linkedProg")
+
 				for progressionTableId, subLists in TableUtils:OrderedPairs(spellList.levels[level].linkedProgressions) do
-					buildSpellListFromSubList(spellGroup, subLists, level, progressionTableId)
+					buildSpellListFromSubList(progGroup, subLists, level, progressionTableId)
+				end
+
+				if #progGroup.Children == 0 then
+					sep:Destroy()
+					progGroup:Destroy()
 				end
 			end
 		end
@@ -420,6 +465,7 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 		---@field spellName SpellName
 		---@field subListName string?
 		---@field level number?
+		---@field progressionTableId Guid?
 
 		---@param group ExtuiGroup
 		---@param spellItem ExtuiImage|ExtuiImageButton
@@ -592,7 +638,7 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 								} --[[@as SpellHandle]]
 
 								for l = 1, 30 do
-									if spellList.levels[l] and self:CheckIfSpellIsInSpellListLevel(spellList.levels[l], spellName, l) then
+									if spellList.levels and spellList.levels[l] and self:CheckIfSpellIsInSpellListLevel(spellList.levels[l], spellName, l) then
 										-- spellImage:SetColor("Button", { 1, 0, 0, .3 })
 										spellImage.Tint = { 1, 1, 1, 0.2 }
 										break
