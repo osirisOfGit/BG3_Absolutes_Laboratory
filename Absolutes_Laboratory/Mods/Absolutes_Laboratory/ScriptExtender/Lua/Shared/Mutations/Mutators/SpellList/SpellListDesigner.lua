@@ -155,33 +155,74 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 		activeSpellList = nil
 	end
 
-	self.lists:AddSeparatorText("Your SpellLists"):SetStyle("SeparatorTextAlign", 0.5)
+	local headerTitle = self.lists:AddSeparatorText("Your SpellLists ( ? )")
+	headerTitle:Tooltip():AddText("\t Ctrl-click on an entry to manage it")
+	headerTitle:SetStyle("SeparatorTextAlign", 0.5)
+
+	local popup = self.lists:AddPopup("SpellListPopup")
 
 	for guid, spellList in TableUtils:OrderedPairs(spellLists, function(key)
 		return spellLists[key].name
 	end) do
 		---@type ExtuiSelectable
 		local spellListSelect = self.lists:AddSelectable(spellList.name)
+		if spellList.description and spellList.description ~= "" then
+			spellListSelect:Tooltip():AddText(spellList.description)
+		end
 		spellListSelect.UserData = guid
 
 		spellListSelect.OnClick = function()
-			if activeSpellList then
-				activeSpellList.Selected = false
-				Helpers:KillChildren(self.designer)
+			if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
+				Helpers:KillChildren(popup)
+				popup:Open()
+				popup:AddSelectable("Edit").OnClick = function()
+					self.formWindow.Open = true
+					self.formWindow:SetFocus()
+
+					FormBuilder:CreateForm(self.formWindow, function(formResults)
+						spellList.name = formResults.Name
+						spellList.description = formResults.Description
+
+						self:buildSpellDesignerWindow(activeSpellList and activeSpellList.UserData)
+					end, {
+						{
+							label = "Name",
+							type = "Text",
+							errorMessageIfEmpty = "Required Field",
+							defaultValue = spellList.name
+						},
+						{
+							label = "Description",
+							type = "Multiline",
+							defaultValue = spellList.description
+						}
+					})
+				end
+
+				popup:AddSelectable("Delete").OnClick = function()
+					spellList.delete = true
+					self:buildSpellDesignerWindow(activeSpellList and activeSpellList.UserData)
+				end
+			else
+				if activeSpellList then
+					activeSpellList.Selected = false
+					Helpers:KillChildren(self.designer)
+				end
+				self.designer.Visible = true
+
+				activeSpellList = spellListSelect
+
+				self.displayTable.ColumnDefs[3].Width = 400 * Styler:ScaleFactor()
+				self.browser.Visible = true
+				self:buildProgressionBrowser(spellList)
+				self:buildSpellBrowser(spellList)
+
+				self:buildSpellListDesigner(spellList)
 			end
-			self.designer.Visible = true
-
-			activeSpellList = spellListSelect
-
-			self.displayTable.ColumnDefs[3].Width = 400 * Styler:ScaleFactor()
-			self.browser.Visible = true
-			self:buildProgressionBrowser(spellList)
-			self:buildSpellBrowser(spellList)
-
-			self:buildSpellListDesigner(spellList)
 		end
 
 		if guid == activeList then
+			spellListSelect.Selected = true
 			spellListSelect:OnClick()
 		end
 	end
@@ -222,12 +263,10 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 	Helpers:KillChildren(self.designer)
 	local headerTitle = Styler:CheapTextAlign(spellList.name, self.designer)
 	headerTitle.Font = "Big"
-	headerTitle:Tooltip():AddText("\t " .. spellList.description).TextWrapPos = 800 * Styler:ScaleFactor()
-
-	local criteriaSection = self.designer:AddCollapsingHeader("Entity Eligibility Criteria")
-
-	local classCriteriaGroup = criteriaSection:AddGroup("classCriteria")
-	local abilityCriteriaGroup = criteriaSection:AddGroup("abilityCriteria")
+	if spellList.description and spellList.description ~= "" then
+		headerTitle.Label = headerTitle.Label .. "( ? )"
+		headerTitle:Tooltip():AddText("\t " .. spellList.description).TextWrapPos = 800 * Styler:ScaleFactor()
+	end
 
 	if self.designer.LastSize[1] == 0 then
 		Ext.Timer.WaitFor(10, function()
@@ -236,6 +275,22 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 		return
 	end
 
+	local tipsButton = self.designer:AddButton("Tips")
+	tipsButton:Tooltip():AddText([[
+	This designer allows you to construct custom spell lists and/or assign Laboratory-specific properties to existing Progression-based Spell lists
+	The numbers below represent character level, not class or spell levels.
+	Use the Progression Browser to search for a progression series that has at least one associated Spell List, and either copy its spells to a given level or link your Spell List to it
+	If you link it, you won't be able to move spells to different levels or outright delete them, but you can still assign them to different categories or blacklist them.
+	Spells default to the randomized category, and since spell lists are freshly inspected every LevelGameplayReady event, any uncategorized spells discovered will be automatically assigned there during the mutator application.
+	Spells you manually select can be assigned to any level and category, except blacklist (remove them instead)
+	All non-linked Spells (and all spells in the Browsers) can be drag and dropped to any level to place them there. If assigned a category, that category will be preserved.
+	Click on a spell in the main view to display the popup that allows you to recategorize that spell
+	
+	List of Shortcuts:
+	- Shift: Hold before hovering on a spell to view its complete tooltip. Click on a spell while holding to launch a dedicated window for that tooltip
+	- Ctrl: Multi-select, adding those spells to a group that you can collectively drag and drop or assign to one category. You can only multi-select spells that are identical typse (linked, non-linked, in browser sidebar)
+	- Alt: Remove a spell from the ongoing multi-select
+	]])
 	local deleteAllButton = self.designer:AddButton("Delete All Non-Linked Spells")
 	deleteAllButton.OnClick = function()
 		for _, leveledSubList in TableUtils:OrderedPairs(spellList.levels) do
