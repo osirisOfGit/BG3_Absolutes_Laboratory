@@ -227,6 +227,8 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 		end
 	end
 
+	self.lists:AddNewLine()
+	
 	---@type ExtuiSelectable
 	local createListButton = self.lists:AddSelectable("Create a List")
 
