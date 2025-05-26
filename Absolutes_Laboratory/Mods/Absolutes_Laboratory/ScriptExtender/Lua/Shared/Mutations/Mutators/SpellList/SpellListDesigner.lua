@@ -330,12 +330,14 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 						spellImage:SetColor("Button", { 0, 1, 0, .8 })
 					elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Alt" then
 						if self.selectedSpells.context == "Main" then
-							local index = TableUtils:IndexOf(self.selectedSpells.spells, spellName)
+							local index = TableUtils:IndexOf(self.selectedSpells.spells, function(value)
+								return value.spellName == spellName
+							end)
 							if index then
 								table.remove(self.selectedSpells.spells, index)
 								table.remove(self.selectedSpells.handles, index)
 
-								spellImage:SetColor("Button", self.subListIndex[subListName].colour)
+								spellImage:SetColor("Button", self.subListIndex[spellImage.UserData.subListName].colour)
 							end
 						end
 					else
@@ -424,8 +426,22 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 		listGroup.OnDragDrop = function(group, spellItem)
 			---@type SpellHandle[]
 			local spellHandles = {}
-			if self.selectedSpells.context == "Main" and #self.selectedSpells.spells > 0 then
+			if #self.selectedSpells.spells > 0 then
 				spellHandles = self.selectedSpells.spells
+
+				local index = TableUtils:IndexOf(self.selectedSpells.spells, function(value)
+					return value.spellName == spellItem.UserData.spellName
+				end)
+				if not index then
+					table.insert(spellHandles, spellItem.UserData)
+				end
+
+				if self.selectedSpells.context ~= "Main" then
+					for _, handle in pairs(self.selectedSpells.handles) do
+						handle:SetColor("Button", { 1, 1, 1, 0 })
+					end
+				end
+
 				self.selectedSpells.handles = {}
 				self.selectedSpells.spells = {}
 			else
@@ -441,14 +457,16 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 			spellList.levels[group.UserData].selectedSpells = spellList.levels[group.UserData].selectedSpells or {}
 
 			for _, spellHandle in pairs(spellHandles) do
-				spellList.levels[group.UserData].selectedSpells[spellHandle.subListName or "randomized"] =
-					spellList.levels[group.UserData].selectedSpells[spellHandle.subListName or "randomized"] or {}
+				if not self:CheckIfSpellIsInSpellListLevel(spellList.levels[group.UserData], spellHandle.spellName, group.UserData) then
+					spellList.levels[group.UserData].selectedSpells[spellHandle.subListName or "randomized"] =
+						spellList.levels[group.UserData].selectedSpells[spellHandle.subListName or "randomized"] or {}
 
-				table.insert(spellList.levels[group.UserData].selectedSpells[spellHandle.subListName or "randomized"], spellHandle.spellName)
+					table.insert(spellList.levels[group.UserData].selectedSpells[spellHandle.subListName or "randomized"], spellHandle.spellName)
 
-				if spellHandle.subListName then
-					local index = TableUtils:IndexOf(spellList.levels[spellHandle.level].selectedSpells[spellHandle.subListName], spellHandle.spellName)
-					spellList.levels[spellHandle.level].selectedSpells[spellHandle.subListName][index] = nil
+					if spellHandle.subListName then
+						local index = TableUtils:IndexOf(spellList.levels[spellHandle.level].selectedSpells[spellHandle.subListName], spellHandle.spellName)
+						spellList.levels[spellHandle.level].selectedSpells[spellHandle.subListName][index] = nil
+					end
 				end
 			end
 
@@ -566,12 +584,33 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 								local spell = Ext.Stats.Get(spellName)
 
 								local spellImage = spellCell:AddImageButton(spellName .. i, spell.Icon, { 48, 48 })
-								spellImage.SameLine = (i - 1) % (math.floor(self.progressionBrowser.LastSize[1] / 44)) ~= 0
+								spellImage.SameLine = (i - 1) % (math.floor(self.progressionBrowser.LastSize[1] / 58)) ~= 0
 								spellImage.CanDrag = true
 								spellImage.DragDropType = "SpellReorder"
 								spellImage.UserData = {
 									spellName = spellName
 								} --[[@as SpellHandle]]
+
+								for l = 1, 30 do
+									if spellList.levels[l] and self:CheckIfSpellIsInSpellListLevel(spellList.levels[l], spellName, l) then
+										-- spellImage:SetColor("Button", { 1, 0, 0, .3 })
+										spellImage.Tint = { 1, 1, 1, 0.2 }
+										break
+									end
+								end
+
+								---@param spellImage ExtuiImageButton
+								---@param preview ExtuiTreeParent
+								spellImage.OnDragStart = function(spellImage, preview)
+									if self.selectedSpells.context == "Browser" and #self.selectedSpells.spells > 0 then
+										preview:AddText("Moving:")
+										for _, spellName in pairs(self.selectedSpells.spells) do
+											preview:AddText(spellName.spellName)
+										end
+									else
+										preview:AddText("Moving " .. spellName)
+									end
+								end
 
 								spellImage.OnClick = function()
 									if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
@@ -600,12 +639,21 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 												spellImage:SetColor("Button", { 1, 1, 1, 0 })
 											end
 										end
+									elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
+										local window = Ext.IMGUI.NewWindow(spellName)
+										window.Closeable = true
+										window.AlwaysAutoResize = true
+
+										window.OnClose = function()
+											window:Destroy()
+											window = nil
+										end
+										ResourceManager:RenderDisplayWindow(spellData, window)
 									end
 								end
 
-								Styler:HyperlinkRenderable(spellImage, spellName, nil, function(parent)
-									ResourceManager:RenderDisplayWindow(spell, parent)
-								end)
+
+								ResourceManager:RenderDisplayWindow(spell, spellImage:Tooltip())
 							end
 						end
 					end
@@ -641,7 +689,7 @@ function SpellListDesigner:CheckIfSpellIsInSpellListLevel(leveledSubList, spellN
 
 		if not ignoreProgressions then
 			for progressionId, subLists in pairs(leveledSubList.linkedProgressions) do
-				if TableUtils:IndexOf(self.progressions[self.progressionTranslation[progressionId][level]], spellName) then
+				if TableUtils:IndexOf(self.progressions[self.progressionTranslation[progressionId]][level], spellName) then
 					return true
 				end
 			end
