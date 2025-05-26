@@ -1,5 +1,13 @@
 SpellListDesigner = {}
 
+SpellListDesigner.selectedSpells = {
+	---@type SpellHandle[]
+	spells = {},
+	---@type ExtuiImageButton[]
+	handles = {},
+	context = "Main"
+}
+
 ---@type {[string]: SpellName[][]}
 SpellListDesigner.progressions = {}
 
@@ -259,7 +267,7 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 				end
 			end
 
-			---@cast subList SpellName[][]
+			---@cast subList SpellName[]
 			for sI, spellName in TableUtils:OrderedPairs(subList, function(key)
 				return subList[key]
 			end) do
@@ -269,6 +277,29 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 				local spellImage = parentGroup:AddImageButton(spellName .. "##" .. level, spellData.Icon, { 48, 48 })
 				spellImage.SameLine = #parentGroup.Children > 0 and ((#parentGroup.Children - 1) % math.floor((self.designer.LastSize[1]) / 60) ~= 0)
 				spellImage:SetColor("Button", self.subListIndex[subListName].colour)
+				spellImage.UserData = {
+					spellName = spellName,
+					subListName = subListName,
+					level = level
+				} --[[@as SpellHandle]]
+
+				if not progressionTableId then
+					spellImage.CanDrag = true
+					spellImage.DragDropType = "SpellReorder"
+
+					---@param spellImage ExtuiImageButton
+					---@param preview ExtuiTreeParent
+					spellImage.OnDragStart = function(spellImage, preview)
+						if self.selectedSpells.context == "Main" and #self.selectedSpells.spells > 0 then
+							preview:AddText("Moving:")
+							for _, spellName in pairs(self.selectedSpells.spells) do
+								preview:AddText(spellName.spellName)
+							end
+						else
+							preview:AddText("Moving " .. spellName)
+						end
+					end
+				end
 
 				spellImage.OnClick = function()
 					if Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
@@ -281,6 +312,32 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 							window = nil
 						end
 						ResourceManager:RenderDisplayWindow(spellData, window)
+					elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" and not progressionTableId then
+						if self.selectedSpells.context ~= "Main" then
+							self.selectedSpells.context = "Main"
+							self.selectedSpells.spells = {}
+							for _, handle in pairs(self.selectedSpells.handles) do
+								if handle.UserData.subListName then
+									handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
+								else
+									handle:SetColor("Button", { 1, 1, 1, 0 })
+								end
+							end
+							self.selectedSpells.handles = {}
+						end
+						table.insert(self.selectedSpells.spells, spellImage.UserData)
+						table.insert(self.selectedSpells.handles, spellImage)
+						spellImage:SetColor("Button", { 0, 1, 0, .8 })
+					elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Alt" then
+						if self.selectedSpells.context == "Main" then
+							local index = TableUtils:IndexOf(self.selectedSpells.spells, spellName)
+							if index then
+								table.remove(self.selectedSpells.spells, index)
+								table.remove(self.selectedSpells.handles, index)
+
+								spellImage:SetColor("Button", self.subListIndex[subListName].colour)
+							end
+						end
 					else
 						Helpers:KillChildren(popup)
 						popup:Open()
@@ -329,38 +386,78 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 					tooltip:AddText("\t " .. spellName)
 					tooltip:AddText("\t " .. self.subListIndex[subListName].name)
 					if progressionTableId then
-						tooltip:AddText("\t Linked from Progression: " .. self.progressionTranslation[progressionTableId])
+						tooltip:AddText("\tLinked from Progression: " .. self.progressionTranslation[progressionTableId])
 					end
 				end
 			end
 		end
 	end
 
-	for i = 1, 30 do
-		local listGroup = leveledListGroup:AddGroup("list" .. i)
+	for level = 1, 30 do
+		local listGroup = leveledListGroup:AddGroup("list" .. level)
 		listGroup:SetColor("Border", { 1, 0, 0, 1 })
-		listGroup:AddText(tostring(i) .. (i < 10 and "  " or ""))
+		listGroup:AddText(tostring(level) .. (level < 10 and "  " or ""))
+		listGroup.UserData = level
+		listGroup.DragDropType = "SpellReorder"
+		local spellGroup = listGroup:AddGroup("spells")
+		spellGroup.SameLine = true
 
-		if spellList.levels and spellList.levels[i] then
-			local spellGroup = listGroup:AddGroup("spells")
-			spellGroup.SameLine = true
-			spellGroup.UserData = i
-
-			if spellList.levels[i].selectedSpells then
-				buildSpellListFromSubList(spellGroup, spellList.levels[i].selectedSpells, i)
+		if spellList.levels and spellList.levels[level] then
+			if spellList.levels[level].selectedSpells then
+				buildSpellListFromSubList(spellGroup, spellList.levels[level].selectedSpells, level)
 			end
 
-			if spellList.levels[i].linkedProgressions then
-				for progressionTableId, subLists in TableUtils:OrderedPairs(spellList.levels[i].linkedProgressions) do
-					buildSpellListFromSubList(spellGroup, subLists, i, progressionTableId)
+			if spellList.levels[level].linkedProgressions then
+				for progressionTableId, subLists in TableUtils:OrderedPairs(spellList.levels[level].linkedProgressions) do
+					buildSpellListFromSubList(spellGroup, subLists, level, progressionTableId)
+				end
+			end
+		end
+
+		---@class SpellHandle
+		---@field spellName SpellName
+		---@field subListName string?
+		---@field level number?
+
+		---@param group ExtuiGroup
+		---@param spellItem ExtuiImage|ExtuiImageButton
+		listGroup.OnDragDrop = function(group, spellItem)
+			---@type SpellHandle[]
+			local spellHandles = {}
+			if self.selectedSpells.context == "Main" and #self.selectedSpells.spells > 0 then
+				spellHandles = self.selectedSpells.spells
+				self.selectedSpells.handles = {}
+				self.selectedSpells.spells = {}
+			else
+				spellHandles = { spellItem.UserData }
+			end
+
+			--[[
+				spellImage.UserData = {
+					spellName = spellName,
+					subListName = subListName,
+					level = level
+				}]]
+			spellList.levels[group.UserData].selectedSpells = spellList.levels[group.UserData].selectedSpells or {}
+
+			for _, spellHandle in pairs(spellHandles) do
+				spellList.levels[group.UserData].selectedSpells[spellHandle.subListName or "randomized"] =
+					spellList.levels[group.UserData].selectedSpells[spellHandle.subListName or "randomized"] or {}
+
+				table.insert(spellList.levels[group.UserData].selectedSpells[spellHandle.subListName or "randomized"], spellHandle.spellName)
+
+				if spellHandle.subListName then
+					local index = TableUtils:IndexOf(spellList.levels[spellHandle.level].selectedSpells[spellHandle.subListName], spellHandle.spellName)
+					spellList.levels[spellHandle.level].selectedSpells[spellHandle.subListName][index] = nil
 				end
 			end
 
-			if #spellGroup.Children == 0 then
-				spellGroup:AddDummy(56, 56)
-			end
-		else
-			listGroup:AddDummy(56, 56).SameLine = true
+			self:buildSpellDesignerWindow(activeSpellList and activeSpellList.UserData)
+		end
+
+
+		if #spellGroup.Children == 0 then
+			spellGroup:AddDummy(56, 56)
 		end
 		listGroup:AddSeparatorText(""):SetStyle("SeparatorTextBorderSize", 100)
 	end
@@ -468,9 +565,47 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 								---@type SpellData
 								local spell = Ext.Stats.Get(spellName)
 
-								local spellImage = spellCell:AddImage(spell.Icon, { 48, 48 })
+								local spellImage = spellCell:AddImageButton(spellName .. i, spell.Icon, { 48, 48 })
 								spellImage.SameLine = (i - 1) % (math.floor(self.progressionBrowser.LastSize[1] / 44)) ~= 0
-								ResourceManager:RenderDisplayWindow(spell, spellImage:Tooltip())
+								spellImage.CanDrag = true
+								spellImage.DragDropType = "SpellReorder"
+								spellImage.UserData = {
+									spellName = spellName
+								} --[[@as SpellHandle]]
+
+								spellImage.OnClick = function()
+									if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
+										if self.selectedSpells.context ~= "Browser" then
+											self.selectedSpells.context = "Browser"
+											self.selectedSpells.spells = {}
+											for _, handle in pairs(self.selectedSpells.handles) do
+												if handle.UserData.subListName then
+													handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
+												else
+													handle:SetColor("Button", { 1, 1, 1, 0 })
+												end
+											end
+											self.selectedSpells.handles = {}
+										end
+										table.insert(self.selectedSpells.spells, spellImage.UserData)
+										table.insert(self.selectedSpells.handles, spellImage)
+										spellImage:SetColor("Button", { 0, 1, 0, .8 })
+									elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Alt" then
+										if self.selectedSpells.context == "Browser" then
+											local index = TableUtils:IndexOf(self.selectedSpells.spells, spellName)
+											if index then
+												table.remove(self.selectedSpells.spells, index)
+												table.remove(self.selectedSpells.handles, index)
+
+												spellImage:SetColor("Button", { 1, 1, 1, 0 })
+											end
+										end
+									end
+								end
+
+								Styler:HyperlinkRenderable(spellImage, spellName, nil, function(parent)
+									ResourceManager:RenderDisplayWindow(spell, parent)
+								end)
 							end
 						end
 					end
