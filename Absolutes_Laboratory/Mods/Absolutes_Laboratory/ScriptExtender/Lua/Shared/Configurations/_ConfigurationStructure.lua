@@ -68,8 +68,6 @@ function ConfigurationStructure:generate_recursive_metatable(proxy_table, real_t
 				end
 				-- This triggers each time a slider moves, so need to wait for changes to be complete before updating
 				updateTimer = Ext.Timer.WaitFor(250, function()
-					Helpers:ClearEmptyTablesInProxyTree(this_table)
-					
 					-- Don't wanna deal with complex merge logic, and the payload size can get pretty massive,
 					-- so instead of serializing and sending it via NetMessages we'll just have the client handle
 					-- the file updates and let the server know when to read from it

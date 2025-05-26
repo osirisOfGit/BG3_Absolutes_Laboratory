@@ -11,11 +11,11 @@ Ext.Events.StatsLoaded:Subscribe(function()
 	Logger:ClearLogFile()
 end)
 
+Ext.Require("Client/RandomHelpers.lua")
 Ext.Require("Shared/Configurations/_ConfigurationStructure.lua")
 
 ConfigurationStructure:InitializeConfig()
 
-Ext.Require("Client/RandomHelpers.lua")
 Ext.Require("Client/Styler.lua")
 Ext.Require("Client/_FormBuilder.lua")
 Ext.Require("Client/Inspector/CharacterInspector.lua")
