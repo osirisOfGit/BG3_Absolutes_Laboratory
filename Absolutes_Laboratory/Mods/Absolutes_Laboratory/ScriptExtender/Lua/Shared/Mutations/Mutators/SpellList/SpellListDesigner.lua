@@ -231,10 +231,19 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 
 	if self.designer.LastSize[1] == 0 then
 		Ext.Timer.WaitFor(10, function()
-			Helpers:KillChildren(self.designer)
 			self:buildSpellListDesigner(spellList)
 		end)
 		return
+	end
+
+	local deleteAllButton = self.designer:AddButton("Delete All Non-Linked Spells")
+	deleteAllButton.OnClick = function()
+		for _, leveledSubList in TableUtils:OrderedPairs(spellList.levels) do
+			if leveledSubList.selectedSpells then
+				leveledSubList.selectedSpells.delete = true
+			end
+		end
+		self:buildSpellListDesigner(spellList)
 	end
 
 	local leveledListGroup = self.designer:AddGroup("leveledLists")
