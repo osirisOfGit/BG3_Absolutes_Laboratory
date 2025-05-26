@@ -94,6 +94,7 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 
 		SpellListDesigner.displayTable = self.spellListDesignerWindow:AddTable("SpellListDesigner", 3)
 		self.displayTable.NoSavedSettings = true
+		self.displayTable.Resizable = true
 		self.displayTable:AddColumn("SpellLists", "WidthFixed")
 		self.displayTable:AddColumn("", "WidthStretch")
 		self.displayTable:AddColumn("ProgressionBrowser", "WidthFixed")
@@ -109,10 +110,16 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 		self.designer.ChildAlwaysAutoResize = true
 		self.designer.Visible = false
 
-		SpellListDesigner.progressionBrowser = row:AddCell():AddChildWindow("progressionBrowser")
+		SpellListDesigner.browser = row:AddCell():AddTabBar("Browser")
+		self.browser.Visible = false
+
+		self.progressionBrowser = self.browser:AddTabItem("Progressions"):AddChildWindow("progressionBrowser")
 		self.progressionBrowser.NoSavedSettings = true
-		self.progressionBrowser.Visible = false
 		self.progressionBrowser.ChildAlwaysAutoResize = true
+
+		self.spellBrowser = self.browser:AddTabItem("Spells"):AddChildWindow("SpellBrowser")
+		self.spellBrowser.NoSavedSettings = true
+		self.spellBrowser.ChildAlwaysAutoResize = true
 
 		local colorSettings = self.designer:AddGroup("colorSetting")
 		colorSettings.UserData = "keep"
@@ -207,6 +214,12 @@ end
 
 ---@param spellList SpellList
 function SpellListDesigner:buildSpellListDesigner(spellList)
+	if not self.browser.Visible then
+		self.browser.Visible = true
+		self.displayTable.ColumnDefs[3].Width = 400 * Styler:ScaleFactor()
+		self:buildProgressionBrowser(spellList)
+	end
+
 	local headerTitle = Styler:CheapTextAlign(spellList.name, self.designer)
 	headerTitle.Font = "Big"
 	headerTitle:Tooltip():AddText("\t " .. spellList.description).TextWrapPos = 800 * Styler:ScaleFactor()
@@ -215,17 +228,6 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 
 	local classCriteriaGroup = criteriaSection:AddGroup("classCriteria")
 	local abilityCriteriaGroup = criteriaSection:AddGroup("abilityCriteria")
-
-	local progressionBrowserButton = self.designer:AddButton("Open Progression Browser")
-	progressionBrowserButton.OnClick = function()
-		self.displayTable.ColumnDefs[3].Width = 400 * Styler:ScaleFactor()
-		self.progressionBrowser.Visible = true
-		self:buildProgressionBrowser(spellList)
-		Ext.Timer.WaitFor(10, function()
-			Helpers:KillChildren(self.designer)
-			self:buildSpellListDesigner(spellList)
-		end)
-	end
 
 	if self.designer.LastSize[1] == 0 then
 		Ext.Timer.WaitFor(10, function()
@@ -398,7 +400,30 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 
 						if not progressionTableId then
 							popup:AddSelectable("Remove").OnClick = function()
-								subLists[subListName][sI] = nil
+								---@type SpellHandle[]
+								local handles = {}
+								if self.selectedSpells.context == "Main" and #self.selectedSpells.spells > 0 then
+									handles = self.selectedSpells.spells
+								end
+
+								if not TableUtils:IndexOf(handles, function(value)
+										return value.spellName == spellName
+									end)
+								then
+									table.insert(handles, spellImage.UserData)
+								end
+
+								for _, handle in pairs(handles) do
+									---@type SpellSubLists
+									local subList = spellList.levels[handle.level].selectedSpells
+
+									local index = TableUtils:IndexOf(subList[handle.subListName], handle.spellName)
+									if index then
+										subList[handle.subListName][index] = nil
+									end
+								end
+								self.selectedSpells.handles = {}
+								self.selectedSpells.spells = {}
 								self:buildSpellDesignerWindow(activeSpellList and activeSpellList.UserData)
 							end
 						end
