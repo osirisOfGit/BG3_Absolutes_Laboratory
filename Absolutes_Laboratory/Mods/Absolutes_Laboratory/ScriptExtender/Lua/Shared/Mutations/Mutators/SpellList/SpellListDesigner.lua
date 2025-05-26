@@ -785,7 +785,7 @@ function SpellListDesigner:buildSpellBrowser(spellList)
 								---@type SpellData
 								local spell = Ext.Stats.Get(spellName)
 
-								local level = spell.Level ~= "" and spell.Level or 1
+								local level = (spell.Level ~= "" and spell.Level > 0) and spell.Level or 1
 								spellList.levels[level] = spellList.levels[level] or {}
 								local subLevelList = spellList.levels[level]
 
@@ -796,7 +796,7 @@ function SpellListDesigner:buildSpellBrowser(spellList)
 									local leveledSubList = subLevelList.selectedSpells
 									leveledSubList.randomized = leveledSubList.randomized or {}
 
-									table.insert(leveledSubList.randomized, spell)
+									table.insert(leveledSubList.randomized, spellName)
 								end
 							end
 
