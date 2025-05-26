@@ -72,6 +72,8 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 	local spellLists = ConfigurationStructure.config.mutations.spellLists
 
 	if not self.spellListDesignerWindow then
+		self:buildProgressionIndex()
+
 		self.spellListDesignerWindow = Ext.IMGUI.NewWindow("Spell List Designer")
 		self.spellListDesignerWindow.Closeable = true
 		self.spellListDesignerWindow:SetStyle("WindowMinSize", 300 * Styler:ScaleFactor(), 150 * Styler:ScaleFactor())
@@ -155,10 +157,6 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 
 			activeSpellList = spellListSelect
 
-			if spellList.progressions and next(spellList.progressions) then
-				self:buildProgressionIndex()
-			end
-
 			self:buildSpellListDesigner(spellList)
 		end
 
@@ -240,21 +238,20 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 	---@param level number
 	---@param progressionTableId string?
 	local function buildSpellListFromSubList(parentGroup, subLists, level, progressionTableId)
-		local counter = 0
 		if progressionTableId and not subLists.randomized then
 			subLists.randomized = {}
 		end
-		for subListName, subList in TableUtils:OrderedPairs(subLists._real, function(key)
+		for subListName, subList in TableUtils:OrderedPairs(subLists, function(key)
 			return self.subListIndex[key].name
 		end) do
 			if subListName == "randomized" and progressionTableId and self.progressions[self.progressionTranslation[progressionTableId]][level] then
 				-- So additions to linked progressions don't get stored to the config
-				subList = { [level] = {} }
+				subList = {}
 
 				for _, spellName in pairs(self.progressions[self.progressionTranslation[progressionTableId]][level]) do
-					if not self:CheckIfSpellIsInSpellListLevel(spellList, spellName, level) then
+					if not self:CheckIfSpellIsInSpellListLevel(spellList.levels[level], spellName, level, true) then
 						if not TableUtils:IndexOf(spellCacheForProgressions[level], spellName) then
-							table.insert(subList[level], spellName)
+							table.insert(subList, spellName)
 							spellCacheForProgressions[level] = spellCacheForProgressions[level] or {}
 							table.insert(spellCacheForProgressions[level], spellName)
 						end
@@ -263,82 +260,77 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 			end
 
 			---@cast subList SpellName[][]
-			if subList[level] then
-				for sI, spellName in TableUtils:OrderedPairs(subList[level], function(key)
-					return subList[level][key]
-				end) do
-					---@type SpellData
-					local spellData = Ext.Stats.Get(spellName)
+			for sI, spellName in TableUtils:OrderedPairs(subList, function(key)
+				return subList[key]
+			end) do
+				---@type SpellData
+				local spellData = Ext.Stats.Get(spellName)
 
-					local spellImage = parentGroup:AddImageButton(spellName .. "##" .. level, spellData.Icon, { 48, 48 })
-					spellImage.SameLine = (counter) % math.floor((self.designer.LastSize[1]) / 60) ~= 0
-					spellImage:SetColor("Button", self.subListIndex[subListName].colour)
+				local spellImage = parentGroup:AddImageButton(spellName .. "##" .. level, spellData.Icon, { 48, 48 })
+				spellImage.SameLine = #parentGroup.Children > 0 and ((#parentGroup.Children - 1) % math.floor((self.designer.LastSize[1]) / 60) ~= 0)
+				spellImage:SetColor("Button", self.subListIndex[subListName].colour)
 
-					spellImage.OnClick = function()
-						if Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
-							local window = Ext.IMGUI.NewWindow(spellName)
-							window.Closeable = true
-							window.AlwaysAutoResize = true
+				spellImage.OnClick = function()
+					if Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
+						local window = Ext.IMGUI.NewWindow(spellName)
+						window.Closeable = true
+						window.AlwaysAutoResize = true
 
-							window.OnClose = function()
-								window:Destroy()
-								window = nil
-							end
-							ResourceManager:RenderDisplayWindow(spellData, window)
-						else
-							Helpers:KillChildren(popup)
-							popup:Open()
-							for subListCategory, index in TableUtils:OrderedPairs(self.subListIndex) do
-								if subListCategory ~= subListName and (subListCategory ~= "blackListed" or progressionTableId) then
-									popup:AddSelectable("Set As " .. index.name .. "##" .. level).OnClick = function()
-										if subListCategory ~= "randomized" or not progressionTableId then
-											subLists[subListCategory] = subLists[subListCategory] or {}
-											subLists[subListCategory][level] = subLists[subListCategory][level] or {}
-											table.insert(subLists[subListCategory][level], spellName)
-										end
-										if subList[level] then
-											subList[level][sI] = nil
-										end
-
-										self:buildSpellDesignerWindow(activeSpellList and activeSpellList.UserData)
+						window.OnClose = function()
+							window:Destroy()
+							window = nil
+						end
+						ResourceManager:RenderDisplayWindow(spellData, window)
+					else
+						Helpers:KillChildren(popup)
+						popup:Open()
+						for subListCategory, index in TableUtils:OrderedPairs(self.subListIndex) do
+							if subListCategory ~= subListName and (subListCategory ~= "blackListed" or progressionTableId) then
+								popup:AddSelectable("Set As " .. index.name .. "##" .. level).OnClick = function()
+									if subListCategory ~= "randomized" or not progressionTableId then
+										subLists[subListCategory] = subLists[subListCategory] or {}
+										table.insert(subLists[subListCategory], spellName)
 									end
-								end
-							end
+									if subList then
+										subList[sI] = nil
+									end
 
-							if not progressionTableId then
-								popup:AddSelectable("Remove").OnClick = function()
-									subLists[subListName][level][sI] = nil
 									self:buildSpellDesignerWindow(activeSpellList and activeSpellList.UserData)
 								end
 							end
 						end
-					end
 
-					local tooltip = spellImage:Tooltip()
-
-					spellImage.OnHoverEnter = function()
-						Helpers:KillChildren(tooltip)
-						if Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
-							ResourceManager:RenderDisplayWindow(spellData, tooltip)
-						else
-							tooltip:AddText("\t " .. spellName)
-							tooltip:AddText("\t " .. self.subListIndex[subListName].name)
-							if progressionTableId then
-								tooltip:AddText("\t  Linked from Progression " .. self.progressionTranslation[progressionTableId])
+						if not progressionTableId then
+							popup:AddSelectable("Remove").OnClick = function()
+								subLists[subListName][sI] = nil
+								self:buildSpellDesignerWindow(activeSpellList and activeSpellList.UserData)
 							end
 						end
 					end
+				end
 
-					spellImage.OnHoverLeave = function()
-						Helpers:KillChildren(tooltip)
+				local tooltip = spellImage:Tooltip()
+
+				spellImage.OnHoverEnter = function()
+					Helpers:KillChildren(tooltip)
+					if Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
+						ResourceManager:RenderDisplayWindow(spellData, tooltip)
+					else
 						tooltip:AddText("\t " .. spellName)
 						tooltip:AddText("\t " .. self.subListIndex[subListName].name)
 						if progressionTableId then
-							tooltip:AddText("\t Linked from Progression: " .. self.progressionTranslation[progressionTableId])
+							tooltip:AddText("\t  Linked from Progression " .. self.progressionTranslation[progressionTableId])
 						end
 					end
+				end
 
-					counter = counter + 1
+				spellImage.OnHoverLeave = function()
+					Helpers:KillChildren(tooltip)
+					tooltip:AddText("\t " .. spellName)
+					tooltip:AddText("\t " .. self.subListIndex[subListName].name)
+					if progressionTableId then
+						tooltip:AddText("\t Linked from Progression: " .. self.progressionTranslation[progressionTableId])
+					end
 				end
 			end
 		end
@@ -347,23 +339,28 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 	for i = 1, 30 do
 		local listGroup = leveledListGroup:AddGroup("list" .. i)
 		listGroup:SetColor("Border", { 1, 0, 0, 1 })
-
 		listGroup:AddText(tostring(i) .. (i < 10 and "  " or ""))
 
-		local spellGroup = listGroup:AddGroup("spells")
-		spellGroup.SameLine = true
-		spellGroup.UserData = i
+		if spellList.levels and spellList.levels[i] then
+			local spellGroup = listGroup:AddGroup("spells")
+			spellGroup.SameLine = true
+			spellGroup.UserData = i
 
-		buildSpellListFromSubList(spellGroup, spellList.subLists, i)
-
-		if spellList.progressions then
-			for progressionTableId, subLists in TableUtils:OrderedPairs(spellList.progressions) do
-				buildSpellListFromSubList(spellGroup, subLists, i, progressionTableId)
+			if spellList.levels[i].selectedSpells then
+				buildSpellListFromSubList(spellGroup, spellList.levels[i].selectedSpells, i)
 			end
-		end
 
-		if #spellGroup.Children == 0 then
-			spellGroup:AddDummy(56, 56)
+			if spellList.levels[i].linkedProgressions then
+				for progressionTableId, subLists in TableUtils:OrderedPairs(spellList.levels[i].linkedProgressions) do
+					buildSpellListFromSubList(spellGroup, subLists, i, progressionTableId)
+				end
+			end
+
+			if #spellGroup.Children == 0 then
+				spellGroup:AddDummy(56, 56)
+			end
+		else
+			listGroup:AddDummy(56, 56).SameLine = true
 		end
 		listGroup:AddSeparatorText(""):SetStyle("SeparatorTextBorderSize", 100)
 	end
@@ -411,12 +408,17 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 								for level, spells in TableUtils:OrderedPairs(list, function(key)
 									return tonumber(key)
 								end) do
-									if not spellList.subLists.randomized[level] then
-										spellList.subLists.randomized[level] = {}
-									end
+									spellList.levels[level] = spellList.levels[level] or {}
+									local subLevelList = spellList.levels[level]
+									subLevelList.selectedSpells = subLevelList.selectedSpells or
+										TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.spellSubLists)
+
+									local leveledSubList = subLevelList.selectedSpells
+									leveledSubList.randomized = leveledSubList.randomized or {}
+
 									for _, spell in pairs(spells) do
-										if not self:CheckIfSpellIsInSpellListLevel(spellList, spell, level) then
-											table.insert(spellList.subLists.randomized[level], spell)
+										if not self:CheckIfSpellIsInSpellListLevel(subLevelList, spell, level) then
+											table.insert(leveledSubList.randomized, spell)
 										end
 									end
 								end
@@ -424,18 +426,30 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 								self:buildSpellDesignerWindow(activeSpellList and activeSpellList.UserData)
 							end
 
+
 							local tableUUID = self.progressionTranslation[progressionName]
-							local hasProgression = (spellList.progressions and spellList.progressions[tableUUID]) ~= nil
+							local hasProgression = TableUtils:IndexOf(spellList.levels, function(value)
+								return value.linkedProgressions[tableUUID] ~= nil
+							end)
 							local linkButton = ele:AddButton(hasProgression and "Unlink" or "Link")
 							linkButton.SameLine = true
 							linkButton.OnClick = function()
 								if hasProgression then
-									spellList.progressions[tableUUID].delete = true
+									for _, subList in TableUtils:OrderedPairs(spellList.levels) do
+										if subList.linkedProgressions[tableUUID] then
+											subList.linkedProgressions[tableUUID].delete = true
+										end
+									end
 									linkButton.Label = "Link"
 								else
+									spellList.levels = spellList.levels or {}
+									for level, spells in pairs(self.progressions[progressionName]) do
+										spellList.levels[level] = spellList.levels[level] or {}
+										spellList.levels[level].linkedProgressions = spellList.levels[level].linkedProgressions or {}
+										spellList.levels[level].linkedProgressions[tableUUID] =
+											TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.spellSubLists)
+									end
 									linkButton.Label = "Unlink"
-									spellList.progressions = spellList.progressions or {}
-									spellList.progressions[tableUUID] = TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.leveledSpellList.subLists)
 								end
 								hasProgression = not hasProgression
 								self:buildSpellDesignerWindow(activeSpellList and activeSpellList.UserData)
@@ -467,24 +481,35 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 	searchBox.OnActivate = searchBox.OnChange
 end
 
----@param spellList SpellList
+---@param leveledSubList LeveledSubList
 ---@param spellName string
 ---@param level number
+---@param ignoreProgressions boolean?
 ---@return boolean
-function SpellListDesigner:CheckIfSpellIsInSpellListLevel(spellList, spellName, level)
+function SpellListDesigner:CheckIfSpellIsInSpellListLevel(leveledSubList, spellName, level, ignoreProgressions)
+	---@param value SpellSubLists
+	---@return boolean?
 	local predicate = function(value)
 		for _, subList in pairs(value) do
-			if subList[level] and TableUtils:IndexOf(subList[level], spellName) ~= nil then
+			if TableUtils:IndexOf(subList, spellName) ~= nil then
 				return true
 			end
 		end
 	end
 
-	if TableUtils:IndexOf(spellList.subLists, predicate) then
+	if leveledSubList.selectedSpells and TableUtils:IndexOf({ leveledSubList.selectedSpells }, predicate) then
 		return true
-	elseif spellList.progressions then
-		if TableUtils:IndexOf(spellList.progressions, predicate) then
+	elseif leveledSubList.linkedProgressions then
+		if TableUtils:IndexOf(leveledSubList.linkedProgressions, predicate) then
 			return true
+		end
+
+		if not ignoreProgressions then
+			for progressionId, subLists in pairs(leveledSubList.linkedProgressions) do
+				if TableUtils:IndexOf(self.progressions[self.progressionTranslation[progressionId][level]], spellName) then
+					return true
+				end
+			end
 		end
 	end
 
