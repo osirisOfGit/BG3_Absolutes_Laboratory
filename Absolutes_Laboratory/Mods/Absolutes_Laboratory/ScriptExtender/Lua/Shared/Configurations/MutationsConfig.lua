@@ -101,10 +101,6 @@ ConfigurationStructure.config.mutations.spellLists = {}
 ---@field abilityId AbilityId
 ---@field value number
 
----@class SpellListCriteriaEntry
----@field isOneOfClasses string[]?
----@field abilityCondition SpellListAbilityScoreCondition[]?
-
 ---@class SpellSubLists
 ConfigurationStructure.DynamicClassDefinitions.spellSubLists = {
 	---@type SpellName[]?
@@ -130,9 +126,7 @@ ConfigurationStructure.DynamicClassDefinitions.leveledSpellList = {
 	---@type Guid?
 	modId = nil,
 	---@type LeveledSubList[]
-	levels = nil,
-	---@type SpellListCriteriaEntry?
-	criteria = {}
+	levels = nil
 }
 
 ConfigurationStructure.config.mutations.settings.spellLists = {

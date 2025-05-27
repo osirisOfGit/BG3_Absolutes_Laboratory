@@ -80,7 +80,7 @@ local function buildSubraceOpts(subRaces, parent, selectedSubRaces)
 			table.insert(cells, row:AddCell())
 		end
 
-		local selectAll = not selectedSubRaces()
+		local selectAll = not next(selectedSubRaces)
 		for _, subRace in TableUtils:OrderedPairs(subRaces, function(key)
 			return translationMap[subRaces[key]]
 		end) do

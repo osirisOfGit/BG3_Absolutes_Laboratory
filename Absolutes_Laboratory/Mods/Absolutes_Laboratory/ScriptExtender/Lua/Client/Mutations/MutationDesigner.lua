@@ -252,15 +252,16 @@ function MutationDesigner:RenderMutators(parent, mutators)
 		mutatorCombo.Options = opts
 		mutatorCombo.SelectedIndex = selectedIndex
 
+		local mutatorGroup = mutatorCell:AddGroup(mutator.targetProperty)
 		mutatorCombo.OnChange = function()
 			mutator.targetProperty = mutatorCombo.Options[mutatorCombo.SelectedIndex + 1]
 			mutator.modifiers = {}
 			mutator.values = nil
-			MutatorInterface.registeredMutators[mutator.targetProperty]:renderMutator(mutatorCell, mutator)
+			MutatorInterface.registeredMutators[mutator.targetProperty]:renderMutator(mutatorGroup, mutator)
 		end
 
 		if mutator.targetProperty and mutator.targetProperty ~= "" then
-			MutatorInterface.registeredMutators[mutator.targetProperty]:renderMutator(mutatorCell, mutator)
+			MutatorInterface.registeredMutators[mutator.targetProperty]:renderMutator(mutatorGroup, mutator)
 		end
 	end
 
