@@ -2,20 +2,22 @@ Ext.Require("Shared/Mutations/Mutators/SpellList/SpellListDesigner.lua")
 
 SpellListMutator = MutatorInterface:new("SpellList")
 
+---@class SpellListAbilityScoreCondition
+---@field comparator "gte"|"lte"
+---@field abilityId AbilityId
+---@field value number
+
 ---@class SpellListCriteriaEntry
 ---@field isOneOfClasses Guid[]?
 ---@field abilityCondition SpellListAbilityScoreCondition[]?
----@field isOneOfProgressions Guid[]?
 
 ---@class LeveledSpellPool
 ---@field anchorLevel number
----@field comparator "gte"|"lte"
----@field abilityId AbilityId
 ---@field spellLists Guid[]
 
 ---@class SpellMutatorGroup
 ---@field leveledSpellPool LeveledSpellPool[]?
----@field randomSpellPool Guid[]?
+---@field spells SpellName[]?
 ---@field criteria SpellListCriteriaEntry?
 
 ---@class SpellListMutator : Mutator
@@ -38,74 +40,128 @@ function SpellListMutator:renderMutator(parent, mutator)
 
 	local popup = parent:AddPopup("spellListMutatorPopup")
 
-	for _, spellMutatorGroup in TableUtils:OrderedPairs(mutator.values) do
-		local row = displayTable:AddRow()
+	for sMG, spellMutatorGroup in TableUtils:OrderedPairs(mutator.values) do
+		local parentRow = displayTable:AddRow()
 
-		local poolCell = row:AddCell()
-		local poolCombo = poolCell:AddCombo("")
-		poolCombo.Options = { "Single Pool", "Grouped By Character Level" }
-		poolCombo.SelectedIndex = spellMutatorGroup.randomSpellPool and 0 or 1
-		poolCombo.OnChange = function()
-			if spellMutatorGroup.leveledSpellPool then
-				spellMutatorGroup.leveledSpellPool.delete = true
-			else
-				spellMutatorGroup.randomSpellPool.delete = true
+		local poolCell = parentRow:AddCell()
+
+		local delete = Styler:ImageButton(poolCell:AddImageButton("delete" .. mutator.targetProperty, "ico_red_x", { 16, 16 }))
+		delete.OnClick = function()
+			for x = sMG, TableUtils:CountElements(mutator.values) do
+				mutator.values[x].delete = true
+				mutator.values[x] = TableUtils:DeeplyCopyTable(mutator.values._real[x + 1])
 			end
-
-			spellMutatorGroup[poolCombo.SelectedIndex == 0 and "randomSpellPool" or "leveledSpellPool"] = {}
-
 			self:renderMutator(parent, mutator)
 		end
 
+		local header = poolCell:AddSeparatorText("Pool " .. sMG)
+		header.SameLine = true
+		header:SetStyle("SeparatorTextAlign", 0.4)
+		header.Font = "Large"
+
 		local poolGroup = poolCell:AddGroup("Pool")
-		if spellMutatorGroup.randomSpellPool then
-			local function renderPool()
-				for _, spellList in TableUtils:OrderedPairs(spellMutatorGroup.randomSpellPool, function(key)
-					return configuredSpellLists[key].name
+		local function renderPool()
+			local leveledTable = poolGroup:AddTable("leveledTable", 1)
+			leveledTable.NoSavedSettings = true
+			leveledTable.Borders = true
+			if spellMutatorGroup.leveledSpellPool then
+				for i, leveledSpellPool in TableUtils:OrderedPairs(spellMutatorGroup.leveledSpellPool, function(_, value)
+					return value.anchorLevel
 				end) do
-					spellList = configuredSpellLists[spellList]
-					local text = poolGroup:AddText(spellList.name)
-					if spellList.description ~= "" then
-						text:Tooltip():AddText(spellList.description)
-					end
-				end
-			end
-			renderPool()
+					local cell = leveledTable:AddRow():AddCell()
 
-			local addButton = poolCell:AddButton("+")
-			addButton.OnClick = function()
-				Helpers:KillChildren(popup)
-				popup:Open()
-
-				for id, spellList in TableUtils:OrderedPairs(configuredSpellLists, function(key)
-					return configuredSpellLists[key].name
-				end) do
-					---@type ExtuiSelectable
-					local select = popup:AddSelectable(spellList.name, "DontClosePopups")
-					select.Selected = TableUtils:IndexOf(spellMutatorGroup.randomSpellPool, id) ~= nil
-					select.OnClick = function()
-						local index = TableUtils:IndexOf(spellMutatorGroup.randomSpellPool, id)
-						if index then
-							spellMutatorGroup.randomSpellPool[index] = nil
-							select.Selected = false
-						else
-							select.Selected = true
-							table.insert(spellMutatorGroup.randomSpellPool, id)
+					local delete = Styler:ImageButton(cell:AddImageButton("delete" .. mutator.targetProperty, "ico_red_x", { 16, 16 }))
+					delete.OnClick = function()
+						for x = i, TableUtils:CountElements(spellMutatorGroup.leveledSpellPool) do
+							spellMutatorGroup.leveledSpellPool[x].delete = true
+							spellMutatorGroup.leveledSpellPool[x] = TableUtils:DeeplyCopyTable(spellMutatorGroup.leveledSpellPool._real[x + 1])
 						end
-						Helpers:KillChildren(poolGroup)
-						renderPool()
+
+						self:renderMutator(parent, mutator)
+					end
+
+					cell:AddText("Level is equal to or greater than: ").SameLine = true
+
+					local levelInput = cell:AddSliderInt("", leveledSpellPool.anchorLevel, 1, 30)
+					levelInput.OnChange = function()
+						---@param anchor number
+						---@return number[]
+						local function nextAnchor(anchor)
+							local index = TableUtils:IndexOf(spellMutatorGroup.leveledSpellPool, function(value)
+								return value.anchorLevel == anchor
+							end)
+							if index and index ~= i and anchor < 30 then
+								return nextAnchor(anchor + 1)
+							else
+								return { anchor, anchor, anchor, anchor }
+							end
+						end
+						levelInput.Value = nextAnchor(levelInput.Value[1])
+						leveledSpellPool.anchorLevel = levelInput.Value[1]
+					end
+
+					cell:AddSeparatorText("Spell Lists"):SetStyle("SeparatorTextAlign", 0.1)
+
+					for _, spellList in TableUtils:OrderedPairs(leveledSpellPool.spellLists, function(_, value)
+						return configuredSpellLists[value].name
+					end) do
+						spellList = configuredSpellLists[spellList]
+						local text = cell:AddText(spellList.name)
+						if spellList.description ~= "" then
+							text:Tooltip():AddText(spellList.description)
+						end
+					end
+
+					local addButton = cell:AddButton("Add Spell List")
+					addButton.OnClick = function()
+						Helpers:KillChildren(popup)
+						popup:Open()
+
+						for id, spellList in TableUtils:OrderedPairs(configuredSpellLists, function(key)
+							return configuredSpellLists[key].name
+						end) do
+							---@type ExtuiSelectable
+							local select = popup:AddSelectable(spellList.name, "DontClosePopups")
+							select.Selected = TableUtils:IndexOf(leveledSpellPool.spellLists, id) ~= nil
+							select.OnClick = function()
+								local index = TableUtils:IndexOf(leveledSpellPool.spellLists, id)
+								if index then
+									leveledSpellPool.spellLists[index] = nil
+									select.Selected = false
+								else
+									select.Selected = true
+									table.insert(leveledSpellPool.spellLists, id)
+								end
+								Helpers:KillChildren(poolGroup)
+								renderPool()
+							end
+						end
 					end
 				end
 			end
-		else
+		end
+		renderPool()
+
+		local addLeveledGroupButton = poolCell:AddButton("Add Level Group")
+		addLeveledGroupButton.OnClick = function()
+			Helpers:KillChildren(poolGroup)
+			spellMutatorGroup.leveledSpellPool = spellMutatorGroup.leveledSpellPool or {}
+			table.insert(spellMutatorGroup.leveledSpellPool, {
+				anchorLevel = 1,
+				spellLists = {}
+			} --[[@as LeveledSpellPool]])
+
+			renderPool()
 		end
 
-		local criteriaCell = row:AddCell()
+		local criteriaCell = parentRow:AddCell()
+
+		parentRow:AddNewLine()
 	end
-	local addGroupButton = parent:AddButton("+")
+
+	local addGroupButton = parent:AddButton("Add New Pool")
 	addGroupButton.OnClick = function()
 		table.insert(mutator.values, {
-			randomSpellPool = {}
 		} --[[@as SpellMutatorGroup]])
 		self:renderMutator(parent, mutator)
 	end

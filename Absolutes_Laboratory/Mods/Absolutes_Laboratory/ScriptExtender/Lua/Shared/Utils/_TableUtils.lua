@@ -107,7 +107,7 @@ end
 ---@generic K
 ---@generic V
 ---@param t table<K,V>
----@param keyTransformFunc (fun(key: string, sourceTable: table<K,V>):any)?
+---@param keyTransformFunc (fun(key: string, value: V):any)?
 ---@return fun(table: table<K, V>, index?: K):K, V
 function TableUtils:OrderedPairs(t, keyTransformFunc)
 	local keys = {}
@@ -115,8 +115,8 @@ function TableUtils:OrderedPairs(t, keyTransformFunc)
 		table.insert(keys, k)
 	end
 	table.sort(keys, function(a, b)
-		local keyA = keyTransformFunc and keyTransformFunc(a, t) or tostring(a)
-		local keyB = keyTransformFunc and keyTransformFunc(b, t) or tostring(b)
+		local keyA = keyTransformFunc and keyTransformFunc(a, t[a]) or tostring(a)
+		local keyB = keyTransformFunc and keyTransformFunc(b, t[b]) or tostring(b)
 		return keyA < keyB
 	end)
 

@@ -96,11 +96,6 @@ ConfigurationStructure.config.mutations.spellLists = {}
 
 ---@alias SpellName string
 
----@class SpellListAbilityScoreCondition
----@field comparator "gte"|"lte"
----@field abilityId AbilityId
----@field value number
-
 ---@class SpellSubLists
 ConfigurationStructure.DynamicClassDefinitions.spellSubLists = {
 	---@type SpellName[]?
