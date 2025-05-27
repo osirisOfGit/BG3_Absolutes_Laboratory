@@ -45,7 +45,10 @@ function SpellListMutator:renderMutator(parent, mutator)
 
 		local poolCell = parentRow:AddCell()
 
-		local delete = Styler:ImageButton(poolCell:AddImageButton("delete" .. mutator.targetProperty, "ico_red_x", { 16, 16 }))
+		local header = poolCell:AddCollapsingHeader("Pool " .. sMG)
+
+		local delete = Styler:ImageButton(header:AddImageButton("delete" .. mutator.targetProperty, "ico_red_x", { 16, 16 }))
+		delete:Tooltip():AddText("\t Delete Pool")
 		delete.OnClick = function()
 			for x = sMG, TableUtils:CountElements(mutator.values) do
 				mutator.values[x].delete = true
@@ -53,13 +56,7 @@ function SpellListMutator:renderMutator(parent, mutator)
 			end
 			self:renderMutator(parent, mutator)
 		end
-
-		local header = poolCell:AddSeparatorText("Pool " .. sMG)
-		header.SameLine = true
-		header:SetStyle("SeparatorTextAlign", 0.4)
-		header.Font = "Large"
-
-		local poolGroup = poolCell:AddGroup("Pool")
+		local poolGroup = header:AddGroup("Pool")
 		local function renderPool()
 			local leveledTable = poolGroup:AddTable("leveledTable", 1)
 			leveledTable.NoSavedSettings = true
@@ -113,6 +110,7 @@ function SpellListMutator:renderMutator(parent, mutator)
 					end
 
 					local addButton = cell:AddButton("Add Spell List")
+					addButton.Font = "Small"
 					addButton.OnClick = function()
 						Helpers:KillChildren(popup)
 						popup:Open()
@@ -142,7 +140,8 @@ function SpellListMutator:renderMutator(parent, mutator)
 		end
 		renderPool()
 
-		local addLeveledGroupButton = poolCell:AddButton("Add Level Group")
+		local addLeveledGroupButton = header:AddButton("Add Level Group")
+		addLeveledGroupButton.Font = "Small"
 		addLeveledGroupButton.OnClick = function()
 			Helpers:KillChildren(poolGroup)
 			spellMutatorGroup.leveledSpellPool = spellMutatorGroup.leveledSpellPool or {}
