@@ -1,5 +1,6 @@
 Ext.Require("Shared/Mutations/Mutators/SpellList/SpellListDesigner.lua")
 
+---@class SpellListMutatorClass : MutatorInterface
 SpellListMutator = MutatorInterface:new("SpellList")
 
 ---@class SpellListAbilityScoreCondition
@@ -17,7 +18,7 @@ SpellListMutator = MutatorInterface:new("SpellList")
 
 ---@class SpellMutatorGroup
 ---@field leveledSpellPool LeveledSpellPool[]?
----@field spells SpellName[]?
+---@field spells SpellSubLists?
 ---@field criteria SpellListCriteriaEntry?
 
 ---@class SpellListMutator : Mutator
@@ -135,6 +136,8 @@ function SpellListMutator:renderMutator(parent, mutator)
 							end
 						end
 					end
+
+					self:buildSpellSelectorSection(cell, mutator)
 				end
 			end
 		end
@@ -163,6 +166,84 @@ function SpellListMutator:renderMutator(parent, mutator)
 		table.insert(mutator.values, {
 		} --[[@as SpellMutatorGroup]])
 		self:renderMutator(parent, mutator)
+	end
+end
+
+---@param parent ExtuiTreeParent
+---@param mutator SpellListMutator
+function SpellListMutator:buildSpellSelectorSection(parent, mutator)
+	local sep = parent:AddSeparatorText("Spells ( ? )")
+	sep:SetStyle("SeparatorTextAlign", 0.1)
+	sep:Tooltip():AddText("Spells added here are guaranteed to be added to the entity as long as the entity meets the level requirement.")
+
+	local popup = parent:AddPopup("AddSpells")
+
+	local addSpells = parent:AddButton("Add Spells")
+	addSpells.Font = "Small"
+	addSpells.OnClick = function()
+		popup:Open()
+
+		Helpers:KillChildren(popup)
+
+		local input = popup:AddInputText("")
+		input.Hint = "Minimum Three Characters"
+
+		local resultsGroup = popup:AddChildWindow("results")
+		resultsGroup.NoSavedSettings = true
+		resultsGroup.Size = { 0, 300 }
+		local timer
+		input.OnChange = function()
+			if timer then
+				Ext.Timer.Cancel(timer)
+			end
+
+			Helpers:KillChildren(resultsGroup)
+			if #input.Text >= 3 then
+				timer = Ext.Timer.WaitFor(300, function()
+					local value = input.Text:upper()
+					local results = {}
+					for _, spellName in pairs(Ext.Stats.GetStats("SpellData")) do
+						---@type SpellData
+						local spell = Ext.Stats.Get(spellName)
+						if spell.RootSpellID == "" then
+							if spellName:upper():find(value) then
+								table.insert(results, spellName)
+							else
+								if spell.DisplayName and Ext.Loca.GetTranslatedString(spell.DisplayName, spell.Name):find(value) then
+									table.insert(results, spellName)
+								end
+							end
+						end
+					end
+					if #results > 0 then
+						table.sort(results, function(a, b)
+							return Ext.Loca.GetTranslatedString(Ext.Stats.Get(a).DisplayName, a) < Ext.Loca.GetTranslatedString(Ext.Stats.Get(b).DisplayName, b)
+						end)
+						
+						for i, spellName in ipairs(results) do
+							---@type SpellData
+							local spell = Ext.Stats.Get(spellName)
+							
+							local spellImage = resultsGroup:AddImageButton(spellName .. i, spell.Icon, { 48, 48 })
+							
+							spellImage.AutoClosePopups = false
+							if spellImage.Image.Icon == "" then
+								spellImage:Destroy()
+								spellImage = resultsGroup:AddImageButton(spellName .. i, "Item_Unknown", { 48, 48 })
+							end
+							spellImage.SameLine = i > 1 and (i - 1) % 7 ~= 0
+							spellImage.OnClick = Styler:HyperlinkRenderable(spellImage,
+							spellName,
+							"Shift",
+							string.format("%s\n%s", spellName, Ext.Loca.GetTranslatedString(spell.DisplayName, spellName)),
+							function(parent)
+								ResourceManager:RenderDisplayWindow(spell, parent)
+							end)
+						end
+					end
+				end)
+			end
+		end
 	end
 end
 

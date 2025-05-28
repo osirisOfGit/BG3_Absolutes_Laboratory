@@ -167,20 +167,20 @@ function Styler:HyperlinkText(parent, text, tooltipCallback, freeSize)
 		fakeTextSelectable:SetColor("Text", { 173 / 255, 216 / 255, 230 / 255, 1 })
 	end
 
-	self:HyperlinkRenderable(fakeTextSelectable, text, nil, tooltipCallback)
+	fakeTextSelectable.OnClick = self:HyperlinkRenderable(fakeTextSelectable, text, nil, nil, tooltipCallback)
 
 	return fakeTextSelectable
 end
 
----@generic T:ExtuiStyledRenderable
----@param renderable T
+---@param renderable ExtuiStyledRenderable
 ---@param item string
 ---@param modifier InputModifier?
 ---@param callback fun(parent: ExtuiTreeParent)
----@return T
-function Styler:HyperlinkRenderable(renderable, item, modifier, callback)
-	---@type ExtuiTooltip?
-	local tooltip
+---@param altTooltip string?
+---@return function
+function Styler:HyperlinkRenderable(renderable, item, modifier, altTooltip, callback)
+	---@type ExtuiTooltip
+	local tooltip = renderable:Tooltip()
 
 	---@type ExtuiWindow?
 	local window
@@ -188,24 +188,23 @@ function Styler:HyperlinkRenderable(renderable, item, modifier, callback)
 	renderable.OnHoverEnter = function()
 		if not modifier or Ext.ClientInput.GetInputManager().PressedModifiers == modifier then
 			if not window then
-				if not tooltip then
-					tooltip = renderable:Tooltip()
-					callback(tooltip)
-				end
+				Helpers:KillChildren(tooltip)
+				callback(tooltip)
 			else
 				window.Open = true
 				window:SetFocus()
 			end
+		else
+			Helpers:KillChildren(tooltip)
+			tooltip:AddText(altTooltip)
 		end
 	end
 
 	renderable.OnHoverLeave = function()
-		if tooltip and not tooltip.Visible then
-			Helpers:KillChildren(tooltip)
-		end
+		Helpers:KillChildren(tooltip)
 	end
 
-	renderable.OnClick = function()
+	return function()
 		if not modifier or Ext.ClientInput.GetInputManager().PressedModifiers == modifier then
 			window = Ext.IMGUI.NewWindow(item)
 			window.Closeable = true
@@ -217,12 +216,8 @@ function Styler:HyperlinkRenderable(renderable, item, modifier, callback)
 			end
 
 			callback(window)
-			return true
 		end
-		return false
 	end
-
-	return renderable
 end
 
 ---@param colour number[]
