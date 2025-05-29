@@ -94,7 +94,6 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 
 		SpellListDesigner.displayTable = self.spellListDesignerWindow:AddTable("SpellListDesigner", 3)
 		self.displayTable.NoSavedSettings = true
-		self.displayTable.Resizable = true
 		self.displayTable:AddColumn("SpellLists", "WidthFixed")
 		self.displayTable:AddColumn("", "WidthStretch")
 		self.displayTable:AddColumn("ProgressionBrowser", "WidthFixed")

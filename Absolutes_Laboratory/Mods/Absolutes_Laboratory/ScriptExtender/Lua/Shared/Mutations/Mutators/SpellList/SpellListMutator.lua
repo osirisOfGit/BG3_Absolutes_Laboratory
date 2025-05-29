@@ -47,6 +47,7 @@ function SpellListMutator:renderMutator(parent, mutator)
 		local poolCell = parentRow:AddCell()
 
 		local header = poolCell:AddCollapsingHeader("Pool " .. sMG)
+		header.DefaultOpen = true
 
 		local delete = Styler:ImageButton(header:AddImageButton("delete" .. mutator.targetProperty, "ico_red_x", { 16, 16 }))
 		delete:Tooltip():AddText("\t Delete Pool")
@@ -98,7 +99,9 @@ function SpellListMutator:renderMutator(parent, mutator)
 						leveledSpellPool.anchorLevel = levelInput.Value[1]
 					end
 
-					cell:AddSeparatorText("Spell Lists"):SetStyle("SeparatorTextAlign", 0.1)
+					local spellListSep = cell:AddSeparatorText("Spell Lists ( ? )")
+					spellListSep:SetStyle("SeparatorTextAlign", 0.1)
+					spellListSep:Tooltip():AddText("\t Spell lists added here will FULLY REPLACE the entity's spellbook")
 
 					for _, spellList in TableUtils:OrderedPairs(leveledSpellPool.spellLists, function(_, value)
 						return configuredSpellLists[value].name
