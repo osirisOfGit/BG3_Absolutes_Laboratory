@@ -177,7 +177,7 @@ end
 ---@param modifier InputModifier?
 ---@param callback fun(parent: ExtuiTreeParent)
 ---@param altTooltip string?
----@return function
+---@return fun():boolean?
 function Styler:HyperlinkRenderable(renderable, item, modifier, altTooltip, callback)
 	---@type ExtuiTooltip
 	local tooltip = renderable:Tooltip()
@@ -196,7 +196,7 @@ function Styler:HyperlinkRenderable(renderable, item, modifier, altTooltip, call
 			end
 		else
 			Helpers:KillChildren(tooltip)
-			tooltip:AddText(altTooltip)
+			tooltip:AddText("\t " .. altTooltip)
 		end
 	end
 
@@ -216,6 +216,7 @@ function Styler:HyperlinkRenderable(renderable, item, modifier, altTooltip, call
 			end
 
 			callback(window)
+			return true
 		end
 	end
 end

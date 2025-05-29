@@ -58,7 +58,7 @@ end
 
 ---@type {[string] : SpellSubListIndex}
 SpellListDesigner.subListIndex = {
-	["guaranteed"] = { name = "Guaranteed", description = "Will always be assigned to an enemy that is assigned level or higher", colour = {} },
+	["guaranteed"] = { name = "Guaranteed", description = "Will always be assigned to an enemy that is the assigned level or higher", colour = {} },
 	["randomized"] = { name = "Randomized", description = "Will be placed into a pool of spells assigned to the same level to be randomly chosen per the mutator's config", colour = {} },
 	["startOfCombatOnly"] = { name = "Cast On Combat Start", description = "Will only be cast on combat start - will not be added to the entity's spellList", colour = {} },
 	["onLoadOnly"] = { name = "Cast On Level Load", description = "Will be cast as soon as the mutator is applied - will not be added to the entity's spellList", colour = {} },
@@ -735,7 +735,6 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 
 								for l = 1, 30 do
 									if spellList.levels and spellList.levels[l] and self:CheckIfSpellIsInSpellListLevel(spellList.levels[l], spellName, l) then
-										-- spellImage:SetColor("Button", { 1, 0, 0, .3 })
 										spellImage.Tint = { 1, 1, 1, 0.2 }
 										break
 									end
