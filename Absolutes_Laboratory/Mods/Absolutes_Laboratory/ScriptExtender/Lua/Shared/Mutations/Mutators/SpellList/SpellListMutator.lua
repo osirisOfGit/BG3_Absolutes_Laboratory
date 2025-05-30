@@ -12,9 +12,6 @@ SpellListMutator = MutatorInterface:new("SpellList")
 ---@field isOneOfClasses Guid[]?
 ---@field abilityCondition SpellListAbilityScoreCondition[]?
 
----@class SpellListExtras
----@field removeSpells {[number]: SpellSourceType|SpellName}
----@field randomizedSpellPoolSize number[]
 
 ---@class LeveledSpellPool
 ---@field anchorLevel number
@@ -24,7 +21,8 @@ SpellListMutator = MutatorInterface:new("SpellList")
 ---@class SpellMutatorGroup
 ---@field leveledSpellPool LeveledSpellPool[]?
 ---@field criteria SpellListCriteriaEntry?
----@field extras SpellListExtras
+---@field removeSpells {[number]: SpellSourceType|SpellName}
+---@field randomizedSpellPoolSize number[]
 
 ---@class SpellListMutator : Mutator
 ---@field values SpellMutatorGroup[]
@@ -392,12 +390,11 @@ function SpellListMutator:renderCriteriaAndExtras(parent, spellMutatorGroup)
 	Helpers:KillChildren(parent)
 	local popup = parent:AddPopup("CriteriaAndExtras")
 
-	spellMutatorGroup.extras = spellMutatorGroup.extras or {}
-
+	--#region Randomized Spell Pool Size
 	local randoAmountHeader = parent:AddCollapsingHeader("Amount of Random Spells to Give Per Level")
 
-	spellMutatorGroup.extras.randomizedSpellPoolSize = spellMutatorGroup.extras.randomizedSpellPoolSize or {}
-	local randomizedSpellPoolSize = spellMutatorGroup.extras.randomizedSpellPoolSize
+	spellMutatorGroup.randomizedSpellPoolSize = spellMutatorGroup.randomizedSpellPoolSize or {}
+	local randomizedSpellPoolSize = spellMutatorGroup.randomizedSpellPoolSize
 	if not randomizedSpellPoolSize() then
 		randomizedSpellPoolSize[1] = 3
 		randomizedSpellPoolSize[5] = 2
@@ -447,35 +444,39 @@ This will cause Lab to give the entity 3 random spells from the selected Spell L
 			randomizedSpellPoolSize[level] = input.Value[1]
 		end
 	end
+
 	randoAmountHeader:AddButton("+").OnClick = function()
 		Helpers:KillChildren(popup)
 		popup:Open()
 
-		local add = popup:AddButton("Add")
-		local input = popup:AddInputInt("Level", randomizedSpellPoolSize() + 1)
+		local add = popup:AddButton("Add Level")
+		local input = popup:AddInputInt("", randomizedSpellPoolSize() + 1)
 		input.SameLine = true
 
 		local errorText = popup:AddText("Choose a level that isn't already specified")
+		errorText:SetColor("Text", Styler:ConvertRGBAToIMGUI({255, 100, 100, 0.7}))
 		errorText.Visible = false
 
 		add.OnClick = function()
 			if randomizedSpellPoolSize[input.Value[1]] then
 				errorText.Visible = true
-				popup:Open()
 			else
 				randomizedSpellPoolSize[input.Value[1]] = 3
 				self:renderCriteriaAndExtras(parent, spellMutatorGroup)
 			end
 		end
 	end
+	--#endregion
 
-
+	--#region Criteria
 	local criteriaSep = parent:AddSeparatorText("Criteria ( ? )")
 	criteriaSep:SetStyle("SeparatorTextAlign", 0.2)
 	criteriaSep:Tooltip():AddText(
 		"\t These criteria can be used to filter out entities that shouldn't receive this spell list, allowing you to specify multiple groups in one mutator")
 
 	local criteriaGroup = parent:AddGroup("criteria")
+
+	--#endregion
 
 	local removeSpellsSep = parent:AddSeparatorText("SpellSets/Spells To Remove ( ? )")
 	removeSpellsSep:SetStyle("SeparatorTextAlign", 0.2)
