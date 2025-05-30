@@ -382,7 +382,51 @@ You can shift-click on images to pop out their tooltip into a new window, but th
 end
 
 function SpellListMutator:applyMutator(entity, mutator)
+	---@type SpellListMutator|SpellListMutator[]
+	local spellListMutators = mutator.appliedMutators[self.name]
+	if not spellListMutators[1] then
+		spellListMutators = { spellListMutators }
+	end
 
+	for _, mutator in ipairs(spellListMutators) do
+		for _, spellMutatorGroup in ipairs(mutator.values) do
+			for _, leveledSpellPool in ipairs(spellMutatorGroup.leveledSpellPool) do
+				if entity.AvailableLevel and entity.AvailableLevel.Level >= leveledSpellPool.anchorLevel then
+					---@type EsvSpellSpellSystem
+					local spellSystem = Ext.System.ServerSpell
+
+					local addSpells = spellSystem.AddSpells[entity]
+					if not addSpells then
+						spellSystem.AddSpells[entity] = {}
+						addSpells = spellSystem.AddSpells[entity]
+					end
+
+					---@type Character
+					local charStat = Ext.Stats.Get(entity.Data.StatsId)
+
+					local skillList = entity.ServerCharacter.TemplateUsedForSpells.SkillList
+					-- Osi.CreateAt("01fa8d64-f63e-4bb8-9ee4-cba84dad3781", 202, 25, 418, 0, 0, "")
+					-- Osi.SetRelationTemporaryHostile("5ebcd998-e4ae-1a42-202c-3619bced3eea", _C().Uuid.EntityUuid)
+					for _, spellName in pairs(leveledSpellPool.spells.guaranteed) do
+						if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
+								return value.Id.OriginatorPrototype == spellName
+							end)
+						then
+							addSpells[#addSpells + 1] = {
+								PrepareType = "AlwaysPrepared",
+								SpellId = {
+									OriginatorPrototype = spellName,
+									SourceType = "SpellSet2"
+								},
+								PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
+								SpellCastingAbility = charStat.SpellCastingAbility
+							}
+						end
+					end
+				end
+			end
+		end
+	end
 end
 
 function SpellListMutator:undoMutator(entity, mutator)
