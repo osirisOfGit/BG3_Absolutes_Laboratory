@@ -76,13 +76,13 @@ function CharacterWindow:BuildWindow(parent, id)
 			end
 		end
 
-		if entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS] then
+		if entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] then
 			local mutationTab = tabBar:AddTabItem("Mutations")
 			mutationTab.OnActivate = function()
 				Helpers:KillChildren(mutationTab)
 
 				---@type MutatorEntityVar
-				local entityVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS]
+				local entityVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME]
 
 				local displayTable = Styler:TwoColumnTable(mutationTab)
 				for targetProperty in TableUtils:OrderedPairs(entityVar.appliedMutators) do

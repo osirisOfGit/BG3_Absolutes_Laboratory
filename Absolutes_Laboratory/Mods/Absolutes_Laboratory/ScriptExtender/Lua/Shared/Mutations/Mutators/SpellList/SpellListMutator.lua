@@ -732,54 +732,272 @@ SpellSet are specified in the template under the same name, SpellSet2 are added 
 	end
 end
 
-function SpellListMutator:applyMutator(entity, mutator)
-	---@type SpellListMutator|SpellListMutator[]
-	local spellListMutators = mutator.appliedMutators[self.name]
-	if not spellListMutators[1] then
-		spellListMutators = { spellListMutators }
+Ext.Vars.RegisterUserVariable(ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME .. "SpellsOnCombatStart", {
+	Server = true,
+	Client = true,
+	SyncToClient = true
+})
+
+if Ext.IsServer() then
+	---@type EsvSpellSpellSystem
+	local spellSystem = Ext.System.ServerSpell
+
+	---@class SpellListOriginalValues
+	---@field spellSources {[SpellSourceType]: CharacterSpellData[]}
+	---@field spells SpellSpellMeta[]
+
+	function SpellListMutator:undoMutator(entity, mutator)
+		-- ---@type SpellMutatorGroup[]
+		-- local appliedSpells = mutator.appliedMutators[self.name].values
+
+		-- for _, spellMutatorGroup in pairs(appliedSpells) do
+		-- 	spellSystem.RemoveSpell = spellSystem.RemoveSpell or {}
+		-- 	spellSystem.RemoveSpell[entity] = spellSystem.RemoveSpell[entity] or {}
+
+		-- 	if spellMutatorGroup.leveledSpellPool then
+		-- 		for _, leveledSpellPool in pairs(spellMutatorGroup.leveledSpellPool) do
+
+		-- 			if leveledSpellPool.spells then
+		-- 				for _, spells in pairs(leveledSpellPool.spells) do
+		-- 					for _, spell in pairs(spells) do
+		-- 						if TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
+		-- 								return value.Id.OriginatorPrototype == spell.Spell and value.Id.Source == "Lab"
+		-- 							end)
+		-- 						then
+		-- 							table.insert(spellSystem.RemoveSpell[entity], spell)
+		-- 							Logger:BasicTrace("SpellList: Removing spell %s from %s", spell, entity.Uuid.EntityUuid)
+		-- 						end
+		-- 					end
+		-- 				end
+		-- 			end
+
+		-- 			if leveledSpellPool.spellLists then
+		-- 				for _, spellListId in pairs(leveledSpellPool.spellLists) do
+		-- 					local spellList = ConfigurationStructure.config.mutations.spellLists[spellListId]
+
+		-- 					for _, leveledSpellList in pairs(spellList.levels) do
+		-- 						if leveledSpellList.selectedSpells then
+		-- 							for _, spells in pairs(leveledSpellList.selectedSpells) do
+		-- 								for _, spell in pairs(spells) do
+		-- 									if TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
+		-- 											return value.Id.OriginatorPrototype == spell.Spell and value.Id.Source == "Lab"
+		-- 										end)
+		-- 									then
+		-- 										table.insert(spellSystem.RemoveSpell[entity], spell)
+		-- 										Logger:BasicTrace("SpellList: Removing spell %s from %s as added from spellList %s", spell, entity.Uuid.EntityUuid, spellList.name)
+		-- 									end
+		-- 								end
+		-- 							end
+		-- 						end
+		-- 					end
+		-- 				end
+		-- 			end
+		-- 		end
+		-- 	end
+		-- end
+
+		-- ---@type SpellListOriginalValues
+		-- local origValues = mutator.originalValues[self.name]
+		-- if origValues.spellSources then
+		-- 	for spellSourceType, spellData in pairs(origValues.spellSources) do
+		-- 		for _, spell in pairs(spellData) do
+		-- 			if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
+		-- 					return value.Id.OriginatorPrototype == spell.Spell
+		-- 				end)
+		-- 			then
+
+		-- 			end
+		-- 		end
+		-- 	end
+		-- end
 	end
 
-	for _, mutator in ipairs(spellListMutators) do
-		for _, spellMutatorGroup in ipairs(mutator.values) do
-			for _, leveledSpellPool in ipairs(spellMutatorGroup.leveledSpellPool) do
-				if entity.AvailableLevel and entity.AvailableLevel.Level >= leveledSpellPool.anchorLevel then
-					---@type EsvSpellSpellSystem
-					local spellSystem = Ext.System.ServerSpell
-
-					local addSpells = spellSystem.AddSpells[entity]
-					if not addSpells then
-						spellSystem.AddSpells[entity] = {}
-						addSpells = spellSystem.AddSpells[entity]
+	---@param subLists SpellSubLists
+	---@param entity EntityHandle
+	---@param addSpells {[EntityHandle]: SpellSpellMeta[]}
+	function SpellListMutator:processSubList(subLists, entity, addSpells)
+		for subListName, spells in pairs(subLists) do
+			for _, spellName in pairs(spells) do
+				if subListName == "guaranteed" then
+					if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
+							return value.Id.OriginatorPrototype == spellName
+						end)
+					then
+						addSpells[#addSpells + 1] = {
+							PrepareType = "AlwaysPrepared",
+							SpellId = {
+								OriginatorPrototype = spellName,
+								SourceType = "SpellSet2",
+								Source = "Lab"
+							},
+							PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
+							SpellCastingAbility = entity.Stats.SpellCastingAbility
+						}
+						Logger:BasicDebug("Added spell %s", spellName)
 					end
+				elseif subListName == "startOfCombatOnly" then
+					if Osi.IsInCombat(entity.Uuid.EntityUuid) == 1 then
+						Osi.UseSpell(entity.Uuid.EntityUuid, spellName, entity.Uuid.EntityUuid)
+						Logger:BasicDebug("Used on combat spell %s", spellName)
+					else
+						entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME .. "SpellsOnCombatStart"] =
+							entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME .. "SpellsOnCombatStart"]
+							or {}
 
-					---@type Character
-					local charStat = Ext.Stats.Get(entity.Data.StatsId)
-
-					local skillList = entity.ServerCharacter.TemplateUsedForSpells.SkillList
-					-- Osi.CreateAt("01fa8d64-f63e-4bb8-9ee4-cba84dad3781", 202, 25, 418, 0, 0, "")
-					-- Osi.SetRelationTemporaryHostile("5ebcd998-e4ae-1a42-202c-3619bced3eea", _C().Uuid.EntityUuid)
-					for _, spellName in pairs(leveledSpellPool.spells.guaranteed) do
-						if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
-								return value.Id.OriginatorPrototype == spellName
-							end)
-						then
-							addSpells[#addSpells + 1] = {
-								PrepareType = "AlwaysPrepared",
-								SpellId = {
-									OriginatorPrototype = spellName,
-									SourceType = "SpellSet2"
-								},
-								PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
-								SpellCastingAbility = charStat.SpellCastingAbility
-							}
-						end
+						table.insert(entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME .. "SpellsOnCombatStart"], spellName)
 					end
+				elseif subListName == "onLoadOnly" then
+					Osi.UseSpell(entity.Uuid.EntityUuid, spellName, entity.Uuid.EntityUuid)
+					Logger:BasicDebug("Used on level load spell %s", spellName)
 				end
 			end
 		end
 	end
-end
 
-function SpellListMutator:undoMutator(entity, mutator)
+	function SpellListMutator:applyMutator(entity, mutator)
+		SpellListDesigner:buildProgressionIndex()
 
+		local spellListMutators = mutator.appliedMutators[self.name]
+		if not spellListMutators[1] then
+			spellListMutators = { spellListMutators }
+		end
+
+		---@cast spellListMutators SpellListMutator[]
+
+		spellSystem.AddSpells[entity] = spellSystem.AddSpells[entity] or {}
+		local addSpells = spellSystem.AddSpells[entity]
+
+		---@type SpellMutatorGroup[]
+		local groupsToApply = {}
+
+		for m, mutator in ipairs(spellListMutators) do
+			--#region Criteria
+			local keep = false
+			for g, spellMutatorGroup in ipairs(mutator.values) do
+				if spellMutatorGroup.criteria then
+					---@type SpellListCriteriaEntry
+					local criteria = spellMutatorGroup.criteria
+
+					if criteria.abilityCondition then
+						for ability, condition in pairs(criteria.abilityCondition) do
+							local score = entity.BaseStats.BaseAbilities[Ext.Enums.AbilityId[ability]]
+							if (condition.comparator == "gte" and not condition.value >= score)
+								or (condition.comparator == "lte" and not condition.value <= score)
+							then
+								Logger:BasicDebug("Skipped Group %s on %s due to %s being %s than %s (was %s)",
+									g,
+									entity.Uuid.EntityUuid,
+									ability,
+									condition.comparator == "gte" and "less than" or "greater than",
+									condition.value,
+									score)
+
+								spellListMutators[g] = nil
+								goto next_group
+							end
+						end
+					end
+
+					if criteria.isOneOfClasses then
+						for _, class in pairs(entity.Classes.Classes) do
+							for _, classId in pairs(criteria.isOneOfClasses) do
+								if class.ClassUUID == classId or class.SubClassUUID == classId then
+									goto success
+								end
+							end
+						end
+						Logger:BasicDebug("Skipped Group %s on %s due to not being one of the right classes", g, entity.Uuid.EntityUuid)
+						spellListMutators[g] = nil
+						goto next_group
+
+						::success::
+					end
+				end
+				keep = true
+				table.insert(groupsToApply, spellMutatorGroup)
+
+				::next_group::
+			end
+			if not keep then
+				spellListMutators[m] = nil
+			end
+		end
+		--#endregion
+
+		local spellMutatorGroup
+		if #groupsToApply == 1 then
+			spellMutatorGroup = groupsToApply[1]
+		elseif #groupsToApply > 1 then
+			spellMutatorGroup = groupsToApply[math.random(#groupsToApply)]
+		end
+
+		if spellMutatorGroup then
+			local skillList = entity.ServerCharacter.TemplateUsedForSpells.SkillList
+
+			---@type Guid[]
+			local appliedLists = {}
+
+			for lSP, leveledSpellPool in ipairs(spellMutatorGroup.leveledSpellPool) do
+				if entity.AvailableLevel and entity.AvailableLevel.Level >= leveledSpellPool.anchorLevel then
+					-- Osi.CreateAt("01fa8d64-f63e-4bb8-9ee4-cba84dad3781", 202, 25, 418, 0, 0, "")
+					-- Osi.SetRelationTemporaryHostile("5ebcd998-e4ae-1a42-202c-3619bced3eea", _C().Uuid.EntityUuid)
+					if leveledSpellPool.spells then
+						self:processSubList(leveledSpellPool.spells, entity, addSpells)
+					end
+
+					if leveledSpellPool.spellLists then
+						TableUtils:ReindexNumericTable(leveledSpellPool.spellLists)
+
+						local spellListId
+						if #leveledSpellPool.spellLists > 1 then
+							spellListId = leveledSpellPool.spellLists[math.random(#leveledSpellPool.spellLists)]
+						else
+							spellListId = leveledSpellPool.spellLists[1]
+						end
+
+						if spellListId and ConfigurationStructure.config.mutations.spellLists[spellListId] then
+							local nextAnchor = spellMutatorGroup.leveledSpellPool[lSP + 1] and spellMutatorGroup.leveledSpellPool[lSP + 1].anchorLevel - 1 or 30
+
+							local startingSpellListLevel = TableUtils:IndexOf(appliedLists, spellListId) or 1
+
+							if startingSpellListLevel > 1 then
+								appliedLists[startingSpellListLevel] = nil
+							end
+							appliedLists[math.min(nextAnchor, entity.AvailableLevel.Level)] = spellListId
+
+							local spellList = ConfigurationStructure.config.mutations.spellLists[spellListId]
+							Logger:BasicDebug("Selected spellList %s (%s) for anchor level %s", spellList.name, spellListId, leveledSpellPool.anchorLevel)
+
+							for i = startingSpellListLevel, math.min(nextAnchor, entity.AvailableLevel.Level) do
+								local leveledLists = spellList.levels[i]
+								if leveledLists.linkedProgressions then
+									---@type SpellName[]
+									local randomPool = {}
+
+									for progressionId, subLists in pairs(leveledLists.linkedProgressions) do
+										self:processSubList(subLists, entity, addSpells)
+
+										if SpellListDesigner.progressionTranslation[progressionId] then
+											local progressionTable = SpellListDesigner.progressions[SpellListDesigner.progressionTranslation[progressionId]]
+											if progressionTable and progressionTable[i] then
+												for _, spellName in pairs(progressionTable[i]) do
+													table.insert(randomPool, spellName)
+												end
+											end
+										end
+									end
+
+									if #randomPool > 
+								end
+							end
+						end
+					end
+				end
+			end
+		else
+			mutator.appliedMutators[self.name] = nil
+			mutator.originalValues[self.name] = nil
+			mutator.appliedMutatorsPath[self.name] = nil
+		end
+	end
 end

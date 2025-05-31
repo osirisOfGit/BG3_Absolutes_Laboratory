@@ -18,8 +18,8 @@ function MutationProfileExecutor:ExecuteProfile()
 		---@type {[FolderName] : {[MutationName]: SelectorPredicate}}
 		local cachedSelectors = {}
 		for _, entity in pairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-			if entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS] then
-				MutatorInterface:undoMutator(entity, entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS])
+			if entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] then
+				MutatorInterface:undoMutator(entity, entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME])
 			end
 
 			if not entity.DeadByDefault and not entity.PartyMember then
@@ -61,19 +61,20 @@ function MutationProfileExecutor:ExecuteProfile()
 				end
 
 				if next(entityVar.appliedMutators) then
+					entityVar = TableUtils:DeeplyCopyTable(entityVar)
 					MutatorInterface:applyMutator(entity, entityVar)
 				end
 
-				entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS] = next(entityVar.appliedMutators) and entityVar or nil
+				entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = next(entityVar.appliedMutators) and entityVar or nil
 			end
 		end
 	else
-		for _, entityId in pairs(Ext.Vars.GetEntitiesWithVariable(ABSOLUTES_LABORATORY_MUTATIONS)) do
+		for _, entityId in pairs(Ext.Vars.GetEntitiesWithVariable(ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME)) do
 			---@type EntityHandle
 			local entity = Ext.Entity.Get(entityId)
 
 			---@type MutatorEntityVar
-			local mutatorVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS]
+			local mutatorVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME]
 
 			MutatorInterface:undoMutator(entity, mutatorVar)
 		end

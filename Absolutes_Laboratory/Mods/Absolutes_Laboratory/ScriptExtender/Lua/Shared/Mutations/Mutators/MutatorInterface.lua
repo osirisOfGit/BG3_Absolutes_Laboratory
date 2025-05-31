@@ -3,8 +3,8 @@
 ---@field appliedMutatorsPath {[string]: MutationProfileRule|MutationProfileRule[]}
 ---@field originalValues {[string]: any}
 
-ABSOLUTES_LABORATORY_MUTATIONS = "Absolutes_Laboratory_Mutations"
-Ext.Vars.RegisterUserVariable(ABSOLUTES_LABORATORY_MUTATIONS, {
+ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME = "Absolutes_Laboratory_Mutations"
+Ext.Vars.RegisterUserVariable(ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME, {
 	Server = true,
 	Client = true,
 	SyncToClient = true
@@ -47,15 +47,29 @@ end
 ---@param entity EntityHandle
 ---@param entityVar MutatorEntityVar
 function MutatorInterface:applyMutator(entity, entityVar)
+	local time = Ext.Timer:MonotonicTime()
+	Logger:BasicDebug("=========================== STARTING %s_%s ===========================",
+		entity.DisplayName and entity.DisplayName.Name:Get() or entity.ServerCharacter.Template.Name,
+		entity.Uuid.EntityUuid)
+
 	for mutatorName in pairs(entityVar.appliedMutators) do
+		local mTime = Ext.Timer:MonotonicTime()
+		Logger:BasicDebug("==== Starting mutator %s ====", mutatorName)
 		local success, error = xpcall(function(...)
 			self.registeredMutators[mutatorName]:applyMutator(entity, entityVar)
 		end, debug.traceback)
 
 		if not success then
 			Logger:BasicError("Failed to apply mutator %s to %s - %s", mutatorName, entity.Uuid.EntityUuid, error)
+		else
+			Logger:BasicDebug("==== Finished mutator %s in %dms ====", mutatorName, Ext.Timer:MonotonicTime() - mTime)
 		end
 	end
+
+	Logger:BasicDebug("=========================== FINISHED %s_%s in %dms ===========================",
+		entity.DisplayName and entity.DisplayName.Name:Get() or entity.ServerCharacter.Template.Name,
+		entity.Uuid.EntityUuid,
+		Ext.Timer:MonotonicTime() - time)
 end
 
 ---@param entity EntityHandle
@@ -70,7 +84,7 @@ function MutatorInterface:undoMutator(entity, entityVar)
 			Logger:BasicError("Failed to undo mutator %s to %s - %s", mutatorName, entity.Uuid.EntityUuid, error)
 		end
 	end
-	entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS] = nil
+	entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = nil
 end
 
 Ext.Require("Shared/Mutations/Mutators/HealthMutator.lua")
