@@ -987,7 +987,53 @@ if Ext.IsServer() then
 										end
 									end
 
-									if #randomPool > 
+									local numRandomSpellsToPick = 0
+									if spellMutatorGroup.randomizedSpellPoolSize[i] then
+										numRandomSpellsToPick = spellMutatorGroup.randomizedSpellPoolSize[i]
+									else
+										local maxLevel = nil
+										for level, _ in pairs(spellMutatorGroup.randomizedSpellPoolSize) do
+											if level < i and (not maxLevel or level > maxLevel) then
+												maxLevel = level
+											end
+										end
+										if maxLevel then
+											numRandomSpellsToPick = spellMutatorGroup.randomizedSpellPoolSize[maxLevel]
+										end
+									end
+
+									if numRandomSpellsToPick > 0 then
+										Logger:BasicDebug("Giving %s random spells out of %s", numRandomSpellsToPick, #randomPool)
+										local spellsToGive = {}
+										if #randomPool <= numRandomSpellsToPick then
+											spellsToGive = randomPool
+										else
+											for _ = 1, numRandomSpellsToPick do
+												local num = math.random(#randomPool)
+												table.insert(spellsToGive, randomPool[num])
+												table.remove(randomPool, num)
+											end
+										end
+
+										for _, spellName in pairs(spellsToGive) do
+											if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
+													return value.Id.OriginatorPrototype == spellName
+												end)
+											then
+												addSpells[#addSpells + 1] = {
+													PrepareType = "AlwaysPrepared",
+													SpellId = {
+														OriginatorPrototype = spellName,
+														SourceType = "SpellSet2",
+														Source = "Lab"
+													},
+													PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
+													SpellCastingAbility = entity.Stats.SpellCastingAbility
+												}
+												Logger:BasicDebug("Added spell %s", spellName)
+											end
+										end
+									end
 								end
 							end
 						end
