@@ -117,6 +117,10 @@ function TableUtils:OrderedPairs(t, keyTransformFunc)
 	table.sort(keys, function(a, b)
 		local keyA = keyTransformFunc and keyTransformFunc(a, t[a]) or a
 		local keyB = keyTransformFunc and keyTransformFunc(b, t[b]) or b
+		if type(keyA) ~= type(keyB) then
+			keyA = tostring(keyA)
+			keyB = tostring(keyB)
+		end
 		return keyA < keyB
 	end)
 

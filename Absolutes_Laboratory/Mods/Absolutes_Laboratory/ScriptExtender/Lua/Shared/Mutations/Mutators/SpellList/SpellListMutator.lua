@@ -554,7 +554,7 @@ function SpellListMutator:renderCriteriaSettings(parent, spellMutatorGroup)
 		end
 	end
 
-	local classTable = classGroup:AddTable("classes", 5)
+	local classTable = classGroup:AddTable("classes", 4)
 	local function buildClassTable()
 		Helpers:KillChildren(classTable)
 
@@ -564,14 +564,16 @@ function SpellListMutator:renderCriteriaSettings(parent, spellMutatorGroup)
 			for _, classId in TableUtils:OrderedPairs(existingCriteria, function(_, classId)
 				return classIdToNameCache[classId]
 			end) do
-				if counter % 5 == 0 then
+				if counter % 4 == 0 then
 					row = classTable:AddRow()
 				end
 				---@type ResourceClassDescription
 				local class = Ext.StaticData.Get(classId, "ClassDescription")
 
-				Styler:HyperlinkText(row:AddCell(), class.DisplayName:Get() or class.Name, function(parent)
-					ResourceManager:RenderDisplayWindow(class, parent)
+				Styler:MiddleAlignedColumnLayout(row:AddCell(), function(ele)
+					Styler:HyperlinkText(ele, class.DisplayName:Get() or class.Name, function(parent)
+						ResourceManager:RenderDisplayWindow(class, parent)
+					end)
 				end)
 
 				counter = counter + 1
