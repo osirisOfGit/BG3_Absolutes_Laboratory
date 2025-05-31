@@ -45,13 +45,13 @@ function SpellListMutator:renderMutator(parent, mutator)
 	for sMG, spellMutatorGroup in TableUtils:OrderedPairs(mutator.values) do
 		local parentRow = displayTable:AddRow()
 
-		local poolCell = parentRow:AddCell()
+		local groupCell = parentRow:AddCell()
 
-		local header = poolCell:AddCollapsingHeader("Pool " .. sMG)
+		local header = groupCell:AddCollapsingHeader("Group " .. sMG)
 		header.DefaultOpen = true
 
 		local delete = Styler:ImageButton(header:AddImageButton("delete" .. mutator.targetProperty, "ico_red_x", { 16, 16 }))
-		delete:Tooltip():AddText("\t Delete Pool")
+		delete:Tooltip():AddText("\t Delete Group")
 		delete.OnClick = function()
 			for x = sMG, TableUtils:CountElements(mutator.values) do
 				mutator.values[x].delete = true
@@ -59,8 +59,8 @@ function SpellListMutator:renderMutator(parent, mutator)
 			end
 			self:renderMutator(parent, mutator)
 		end
-		local poolGroup = header:AddGroup("Pool")
-		local function renderPool()
+		local poolGroup = header:AddGroup("Group")
+		local function renderPools()
 			local leveledTable = poolGroup:AddTable("leveledTable", 1)
 			leveledTable.NoSavedSettings = true
 			leveledTable.Borders = true
@@ -104,13 +104,17 @@ function SpellListMutator:renderMutator(parent, mutator)
 					spellListSep:SetStyle("SeparatorTextAlign", 0.1)
 					spellListSep:Tooltip():AddText("\t Specifying multiple spell lists means one will be randomly chosen to be assigned to an entity - it will not add all of them")
 
-					for _, spellList in TableUtils:OrderedPairs(leveledSpellPool.spellLists, function(_, value)
-						return configuredSpellLists[value].name
+					for sL, spellList in TableUtils:OrderedPairs(leveledSpellPool.spellLists, function(_, value)
+						return configuredSpellLists[value] and configuredSpellLists[value].name
 					end) do
 						spellList = configuredSpellLists[spellList]
-						local text = cell:AddText(spellList.name)
-						if spellList.description ~= "" then
-							text:Tooltip():AddText(spellList.description)
+						if spellList then
+							local text = cell:AddText(spellList.name)
+							if spellList.description ~= "" then
+								text:Tooltip():AddText(spellList.description)
+							end
+						else
+							leveledSpellPool.spellLists[sL] = nil
 						end
 					end
 
@@ -136,7 +140,7 @@ function SpellListMutator:renderMutator(parent, mutator)
 									table.insert(leveledSpellPool.spellLists, id)
 								end
 								Helpers:KillChildren(poolGroup)
-								renderPool()
+								renderPools()
 							end
 						end
 					end
@@ -145,11 +149,11 @@ function SpellListMutator:renderMutator(parent, mutator)
 				end
 			end
 		end
-		renderPool()
+		renderPools()
 
-		local addLeveledGroupButton = header:AddButton("Add Level Group")
-		addLeveledGroupButton.Font = "Small"
-		addLeveledGroupButton.OnClick = function()
+		local addLeveledPoolButton = header:AddButton("Add Level Pool")
+		addLeveledPoolButton.Font = "Small"
+		addLeveledPoolButton.OnClick = function()
 			Helpers:KillChildren(poolGroup)
 			spellMutatorGroup.leveledSpellPool = spellMutatorGroup.leveledSpellPool or {}
 			table.insert(spellMutatorGroup.leveledSpellPool, {
@@ -157,7 +161,7 @@ function SpellListMutator:renderMutator(parent, mutator)
 				spellLists = {}
 			} --[[@as LeveledSpellPool]])
 
-			renderPool()
+			renderPools()
 		end
 
 		local settingsCell = parentRow:AddCell()
@@ -168,7 +172,7 @@ function SpellListMutator:renderMutator(parent, mutator)
 		parentRow:AddNewLine()
 	end
 
-	local addGroupButton = parent:AddButton("Add New Pool")
+	local addGroupButton = parent:AddButton("Add New Group")
 	addGroupButton.OnClick = function()
 		table.insert(mutator.values, {
 		} --[[@as SpellMutatorGroup]])
@@ -704,7 +708,7 @@ SpellSet are specified in the template under the same name, SpellSet2 are added 
 		SpellBrowser:Render(popup,
 			nil,
 			function(pos)
-				return pos % 8 == 0
+				return pos % 8 ~= 0
 			end,
 			function(spellName)
 				return TableUtils:IndexOf(existingCriteria, spellName) ~= nil

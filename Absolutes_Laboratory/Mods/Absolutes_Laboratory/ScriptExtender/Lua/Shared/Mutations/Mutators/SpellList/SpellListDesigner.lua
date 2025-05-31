@@ -184,6 +184,7 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 						spellList.description = formResults.Description
 
 						self:buildSpellDesignerWindow(activeSpellList and activeSpellList.UserData)
+						self.formWindow.Open = false
 					end, {
 						{
 							label = "Name",
@@ -811,8 +812,8 @@ function SpellListDesigner:buildSpellBrowser(spellList)
 	SpellBrowser:Render(self.spellBrowser,
 		function(parent, results)
 			Styler:MiddleAlignedColumnLayout(parent, function(ele)
-				parent.Size = {0, 0}
-				
+				parent.Size = { 0, 0 }
+
 				local copyAllButton = ele:AddButton("Copy All")
 
 				copyAllButton.OnClick = function()
