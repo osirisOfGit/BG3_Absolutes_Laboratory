@@ -167,7 +167,7 @@ function Styler:HyperlinkText(parent, text, tooltipCallback, freeSize)
 		fakeTextSelectable:SetColor("Text", { 173 / 255, 216 / 255, 230 / 255, 1 })
 	end
 
-	fakeTextSelectable.OnClick = self:HyperlinkRenderable(fakeTextSelectable, text, nil, nil, tooltipCallback)
+	fakeTextSelectable.OnClick = self:HyperlinkRenderable(fakeTextSelectable, text, nil, nil, nil, tooltipCallback)
 
 	return fakeTextSelectable
 end
@@ -175,10 +175,11 @@ end
 ---@param renderable ExtuiStyledRenderable
 ---@param item string
 ---@param modifier InputModifier?
+---@param modifierOnHover boolean?
 ---@param callback fun(parent: ExtuiTreeParent)
 ---@param altTooltip string?
 ---@return fun():boolean?
-function Styler:HyperlinkRenderable(renderable, item, modifier, altTooltip, callback)
+function Styler:HyperlinkRenderable(renderable, item, modifier, modifierOnHover, altTooltip, callback)
 	---@type ExtuiTooltip
 	local tooltip = renderable:Tooltip()
 
@@ -186,17 +187,24 @@ function Styler:HyperlinkRenderable(renderable, item, modifier, altTooltip, call
 	local window
 
 	renderable.OnHoverEnter = function()
-		if not modifier or Ext.ClientInput.GetInputManager().PressedModifiers == modifier then
-			if not window then
-				Helpers:KillChildren(tooltip)
-				callback(tooltip)
-			else
-				window.Open = true
-				window:SetFocus()
-			end
+		if not modifier or not modifierOnHover or Ext.ClientInput.GetInputManager().PressedModifiers == modifier then
+			Ext.Timer.WaitFor(modifierOnHover and 0 or 400, function()
+				if not window then
+					Helpers:KillChildren(tooltip)
+					tooltip.Visible = true
+					callback(tooltip)
+				else
+					window.Open = true
+					window:SetFocus()
+				end
+			end)
 		else
 			Helpers:KillChildren(tooltip)
-			tooltip:AddText("\t " .. altTooltip)
+			if altTooltip then
+				tooltip:AddText("\t " .. altTooltip)
+			else
+				tooltip.Visible = false
+			end
 		end
 	end
 

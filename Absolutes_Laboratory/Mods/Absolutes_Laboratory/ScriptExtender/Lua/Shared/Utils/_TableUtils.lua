@@ -115,8 +115,8 @@ function TableUtils:OrderedPairs(t, keyTransformFunc)
 		table.insert(keys, k)
 	end
 	table.sort(keys, function(a, b)
-		local keyA = keyTransformFunc and keyTransformFunc(a, t[a]) or tostring(a)
-		local keyB = keyTransformFunc and keyTransformFunc(b, t[b]) or tostring(b)
+		local keyA = keyTransformFunc and keyTransformFunc(a, t[a]) or a
+		local keyB = keyTransformFunc and keyTransformFunc(b, t[b]) or b
 		return keyA < keyB
 	end)
 

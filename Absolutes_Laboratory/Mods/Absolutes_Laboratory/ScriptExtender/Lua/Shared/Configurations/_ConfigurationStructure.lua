@@ -39,7 +39,8 @@ function ConfigurationStructure:generate_recursive_metatable(proxy_table, real_t
 						real_table[key] = nil
 					end
 				else
-					if type(key) == "string" and tonumber(key) and math.type(tonumber(key)) == "integer" then
+					if type(key) == "string" and tonumber(key) then
+						_D(key)
 						key = tonumber(key)
 					end
 
@@ -54,6 +55,9 @@ function ConfigurationStructure:generate_recursive_metatable(proxy_table, real_t
 							real_table[key]))
 						-- Accounting for setting a table that has tables in one assignment operation
 						for child_key, child_value in pairs(value) do
+							if type(child_key) == "string" and tonumber(child_key) then
+								child_key = tonumber(child_key)
+							end
 							if type(child_value) == "table" then
 								proxy_table[key][child_key] = child_value
 							end
@@ -96,7 +100,7 @@ Ext.Require("Shared/Configurations/MutationsConfig.lua")
 
 local function CopyConfigsIntoReal(table_from_file, proxy_table)
 	for key, value in pairs(table_from_file) do
-		if type(key) == "string" and tonumber(key) and math.type(tonumber(key)) == "integer" then
+		if type(key) == "string" and tonumber(key) then
 			key = tonumber(key)
 		end
 

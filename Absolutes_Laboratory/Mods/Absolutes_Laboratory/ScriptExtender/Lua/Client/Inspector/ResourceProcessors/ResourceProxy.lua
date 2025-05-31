@@ -308,6 +308,7 @@ Ext.Require("Client/Inspector/ResourceProcessors/Proxies/Race.lua")
 Ext.Require("Client/Inspector/ResourceProcessors/Proxies/Progressions.lua")
 
 --- Stat Stuff
+Ext.Require("Client/Inspector/ResourceProcessors/Proxies/ClassDescription.lua")
 Ext.Require("Client/Inspector/ResourceProcessors/Proxies/StatParser.lua")
 Ext.Require("Client/Inspector/ResourceProcessors/Proxies/ItemList.lua")
 Ext.Require("Client/Inspector/ResourceProcessors/Proxies/Functors.lua")

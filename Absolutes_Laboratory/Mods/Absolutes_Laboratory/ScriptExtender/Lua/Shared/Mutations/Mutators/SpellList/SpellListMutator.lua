@@ -5,13 +5,11 @@ SpellListMutator = MutatorInterface:new("SpellList")
 
 ---@class SpellListAbilityScoreCondition
 ---@field comparator "gte"|"lte"
----@field abilityId AbilityId
 ---@field value number
 
 ---@class SpellListCriteriaEntry
 ---@field isOneOfClasses Guid[]?
----@field abilityCondition SpellListAbilityScoreCondition[]?
-
+---@field abilityCondition {[AbilityId] : SpellListAbilityScoreCondition}?
 
 ---@class LeveledSpellPool
 ---@field anchorLevel number
@@ -104,7 +102,7 @@ function SpellListMutator:renderMutator(parent, mutator)
 
 					local spellListSep = cell:AddSeparatorText("Spell Lists ( ? )")
 					spellListSep:SetStyle("SeparatorTextAlign", 0.1)
-					spellListSep:Tooltip():AddText("\t Spell lists added here will FULLY REPLACE the entity's spellbook")
+					spellListSep:Tooltip():AddText("\t Specifying multiple spell lists means one will be randomly chosen to be assigned to an entity - it will not add all of them")
 
 					for _, spellList in TableUtils:OrderedPairs(leveledSpellPool.spellLists, function(_, value)
 						return configuredSpellLists[value].name
@@ -162,7 +160,9 @@ function SpellListMutator:renderMutator(parent, mutator)
 			renderPool()
 		end
 
-		self:renderCriteriaAndExtras(parentRow:AddCell():AddGroup("Criteria And Extras"), spellMutatorGroup)
+		local settingsCell = parentRow:AddCell()
+		self:renderRandomizedAmountSettings(settingsCell:AddGroup("RandomizedSettings"), spellMutatorGroup)
+		self:renderCriteriaSettings(settingsCell:AddGroup("Criteria"), spellMutatorGroup)
 
 		parentRow:AddNewLine()
 	end
@@ -221,6 +221,7 @@ function SpellListMutator:buildSpellSelectorSection(parent, mutatorGroup, poolIn
 					local tooltipFunc = Styler:HyperlinkRenderable(spellImage,
 						spellName,
 						"Shift",
+						true,
 						string.format("%s\n%s\n%s",
 							spellName,
 							Ext.Loca.GetTranslatedString(spell.DisplayName, spellName),
@@ -351,6 +352,7 @@ You can shift-click on images to pop out their tooltip into a new window, but th
 							local hyperlinkFunc = Styler:HyperlinkRenderable(spellImage,
 								spellName,
 								"Shift",
+								true,
 								string.format("%s\n%s", spellName, Ext.Loca.GetTranslatedString(spell.DisplayName, spellName)),
 								function(parent)
 									ResourceManager:RenderDisplayWindow(spell, parent)
@@ -386,9 +388,10 @@ end
 
 ---@param parent ExtuiTreeParent
 ---@param spellMutatorGroup SpellMutatorGroup
-function SpellListMutator:renderCriteriaAndExtras(parent, spellMutatorGroup)
+function SpellListMutator:renderRandomizedAmountSettings(parent, spellMutatorGroup)
 	Helpers:KillChildren(parent)
-	local popup = parent:AddPopup("CriteriaAndExtras")
+
+	local popup = parent:AddPopup("Randomized")
 
 	--#region Randomized Spell Pool Size
 	local randoAmountHeader = parent:AddCollapsingHeader("Amount of Random Spells to Give Per Level")
@@ -396,9 +399,11 @@ function SpellListMutator:renderCriteriaAndExtras(parent, spellMutatorGroup)
 	spellMutatorGroup.randomizedSpellPoolSize = spellMutatorGroup.randomizedSpellPoolSize or {}
 	local randomizedSpellPoolSize = spellMutatorGroup.randomizedSpellPoolSize
 	if not randomizedSpellPoolSize() then
-		randomizedSpellPoolSize[1] = 3
-		randomizedSpellPoolSize[5] = 2
-		randomizedSpellPoolSize[9] = 1
+		randomizedSpellPoolSize[1] = 2
+		randomizedSpellPoolSize[3] = 0
+		randomizedSpellPoolSize[5] = 1
+		randomizedSpellPoolSize[7] = 0
+		randomizedSpellPoolSize[10] = 1
 	end
 
 	local randoSpellsTable = randoAmountHeader:AddTable("RandomSpellNumbers", 3)
@@ -454,32 +459,202 @@ This will cause Lab to give the entity 3 random spells from the selected Spell L
 		input.SameLine = true
 
 		local errorText = popup:AddText("Choose a level that isn't already specified")
-		errorText:SetColor("Text", Styler:ConvertRGBAToIMGUI({255, 100, 100, 0.7}))
+		errorText:SetColor("Text", Styler:ConvertRGBAToIMGUI({ 255, 100, 100, 0.7 }))
 		errorText.Visible = false
 
 		add.OnClick = function()
 			if randomizedSpellPoolSize[input.Value[1]] then
 				errorText.Visible = true
 			else
-				randomizedSpellPoolSize[input.Value[1]] = 3
-				self:renderCriteriaAndExtras(parent, spellMutatorGroup)
+				randomizedSpellPoolSize[input.Value[1]] = 2
+				self:renderRandomizedAmountSettings(parent, spellMutatorGroup)
 			end
 		end
 	end
-	--#endregion
+end
 
-	--#region Criteria
-	local criteriaSep = parent:AddSeparatorText("Criteria ( ? )")
-	criteriaSep:SetStyle("SeparatorTextAlign", 0.2)
-	criteriaSep:Tooltip():AddText(
-		"\t These criteria can be used to filter out entities that shouldn't receive this spell list, allowing you to specify multiple groups in one mutator")
+local classIdToNameCache = {}
 
-	local criteriaGroup = parent:AddGroup("criteria")
+---@param parent ExtuiTreeParent
+---@param spellMutatorGroup SpellMutatorGroup
+function SpellListMutator:renderCriteriaSettings(parent, spellMutatorGroup)
+	Helpers:KillChildren(parent)
+	local popup = parent:AddPopup("Criteria")
 
-	--#endregion
+	local criteriaHeader = parent:AddCollapsingHeader("Criteria")
+	-- criteriaHeader:SetStyle("SeparatorTextAlign", 0.1)
+	-- criteriaHeader:Tooltip():AddText(
+	-- 	"\t These criteria can be used to fine tune which entities this Pool should apply to, allowing you to specify multiple Pools in one mutator. If multiple pools apply to the same entity, one will be randomly chosen")
+
+	criteriaHeader:AddSeparatorText("Ability Scores ( ? )"):Tooltip():AddText([[
+	If an entity doesn't meet the ability score requirements specified below, they won't be eligible to be assigned this spell pool. Values of <= 1 will be ignored]])
+
+	local displayTable = criteriaHeader:AddTable("abilityScores", 6)
+
+	local row = displayTable:AddRow()
+	for i = 1, 6 do
+		if (i - 1) % 2 == 0 then
+			row = displayTable:AddRow()
+		end
+		local ability = tostring(Ext.Enums.AbilityId[i])
+
+		local existingCriteria = spellMutatorGroup.criteria and spellMutatorGroup.criteria.abilityCondition and spellMutatorGroup.criteria.abilityCondition[ability]
+
+		row:AddCell():AddText(ability)
+
+		local combo           = row:AddCell():AddCombo("")
+		combo.WidthFitPreview = true
+		combo.Options         = { ">=", "<=" }
+		combo.SelectedIndex   = existingCriteria and existingCriteria.comparator == "lte" and 1 or 0
+
+		local input           = row:AddCell():AddInputInt("", existingCriteria and existingCriteria.value)
+
+		combo.OnChange        = function()
+			if input.Value[1] > 1 then
+				if not existingCriteria then
+					spellMutatorGroup.criteria = spellMutatorGroup.criteria or {}
+					spellMutatorGroup.criteria.abilityCondition = spellMutatorGroup.criteria.abilityCondition or {}
+					spellMutatorGroup.criteria.abilityCondition[ability] = spellMutatorGroup.criteria.abilityCondition[ability] or {}
+					spellMutatorGroup.criteria.abilityCondition[ability].value = input.Value[1]
+				end
+				spellMutatorGroup.criteria.abilityCondition[ability].comparator = combo.SelectedIndex == 0 and "gte" or "lte"
+			end
+		end
+
+		input.OnChange        = function()
+			if not existingCriteria then
+				spellMutatorGroup.criteria = spellMutatorGroup.criteria or {}
+				spellMutatorGroup.criteria.abilityCondition = spellMutatorGroup.criteria.abilityCondition or {}
+				spellMutatorGroup.criteria.abilityCondition[ability] = spellMutatorGroup.criteria.abilityCondition[ability] or {}
+				spellMutatorGroup.criteria.abilityCondition[ability].comparator = combo.SelectedIndex == 0 and "gte" or "lte"
+			end
+			if input.Value[1] <= 1 then
+				spellMutatorGroup.criteria.abilityCondition[ability].delete = true
+				if not spellMutatorGroup.criteria.abilityCondition() then
+					spellMutatorGroup.criteria.abilityCondition.delete = true
+				end
+			else
+				spellMutatorGroup.criteria.abilityCondition[ability].value = input.Value[1]
+			end
+		end
+	end
+
+	criteriaHeader:AddSeparatorText("Is One Of (Sub)Classes ( ? )"):Tooltip():AddText([[
+	If an entity is not one of the specified (sub)classes (accounts for multi-classing), they won't be eligible to be assigned this spell pool. Best paired with with a Class Mutator]])
+
+	local classGroup = criteriaHeader:AddGroup("classes")
+	local existingCriteria = spellMutatorGroup.criteria and spellMutatorGroup.criteria.isOneOfClasses
+
+	if not next(classIdToNameCache) then
+		for _, classId in pairs(Ext.StaticData.GetAll("ClassDescription")) do
+			---@type ResourceClassDescription
+			local class = Ext.StaticData.Get(classId, "ClassDescription")
+
+			classIdToNameCache[classId] = class.DisplayName:Get() or class.Name
+		end
+	end
+
+	local classTable = classGroup:AddTable("classes", 5)
+	local function buildClassTable()
+		Helpers:KillChildren(classTable)
+
+		if existingCriteria then
+			local row = classTable:AddRow()
+			local counter = 0
+			for _, classId in TableUtils:OrderedPairs(existingCriteria, function(_, classId)
+				return classIdToNameCache[classId]
+			end) do
+				if counter % 5 == 0 then
+					row = classTable:AddRow()
+				end
+				---@type ResourceClassDescription
+				local class = Ext.StaticData.Get(classId, "ClassDescription")
+
+				Styler:HyperlinkText(row:AddCell(), class.DisplayName:Get() or class.Name, function(parent)
+					ResourceManager:RenderDisplayWindow(class, parent)
+				end)
+
+				counter = counter + 1
+			end
+		end
+	end
+	buildClassTable()
+
+	classGroup:AddButton("+##class").OnClick = function()
+		Helpers:KillChildren(popup)
+		popup:Open()
+
+		local input = popup:AddInputText("")
+		input.Hint = "Shift-click on items to pop out their tooltips"
+
+		local resultsGroup = popup:AddChildWindow("results")
+		resultsGroup.NoSavedSettings = true
+		resultsGroup.Size = { 0, 300 * Styler:ScaleFactor() }
+		local timer
+		input.OnChange = function()
+			if timer then
+				Ext.Timer.Cancel(timer)
+			end
+
+			Helpers:KillChildren(resultsGroup)
+			timer = Ext.Timer.WaitFor(300, function()
+				local value = input.Text:upper()
+				local results = {}
+
+				for _, classId in pairs(Ext.StaticData.GetAll("ClassDescription")) do
+					if classIdToNameCache[classId]:find(value) then
+						table.insert(results, classId)
+					end
+				end
+
+				table.sort(results, function(a, b)
+					return classIdToNameCache[a] < classIdToNameCache[b]
+				end)
+
+				for _, classId in ipairs(results) do
+					---@type ResourceClassDescription
+					local class = Ext.StaticData.Get(classId, "ClassDescription")
+
+					---@type ExtuiSelectable
+					local select = resultsGroup:AddSelectable(classIdToNameCache[classId] .. "##" .. classId)
+					select.Selected = existingCriteria and TableUtils:IndexOf(existingCriteria, classId) ~= nil or false
+
+					local toolTipFunc = Styler:HyperlinkRenderable(select,
+						classIdToNameCache[classId],
+						"Shift",
+						nil,
+						nil,
+						function(parent)
+							ResourceManager:RenderDisplayWindow(class, parent)
+						end
+					)
+
+					select.OnClick = function()
+						if not toolTipFunc() then
+							if not select.Selected then
+								for x = TableUtils:IndexOf(existingCriteria, classId), TableUtils:CountElements(existingCriteria) do
+									existingCriteria[x] = nil
+									existingCriteria[x] = existingCriteria[x + 1]
+								end
+							else
+								if not existingCriteria then
+									spellMutatorGroup.criteria = spellMutatorGroup.criteria or {}
+									spellMutatorGroup.criteria.isOneOfClasses = spellMutatorGroup.criteria.isOneOfClasses or {}
+									existingCriteria = spellMutatorGroup.criteria.isOneOfClasses
+								end
+								table.insert(existingCriteria, classId)
+							end
+							buildClassTable()
+						end
+					end
+				end
+			end)
+		end
+		input:OnChange()
+	end
 
 	local removeSpellsSep = parent:AddSeparatorText("SpellSets/Spells To Remove ( ? )")
-	removeSpellsSep:SetStyle("SeparatorTextAlign", 0.2)
+	removeSpellsSep:SetStyle("SeparatorTextAlign", 0.1)
 	removeSpellsSep:Tooltip():AddText("\t  Specify SpellSets and/or Spells that should be removed from the Entity if already present")
 
 	local removeSpellsGroup = parent:AddGroup("Remove Spells")
