@@ -163,6 +163,7 @@ function SpellListMutator:renderMutator(parent, mutator)
 		local settingsCell = parentRow:AddCell()
 		self:renderRandomizedAmountSettings(settingsCell:AddGroup("RandomizedSettings"), spellMutatorGroup)
 		self:renderCriteriaSettings(settingsCell:AddGroup("Criteria"), spellMutatorGroup)
+		self:renderRemoveSpellsSetting(settingsCell:AddGroup("RemoveSpells"), spellMutatorGroup)
 
 		parentRow:AddNewLine()
 	end
@@ -561,7 +562,7 @@ function SpellListMutator:renderCriteriaSettings(parent, spellMutatorGroup)
 		if existingCriteria then
 			local row = classTable:AddRow()
 			local counter = 0
-			for _, classId in TableUtils:OrderedPairs(existingCriteria, function(_, classId)
+			for i, classId in TableUtils:OrderedPairs(existingCriteria, function(_, classId)
 				return classIdToNameCache[classId]
 			end) do
 				if counter % 4 == 0 then
@@ -571,9 +572,18 @@ function SpellListMutator:renderCriteriaSettings(parent, spellMutatorGroup)
 				local class = Ext.StaticData.Get(classId, "ClassDescription")
 
 				Styler:MiddleAlignedColumnLayout(row:AddCell(), function(ele)
+					local delete = Styler:ImageButton(ele:AddImageButton("delete" .. classId, "ico_red_x", { 16, 16 }))
+					delete.OnClick = function()
+						for x = i, TableUtils:CountElements(existingCriteria) do
+							existingCriteria[x] = nil
+							existingCriteria[x] = existingCriteria[x + 1]
+						end
+						buildClassTable()
+					end
+
 					Styler:HyperlinkText(ele, class.DisplayName:Get() or class.Name, function(parent)
 						ResourceManager:RenderDisplayWindow(class, parent)
-					end)
+					end).SameLine = true
 				end)
 
 				counter = counter + 1
@@ -654,12 +664,190 @@ function SpellListMutator:renderCriteriaSettings(parent, spellMutatorGroup)
 		end
 		input:OnChange()
 	end
+end
 
-	local removeSpellsSep = parent:AddSeparatorText("SpellSets/Spells To Remove ( ? )")
-	removeSpellsSep:SetStyle("SeparatorTextAlign", 0.1)
-	removeSpellsSep:Tooltip():AddText("\t  Specify SpellSets and/or Spells that should be removed from the Entity if already present")
+---@param parent ExtuiTreeParent
+---@param spellMutatorGroup SpellMutatorGroup
+function SpellListMutator:renderRemoveSpellsSetting(parent, spellMutatorGroup)
+	Helpers:KillChildren(parent)
+	local removeSpellsHeader = parent:AddCollapsingHeader("Spell Sources/Spells To Remove")
 
-	local removeSpellsGroup = parent:AddGroup("Remove Spells")
+	local popup = removeSpellsHeader:AddPopup("removeSpells")
+	popup:SetColor("Border", Styler:ConvertRGBAToIMGUI({255, 0, 0, 0.6}))
+
+	local existingCriteria = spellMutatorGroup.removeSpells
+
+	local displayTable = removeSpellsHeader:AddTable("removeSpells", 3)
+	local function renderSpellTable()
+		Helpers:KillChildren(displayTable)
+		if existingCriteria then
+			local row = displayTable:AddRow()
+			local counter = 0
+			for i, toRemove in TableUtils:OrderedPairs(existingCriteria, function(_, value)
+				return value
+			end) do
+				if counter % 3 == 0 then
+					row = displayTable:AddRow()
+				end
+				Styler:MiddleAlignedColumnLayout(row:AddCell(), function(ele)
+					local delete = Styler:ImageButton(ele:AddImageButton("delete" .. toRemove, "ico_red_x", { 16, 16 }))
+					delete.OnClick = function()
+						for x = i, TableUtils:CountElements(existingCriteria) do
+							existingCriteria[x] = nil
+							existingCriteria[x] = existingCriteria[x + 1]
+						end
+						renderSpellTable()
+					end
+
+					if not Ext.Enums.SpellSourceType[toRemove] then
+						---@type SpellData
+						local spell = Ext.Stats.Get(toRemove)
+
+						Styler:HyperlinkText(ele, spell.Name, function(parent)
+							ResourceManager:RenderDisplayWindow(spell, parent)
+						end).SameLine = true
+					else
+						ele:AddText(toRemove).SameLine = true
+					end
+				end)
+
+				counter = counter + 1
+			end
+		end
+	end
+
+	renderSpellTable()
+
+	removeSpellsHeader:AddButton("+").OnClick = function()
+		Helpers:KillChildren(popup)
+		popup:Open()
+
+		---@type ExtuiMenu
+		local menu = popup:AddMenu("Spell Sources ( ? )")
+		menu:Tooltip():AddText([[
+	These represent the registered source of the spell in the entity's spellbook - when specified, all spells with this type will attempt to be removed
+This may not always succeed depending on the nature of the sourceType. Use the Entity Inspector to investigate existing patterns.
+SpellSet are specified in the template under the same name, SpellSet2 are added via the SkillList in the template, Osiris are added via Osi.AddSpell and other methods, Boosts are usually equipment actions]])
+
+		for i in ipairs(Ext.Enums.SpellSourceType) do
+			i = i - 1
+			local sourceType = tostring(Ext.Enums.SpellSourceType[i])
+
+			---@type ExtuiSelectable
+			local select = menu:AddSelectable(sourceType, "DontClosePopups")
+
+			select.Selected = TableUtils:IndexOf(existingCriteria, sourceType) ~= nil
+
+			select.OnClick = function()
+				if select.Selected then
+					if not existingCriteria then
+						spellMutatorGroup.removeSpells = {}
+						existingCriteria = spellMutatorGroup.removeSpells
+					end
+					table.insert(existingCriteria, sourceType)
+				else
+					for x = TableUtils:IndexOf(existingCriteria, sourceType), TableUtils:CountElements(existingCriteria) do
+						existingCriteria[x] = nil
+						existingCriteria[x] = existingCriteria[x + 1]
+					end
+				end
+				renderSpellTable()
+			end
+		end
+
+		popup:AddSeparatorText("Search Spells")
+
+		local input = popup:AddInputText("")
+		input.Hint = "Min 3 Characters"
+
+		local helpText = popup:AddText("( ? )")
+		helpText.SameLine = true
+		helpText:Tooltip():AddText([[
+	See detailed tooltips on spell images by holding shift -
+click outside of the text input first, as the modifier won't be registered while the input is accepting keystrokes.
+You can shift-click on images to pop out their tooltip into a new window, but that will close the search popup]])
+
+		local resultsGroup = popup:AddChildWindow("results")
+		resultsGroup.NoSavedSettings = true
+		resultsGroup.Size = { 0, 300 * Styler:ScaleFactor() }
+		local timer
+		input.OnChange = function()
+			if timer then
+				Ext.Timer.Cancel(timer)
+			end
+
+			Helpers:KillChildren(resultsGroup)
+			if #input.Text >= 3 then
+				timer = Ext.Timer.WaitFor(300, function()
+					local value = input.Text:upper()
+					local results = {}
+					for _, spellName in pairs(Ext.Stats.GetStats("SpellData")) do
+						---@type SpellData
+						local spell = Ext.Stats.Get(spellName)
+						if spell.RootSpellID == "" then
+							if spellName:upper():find(value) then
+								table.insert(results, spellName)
+							else
+								if spell.DisplayName and Ext.Loca.GetTranslatedString(spell.DisplayName, spell.Name):find(value) then
+									table.insert(results, spellName)
+								end
+							end
+						end
+					end
+					if #results > 0 then
+						table.sort(results, function(a, b)
+							return Ext.Loca.GetTranslatedString(Ext.Stats.Get(a).DisplayName, a) < Ext.Loca.GetTranslatedString(Ext.Stats.Get(b).DisplayName, b)
+						end)
+
+						for i, spellName in ipairs(results) do
+							---@type SpellData
+							local spell = Ext.Stats.Get(spellName)
+
+							local spellImage = resultsGroup:AddImageButton(spellName .. i, spell.Icon, { 48, 48 })
+
+							spellImage.AutoClosePopups = false
+							if spellImage.Image.Icon == "" then
+								spellImage:Destroy()
+								spellImage = resultsGroup:AddImageButton(spellName .. i, "Item_Unknown", { 48, 48 })
+							end
+							spellImage.SameLine = i > 1 and (i - 1) % 7 ~= 0
+
+							if TableUtils:IndexOf(existingCriteria, spellName) then
+								spellImage.Tint = { 1, 1, 1, 0.2 }
+							end
+
+							local hyperlinkFunc = Styler:HyperlinkRenderable(spellImage,
+								spellName,
+								"Shift",
+								true,
+								string.format("%s\n%s", spellName, Ext.Loca.GetTranslatedString(spell.DisplayName, spellName)),
+								function(parent)
+									ResourceManager:RenderDisplayWindow(spell, parent)
+								end)
+
+							spellImage.OnClick = function()
+								if not hyperlinkFunc() then
+									if not TableUtils:IndexOf(existingCriteria, spellName) then
+										if not existingCriteria then
+											spellMutatorGroup.removeSpells = {}
+											existingCriteria = spellMutatorGroup.removeSpells
+										end
+										table.insert(existingCriteria, spellName)
+									else
+										for x = TableUtils:IndexOf(existingCriteria, spellName), TableUtils:CountElements(existingCriteria) do
+											existingCriteria[x] = nil
+											existingCriteria[x] = existingCriteria[x + 1]
+										end
+									end
+									renderSpellTable()
+								end
+							end
+						end
+					end
+				end)
+			end
+		end
+	end
 end
 
 function SpellListMutator:applyMutator(entity, mutator)
