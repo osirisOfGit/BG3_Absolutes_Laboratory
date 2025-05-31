@@ -10,7 +10,7 @@ function SpellBrowser:Render(parent, supplementaryResultProcessor, wrapFunc, sho
 	local settings = ConfigurationStructure.config.mutations.settings.spellBrowser
 
 	local input = parent:AddInputText("")
-	input.ItemWidth = 200
+	input.ItemWidth = 48 * 7
 	input.Hint = "Min 3 Characters"
 
 	local helpText = parent:AddText("( ? )")
