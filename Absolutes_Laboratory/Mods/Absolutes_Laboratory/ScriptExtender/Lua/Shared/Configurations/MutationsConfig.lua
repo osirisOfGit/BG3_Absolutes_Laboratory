@@ -2,7 +2,17 @@
 ConfigurationStructure.config.mutations = {}
 
 ---@class MutationSettings
-ConfigurationStructure.config.mutations.settings = {}
+ConfigurationStructure.config.mutations.settings = {
+	---@class SpellBrowserSettings
+	spellBrowser = {
+		onlyIcons = true,
+		sort = {
+			---@type "displayName"|"spellName"
+			name = "displayName",
+			direction = "Descending"
+		}
+	}
+}
 
 --#region Selectors
 ---@class Selector

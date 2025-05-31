@@ -285,7 +285,7 @@ function SpellListMutator:buildSpellSelectorSection(parent, mutatorGroup, poolIn
 		SpellBrowser:Render(popup,
 			nil,
 			function(pos)
-				return pos % 7 ~= 0
+				return pos % 8 ~= 0
 			end,
 			function(spellName)
 				return TableUtils:IndexOf(mutatorGroup.leveledSpellPool, function(value)
@@ -704,7 +704,7 @@ SpellSet are specified in the template under the same name, SpellSet2 are added 
 		SpellBrowser:Render(popup,
 			nil,
 			function(pos)
-				return pos % 7 == 0
+				return pos % 8 == 0
 			end,
 			function(spellName)
 				return TableUtils:IndexOf(existingCriteria, spellName) ~= nil
