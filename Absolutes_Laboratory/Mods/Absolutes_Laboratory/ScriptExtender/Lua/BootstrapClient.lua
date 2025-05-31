@@ -12,6 +12,7 @@ Ext.Events.StatsLoaded:Subscribe(function()
 end)
 
 Ext.Require("Client/RandomHelpers.lua")
+Ext.Require("Client/SpellBrowser.lua")
 Ext.Require("Shared/Configurations/_ConfigurationStructure.lua")
 
 ConfigurationStructure:InitializeConfig()
