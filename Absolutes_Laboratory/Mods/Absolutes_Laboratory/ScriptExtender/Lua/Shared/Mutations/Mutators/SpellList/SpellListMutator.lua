@@ -673,7 +673,7 @@ function SpellListMutator:renderRemoveSpellsSetting(parent, spellMutatorGroup)
 	local removeSpellsHeader = parent:AddCollapsingHeader("Spell Sources/Spells To Remove")
 
 	local popup = removeSpellsHeader:AddPopup("removeSpells")
-	popup:SetColor("Border", Styler:ConvertRGBAToIMGUI({255, 0, 0, 0.6}))
+	popup:SetColor("Border", Styler:ConvertRGBAToIMGUI({ 255, 0, 0, 0.6 }))
 
 	local existingCriteria = spellMutatorGroup.removeSpells
 
@@ -833,11 +833,13 @@ You can shift-click on images to pop out their tooltip into a new window, but th
 											existingCriteria = spellMutatorGroup.removeSpells
 										end
 										table.insert(existingCriteria, spellName)
+										spellImage.Tint = { 1, 1, 1, 0.2 }
 									else
 										for x = TableUtils:IndexOf(existingCriteria, spellName), TableUtils:CountElements(existingCriteria) do
 											existingCriteria[x] = nil
 											existingCriteria[x] = existingCriteria[x + 1]
 										end
+										spellImage.Tint = {1, 1, 1, 1}
 									end
 									renderSpellTable()
 								end
