@@ -666,7 +666,7 @@ function SpellListMutator:renderRemoveSpellsSetting(parent, spellMutatorGroup)
 
 	renderSpellTable()
 
-	removeSpellsHeader:AddButton("+").OnClick = function()
+	removeSpellsHeader:AddButton("+##remove").OnClick = function()
 		Helpers:KillChildren(popup)
 		popup:Open()
 
@@ -739,9 +739,6 @@ Ext.Vars.RegisterUserVariable(ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME .. "Spells
 })
 
 if Ext.IsServer() then
-	---@type EsvSpellSpellSystem
-	local spellSystem = Ext.System.ServerSpell
-
 	---@class SpellListOriginalValues
 	---@field spellSources {[SpellSourceType]: CharacterSpellData[]}
 	---@field spells SpellSpellMeta[]
@@ -828,7 +825,7 @@ if Ext.IsServer() then
 							SpellId = {
 								OriginatorPrototype = spellName,
 								SourceType = "SpellSet2",
-								Source = "Lab"
+								Source = ModuleUUID
 							},
 							PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
 							SpellCastingAbility = entity.Stats.SpellCastingAbility
@@ -855,6 +852,9 @@ if Ext.IsServer() then
 	end
 
 	function SpellListMutator:applyMutator(entity, mutator)
+		---@type EsvSpellSpellSystem
+		local spellSystem = Ext.System.ServerSpell
+
 		SpellListDesigner:buildProgressionIndex()
 
 		local spellListMutators = mutator.appliedMutators[self.name]
@@ -898,9 +898,9 @@ if Ext.IsServer() then
 						end
 					end
 
-					if criteria.isOneOfClasses then
-						for _, class in pairs(entity.Classes.Classes) do
-							for _, classId in pairs(criteria.isOneOfClasses) do
+					if criteria.isOneOfClasses and next(criteria.isOneOfClasses) then
+						for _, classId in pairs(criteria.isOneOfClasses) do
+							for _, class in pairs(entity.Classes.Classes) do
 								if class.ClassUUID == classId or class.SubClassUUID == classId then
 									goto success
 								end
@@ -932,7 +932,23 @@ if Ext.IsServer() then
 		end
 
 		if spellMutatorGroup then
-			local skillList = entity.ServerCharacter.TemplateUsedForSpells.SkillList
+			if spellMutatorGroup.removeSpells then
+				spellSystem.RemoveSpell = spellSystem.RemoveSpell or {}
+				spellSystem.RemoveSpell[entity] = spellSystem.RemoveSpell[entity] or {}
+				local removeSpells = spellSystem.RemoveSpell[entity]
+
+				for _, spellSourceOrName in pairs(spellMutatorGroup.removeSpells) do
+					if spellSourceOrName == "SpellSet2" then
+						entity.ServerCharacter.TemplateUsedForSpells.SkillList = {}
+					else
+						for _, spell in pairs(entity.SpellBook.Spells) do
+							if spell.Id.SourceType == spellSourceOrName or spell.Id.OriginatorPrototype == spellSourceOrName then
+								removeSpells[#removeSpells + 1] = spell.Id
+							end
+						end
+					end
+				end
+			end
 
 			---@type Guid[]
 			local appliedLists = {}
@@ -970,7 +986,7 @@ if Ext.IsServer() then
 
 							for i = startingSpellListLevel, math.min(nextAnchor, entity.AvailableLevel.Level) do
 								local leveledLists = spellList.levels[i]
-								if leveledLists.linkedProgressions then
+								if leveledLists and leveledLists.linkedProgressions then
 									---@type SpellName[]
 									local randomPool = {}
 
@@ -1025,7 +1041,7 @@ if Ext.IsServer() then
 													SpellId = {
 														OriginatorPrototype = spellName,
 														SourceType = "SpellSet2",
-														Source = "Lab"
+														Source = ModuleUUID
 													},
 													PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
 													SpellCastingAbility = entity.Stats.SpellCastingAbility
