@@ -812,7 +812,7 @@ if Ext.IsServer() then
 	---@param subLists SpellSubLists
 	---@param entity EntityHandle
 	---@param addSpells {[EntityHandle]: SpellSpellMeta[]}
-	function SpellListMutator:processSubList(subLists, entity, addSpells)
+	function SpellListMutator:processSubLists(subLists, entity, addSpells)
 		for subListName, spells in pairs(subLists) do
 			for _, spellName in pairs(spells) do
 				if subListName == "guaranteed" then
@@ -958,7 +958,7 @@ if Ext.IsServer() then
 					-- Osi.CreateAt("01fa8d64-f63e-4bb8-9ee4-cba84dad3781", 202, 25, 418, 0, 0, "")
 					-- Osi.SetRelationTemporaryHostile("5ebcd998-e4ae-1a42-202c-3619bced3eea", _C().Uuid.EntityUuid)
 					if leveledSpellPool.spells then
-						self:processSubList(leveledSpellPool.spells, entity, addSpells)
+						self:processSubLists(leveledSpellPool.spells, entity, addSpells)
 					end
 
 					if leveledSpellPool.spellLists then
@@ -972,84 +972,113 @@ if Ext.IsServer() then
 						end
 
 						if spellListId and ConfigurationStructure.config.mutations.spellLists[spellListId] then
-							local nextAnchor = spellMutatorGroup.leveledSpellPool[lSP + 1] and spellMutatorGroup.leveledSpellPool[lSP + 1].anchorLevel - 1 or 30
+							local nextAnchor = math.min((spellMutatorGroup.leveledSpellPool[lSP + 1] and spellMutatorGroup.leveledSpellPool[lSP + 1].anchorLevel - 1) or 30,
+								entity.AvailableLevel.Level)
 
-							local startingSpellListLevel = TableUtils:IndexOf(appliedLists, spellListId) or 1
+							local maxAppliedLevel = 0
+							for level in pairs(appliedLists) do
+								if level > maxAppliedLevel then
+									maxAppliedLevel = level
+								end
+							end
+							local startingSpellListLevel = (TableUtils:IndexOf(appliedLists, spellListId) or 1)
 
 							if startingSpellListLevel > 1 then
+								startingSpellListLevel = startingSpellListLevel + 1
 								appliedLists[startingSpellListLevel] = nil
+								maxAppliedLevel = 0
 							end
-							appliedLists[math.min(nextAnchor, entity.AvailableLevel.Level)] = spellListId
+							appliedLists[nextAnchor] = spellListId
 
 							local spellList = ConfigurationStructure.config.mutations.spellLists[spellListId]
-							Logger:BasicDebug("Selected spellList %s (%s) for anchor level %s", spellList.name, spellListId, leveledSpellPool.anchorLevel)
+							Logger:BasicDebug("Selected spellList %s (%s) for anchor level %s, using levels %s-%s",
+								spellList.name,
+								spellListId,
+								leveledSpellPool.anchorLevel,
+								startingSpellListLevel,
+								nextAnchor - maxAppliedLevel)
 
-							for i = startingSpellListLevel, math.min(nextAnchor, entity.AvailableLevel.Level) do
+							for i = startingSpellListLevel, nextAnchor - maxAppliedLevel do
 								local leveledLists = spellList.levels[i]
-								if leveledLists and leveledLists.linkedProgressions then
-									---@type SpellName[]
-									local randomPool = {}
+								---@type SpellName[]
+								local randomPool = {}
+								if leveledLists then
+									if leveledLists.linkedProgressions then
+										for progressionId, subLists in pairs(leveledLists.linkedProgressions) do
+											self:processSubLists(subLists, entity, addSpells)
 
-									for progressionId, subLists in pairs(leveledLists.linkedProgressions) do
-										self:processSubList(subLists, entity, addSpells)
-
-										if SpellListDesigner.progressionTranslation[progressionId] then
-											local progressionTable = SpellListDesigner.progressions[SpellListDesigner.progressionTranslation[progressionId]]
-											if progressionTable and progressionTable[i] then
-												for _, spellName in pairs(progressionTable[i]) do
-													table.insert(randomPool, spellName)
+											if SpellListDesigner.progressionTranslation[progressionId] then
+												local progressionTable = SpellListDesigner.progressions[SpellListDesigner.progressionTranslation[progressionId]]
+												if progressionTable and progressionTable[i] then
+													for _, spellName in pairs(progressionTable[i]) do
+														if not TableUtils:IndexOf(subLists.blackListed, spellName) then
+															table.insert(randomPool, spellName)
+														end
+													end
 												end
 											end
 										end
 									end
 
-									local numRandomSpellsToPick = 0
-									if spellMutatorGroup.randomizedSpellPoolSize[i] then
-										numRandomSpellsToPick = spellMutatorGroup.randomizedSpellPoolSize[i]
+									if leveledLists.selectedSpells then
+										self:processSubLists(leveledLists.selectedSpells, entity, addSpells)
+
+										if leveledLists.selectedSpells.randomized then
+											for _, spellName in pairs(leveledLists.selectedSpells.randomized) do
+												table.insert(randomPool, spellName)
+											end
+										end
+									end
+								end
+
+								local numRandomSpellsToPick = 0
+								if spellMutatorGroup.randomizedSpellPoolSize[maxAppliedLevel + i] then
+									numRandomSpellsToPick = spellMutatorGroup.randomizedSpellPoolSize[maxAppliedLevel + i]
+								else
+									local maxLevel = nil
+									for level, _ in pairs(spellMutatorGroup.randomizedSpellPoolSize) do
+										if level < (maxAppliedLevel + i) and (not maxLevel or level > maxLevel) then
+											maxLevel = level
+										end
+									end
+									if maxLevel then
+										numRandomSpellsToPick = spellMutatorGroup.randomizedSpellPoolSize[maxLevel]
+									end
+								end
+
+								if numRandomSpellsToPick > 0 then
+									Logger:BasicDebug("Giving %s random spells out of %s", numRandomSpellsToPick, #randomPool)
+									local spellsToGive = {}
+									if #randomPool <= numRandomSpellsToPick then
+										spellsToGive = randomPool
 									else
-										local maxLevel = nil
-										for level, _ in pairs(spellMutatorGroup.randomizedSpellPoolSize) do
-											if level < i and (not maxLevel or level > maxLevel) then
-												maxLevel = level
-											end
-										end
-										if maxLevel then
-											numRandomSpellsToPick = spellMutatorGroup.randomizedSpellPoolSize[maxLevel]
+										for _ = 1, numRandomSpellsToPick do
+											local num = math.random(#randomPool)
+											table.insert(spellsToGive, randomPool[num])
+											table.remove(randomPool, num)
 										end
 									end
 
-									if numRandomSpellsToPick > 0 then
-										Logger:BasicDebug("Giving %s random spells out of %s", numRandomSpellsToPick, #randomPool)
-										local spellsToGive = {}
-										if #randomPool <= numRandomSpellsToPick then
-											spellsToGive = randomPool
-										else
-											for _ = 1, numRandomSpellsToPick do
-												local num = math.random(#randomPool)
-												table.insert(spellsToGive, randomPool[num])
-												table.remove(randomPool, num)
-											end
-										end
-
-										for _, spellName in pairs(spellsToGive) do
-											if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
-													return value.Id.OriginatorPrototype == spellName
-												end)
-											then
-												addSpells[#addSpells + 1] = {
-													PrepareType = "AlwaysPrepared",
-													SpellId = {
-														OriginatorPrototype = spellName,
-														SourceType = "SpellSet2",
-														Source = ModuleUUID
-													},
-													PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
-													SpellCastingAbility = entity.Stats.SpellCastingAbility
-												}
-												Logger:BasicDebug("Added spell %s", spellName)
-											end
+									for _, spellName in pairs(spellsToGive) do
+										if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
+												return value.Id.OriginatorPrototype == spellName
+											end)
+										then
+											addSpells[#addSpells + 1] = {
+												PrepareType = "AlwaysPrepared",
+												SpellId = {
+													OriginatorPrototype = spellName,
+													SourceType = "SpellSet2",
+													Source = ModuleUUID
+												},
+												PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
+												SpellCastingAbility = entity.Stats.SpellCastingAbility
+											}
+											Logger:BasicDebug("Added spell %s", spellName)
 										end
 									end
+								else
+									Logger:BasicDebug("Skipping level %s for random spell assignment due to configured size being 0", maxAppliedLevel + i)
 								end
 							end
 						end

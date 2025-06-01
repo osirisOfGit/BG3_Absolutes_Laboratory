@@ -596,6 +596,7 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 					subListName = subListName,
 					level = level
 				}]]
+			spellList.levels[group.UserData] = spellList.levels[group.UserData] or {}
 			spellList.levels[group.UserData].selectedSpells = spellList.levels[group.UserData].selectedSpells or {}
 
 			for _, spellHandle in pairs(spellHandles) do
