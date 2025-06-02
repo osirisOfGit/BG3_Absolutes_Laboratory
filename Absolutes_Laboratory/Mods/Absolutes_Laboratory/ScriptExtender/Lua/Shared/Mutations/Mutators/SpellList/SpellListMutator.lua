@@ -784,13 +784,43 @@ if Ext.IsServer() then
 			end
 
 			if origValues.castedSpells then
+				local toRemove = {}
 				for _, status in pairs(entity.ServerCharacter.StatusManager.Statuses) do
 					if status.SourceSpell
 						and status.SourceSpell.SourceType == "Osiris"
 						and TableUtils:IndexOf(origValues.castedSpells, status.SourceSpell.OriginatorPrototype)
 					then
-						Osi.RemoveStatus(entity.Uuid.EntityUuid, status.StatusId)
 						Logger:BasicDebug("Removed status %s as it was applied by Lab via spell %s", status.StatusId, status.SourceSpell.OriginatorPrototype)
+						-- Osi.RemoveStatus insta updates the StatusManager, shifting indexes, which can cause this loop to skip over a status
+						table.insert(toRemove, status.StatusId)
+					end
+				end
+				for _, statusId in pairs(toRemove) do
+					Osi.RemoveStatus(entity.Uuid.EntityUuid, statusId)
+				end
+
+				local weapon = Osi.GetEquippedWeapon(entity.Uuid.EntityUuid)
+				if weapon then
+					weapon = Ext.Entity.Get(weapon)
+					---@cast weapon EntityHandle
+
+					local toRemove = {}
+					for _, status in pairs(weapon.ServerItem.StatusManager.Statuses) do
+						if status.SourceSpell
+							and status.SourceSpell.SourceType == "Osiris"
+							and TableUtils:IndexOf(origValues.castedSpells, status.SourceSpell.OriginatorPrototype)
+						then
+							Logger:BasicDebug("Removed status %s from weapon %s_%s as it was applied by Lab via spell %s",
+								status.StatusId,
+								weapon.ServerItem.Template.Name,
+								weapon.Uuid.EntityUuid,
+								status.SourceSpell.OriginatorPrototype)
+							-- Osi.RemoveStatus insta updates the StatusManager, shifting indexes, which can cause this loop to skip over a status
+							table.insert(toRemove, status.StatusId)
+						end
+					end
+					for _, statusId in pairs(toRemove) do
+						Osi.RemoveStatus(weapon.Uuid.EntityUuid, statusId)
 					end
 				end
 			end
@@ -996,12 +1026,14 @@ if Ext.IsServer() then
 							end
 							local startingSpellListLevel = (TableUtils:IndexOf(appliedLists, spellListId) or 1)
 
-							if startingSpellListLevel > 1 then
+							if TableUtils:IndexOf(appliedLists, spellListId) then
 								startingSpellListLevel = startingSpellListLevel + 1
 								appliedLists[startingSpellListLevel] = nil
 								maxAppliedLevel = 0
 							end
 							appliedLists[nextAnchor] = spellListId
+
+							local cLevel = nextAnchor == maxAppliedLevel + 1 and nextAnchor or nextAnchor - maxAppliedLevel
 
 							local spellList = ConfigurationStructure.config.mutations.spellLists[spellListId]
 							Logger:BasicDebug("Selected spellList %s (%s) for anchor level %s, using levels %s-%s",
@@ -1009,9 +1041,9 @@ if Ext.IsServer() then
 								spellListId,
 								leveledSpellPool.anchorLevel,
 								startingSpellListLevel,
-								nextAnchor - maxAppliedLevel)
+								cLevel)
 
-							for i = startingSpellListLevel, nextAnchor - maxAppliedLevel do
+							for i = startingSpellListLevel, cLevel do
 								local leveledLists = spellList.levels[i]
 								---@type SpellName[]
 								local randomPool = {}
