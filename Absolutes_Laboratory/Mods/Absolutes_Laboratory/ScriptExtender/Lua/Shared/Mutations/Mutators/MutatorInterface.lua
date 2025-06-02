@@ -81,13 +81,19 @@ function MutatorInterface:undoMutator(entity, entityVar)
 		Logger:BasicDebug("=========================== STARTING UNDO FOR %s_%s ===========================",
 			entity.DisplayName and entity.DisplayName.Name:Get() or entity.ServerCharacter.Template.Name,
 			entity.Uuid.EntityUuid)
+
 		for mutatorName in pairs(entityVar.appliedMutators) do
+			local mTime = Ext.Timer:MonotonicTime()
+			Logger:BasicDebug("==== Starting mutator %s ====", mutatorName)
+
 			local success, error = xpcall(function(...)
 				self.registeredMutators[mutatorName]:undoMutator(entity, entityVar)
 			end, debug.traceback)
 
 			if not success then
 				Logger:BasicError("Failed to undo mutator %s to %s - %s", mutatorName, entity.Uuid.EntityUuid, error)
+			else
+				Logger:BasicDebug("==== Finished mutator %s in %dms ====", mutatorName, Ext.Timer:MonotonicTime() - mTime)
 			end
 		end
 		Logger:BasicDebug("=========================== FINISHED UNDO FOR %s_%s in %dms ===========================",
