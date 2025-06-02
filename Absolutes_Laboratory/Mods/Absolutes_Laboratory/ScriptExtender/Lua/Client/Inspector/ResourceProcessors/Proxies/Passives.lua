@@ -36,6 +36,7 @@ PassivesProxy.fieldsToParse = {
 }
 
 ResourceProxy:RegisterResourceProxy("Passives", PassivesProxy)
+ResourceProxy:RegisterResourceProxy("PassiveId", PassivesProxy)
 ResourceProxy:RegisterResourceProxy("PassiveData", PassivesProxy)
 ResourceProxy:RegisterResourceProxy("ServerPassiveBase", PassivesProxy)
 ResourceProxy:RegisterResourceProxy("PassivesAdded", PassivesProxy)
@@ -52,19 +53,23 @@ function PassivesProxy:RenderDisplayableValue(parent, statString)
 			passiveTable = statString
 		end
 
-		for _, passiveName in ipairs(passiveTable) do
-			---@type PassiveData?
-			local passive = Ext.Stats.Get(passiveName)
+		if type(passiveTable) ~= "table" then
+			_D(passiveTable)
+		else
+			for _, passiveName in ipairs(passiveTable) do
+				---@type PassiveData?
+				local passive = Ext.Stats.Get(passiveName)
 
-			if passive then
-				local hasKids = #parent.Children > 0
-				local passiveText = Styler:HyperlinkText(parent, passiveName, function(parent)
-					self:RenderDisplayWindow(passive, parent)
-				end)
-				passiveText.SameLine = hasKids;
+				if passive then
+					local hasKids = #parent.Children > 0
+					local passiveText = Styler:HyperlinkText(parent, passiveName, function(parent)
+						self:RenderDisplayWindow(passive, parent)
+					end)
+					passiveText.SameLine = hasKids;
 
-				if #passiveTable > 1 then
-					parent:AddText(self.delimeter).SameLine = true
+					if #passiveTable > 1 then
+						parent:AddText(self.delimeter).SameLine = true
+					end
 				end
 			end
 		end

@@ -75,14 +75,25 @@ end
 ---@param entity EntityHandle
 ---@param entityVar MutatorEntityVar
 function MutatorInterface:undoMutator(entity, entityVar)
-	for mutatorName in pairs(entityVar.appliedMutators) do
-		local success, error = xpcall(function(...)
-			self.registeredMutators[mutatorName]:undoMutator(entity, entityVar)
-		end, debug.traceback)
+	if entityVar then
+		local time = Ext.Timer:MonotonicTime()
 
-		if not success then
-			Logger:BasicError("Failed to undo mutator %s to %s - %s", mutatorName, entity.Uuid.EntityUuid, error)
+		Logger:BasicDebug("=========================== STARTING UNDO FOR %s_%s ===========================",
+			entity.DisplayName and entity.DisplayName.Name:Get() or entity.ServerCharacter.Template.Name,
+			entity.Uuid.EntityUuid)
+		for mutatorName in pairs(entityVar.appliedMutators) do
+			local success, error = xpcall(function(...)
+				self.registeredMutators[mutatorName]:undoMutator(entity, entityVar)
+			end, debug.traceback)
+
+			if not success then
+				Logger:BasicError("Failed to undo mutator %s to %s - %s", mutatorName, entity.Uuid.EntityUuid, error)
+			end
 		end
+		Logger:BasicDebug("=========================== FINISHED UNDO FOR %s_%s in %dms ===========================",
+			entity.DisplayName and entity.DisplayName.Name:Get() or entity.ServerCharacter.Template.Name,
+			entity.Uuid.EntityUuid,
+			Ext.Timer:MonotonicTime() - time)
 	end
 	entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = nil
 end

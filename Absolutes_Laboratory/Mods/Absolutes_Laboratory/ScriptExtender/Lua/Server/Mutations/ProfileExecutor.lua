@@ -14,7 +14,9 @@ function MutationProfileExecutor:ExecuteProfile()
 	local config = ConfigurationStructure:GetRealConfigCopy().mutations
 	local activeProfile = config.profiles[Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile]
 
-	if activeProfile then
+	if activeProfile and next(activeProfile.mutationRules) then
+		local counter = 0
+		local time = Ext.Timer:MonotonicTime()
 		---@type {[FolderName] : {[MutationName]: SelectorPredicate}}
 		local cachedSelectors = {}
 		for _, entity in pairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
@@ -61,6 +63,7 @@ function MutationProfileExecutor:ExecuteProfile()
 				end
 
 				if next(entityVar.appliedMutators) then
+					counter = counter + 1
 					entityVar = TableUtils:DeeplyCopyTable(entityVar)
 					MutatorInterface:applyMutator(entity, entityVar)
 				end
@@ -68,8 +71,12 @@ function MutationProfileExecutor:ExecuteProfile()
 				entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = next(entityVar.appliedMutators) and entityVar or nil
 			end
 		end
+		Logger:BasicInfo("======= Mutated %s Entities in %dms under Profile %s =======", counter, Ext.Timer:MonotonicTime() - time, Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile)
 	else
+		local time = Ext.Timer:MonotonicTime()
+		local counter = 0
 		for _, entityId in pairs(Ext.Vars.GetEntitiesWithVariable(ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME)) do
+			counter = counter + 1
 			---@type EntityHandle
 			local entity = Ext.Entity.Get(entityId)
 
@@ -78,6 +85,7 @@ function MutationProfileExecutor:ExecuteProfile()
 
 			MutatorInterface:undoMutator(entity, mutatorVar)
 		end
+		Logger:BasicInfo("======= Cleared Mutations From %s Entities in %dms =======", counter, Ext.Timer:MonotonicTime() - time)
 	end
 end
 

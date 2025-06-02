@@ -165,7 +165,6 @@ SpellProxy.fieldsToParse = {
 }
 
 ResourceProxy:RegisterResourceProxy("Spell", SpellProxy)
-ResourceProxy:RegisterResourceProxy("SpellId", SpellProxy)
 ResourceProxy:RegisterResourceProxy("SpellData", SpellProxy)
 ResourceProxy:RegisterResourceProxy("Prototype", SpellProxy)
 ResourceProxy:RegisterResourceProxy("OriginatorPrototype", SpellProxy)

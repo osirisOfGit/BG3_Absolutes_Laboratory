@@ -82,7 +82,7 @@ end
 function Logger:BasicPrint(content, messageType, textColor, customPrefix, rainbowText, prefixLength)
     prefixLength = prefixLength or 15
     messageType = messageType or Logger.PrintTypes.INFO
-    local textColorCode = textColor or TEXT_COLORS.cyan     -- Default to cyan
+    local textColorCode = textColor or TEXT_COLORS.cyan -- Default to cyan
 
     customPrefix = customPrefix or ModUtils:GetModInfo().Name
     local padding = string.rep(" ", prefixLength - #customPrefix)
@@ -133,11 +133,44 @@ function Logger:BasicInfo(content, ...)
 end
 
 local logPath = 'log.txt'
---- Saves the log to the log.txt
-function Logger:LogMessage(message)
+-- Buffer for log messages
+local logBuffer = {}
+local bufferLimit = 20 -- Adjust buffer size as needed
+
+--- Flushes the buffer to the log file
+function Logger:FlushLogBuffer()
+    if #logBuffer == 0 then return end
     local fileContent = FileUtils:LoadFile(logPath) or ""
+    local logMessages = table.concat(logBuffer, "\n")
+    Ext.IO.SaveFile(FileUtils:BuildAbsoluteFileTargetPath(logPath), fileContent .. logMessages .. "\n")
+    logBuffer = {}
+end
+
+local timer
+
+--- Saves the log to the log.txt using a buffer
+function Logger:LogMessage(message)
     local logMessage = GetTimestamp() .. " " .. message
-    Ext.IO.SaveFile(FileUtils:BuildAbsoluteFileTargetPath(logPath), fileContent .. logMessage .. "\n")
+    table.insert(logBuffer, logMessage)
+
+    if timer then
+        Ext.Timer.Cancel(timer)
+        timer = nil
+    end
+
+    if #logBuffer >= bufferLimit then
+        Logger:FlushLogBuffer()
+    else
+        timer = Ext.Timer.WaitFor(500, function()
+            Logger:FlushLogBuffer()
+            timer = nil
+        end)
+    end
+end
+
+--- Optionally, flush buffer on shutdown or at key moments
+function Logger:Flush()
+    Logger:FlushLogBuffer()
 end
 
 --- Wipes the log file

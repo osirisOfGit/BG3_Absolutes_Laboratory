@@ -732,6 +732,7 @@ SpellSet are specified in the template under the same name, SpellSet2 are added 
 	end
 end
 
+local SPELL_MUTATOR_ON_COMBAT_START = ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME .. "SpellsOnCombatStart"
 Ext.Vars.RegisterUserVariable(ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME .. "SpellsOnCombatStart", {
 	Server = true,
 	Client = true,
@@ -740,79 +741,50 @@ Ext.Vars.RegisterUserVariable(ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME .. "Spells
 
 if Ext.IsServer() then
 	---@class SpellListOriginalValues
-	---@field spellSources {[SpellSourceType]: CharacterSpellData[]}
-	---@field spells SpellSpellMeta[]
+	---@field removedSpells SpellSpellMeta[]
+	---@field addedSpells SpellName[]
+	---@field castSpells SpellName[]
 
 	function SpellListMutator:undoMutator(entity, mutator)
-		-- ---@type SpellMutatorGroup[]
-		-- local appliedSpells = mutator.appliedMutators[self.name].values
+		---@type EsvSpellSpellSystem
+		local spellSystem = Ext.System.ServerSpell
 
-		-- for _, spellMutatorGroup in pairs(appliedSpells) do
-		-- 	spellSystem.RemoveSpell = spellSystem.RemoveSpell or {}
-		-- 	spellSystem.RemoveSpell[entity] = spellSystem.RemoveSpell[entity] or {}
+		---@type SpellListOriginalValues?
+		local origValues = mutator.originalValues[self.name]
+		if origValues then
+			spellSystem.RemoveSpell = spellSystem.RemoveSpell or {}
+			spellSystem.RemoveSpell[entity] = spellSystem.RemoveSpell[entity] or {}
+			local removeSpells = spellSystem.RemoveSpell[entity]
+			for _, spell in pairs(entity.SpellBook.Spells) do
+				if TableUtils:IndexOf(origValues.addedSpells, spell.Id.OriginatorPrototype) then
+					Logger:BasicDebug("Removed %s as it was given by Lab", spell.Id.OriginatorPrototype)
+					removeSpells[#removeSpells + 1] = spell.Id
+				end
+			end
 
-		-- 	if spellMutatorGroup.leveledSpellPool then
-		-- 		for _, leveledSpellPool in pairs(spellMutatorGroup.leveledSpellPool) do
+			spellSystem.AddSpells = spellSystem.AddSpells or {}
+			spellSystem.AddSpells[entity] = spellSystem.AddSpells[entity] or {}
 
-		-- 			if leveledSpellPool.spells then
-		-- 				for _, spells in pairs(leveledSpellPool.spells) do
-		-- 					for _, spell in pairs(spells) do
-		-- 						if TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
-		-- 								return value.Id.OriginatorPrototype == spell.Spell and value.Id.Source == "Lab"
-		-- 							end)
-		-- 						then
-		-- 							table.insert(spellSystem.RemoveSpell[entity], spell)
-		-- 							Logger:BasicTrace("SpellList: Removing spell %s from %s", spell, entity.Uuid.EntityUuid)
-		-- 						end
-		-- 					end
-		-- 				end
-		-- 			end
+			local addSpells = spellSystem.AddSpells[entity]
 
-		-- 			if leveledSpellPool.spellLists then
-		-- 				for _, spellListId in pairs(leveledSpellPool.spellLists) do
-		-- 					local spellList = ConfigurationStructure.config.mutations.spellLists[spellListId]
-
-		-- 					for _, leveledSpellList in pairs(spellList.levels) do
-		-- 						if leveledSpellList.selectedSpells then
-		-- 							for _, spells in pairs(leveledSpellList.selectedSpells) do
-		-- 								for _, spell in pairs(spells) do
-		-- 									if TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
-		-- 											return value.Id.OriginatorPrototype == spell.Spell and value.Id.Source == "Lab"
-		-- 										end)
-		-- 									then
-		-- 										table.insert(spellSystem.RemoveSpell[entity], spell)
-		-- 										Logger:BasicTrace("SpellList: Removing spell %s from %s as added from spellList %s", spell, entity.Uuid.EntityUuid, spellList.name)
-		-- 									end
-		-- 								end
-		-- 							end
-		-- 						end
-		-- 					end
-		-- 				end
-		-- 			end
-		-- 		end
-		-- 	end
-		-- end
-
-		-- ---@type SpellListOriginalValues
-		-- local origValues = mutator.originalValues[self.name]
-		-- if origValues.spellSources then
-		-- 	for spellSourceType, spellData in pairs(origValues.spellSources) do
-		-- 		for _, spell in pairs(spellData) do
-		-- 			if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
-		-- 					return value.Id.OriginatorPrototype == spell.Spell
-		-- 				end)
-		-- 			then
-
-		-- 			end
-		-- 		end
-		-- 	end
-		-- end
+			for _, spell in pairs(origValues) do
+				if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
+						return value.Id.OriginatorPrototype == (spell.SpellId or spell.Id).OriginatorPrototype
+					end) then
+					Logger:BasicDebug("Adding %s back as it was removed by Lab", spell.SpellId and spell.SpellId.OriginatorPrototype or spell.Id.OriginatorPrototype)
+					addSpells[#addSpells + 1] = spell
+				else
+					Logger:BasicDebug("Not adding %s back as the entity has it even though it was removed by Lab",
+						spell.SpellId and spell.SpellId.OriginatorPrototype or spell.Id.OriginatorPrototype)
+				end
+			end
+		end
 	end
 
 	---@param subLists SpellSubLists
 	---@param entity EntityHandle
 	---@param addSpells {[EntityHandle]: SpellSpellMeta[]}
-	function SpellListMutator:processSubLists(subLists, entity, addSpells)
+	function SpellListMutator:processSubLists(subLists, entity, addSpells,)
 		for subListName, spells in pairs(subLists) do
 			for _, spellName in pairs(spells) do
 				if subListName == "guaranteed" then
@@ -938,13 +910,33 @@ if Ext.IsServer() then
 				local removeSpells = spellSystem.RemoveSpell[entity]
 
 				for _, spellSourceOrName in pairs(spellMutatorGroup.removeSpells) do
+					-- Changes directly made to the TemplateUsedForSpells aren't persisted across saves, so don't need to record those for the undo
 					if spellSourceOrName == "SpellSet2" then
+						if Logger:IsLogLevelEnabled(Logger.PrintTypes.DEBUG) then
+							for _, skill in pairs(entity.ServerCharacter.TemplateUsedForSpells.SkillList) do
+								Logger:BasicDebug("Removing spell %s for being part of SpellSet2", skill.Spell)
+							end
+						end
 						entity.ServerCharacter.TemplateUsedForSpells.SkillList = {}
+					elseif spellSourceOrName == "SpellSet" then
+						Logger:BasicDebug("Removing SpellSet from template %s",
+							entity.ServerCharacter.TemplateUsedForSpells.Name .. "_" .. entity.ServerCharacter.TemplateUsedForSpells.Id)
+
+						entity.ServerCharacter.TemplateUsedForSpells.SpellSet = ""
 					else
+						mutator.originalValues[self.name] = mutator.originalValues[self.name] or {}
+						---@type SpellListOriginalValues
+						local origValues = mutator.originalValues[self.name]
+						origValues.addedSpells = origValues.addedSpells or {}
 						for _, spell in pairs(entity.SpellBook.Spells) do
 							if spell.Id.SourceType == spellSourceOrName or spell.Id.OriginatorPrototype == spellSourceOrName then
+								Logger:BasicDebug("Removing spell %s because %s was specified", spell.Id.OriginatorPrototype, spellSourceOrName)
+								table.insert(origValues.addedSpells, Ext.Types.Serialize(spell))
 								removeSpells[#removeSpells + 1] = spell.Id
 							end
+						end
+						if not next(origValues.addedSpells) then
+							origValues.addedSpells = nil
 						end
 					end
 				end
@@ -1059,6 +1051,11 @@ if Ext.IsServer() then
 										end
 									end
 
+									mutator.originalValues[self.name] = mutator.originalValues[self.name] or {}
+									---@type SpellListOriginalValues
+									local origValues = mutator.originalValues[self.name]
+									origValues.addedSpells = origValues.addedSpells or {}
+
 									for _, spellName in pairs(spellsToGive) do
 										if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
 												return value.Id.OriginatorPrototype == spellName
@@ -1068,12 +1065,13 @@ if Ext.IsServer() then
 												PrepareType = "AlwaysPrepared",
 												SpellId = {
 													OriginatorPrototype = spellName,
-													SourceType = "SpellSet2",
-													Source = ModuleUUID
+													SourceType = "SpellSet2"
 												},
 												PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
 												SpellCastingAbility = entity.Stats.SpellCastingAbility
 											}
+
+											table.insert(origValues.addedSpells, spellName)
 											Logger:BasicDebug("Added spell %s", spellName)
 										end
 									end

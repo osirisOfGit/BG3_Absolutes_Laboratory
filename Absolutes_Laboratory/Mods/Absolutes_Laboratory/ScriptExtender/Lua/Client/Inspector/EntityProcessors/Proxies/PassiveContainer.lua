@@ -14,7 +14,8 @@ function PassivesContainerProxy:RenderDisplayableValue(parent, passiveEntries)
 		for passiveId, passiveEntry in TableUtils:OrderedPairs(passiveEntries) do
 			local row = displayTable:AddRow()
 
-			ResourceManager:RenderDisplayableValue(row:AddCell(), passiveId, "Passives")
+			row:AddCell():AddText(passiveId)
+			-- ResourceManager:RenderDisplayableValue(row:AddCell(), passiveId, "Passives")
 
 			local displayCell = row:AddCell()
 			EntityManager:RenderDisplayableValue(displayCell, passiveEntry)

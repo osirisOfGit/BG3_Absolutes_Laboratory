@@ -40,7 +40,6 @@ function ConfigurationStructure:generate_recursive_metatable(proxy_table, real_t
 					end
 				else
 					if type(key) == "string" and tonumber(key) then
-						_D(key)
 						key = tonumber(key)
 					end
 

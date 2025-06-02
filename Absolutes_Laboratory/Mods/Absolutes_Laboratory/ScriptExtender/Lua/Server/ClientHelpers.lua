@@ -3,16 +3,16 @@ Channels.GetEntityIcon:SetRequestHandler(function(data, user)
 	return { Result = entity.Icon and entity.Icon.Icon }
 end)
 
-Channels.TeleportToLevel:SetHandler(function (data, user)
+Channels.TeleportToLevel:SetHandler(function(data, user)
 	Osi.TeleportPartiesToLevelWithMovie(data.LevelName, "", "")
 end)
 
-Channels.TeleportToEntity:SetHandler(function (data, user)
+Channels.TeleportToEntity:SetHandler(function(data, user)
 	Osi.TeleportTo(Osi.GetHostCharacter(), data)
 end)
 
-Channels.TeleportEntityToHost:SetHandler(function (data, user)
-	 Osi.AppearAt(data, Osi.GetHostCharacter(), 0, "", "")
+Channels.TeleportEntityToHost:SetHandler(function(data, user)
+	Osi.AppearAt(data, Osi.GetHostCharacter(), 0, "", "")
 end)
 
 Channels.GetEntityStat:SetRequestHandler(function(data, user)
@@ -24,126 +24,87 @@ Channels.IsEntityAlive:SetRequestHandler(function(data, user)
 	return { Result = Osi.IsDead(data.target) == 0 }
 end)
 
----@param response table
----@param entity EntityHandle
-local function populateBoosts(response, entity)
-	response["BoostsContainer"] = {}
-	for _, boosts in ipairs(entity.BoostsContainer.Boosts) do
-		response["BoostsContainer"][boosts.Type] = {}
-		for _, boost in ipairs(boosts.Boosts) do
-			local boostTable = {}
-			for key, boostInfo in TableUtils:OrderedPairs(boost:GetAllComponents()) do
-				boostInfo = (type(boostInfo) == "userdata"
-						and (Ext.Types.GetObjectType(boostInfo) == "Entity" and boostInfo:GetAllComponents())
-						or Ext.Types.Serialize(boostInfo))
-					or boostInfo
 
-				if key ~= "ServerReplicationDependency" then
-					if key == "BoostInfo" then
-						---@cast boostInfo BoostInfoComponent
-						boostTable[key] = {
-							Cause = {
-								Type = boostInfo.Cause.Type,
-								Entity = boostInfo.Cause.Entity and boostInfo.Cause.Entity.Uuid and boostInfo.Cause.Entity.Uuid.EntityUuid
-							},
-							Params = boostInfo.Params
-						}
-					else
-						boostTable[key] = boostInfo
+---@param parentKey string
+---@param response table
+---@param entityHistory Guid[]
+local function recursiveSerialization(response, parentKey, entityHistory)
+	local success, error = xpcall(function(...)
+		if response then
+			if type(response) ~= "table" then
+				return response
+			else
+				for key, value in pairs(response) do
+					if type(value) == "userdata" then
+						local objectType = Ext.Types.GetObjectType(value)
+						if objectType == "Entity" then
+							---@cast value EntityHandle
+							if TableUtils:IndexOf(entityHistory, Ext.Entity.HandleToUuid(value) or tostring(value)) then
+								response[key] = "Entity (RECURSION) : " .. (Ext.Entity.HandleToUuid(value) or tostring(value))
+							else
+								local entityHistory = TableUtils:DeeplyCopyTable(entityHistory)
+								table.insert(entityHistory, Ext.Entity.HandleToUuid(value) or tostring(value))
+								response[key] = Ext.Entity.HandleToUuid(value)
+									and ("Entity: " .. Ext.Entity.HandleToUuid(value))
+									or recursiveSerialization(value:GetAllComponents(), key, entityHistory)
+							end
+						else
+							local typeInfo = Ext.Types.GetTypeInfo(objectType)
+							if typeInfo and typeInfo.IsBitfield then
+								response[key] = value.__Labels
+							elseif Ext.Enums[objectType] then
+								response[key] = tostring(value)
+							else
+								local success, serializedValue = pcall(function()
+									return Ext.Types.Serialize(value)
+								end)
+
+								if success then
+									response[key] = recursiveSerialization(serializedValue, key, entityHistory)
+								else
+									response[key] = recursiveSerialization(
+										Ext.Json.Parse(Ext.Json.Stringify(value, { AvoidRecursion = true, IterateUserdata = true, StringifyInternalTypes = true })),
+										key,
+										entityHistory)
+								end
+							end
+						end
 					end
-				end
-			end
-			table.insert(response["BoostsContainer"][boosts.Type], boostTable)
-		end
-	end
-end
+					value = response[key]
+					if type(value) == "table" then
+						if type(next(value)) == "userdata" then
+							response[key] = {}
+							for subKey, subValue in pairs(value) do
+								table.insert(entityHistory, Ext.Entity.HandleToUuid(subKey) or tostring(subKey))
+								response[key][subValue] = Ext.Entity.HandleToUuid(subKey) and ("ENTITY: " .. Ext.Entity.HandleToUuid(subKey)) or subKey:GetAllComponents()
+							end
+							value = response[key]
+						end
 
----@param response table
----@param entity EntityHandle
-local function populatePassives(response, entity)
-	response["PassiveContainer"] = {}
-
-	for _, passive in ipairs(entity.PassiveContainer.Passives) do
-		response["PassiveContainer"][passive.Passive.PassiveId] = {}
-		local passiveTable = response["PassiveContainer"][passive.Passive.PassiveId]
-
-		for key, passiveInfo in TableUtils:OrderedPairs(passive:GetAllComponents()) do
-			passiveInfo = (type(passiveInfo) == "userdata"
-					and (Ext.Types.GetObjectType(passiveInfo) == "Entity" and passiveInfo:GetAllComponents())
-					or Ext.Types.Serialize(passiveInfo))
-				or passiveInfo
-
-			if key ~= "ServerReplicationDependency" then
-				if key == "Passive" then
-					---@cast passiveInfo PassiveComponent
-					passiveTable[key] = {
-						Passive = {
-							Disabled = passiveInfo.Disabled,
-							Source = passiveInfo.Source and passiveInfo.Source.StatusID and passiveInfo.Source.StatusID.ID,
-							ToggledOn = passiveInfo.ToggledOn,
-							Type = passiveInfo.Type,
-							ItemEntity = passiveInfo.Item and passiveInfo.Item.Uuid.EntityUuid,
-						},
-						Params = passiveInfo.Params
-					}
-				else
-					passiveTable[key] = passiveInfo
-				end
-			end
-		end
-	end
-end
-
----@param response table
----@param entity EntityHandle
-local function populateStatusContainer(response, entity)
-	response["StatusContainer"] = {}
-
-	for _, status in pairs(entity.StatusContainer.Statuses) do
-		---@cast entityHandle EntityHandle
-
-		response["StatusContainer"] = status
-	end
-end
-
----@param response table
----@param entity EntityHandle
-local function populateProgressions(response, entity)
-	response["ProgressionContainer"] = {}
-
-	for index, progressions in ipairs(entity.ProgressionContainer.Progressions) do
-		response["ProgressionContainer"][index] = {}
-
-
-		for _, progression in TableUtils:OrderedPairs(progressions) do
-			progression = (type(progression) == "userdata"
-					and (Ext.Types.GetObjectType(progression) == "Entity" and progression:GetAllComponents())
-					or Ext.Types.Serialize(progression))
-				or progression
-
-			response["ProgressionContainer"][index][progression.ProgressionMeta.Progression] = {}
-			local progressionTable = response["ProgressionContainer"][index][progression.ProgressionMeta.Progression]
-
-			for key, value in TableUtils:OrderedPairs(progression) do
-				if key ~= "ServerReplicationDependency" then
-					if key == "ProgressionMeta" then
-						---@cast value ProgressionMetaComponent
-						value = Ext.Types.Serialize(value)
-
-						progressionTable[key] = {
-							ClassLevel = value.ClassLevel,
-							MulticlassSpellSlotOverride = value.MulticlassSpellSlotOverride,
-							Source = value.Source,
-							SpellSourceType = value.SpellSourceType,
-							Owner = value.Owner and value.Owner.Uuid.EntityUuid,
-						}
-					else
-						progressionTable[key] = value
+						if TableUtils:CountElements(value) == 1 then
+							local innerValue = value[next(value)]
+							if type(innerValue) == "table" then
+								response[key] = recursiveSerialization(innerValue, key, entityHistory)
+							elseif type(innerValue) == "userdata" then
+								response[key] = innerValue
+								recursiveSerialization(response, parentKey, entityHistory)
+							else
+								response[key] = innerValue
+							end
+						else
+							response[key] = recursiveSerialization(value, key, entityHistory)
+						end
 					end
 				end
 			end
 		end
+	end, debug.traceback)
+
+	if not success then
+		Logger:BasicError("Error while serializing a value for key %s - %s", parentKey, error)
 	end
+
+	return response
 end
 
 Channels.GetEntityDump:SetRequestHandler(function(data, user)
@@ -158,26 +119,10 @@ Channels.GetEntityDump:SetRequestHandler(function(data, user)
 	if entity then
 		for componentName, field in pairs(entity:GetAllComponents()) do
 			if TableUtils:IndexOf(fieldsToGet, componentName) then
-				if componentName == "BoostsContainer" then
-					populateBoosts(response, entity)
-				elseif componentName == "PassiveContainer" then
-					populatePassives(response, entity)
-				elseif componentName == "ProgressionContainer" then
-					populateProgressions(response, entity)
-				elseif componentName == "StatusContainer" then
-					populateStatusContainer(response, entity)
-				else
-					local value = type(field) == "userdata" and Ext.Types.Serialize(field) or field
-
-					if TableUtils:CountElements(value) == 1 then
-						response[componentName] = value[next(value)]
-					else
-						response[componentName] = value
-					end
-				end
+				response[componentName] = field
 			end
 		end
 	end
 
-	return Ext.Json.Parse(Ext.Json.Stringify(response, { AvoidRecursion = true, IterateUserdata = true, StringifyInternalTypes = true }))
+	return recursiveSerialization(response, nil, { Ext.Entity.HandleToUuid(entity) })
 end)

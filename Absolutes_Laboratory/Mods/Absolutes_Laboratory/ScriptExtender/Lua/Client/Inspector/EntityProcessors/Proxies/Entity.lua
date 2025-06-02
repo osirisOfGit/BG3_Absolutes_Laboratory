@@ -95,11 +95,13 @@ end
 
 function EntityHandleProxy:RenderDisplayableValue(parent, entityId, resourceType)
 	-- Stopping recursion
-	if entityId ~= EntityProxy.entityId then
+	if type(entityId) == "table" then
+		EntityManager:RenderDisplayableValue(parent, entityId)
+	elseif entityId ~= EntityProxy.entityId and entityId and not string.find(entityId, "RECURSION") then
 		Styler:HyperlinkText(parent, entityId, function(parent)
 			EntityHandleProxy:RenderDisplayWindow(Ext.Entity.Get(entityId), parent:Tooltip())
 		end)
 	else
-		parent:AddText("SELF - " .. entityId)
+		parent:AddText(entityId)
 	end
 end

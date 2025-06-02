@@ -91,8 +91,9 @@ StatusDataProxy.fieldsToParse = {
 }
 
 ResourceProxy:RegisterResourceProxy("StatusData", StatusDataProxy)
+ResourceProxy:RegisterResourceProxy("StatusID", StatusDataProxy)
+ResourceProxy:RegisterResourceProxy("StatusId", StatusDataProxy)
 ResourceProxy:RegisterResourceProxy("DifficultyStatuses", StatusDataProxy)
-ResourceProxy:RegisterResourceProxy("StatusContainer", StatusDataProxy)
 ResourceProxy:RegisterResourceProxy("StatusList", StatusDataProxy)
 
 
