@@ -6,6 +6,7 @@ EntityProxy:RegisterResourceProxy("SpellBook", SpellBookProxy)
 function SpellBookProxy:RenderDisplayableValue(parent, spellDataList)
 	for i, spellData in ipairs(spellDataList.Spells) do
 		local header = parent:AddCollapsingHeader(spellData.Id.Prototype)
+		header.UserData = "collapsed"
 		header:SetColor("Header", {1, 1, 1, 0})
 		header.IDContext = header.Label .. i
 

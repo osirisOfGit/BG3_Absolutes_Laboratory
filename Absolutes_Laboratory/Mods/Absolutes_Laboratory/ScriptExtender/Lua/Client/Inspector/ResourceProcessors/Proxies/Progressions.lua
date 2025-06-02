@@ -64,6 +64,7 @@ ProgressionProxy.fieldsToParse = {
 
 ResourceProxy:RegisterResourceProxy("ProgressionTableUUID", ProgressionProxy)
 ResourceProxy:RegisterResourceProxy("Progressions", ProgressionProxy)
+ResourceProxy:RegisterResourceProxy("Progression", ProgressionProxy)
 ResourceProxy:RegisterResourceProxy("resource::Progression", ProgressionProxy)
 
 local progressionTableMappings = {}

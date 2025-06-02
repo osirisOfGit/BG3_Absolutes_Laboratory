@@ -84,6 +84,28 @@ function Styler:TwoColumnTable(parent, id)
 end
 
 ---@param parent ExtuiTreeParent
+---@return number
+local function countNumberOfChildrenInTree(parent)
+	local counter = 0
+
+	pcall(function()
+		local maxChildren = 0
+		for _, child in pairs(parent.Children) do
+			if child.UserData ~= "collapsed" then
+				local children = countNumberOfChildrenInTree(child.UserData == "row" and child.Children[2] or child)
+				counter = counter + 1
+				if children > maxChildren then
+					maxChildren = children
+				end
+			end
+		end
+		counter = counter + maxChildren
+	end)
+
+	return counter
+end
+
+---@param parent ExtuiTreeParent
 ---@param resource Resource
 ---@param resourceType string?
 function Styler:SimpleRecursiveTwoColumnTable(parent, resource, resourceType)
@@ -94,6 +116,7 @@ function Styler:SimpleRecursiveTwoColumnTable(parent, resource, resourceType)
 		return tonumber(key) or key
 	end) do
 		local row = subTable:AddRow()
+		row.UserData = "row"
 
 		if type(value) == "table" then
 			row:AddCell():AddText(tostring(key))
@@ -117,9 +140,10 @@ function Styler:SimpleRecursiveTwoColumnTable(parent, resource, resourceType)
 
 	if #subTable.Children == 0 then
 		subTable:Destroy()
-	elseif #subTable.Children >= 10 then
+	elseif parent.UserData ~= "collapsed" and countNumberOfChildrenInTree(subTable) >= 15 then
 		parent:DetachChild(subTable)
-		parent = parent:AddCollapsingHeader(resourceType or "")
+		parent = parent:AddCollapsingHeader(resourceType or parent.Label or parent.IDContext or "")
+		parent.UserData = "collapsed"
 		parent:AttachChild(subTable)
 		parent:SetColor("Header", { 1, 1, 1, 0 })
 	end

@@ -21,6 +21,11 @@ local displayNameCache = {}
 ---@param resources {[string]: ActionResourceEntry[]}
 function ActionResourcesProxy:RenderDisplayableValue(parent, resources, resourceType)
 	if type(resources) == "table" then
+		if TableUtils:CountElements(resources) then
+			parent = parent:AddCollapsingHeader("Action Resources")
+			parent.UserData = "collapsed"
+			parent:SetColor("Header", {1, 1, 1, 0})
+		end
 		for resourceId, resource in TableUtils:OrderedPairs(resources, function(key)
 			local cache = displayNameCache[key]
 			if not cache then

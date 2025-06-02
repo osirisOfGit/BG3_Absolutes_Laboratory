@@ -743,7 +743,7 @@ if Ext.IsServer() then
 	---@class SpellListOriginalValues
 	---@field removedSpells SpellSpellMeta[]
 	---@field addedSpells SpellName[]
-	---@field castSpells SpellName[]
+	---@field castedSpells SpellName[]
 
 	function SpellListMutator:undoMutator(entity, mutator)
 		---@type EsvSpellSpellSystem
@@ -752,30 +752,46 @@ if Ext.IsServer() then
 		---@type SpellListOriginalValues?
 		local origValues = mutator.originalValues[self.name]
 		if origValues then
-			spellSystem.RemoveSpell = spellSystem.RemoveSpell or {}
-			spellSystem.RemoveSpell[entity] = spellSystem.RemoveSpell[entity] or {}
-			local removeSpells = spellSystem.RemoveSpell[entity]
-			for _, spell in pairs(entity.SpellBook.Spells) do
-				if TableUtils:IndexOf(origValues.addedSpells, spell.Id.OriginatorPrototype) then
-					Logger:BasicDebug("Removed %s as it was given by Lab", spell.Id.OriginatorPrototype)
-					removeSpells[#removeSpells + 1] = spell.Id
+			if origValues.addedSpells then
+				spellSystem.RemoveSpell = spellSystem.RemoveSpell or {}
+				spellSystem.RemoveSpell[entity] = spellSystem.RemoveSpell[entity] or {}
+				local removeSpells = spellSystem.RemoveSpell[entity]
+				for _, spell in pairs(entity.SpellBook.Spells) do
+					if TableUtils:IndexOf(origValues.addedSpells, spell.Id.OriginatorPrototype) then
+						Logger:BasicDebug("Removed %s as it was given by Lab", spell.Id.OriginatorPrototype)
+						removeSpells[#removeSpells + 1] = spell.Id
+					end
 				end
 			end
 
-			spellSystem.AddSpells = spellSystem.AddSpells or {}
-			spellSystem.AddSpells[entity] = spellSystem.AddSpells[entity] or {}
+			if origValues.removedSpells then
+				spellSystem.AddSpells = spellSystem.AddSpells or {}
+				spellSystem.AddSpells[entity] = spellSystem.AddSpells[entity] or {}
 
-			local addSpells = spellSystem.AddSpells[entity]
+				local addSpells = spellSystem.AddSpells[entity]
 
-			for _, spell in pairs(origValues) do
-				if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
-						return value.Id.OriginatorPrototype == (spell.SpellId or spell.Id).OriginatorPrototype
-					end) then
-					Logger:BasicDebug("Adding %s back as it was removed by Lab", spell.SpellId and spell.SpellId.OriginatorPrototype or spell.Id.OriginatorPrototype)
-					addSpells[#addSpells + 1] = spell
-				else
-					Logger:BasicDebug("Not adding %s back as the entity has it even though it was removed by Lab",
-						spell.SpellId and spell.SpellId.OriginatorPrototype or spell.Id.OriginatorPrototype)
+				for _, spell in pairs(origValues.removedSpells) do
+					if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
+							return value.Id.OriginatorPrototype == (spell.SpellId or spell.Id).OriginatorPrototype
+						end) then
+						Logger:BasicDebug("Adding %s back as it was removed by Lab", spell.SpellId and spell.SpellId.OriginatorPrototype or spell.Id.OriginatorPrototype)
+						addSpells[#addSpells + 1] = spell
+					else
+						Logger:BasicDebug("Not adding %s back as the entity has it even though it was removed by Lab",
+							spell.SpellId and spell.SpellId.OriginatorPrototype or spell.Id.OriginatorPrototype)
+					end
+				end
+			end
+
+			if origValues.castedSpells then
+				for _, status in pairs(entity.ServerCharacter.StatusManager.Statuses) do
+					if status.SourceSpell
+						and status.SourceSpell.SourceType == "Osiris"
+						and TableUtils:IndexOf(origValues.castedSpells, status.SourceSpell.OriginatorPrototype)
+					then
+						Osi.RemoveStatus(entity.Uuid.EntityUuid, status.StatusId)
+						Logger:BasicDebug("Removed status %s as it was applied by Lab via spell %s", status.StatusId, status.SourceSpell.OriginatorPrototype)
+					end
 				end
 			end
 		end
@@ -784,7 +800,7 @@ if Ext.IsServer() then
 	---@param subLists SpellSubLists
 	---@param entity EntityHandle
 	---@param addSpells {[EntityHandle]: SpellSpellMeta[]}
-	function SpellListMutator:processSubLists(subLists, entity, addSpells,)
+	function SpellListMutator:processSubLists(subLists, entity, addSpells, castedSpells)
 		for subListName, spells in pairs(subLists) do
 			for _, spellName in pairs(spells) do
 				if subListName == "guaranteed" then
@@ -807,16 +823,16 @@ if Ext.IsServer() then
 				elseif subListName == "startOfCombatOnly" then
 					if Osi.IsInCombat(entity.Uuid.EntityUuid) == 1 then
 						Osi.UseSpell(entity.Uuid.EntityUuid, spellName, entity.Uuid.EntityUuid)
+						table.insert(castedSpells, spellName)
 						Logger:BasicDebug("Used on combat spell %s", spellName)
 					else
-						entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME .. "SpellsOnCombatStart"] =
-							entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME .. "SpellsOnCombatStart"]
-							or {}
+						entity.Vars[SPELL_MUTATOR_ON_COMBAT_START] = entity.Vars[SPELL_MUTATOR_ON_COMBAT_START] or {}
 
-						table.insert(entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME .. "SpellsOnCombatStart"], spellName)
+						table.insert(entity.Vars[SPELL_MUTATOR_ON_COMBAT_START], spellName)
 					end
 				elseif subListName == "onLoadOnly" then
 					Osi.UseSpell(entity.Uuid.EntityUuid, spellName, entity.Uuid.EntityUuid)
+					table.insert(castedSpells, spellName)
 					Logger:BasicDebug("Used on level load spell %s", spellName)
 				end
 			end
@@ -904,6 +920,15 @@ if Ext.IsServer() then
 		end
 
 		if spellMutatorGroup then
+			mutator.originalValues[self.name] = mutator.originalValues[self.name] or {
+				addedSpells = {},
+				castedSpells = {},
+				removedSpells = {}
+			} --[[@as SpellListOriginalValues]]
+
+			---@type SpellListOriginalValues
+			local origValues = mutator.originalValues[self.name]
+
 			if spellMutatorGroup.removeSpells then
 				spellSystem.RemoveSpell = spellSystem.RemoveSpell or {}
 				spellSystem.RemoveSpell[entity] = spellSystem.RemoveSpell[entity] or {}
@@ -924,10 +949,6 @@ if Ext.IsServer() then
 
 						entity.ServerCharacter.TemplateUsedForSpells.SpellSet = ""
 					else
-						mutator.originalValues[self.name] = mutator.originalValues[self.name] or {}
-						---@type SpellListOriginalValues
-						local origValues = mutator.originalValues[self.name]
-						origValues.addedSpells = origValues.addedSpells or {}
 						for _, spell in pairs(entity.SpellBook.Spells) do
 							if spell.Id.SourceType == spellSourceOrName or spell.Id.OriginatorPrototype == spellSourceOrName then
 								Logger:BasicDebug("Removing spell %s because %s was specified", spell.Id.OriginatorPrototype, spellSourceOrName)
@@ -950,7 +971,7 @@ if Ext.IsServer() then
 					-- Osi.CreateAt("01fa8d64-f63e-4bb8-9ee4-cba84dad3781", 202, 25, 418, 0, 0, "")
 					-- Osi.SetRelationTemporaryHostile("5ebcd998-e4ae-1a42-202c-3619bced3eea", _C().Uuid.EntityUuid)
 					if leveledSpellPool.spells then
-						self:processSubLists(leveledSpellPool.spells, entity, addSpells)
+						self:processSubLists(leveledSpellPool.spells, entity, addSpells, origValues.castedSpells)
 					end
 
 					if leveledSpellPool.spellLists then
@@ -997,7 +1018,7 @@ if Ext.IsServer() then
 								if leveledLists then
 									if leveledLists.linkedProgressions then
 										for progressionId, subLists in pairs(leveledLists.linkedProgressions) do
-											self:processSubLists(subLists, entity, addSpells)
+											self:processSubLists(subLists, entity, addSpells, origValues.castedSpells)
 
 											if SpellListDesigner.progressionTranslation[progressionId] then
 												local progressionTable = SpellListDesigner.progressions[SpellListDesigner.progressionTranslation[progressionId]]
@@ -1013,7 +1034,7 @@ if Ext.IsServer() then
 									end
 
 									if leveledLists.selectedSpells then
-										self:processSubLists(leveledLists.selectedSpells, entity, addSpells)
+										self:processSubLists(leveledLists.selectedSpells, entity, addSpells, origValues.castedSpells)
 
 										if leveledLists.selectedSpells.randomized then
 											for _, spellName in pairs(leveledLists.selectedSpells.randomized) do
@@ -1039,7 +1060,7 @@ if Ext.IsServer() then
 								end
 
 								if numRandomSpellsToPick > 0 then
-									Logger:BasicDebug("Giving %s random spells out of %s", numRandomSpellsToPick, #randomPool)
+									Logger:BasicDebug("Giving %s random spells out of %s from level %s", numRandomSpellsToPick, #randomPool, i)
 									local spellsToGive = {}
 									if #randomPool <= numRandomSpellsToPick then
 										spellsToGive = randomPool
@@ -1050,11 +1071,6 @@ if Ext.IsServer() then
 											table.remove(randomPool, num)
 										end
 									end
-
-									mutator.originalValues[self.name] = mutator.originalValues[self.name] or {}
-									---@type SpellListOriginalValues
-									local origValues = mutator.originalValues[self.name]
-									origValues.addedSpells = origValues.addedSpells or {}
 
 									for _, spellName in pairs(spellsToGive) do
 										if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
