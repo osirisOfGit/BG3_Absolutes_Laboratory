@@ -25,7 +25,7 @@ Ext.Require("Client/Mutations/MutationDesigner.lua")
 local activeProfileName
 
 Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Mutations",
-	--- @param tabHeader ExtuiTreeParent
+	--- @param tabHeader ExtuiTabItem
 	function(tabHeader)
 		MutationProfileManager:init(tabHeader)
 		MutationProfileManager:BuildProfileView()
@@ -121,7 +121,7 @@ function MutationProfileManager:init(parent)
 		collapseExpandRulesOrderButton.OnClick = function()
 			Helpers:CollapseExpand(
 				collapseExpandRulesOrderButton.Label == "<<",
-				300 * Styler:ScaleFactor(),
+				400 * Styler:ScaleFactor(),
 				function(width)
 					if width then
 						self.profileRulesParent.ColumnDefs[1].Width = width
@@ -146,10 +146,6 @@ function MutationProfileManager:init(parent)
 end
 
 function MutationProfileManager:BuildProfileView()
-	if not activeProfileName then
-		activeProfileName = Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile
-	end
-
 	activeMutationView = nil
 
 	Helpers:KillChildren(self.userFolderGroup)
@@ -431,13 +427,19 @@ function MutationProfileManager:BuildProfileView()
 end
 
 function MutationProfileManager:BuildProfileManager()
+	if not activeProfileName then
+		Ext.Timer.WaitFor(1000, function ()
+			self:BuildProfileManager()
+			activeProfileName = Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile
+		end)
+	end
+
 	local lastMutation = activeMutationView and activeMutationView.Label
 	activeMutationView = nil
 	local profiles = ConfigurationStructure.config.mutations.profiles
 	Helpers:KillChildren(self.profileManagerParent, self.rulesOrderGroup, self.mutationDesigner)
 
 	Styler:CheapTextAlign("Active Profile", self.profileManagerParent, "Large")
-
 
 	local profileCombo = self.profileManagerParent:AddCombo("")
 	profileCombo.WidthFitPreview = true
