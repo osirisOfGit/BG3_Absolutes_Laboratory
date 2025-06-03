@@ -22,7 +22,7 @@ You can shift-click on images to pop out their tooltip into a new window, but th
 
 
 	local settingsPopup = parent:AddPopup("settings")
-	local settingsButton = parent:AddImageButton("settings", "Item_Unknown", { 32, 32 })
+	local settingsButton = Styler:ImageButton(parent:AddImageButton("settings", "ico_edit_d", { 32, 32 }))
 	settingsButton.SameLine = true
 
 	local resultsGroup = parent:AddChildWindow("results")

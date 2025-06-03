@@ -100,20 +100,19 @@ function MutationProfileManager:init(parent)
 				end)
 		end
 
-		self.profileManagerParent = nil
-		Styler:MiddleAlignedColumnLayout(rightPanel, function(ele)
-			self.profileManagerParent = ele
-		end).SameLine = true
-
 		rightPanel:AddSeparator()
 		self.profileRulesParent = Styler:TwoColumnTable(rightPanel)
 		self.profileRulesParent.Borders = false
 		self.profileRulesParent.Resizable = false
-		self.profileRulesParent.ColumnDefs[1].Width = 300 * Styler:ScaleFactor()
+		self.profileRulesParent.ColumnDefs[1].Width = 400 * Styler:ScaleFactor()
 
 		local profileRulesRow = self.profileRulesParent:AddRow()
 
 		self.rulesOrderGroup = profileRulesRow:AddCell():AddChildWindow("RulesOrder")
+		self.profileManagerParent = nil
+		Styler:MiddleAlignedColumnLayout(self.rulesOrderGroup, function(ele)
+			self.profileManagerParent = ele
+		end).UserData = "keep"
 
 		self.mutationDesigner = profileRulesRow:AddCell():AddChildWindow("MutationDesigner")
 		local collapseExpandRulesOrderButton = self.mutationDesigner:AddButton("<<")
@@ -438,6 +437,8 @@ function MutationProfileManager:BuildProfileManager()
 	Helpers:KillChildren(self.profileManagerParent, self.rulesOrderGroup, self.mutationDesigner)
 
 	Styler:CheapTextAlign("Active Profile", self.profileManagerParent, "Large")
+
+
 	local profileCombo = self.profileManagerParent:AddCombo("")
 	profileCombo.WidthFitPreview = true
 
@@ -459,7 +460,8 @@ function MutationProfileManager:BuildProfileManager()
 		self:BuildProfileView()
 	end
 
-	local manageProfileButton = self.profileManagerParent:AddButton("Manage")
+	local manageProfileButton = Styler:ImageButton(self.profileManagerParent:AddImageButton("Manage", "ico_edit_d", { 32, 32 }))
+	manageProfileButton.SameLine = true
 	local manageProfilePopup = self.profileManagerParent:AddPopup("Manage Profiles")
 
 	manageProfilePopup:AddSelectable("Create Profile").OnClick = function()
@@ -573,8 +575,6 @@ function MutationProfileManager:BuildProfileManager()
 			self:BuildProfileManager()
 		end
 	end
-
-	manageProfileButton.SameLine = true
 
 	manageProfileButton.OnClick = function()
 		manageProfilePopup:Open()
