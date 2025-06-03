@@ -898,9 +898,9 @@ if Ext.IsServer() then
 
 					if criteria.abilityCondition then
 						for ability, condition in pairs(criteria.abilityCondition) do
-							local score = entity.BaseStats.BaseAbilities[Ext.Enums.AbilityId[ability]]
-							if (condition.comparator == "gte" and not condition.value >= score)
-								or (condition.comparator == "lte" and not condition.value <= score)
+							local score = entity.BaseStats.BaseAbilities[Ext.Enums.AbilityId[ability].Value + 1]
+							if (condition.comparator == "gte" and score < condition.value)
+								or (condition.comparator == "lte" and score > condition.value)
 							then
 								Logger:BasicDebug("Skipped Group %s on %s due to %s being %s than %s (was %s)",
 									g,
@@ -1070,7 +1070,14 @@ if Ext.IsServer() then
 
 										if leveledLists.selectedSpells.randomized then
 											for _, spellName in pairs(leveledLists.selectedSpells.randomized) do
-												table.insert(randomPool, spellName)
+												if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
+														return value.Id.OriginatorPrototype == spellName
+													end)
+												then
+													table.insert(randomPool, spellName)
+												else
+													Logger:BasicDebug("%s is already known, not adding to the random pool", spellName)
+												end
 											end
 										end
 									end
@@ -1105,23 +1112,18 @@ if Ext.IsServer() then
 									end
 
 									for _, spellName in pairs(spellsToGive) do
-										if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
-												return value.Id.OriginatorPrototype == spellName
-											end)
-										then
-											addSpells[#addSpells + 1] = {
-												PrepareType = "AlwaysPrepared",
-												SpellId = {
-													OriginatorPrototype = spellName,
-													SourceType = "SpellSet2"
-												},
-												PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
-												SpellCastingAbility = entity.Stats.SpellCastingAbility
-											}
+										addSpells[#addSpells + 1] = {
+											PrepareType = "AlwaysPrepared",
+											SpellId = {
+												OriginatorPrototype = spellName,
+												SourceType = "SpellSet2"
+											},
+											PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
+											SpellCastingAbility = entity.Stats.SpellCastingAbility
+										}
 
-											table.insert(origValues.addedSpells, spellName)
-											Logger:BasicDebug("Added spell %s", spellName)
-										end
+										table.insert(origValues.addedSpells, spellName)
+										Logger:BasicDebug("Added spell %s", spellName)
 									end
 								else
 									Logger:BasicDebug("Skipping level %s for random spell assignment due to configured size being 0", maxAppliedLevel + i)
