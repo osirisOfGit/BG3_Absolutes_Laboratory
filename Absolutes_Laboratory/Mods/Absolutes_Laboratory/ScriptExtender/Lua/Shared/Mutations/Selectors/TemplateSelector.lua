@@ -85,6 +85,7 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 	parent:SetColor("Header", { 1, 1, 1, 0 })
 
 	local templateTable = Styler:TwoColumnTable(parent, "templates")
+	templateTable.ColumnDefs[1].Width = 300 * Styler:ScaleFactor()
 	local row = templateTable:AddRow()
 
 	local templateSelectCell = row:AddCell()

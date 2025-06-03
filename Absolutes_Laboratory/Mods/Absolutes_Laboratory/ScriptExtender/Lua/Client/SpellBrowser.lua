@@ -10,7 +10,7 @@ function SpellBrowser:Render(parent, supplementaryResultProcessor, wrapFunc, sho
 	local settings = ConfigurationStructure.config.mutations.settings.spellBrowser
 
 	local input = parent:AddInputText("")
-	input.ItemWidth = 48 * 7
+	input.ItemWidth = 53 * 7
 	input.Hint = "Min 3 Characters"
 
 	local helpText = parent:AddText("( ? )")
@@ -19,7 +19,6 @@ function SpellBrowser:Render(parent, supplementaryResultProcessor, wrapFunc, sho
 	See detailed tooltips on spell images by holding shift -
 click outside of the text input first, as the modifier won't be registered while the input is accepting keystrokes.
 You can shift-click on images to pop out their tooltip into a new window, but that will close the search popup]])
-
 
 	local settingsPopup = parent:AddPopup("settings")
 	local settingsButton = Styler:ImageButton(parent:AddImageButton("settings", "ico_edit_d", { 32, 32 }))
@@ -60,7 +59,7 @@ You can shift-click on images to pop out their tooltip into a new window, but th
 	end
 
 	resultsGroup.NoSavedSettings = true
-	resultsGroup.Size = { 0, 300 * Styler:ScaleFactor() }
+	resultsGroup.Size = { 0, 30 * Styler:ScaleFactor() }
 	local timer
 	input.OnChange = function()
 		if timer then

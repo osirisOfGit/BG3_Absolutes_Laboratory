@@ -17,7 +17,7 @@ function MutationProfileExecutor:ExecuteProfile()
 	if activeProfile and next(activeProfile.mutationRules) then
 		local counter = 0
 		local time = Ext.Timer:MonotonicTime()
-		---@type {[FolderName] : {[MutationName]: SelectorPredicate}}
+		---@type {[Guid] : {[Guid]: SelectorPredicate}}
 		local cachedSelectors = {}
 		for _, entity in pairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
 			if entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] then
@@ -33,15 +33,15 @@ function MutationProfileExecutor:ExecuteProfile()
 				}
 
 				for i, mProfileRule in ipairs(activeProfile.mutationRules) do
-					local mutation = config.folders[mProfileRule.mutationFolder].mutations[mProfileRule.mutationName]
-					if not cachedSelectors[mProfileRule.mutationFolder] then
-						cachedSelectors[mProfileRule.mutationFolder] = {}
+					local mutation = config.folders[mProfileRule.mutationFolderId].mutations[mProfileRule.mutationId]
+					if not cachedSelectors[mProfileRule.mutationFolderId] then
+						cachedSelectors[mProfileRule.mutationFolderId] = {}
 					end
-					if not cachedSelectors[mProfileRule.mutationFolder][mProfileRule.mutationName] then
-						cachedSelectors[mProfileRule.mutationFolder][mProfileRule.mutationName] = SelectorInterface:createComposedPredicate(mutation.selectors)
+					if not cachedSelectors[mProfileRule.mutationFolderId][mProfileRule.mutationId] then
+						cachedSelectors[mProfileRule.mutationFolderId][mProfileRule.mutationId] = SelectorInterface:createComposedPredicate(mutation.selectors)
 					end
 
-					if cachedSelectors[mProfileRule.mutationFolder][mProfileRule.mutationName] and cachedSelectors[mProfileRule.mutationFolder][mProfileRule.mutationName]:Test(entity) then
+					if cachedSelectors[mProfileRule.mutationFolderId][mProfileRule.mutationId] and cachedSelectors[mProfileRule.mutationFolderId][mProfileRule.mutationId]:Test(entity) then
 						for _, mutator in pairs(mutation.mutators) do
 							if entityVar.appliedMutators[mutator.targetProperty]
 								and mProfileRule.additive

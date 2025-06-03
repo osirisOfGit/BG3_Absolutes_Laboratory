@@ -99,7 +99,7 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 		self.displayTable:AddColumn("", "WidthStretch")
 		self.displayTable:AddColumn("ProgressionBrowser", "WidthFixed")
 		self.displayTable.ColumnDefs[1].Width = 300 * Styler:ScaleFactor()
-		self.displayTable.ColumnDefs[3].Width = 0
+		self.displayTable.ColumnDefs[3].Width = 400 * Styler:ScaleFactor()
 
 		local row = self.displayTable:AddRow()
 		SpellListDesigner.lists = row:AddCell():AddChildWindow("lists")
@@ -167,7 +167,7 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 		---@type ExtuiSelectable
 		local spellListSelect = self.lists:AddSelectable(spellList.name)
 		if spellList.description and spellList.description ~= "" then
-			spellListSelect:Tooltip():AddText(spellList.description)
+			spellListSelect:Tooltip():AddText("\t " .. spellList.description)
 		end
 		spellListSelect.UserData = guid
 
@@ -727,7 +727,7 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 								local spell = Ext.Stats.Get(spellName)
 
 								local spellImage = spellCell:AddImageButton(spellName .. i, spell.Icon, { 48, 48 })
-								spellImage.SameLine = (i - 1) % (math.floor(self.progressionBrowser.LastSize[1] / 58)) ~= 0
+								spellImage.SameLine = (i - 1) % (math.floor(self.progressionBrowser.LastSize[1] / 64)) ~= 0
 								spellImage.CanDrag = true
 								spellImage.DragDropType = "SpellReorder"
 								spellImage.UserData = {

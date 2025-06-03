@@ -84,6 +84,8 @@ function FactionSelector:renderSelector(parent, existingSelector)
 	parent:SetColor("Header", { 1, 1, 1, 0 })
 
 	local factionTable = Styler:TwoColumnTable(parent, "factions")
+	factionTable.ColumnDefs[1].Width = 300 * Styler:ScaleFactor()
+
 	local row = factionTable:AddRow()
 
 	local factionSelectCell = row:AddCell()

@@ -73,8 +73,10 @@ function StatSelector:renderSelector(parent, existingSelector)
 	parent, updateFunc = Styler:DynamicLabelTree(parent:AddTree("Stats"))
 	parent:SetColor("Header", { 1, 1, 1, 0 })
 
-	local templateTable = Styler:TwoColumnTable(parent, "stats")
-	local row = templateTable:AddRow()
+	local statTable = Styler:TwoColumnTable(parent, "stats")
+	statTable.ColumnDefs[1].Width = 300 * Styler:ScaleFactor()
+	
+	local row = statTable:AddRow()
 
 	local statSelectCell = row:AddCell()
 

@@ -50,6 +50,7 @@ ConfigurationStructure.DynamicClassDefinitions.mutator = {
 
 ---@class Mutation
 ConfigurationStructure.DynamicClassDefinitions.mutations = {
+	name = "",
 	description = "",
 	---@type SelectorQuery
 	selectors = {},
@@ -57,25 +58,22 @@ ConfigurationStructure.DynamicClassDefinitions.mutations = {
 	mutators = {}
 }
 
----@alias MutationName string
-
 ---@class MutationFolder
 ConfigurationStructure.DynamicClassDefinitions.folders = {
+	name = "",
 	description = "",
-	---@type {[MutationName]: Mutation}
+	---@type {[Guid]: Mutation}
 	mutations = {}
 }
 
----@alias FolderName string
-
----@type {[FolderName] : MutationFolder}
+---@type {[Guid] : MutationFolder}
 ConfigurationStructure.config.mutations.folders = {}
-
 
 --#region Profiles
 
 ---@class MutationProfile
 ConfigurationStructure.DynamicClassDefinitions.profile = {
+	name = "",
 	description = "",
 	defaultActive = false,
 	---@type MutationProfileRule[]
@@ -84,10 +82,10 @@ ConfigurationStructure.DynamicClassDefinitions.profile = {
 
 ---@class MutationProfileRule
 ConfigurationStructure.DynamicClassDefinitions.profileMutationRule = {
-	---@type FolderName
-	mutationFolder = "",
-	---@type MutationName
-	mutationName = "",
+	---@type Guid
+	mutationFolderId = "",
+	---@type Guid
+	mutationId = "",
 	---@type string?
 	modId = nil,
 	---@type string?
@@ -96,7 +94,7 @@ ConfigurationStructure.DynamicClassDefinitions.profileMutationRule = {
 	additive = false
 }
 
----@type {[string]: MutationProfile}
+---@type {[Guid]: MutationProfile}
 ConfigurationStructure.config.mutations.profiles = {}
 --#endregion
 

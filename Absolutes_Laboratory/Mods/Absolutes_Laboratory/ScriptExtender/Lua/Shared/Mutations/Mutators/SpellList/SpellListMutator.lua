@@ -289,7 +289,7 @@ function SpellListMutator:buildSpellSelectorSection(parent, mutatorGroup, poolIn
 		SpellBrowser:Render(popup,
 			nil,
 			function(pos)
-				return pos % 8 ~= 0
+				return pos % 7 ~= 0
 			end,
 			function(spellName)
 				return TableUtils:IndexOf(mutatorGroup.leveledSpellPool, function(value)
@@ -730,6 +730,10 @@ SpellSet are specified in the template under the same name, SpellSet2 are added 
 				renderSpellTable()
 			end)
 	end
+end
+
+function SpellListMutator:canBeAdditive(mutator) 
+	return true
 end
 
 local SPELL_MUTATOR_ON_COMBAT_START = ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME .. "SpellsOnCombatStart"

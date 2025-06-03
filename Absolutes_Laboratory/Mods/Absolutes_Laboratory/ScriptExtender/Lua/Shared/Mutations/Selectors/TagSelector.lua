@@ -39,6 +39,7 @@ function TagSelector:renderSelector(parent, existingSelector)
 	parent:SetColor("Header", { 1, 1, 1, 0 })
 
 	local tagTable = Styler:TwoColumnTable(parent, "tags")
+	tagTable.ColumnDefs[1].Width = 300 * Styler:ScaleFactor()
 	local row = tagTable:AddRow()
 
 	local tagSelectCell = row:AddCell()
