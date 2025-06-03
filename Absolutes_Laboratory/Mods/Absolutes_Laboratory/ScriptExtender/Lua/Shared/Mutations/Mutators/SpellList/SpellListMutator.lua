@@ -740,12 +740,44 @@ Ext.Vars.RegisterUserVariable(ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME .. "Spells
 })
 
 if Ext.IsServer() then
+	Ext.Osiris.RegisterListener("CombatStarted", 1, "after", function(combatGuid)
+		for _, entityId in pairs(Osi.DB_Is_InCombat:Get(nil, combatGuid)) do
+			entityId = entityId[1]
+			---@type EntityHandle
+			local entity = Ext.Entity.Get(entityId)
+
+			if entity.Vars[SPELL_MUTATOR_ON_COMBAT_START] then
+				---@type MutatorEntityVar
+				local entityVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME]
+
+				entityVar.originalValues[SpellListMutator.name].castedSpells = entityVar.originalValues[SpellListMutator.name].castedSpells or {}
+
+				local castedSpells = entityVar.originalValues[SpellListMutator.name].castedSpells
+
+				for _, spellName in pairs(entity.Vars[SPELL_MUTATOR_ON_COMBAT_START]) do
+					Osi.UseSpell(entity.Uuid.EntityUuid, spellName, entity.Uuid.EntityUuid)
+					table.insert(castedSpells, spellName)
+
+					Logger:BasicDebug("%s cast on Combat Start Spell %s",
+						entity.DisplayName and entity.DisplayName.Name:Get() or entity.ServerCharacter.Template.Name,
+						spellName)
+				end
+
+				entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = entityVar
+				entity.Vars[SPELL_MUTATOR_ON_COMBAT_START] = nil
+			end
+		end
+	end)
+
+
 	---@class SpellListOriginalValues
 	---@field removedSpells SpellSpellMeta[]
 	---@field addedSpells SpellName[]
 	---@field castedSpells SpellName[]
 
 	function SpellListMutator:undoMutator(entity, mutator)
+		entity.Vars[SPELL_MUTATOR_ON_COMBAT_START] = nil
+
 		---@type EsvSpellSpellSystem
 		local spellSystem = Ext.System.ServerSpell
 
@@ -788,7 +820,8 @@ if Ext.IsServer() then
 				for _, status in pairs(entity.ServerCharacter.StatusManager.Statuses) do
 					if status.SourceSpell
 						and status.SourceSpell.SourceType == "Osiris"
-						and TableUtils:IndexOf(origValues.castedSpells, status.SourceSpell.OriginatorPrototype)
+						and (TableUtils:IndexOf(origValues.castedSpells, status.SourceSpell.OriginatorPrototype)
+							or TableUtils:IndexOf(origValues.addedSpells, status.SourceSpell.OriginatorPrototype))
 					then
 						Logger:BasicDebug("Removed status %s as it was applied by Lab via spell %s", status.StatusId, status.SourceSpell.OriginatorPrototype)
 						-- Osi.RemoveStatus insta updates the StatusManager, shifting indexes, which can cause this loop to skip over a status
@@ -808,7 +841,8 @@ if Ext.IsServer() then
 					for _, status in pairs(weapon.ServerItem.StatusManager.Statuses) do
 						if status.SourceSpell
 							and status.SourceSpell.SourceType == "Osiris"
-							and TableUtils:IndexOf(origValues.castedSpells, status.SourceSpell.OriginatorPrototype)
+							and (TableUtils:IndexOf(origValues.castedSpells, status.SourceSpell.OriginatorPrototype)
+								or TableUtils:IndexOf(origValues.addedSpells, status.SourceSpell.OriginatorPrototype))
 						then
 							Logger:BasicDebug("Removed status %s from weapon %s_%s as it was applied by Lab via spell %s",
 								status.StatusId,
@@ -861,9 +895,19 @@ if Ext.IsServer() then
 						table.insert(entity.Vars[SPELL_MUTATOR_ON_COMBAT_START], spellName)
 					end
 				elseif subListName == "onLoadOnly" then
-					Osi.UseSpell(entity.Uuid.EntityUuid, spellName, entity.Uuid.EntityUuid)
-					table.insert(castedSpells, spellName)
-					Logger:BasicDebug("Used on level load spell %s", spellName)
+					if Osi.IsDead(entity.Uuid.EntityUuid) == 0 then
+						Osi.UseSpell(entity.Uuid.EntityUuid, spellName, entity.Uuid.EntityUuid)
+						table.insert(castedSpells, spellName)
+						Logger:BasicDebug("Used on level load spell %s", spellName)
+					elseif not entity.DeadByDefault then
+						entity.Vars[SPELL_MUTATOR_ON_COMBAT_START] = entity.Vars[SPELL_MUTATOR_ON_COMBAT_START] or {}
+						table.insert(entity.Vars[SPELL_MUTATOR_ON_COMBAT_START], spellName)
+
+						Logger:BasicDebug("Moved level load spell %s into on combat start as this entity doesn't start as dead, so it's probably just playing dead right now",
+							spellName)
+					else
+						Logger:BasicDebug("Skipping level load spell %s as this entity is dead, for real", spellName)
+					end
 				end
 			end
 		end

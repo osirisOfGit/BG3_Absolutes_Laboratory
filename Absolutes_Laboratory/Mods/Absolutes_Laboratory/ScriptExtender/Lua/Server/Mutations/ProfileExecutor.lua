@@ -24,7 +24,7 @@ function MutationProfileExecutor:ExecuteProfile()
 				MutatorInterface:undoMutator(entity, entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME])
 			end
 
-			if not entity.DeadByDefault and not entity.PartyMember then
+			if (Osi.IsDead(entity.Uuid.EntityUuid) == 0 or not entity.DeadByDefault) and not entity.PartyMember then
 				---@type MutatorEntityVar
 				local entityVar = {
 					appliedMutators = {},
@@ -71,7 +71,8 @@ function MutationProfileExecutor:ExecuteProfile()
 				entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = next(entityVar.appliedMutators) and entityVar or nil
 			end
 		end
-		Logger:BasicInfo("======= Mutated %s Entities in %dms under Profile %s =======", counter, Ext.Timer:MonotonicTime() - time, Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile)
+		Logger:BasicInfo("======= Mutated %s Entities in %dms under Profile %s =======", counter, Ext.Timer:MonotonicTime() - time,
+		Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile)
 	else
 		local time = Ext.Timer:MonotonicTime()
 		local counter = 0
