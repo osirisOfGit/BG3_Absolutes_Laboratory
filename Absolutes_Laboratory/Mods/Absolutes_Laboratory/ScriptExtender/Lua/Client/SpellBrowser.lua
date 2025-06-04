@@ -59,7 +59,7 @@ You can shift-click on images to pop out their tooltip into a new window, but th
 	end
 
 	resultsGroup.NoSavedSettings = true
-	resultsGroup.Size = { 0, 30 * Styler:ScaleFactor() }
+	resultsGroup.Size = { 0, 300 * Styler:ScaleFactor() }
 	local timer
 	input.OnChange = function()
 		if timer then

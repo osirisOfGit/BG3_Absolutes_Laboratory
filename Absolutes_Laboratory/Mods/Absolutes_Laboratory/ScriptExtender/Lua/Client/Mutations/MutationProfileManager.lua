@@ -582,7 +582,7 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 	end
 
 	local counter = 0
-	for mutationFolderId, mutationFolder in pairs(ConfigurationStructure.config.mutations.folders) do
+	for _, mutationFolder in pairs(ConfigurationStructure.config.mutations.folders) do
 		for _, _ in pairs(mutationFolder.mutations) do
 			counter = counter + 1
 
