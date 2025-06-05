@@ -195,6 +195,13 @@ else
 									return value[entity.Uuid.EntityUuid]
 								end)
 							then
+								local recordedEntities = recordedEntities
+								local charLevel = entity.ServerCharacter.Template.LevelName
+								if charLevel and charLevel ~= "" and charLevel ~= levelName then
+									recordedLevels[charLevel] = recordedLevels[charLevel] or {}
+
+									recordedEntities = recordedLevels[charLevel]
+								end
 								recordedEntities[entity.Uuid.EntityUuid] = {}
 								local entityRecord = recordedEntities[entity.Uuid.EntityUuid]
 

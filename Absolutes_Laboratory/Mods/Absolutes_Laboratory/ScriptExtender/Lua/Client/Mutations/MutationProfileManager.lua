@@ -410,14 +410,13 @@ local triedOnce
 function MutationProfileManager:BuildProfileManager()
 	if not activeProfileId and not triedOnce then
 		triedOnce = true
-		Ext.Timer.WaitFor(500, function()
+		Ext.Timer.WaitFor(1000, function()
 			activeProfileId = Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile
 			if not ConfigurationStructure.config.mutations.profiles[activeProfileId] then
 				Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = nil
 				activeProfileId = nil
-			else
-				self:BuildProfileView()
 			end
+			self:BuildProfileView()
 		end)
 		return
 	end

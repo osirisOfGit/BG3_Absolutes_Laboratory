@@ -28,6 +28,7 @@ CharacterTemplateProxy.fieldsToParse = {
 	"DisableEquipping",
 	"Equipment",
 	"ExcludeInDifficulty",
+	"LevelName",
 	"InventoryType",
 	"IsDroppedOnDeath",
 	"IsEquipmentLootable",

@@ -66,6 +66,7 @@ function Main.buildOutTree()
 
 			Helpers:KillChildren(self.configCell)
 
+			self.configCell:SetScroll({0, 0})
 			CharacterWindow:BuildWindow(self.configCell, selectable.UserData)
 		end
 	end

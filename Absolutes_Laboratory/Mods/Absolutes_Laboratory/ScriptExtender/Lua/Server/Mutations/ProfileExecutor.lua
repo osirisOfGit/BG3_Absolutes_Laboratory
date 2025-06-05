@@ -11,6 +11,10 @@ Ext.Vars.RegisterModVariable(ModuleUUID, "ActiveMutationProfile", {
 MutationProfileExecutor = {}
 
 function MutationProfileExecutor:ExecuteProfile()
+	if next(FileUtils:LoadTableFile(EntityRecorder.trackerFilename)) then
+		Logger:BasicInfo("Recorder is currently running - skipping Mutations")
+		return
+	end
 	local config = ConfigurationStructure:GetRealConfigCopy().mutations
 	local activeProfile = config.profiles[Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile]
 
@@ -71,8 +75,7 @@ function MutationProfileExecutor:ExecuteProfile()
 				entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = next(entityVar.appliedMutators) and entityVar or nil
 			end
 		end
-		Logger:BasicInfo("======= Mutated %s Entities in %dms under Profile %s =======", counter, Ext.Timer:MonotonicTime() - time,
-		Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile)
+		Logger:BasicInfo("======= Mutated %s Entities in %dms under Profile %s =======", counter, Ext.Timer:MonotonicTime() - time, activeProfile.name)
 	else
 		local time = Ext.Timer:MonotonicTime()
 		local counter = 0
