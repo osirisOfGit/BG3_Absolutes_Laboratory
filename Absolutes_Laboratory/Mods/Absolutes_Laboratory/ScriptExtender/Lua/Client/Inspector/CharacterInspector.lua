@@ -2,7 +2,7 @@ Ext.Require("Client/Inspector/CharacterWindow.lua")
 Ext.Require("Client/Inspector/ResourceProcessors/ResourceProxy.lua")
 Ext.Require("Client/Inspector/EntityProcessors/EntityProxy.lua")
 
-Main = {
+CharacterInspector = {
 	---@type ExtuiTreeParent
 	parent = nil,
 	---@type ExtuiChildWindow
@@ -19,30 +19,36 @@ Main = {
 Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Inspector",
 	--- @param tabHeader ExtuiTreeParent
 	function(tabHeader)
-		Main.parent = tabHeader
+		CharacterInspector.parent = tabHeader
 
 		EntityRecorder:BuildButton(tabHeader)
 
-		Main.selectionTreeCell = tabHeader:AddChildWindow("selectionTree")
-		Main.selectionTreeCell.ChildAlwaysAutoResize = true
-		Main.selectionTreeCell.Size = { 400 * Styler:ScaleFactor(), 0 }
+		CharacterInspector.selectionTreeCell = tabHeader:AddChildWindow("selectionTree")
+		CharacterInspector.selectionTreeCell.ChildAlwaysAutoResize = true
+		CharacterInspector.selectionTreeCell.Size = { 400 * Styler:ScaleFactor(), 0 }
 
-		Main.configCell = tabHeader:AddChildWindow("configCell")
-		Main.configCell.AlwaysHorizontalScrollbar = true
-		Main.configCell.SameLine = true
-		Main.configCell.NoSavedSettings = true
-		Main.configCell.AlwaysAutoResize = true
-		Main.configCell.ChildAlwaysAutoResize = true
+		CharacterInspector.configCell = tabHeader:AddChildWindow("configCell")
+		CharacterInspector.configCell.AlwaysHorizontalScrollbar = true
+		CharacterInspector.configCell.SameLine = true
+		CharacterInspector.configCell.NoSavedSettings = true
+		CharacterInspector.configCell.AlwaysAutoResize = true
+		CharacterInspector.configCell.ChildAlwaysAutoResize = true
 
-		Main:buildOutTree()
+		CharacterInspector:buildOutTree()
 	end
 )
 
 ---@type ExtuiSelectable?
 local selectedSelectable
 
-function Main.buildOutTree()
-	local self = Main
+---@type string?
+local lastLevelName
+function CharacterInspector.buildOutTree()
+	local self = CharacterInspector
+
+	local selectedID = selectedSelectable and selectedSelectable.UserData
+	selectedSelectable = nil
+	Helpers:KillChildren(self.selectionTreeCell)
 
 	local universalSelection = self.selectionTreeCell:AddTree("Levels")
 	universalSelection.NoAutoOpenOnLog = true
@@ -66,16 +72,27 @@ function Main.buildOutTree()
 
 			Helpers:KillChildren(self.configCell)
 
-			self.configCell:SetScroll({0, 0})
+			self.configCell:SetScroll({ 0, 0 })
 			CharacterWindow:BuildWindow(self.configCell, selectable.UserData)
+		end
+
+		local newlyScannedEntities = EntityRecorder.newlyScannedEntities[next(EntityRecorder.newlyScannedEntities)]
+		if newlyScannedEntities and newlyScannedEntities[id] then
+			selectable:SetColor("Text", Styler:ConvertRGBAToIMGUI({1, 1, 1, 0.5}))
+			selectable:Tooltip():AddText("\t Picked up from the Created Entities Scan")
+		end
+
+		if id == selectedID then
+			selectable.Selected = true
+			selectable:OnClick()
 		end
 	end
 
 	for levelName, entities in pairs(EntityRecorder:GetEntities()) do
 		local levelTree = universalSelection:AddTree(levelName)
-		levelTree:SetOpen(false, "Always")
 
 		levelTree.OnExpand = function()
+			lastLevelName = levelName
 			for entityId in TableUtils:OrderedPairs(entities, function(key)
 				return entities[key].Name
 			end) do
@@ -86,6 +103,11 @@ function Main.buildOutTree()
 		levelTree.OnCollapse = function()
 			Helpers:KillChildren(levelTree)
 			selectedSelectable = nil
+		end
+
+		levelTree:SetOpen(levelName == lastLevelName, "Always")
+		if levelName == lastLevelName then
+			levelTree:OnExpand()
 		end
 	end
 end

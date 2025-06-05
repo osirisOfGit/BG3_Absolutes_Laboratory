@@ -1,6 +1,8 @@
 Channels.InitiateRecording = Ext.Net.CreateChannel(ModuleUUID, "InitiateRecording")
 Channels.ReportRecordingProgress = Ext.Net.CreateChannel(ModuleUUID, "ReportRecordingProgress")
 
+Channels.ScanForNewEntities = Ext.Net.CreateChannel(ModuleUUID, "ScanForNewEntities")
+
 EntityRecorder = {}
 
 EntityRecorder.recorderFilename = "recordedEntities.json"
@@ -28,8 +30,6 @@ EntityRecorder.Levels = {
 	END_Main = 9,
 }
 
-
-
 ---@class EntityRecord
 ---@field Name string
 ---@field Template GUIDSTRING
@@ -42,17 +42,29 @@ EntityRecorder.Levels = {
 ---@field Icon string
 
 if Ext.IsClient() then
+	---@type {[GUIDSTRING]: EntityRecord}
+	EntityRecorder.newlyScannedEntities = {}
+
 	---@type {[string]: {[GUIDSTRING]: EntityRecord}}
 	local recordedEntities = setmetatable({}, {
 		__mode = "kv",
 		__pairs = function(t)
 			local cachedData = FileUtils:LoadTableFile(EntityRecorder.recorderFilename) or {}
+
+			if next(EntityRecorder.newlyScannedEntities) then
+				local level = next(EntityRecorder.newlyScannedEntities)
+				cachedData[level] = cachedData[level] or {}
+				for entityId, entityRecord in pairs(EntityRecorder.newlyScannedEntities[level]) do
+					cachedData[level][entityId] = entityRecord
+				end
+			end
+
 			return TableUtils:OrderedPairs(cachedData, function(key)
 				return EntityRecorder.Levels[key]
 			end)
 		end,
 		__index = function(t, k)
-			return (FileUtils:LoadTableFile(EntityRecorder.recorderFilename) or {})[k]
+			return (FileUtils:LoadTableFile(EntityRecorder.recorderFilename) or {})[k] or EntityRecorder.newlyScannedEntities[k]
 		end
 	})
 
@@ -82,16 +94,28 @@ if Ext.IsClient() then
 	---@param parent ExtuiTreeParent
 	function EntityRecorder:BuildButton(parent)
 		if Ext.ClientNet.IsHost() then
-			local button = parent:AddButton("Index All Alive Character Entities")
-			button:Tooltip():AddText([[
+			local indexAllEntities = parent:AddButton("Index All Alive Character Entities")
+			indexAllEntities:Tooltip():AddText([[
 	 This will teleport you to each level in the game and record all the entities loaded onto the server for that level
 You only need to do this once or after you install mods that would add new entities - a local file will be written containing the results.
 A save will be initiated first so you can load back to it - this MAY spoil different parts of the game, but if you're using this mod, you should be fine with that.
 Don't reload, restart, or otherwise mess with the game until the process is completed.
 		]])
 
-			button.OnClick = function()
+			indexAllEntities.OnClick = function()
 				Channels.InitiateRecording:SendToServer({})
+			end
+
+			local scanLevelEntities = parent:AddButton("Scan For Created Entities")
+			scanLevelEntities.SameLine = true
+			scanLevelEntities:Tooltip():AddText("\t Scans for newly created entities in the level - these will not be recorded to the underlying file cache.")
+
+			scanLevelEntities.OnClick = function()
+				Channels.ScanForNewEntities:RequestToServer({}, function(data)
+					scanLevelEntities.Label = string.format("Scan For Created Entities (%s found)", TableUtils:CountElements(data[next(data)]))
+					self.newlyScannedEntities = data
+					CharacterInspector:buildOutTree()
+				end)
 			end
 		end
 	end
@@ -245,4 +269,47 @@ else
 			recorderTracker = nil
 		end
 	end
+
+	Channels.ScanForNewEntities:SetRequestHandler(function(data, user)
+		---@type {string: {[GUIDSTRING] : EntityRecord}}
+		local recordedLevels = FileUtils:LoadTableFile(EntityRecorder.recorderFilename)
+
+		local indexedEntities = { [Ext.Entity.Get(Osi.GetHostCharacter()).Level.LevelName] = {} }
+		for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
+			if not entity.DeadByDefault
+				and not TableUtils:IndexOf(recordedLevels, function(value)
+					return value[entity.Uuid.EntityUuid] ~= nil
+				end)
+			then
+				indexedEntities[next(indexedEntities)][entity.Uuid.EntityUuid] = {}
+				local entityRecord = indexedEntities[next(indexedEntities)][entity.Uuid.EntityUuid]
+
+				entityRecord.Name = (entity.DisplayName and entity.DisplayName.Name:Get())
+					or (entity.ServerCharacter.Template and entity.ServerCharacter.Template.DisplayName:Get())
+					or entity.Uuid.EntityUuid
+
+				entityRecord.Icon = entity.Icon.Icon
+				entityRecord.Race = entity.Race.Race
+				entityRecord.Faction = entity.Faction.field_8
+				entityRecord.Stat = entity.Data.StatsId
+				entityRecord.Template = entity.ServerCharacter.Template.TemplateName
+				entityRecord.Tags = entity.Tag.Tags
+				entityRecord.Abilities = {}
+				for abilityId, val in ipairs(entity.BaseStats.BaseAbilities) do
+					if abilityId > 1 then
+						entityRecord.Abilities[tostring(Ext.Enums.AbilityId[abilityId - 1])] = val
+					end
+				end
+
+				entityRecord.Progressions = {}
+				for _, progressionContainer in ipairs(entity.ProgressionContainer.Progressions) do
+					for _, progression in ipairs(progressionContainer) do
+						table.insert(entityRecord.Progressions, progression.ProgressionMeta.Progression)
+					end
+				end
+			end
+		end
+
+		return Ext.Json.Parse(Ext.Json.Stringify(indexedEntities, { StringifyInternalTypes = true }))
+	end)
 end
