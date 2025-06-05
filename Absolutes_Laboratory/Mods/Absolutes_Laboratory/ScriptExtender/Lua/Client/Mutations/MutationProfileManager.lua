@@ -24,12 +24,14 @@ Ext.Require("Client/Mutations/MutationDesigner.lua")
 ---@type string?
 local activeProfileId
 
-Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Mutations",
-	--- @param tabHeader ExtuiTabItem
-	function(tabHeader)
-		MutationProfileManager:init(tabHeader)
-		MutationProfileManager:BuildProfileView()
-	end)
+if Ext.Mod.IsModLoaded("755a8a72-407f-4f0d-9a33-274ac0f0b53d") then
+	Mods.BG3MCM.IMGUIAPI:InsertModMenuTab(ModuleUUID, "Mutations",
+		--- @param tabHeader ExtuiTabItem
+		function(tabHeader)
+			MutationProfileManager:init(tabHeader)
+			MutationProfileManager:BuildProfileView()
+		end)
+end
 
 ---@type ExtuiButton?
 local activeMutationView

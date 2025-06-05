@@ -1,5 +1,6 @@
 {
 	"SchemaVersion": 1,
+	"Optional": true,
 	"Tabs": [
 		{
 			"TabName": "General",
@@ -22,6 +23,28 @@
 							}
 						}
 					]
+				}
+			],
+			"Settings": [
+				{
+					"Id": "LaunchInspector",
+					"Name": "Launch The Inspector",
+					"Type": "keybinding_v2",
+					"Default": {
+						"Keyboard": {
+							"ModifierKeys": [
+								"LAlt",
+								"LShift"
+							],
+							"Key": "A"
+						}
+					},
+					"Description": "Launch the Inspector tab in its own independent window - will rejoin the main MCM window on close",
+					"Options": {
+						"ShouldTriggerOnKeyDown": true,
+						"ShouldTriggerOnKeyUp": false,
+						"ShouldTriggerOnRepeat": false
+					}
 				}
 			]
 		}

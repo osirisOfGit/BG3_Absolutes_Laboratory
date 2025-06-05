@@ -75,7 +75,7 @@ local function GetRainbowText(text)
 end
 
 function Logger:IsLogLevelEnabled(logLevel)
-    return MCM.Get("log_level") >= logLevel
+    return MCM and (MCM.Get("log_level") >= logLevel) or true
 end
 
 --- Function to print text with custom colors, message type, custom prefix, rainbowText, and prefix length
