@@ -79,7 +79,7 @@ function CharacterWindow:BuildWindow(parent, id)
 		if entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] then
 			local mutationTab = tabBar:AddTabItem("Mutations")
 			mutationTab.OnActivate = function()
-				Helpers:KillChildren(mutationTab)
+				Helpers:KillChildren(mutationTab, templateTab, statTab, entityTab)
 
 				---@type MutatorEntityVar
 				local entityVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME]
