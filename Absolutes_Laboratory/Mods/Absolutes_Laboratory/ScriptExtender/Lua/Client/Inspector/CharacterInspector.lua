@@ -24,11 +24,10 @@ function CharacterInspector:LaunchIndependentWindow()
 		self.window:SetStyle("WindowMinSize", 300 * Styler:ScaleFactor(), 500 * Styler:ScaleFactor())
 		self.window.OnClose = function()
 			if self.parent then
-				self.window:DetachChild(self.selectionTreeCell)
-				self.window:DetachChild(self.configCell)
-
-				self.parent:AttachChild(self.selectionTreeCell)
-				self.parent:AttachChild(self.configCell)
+				for _, child in pairs(self.window.Children) do
+					self.window:DetachChild(child)
+					self.parent:AttachChild(child)
+				end
 			end
 		end
 	else
@@ -41,11 +40,10 @@ function CharacterInspector:LaunchIndependentWindow()
 		self:buildOutTree()
 	else
 		if self.selectionTreeCell.ParentElement ~= self.window then
-			self.parent:DetachChild(self.selectionTreeCell)
-			self.parent:DetachChild(self.configCell)
-
-			self.window:AttachChild(self.selectionTreeCell)
-			self.window:AttachChild(self.configCell)
+			for _, child in pairs(self.parent.Children) do
+				self.parent:DetachChild(child)
+				self.window:AttachChild(child)
+			end
 		end
 	end
 end
