@@ -212,8 +212,9 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 				parentCell:AddText(string.format("%s | Original Mod: %s ", serializedResource.Name, Helpers:BuildModString(serializedResource.OriginalModId),
 					serializedResource.ModId ~= serializedResource.OriginalModId and ("| Modified By: " .. Helpers:BuildModString(serializedResource.ModId)) or "")).Font = "Large"
 			else
-				parentCell:AddText(string.format("%s | File: %s", serializedResource.Name, serializedResource.FileName:gsub("^.*[\\/]Mods[\\/]", ""):gsub("^.*[\\/]Public[\\/]", "") or serializedResource.FileName)).Font =
-				"Large"
+				local fileName = serializedResource.FileName:gsub("^.*[\\/]Mods[\\/]", ""):gsub("^.*[\\/]Public[\\/]", "")
+				fileName = fileName ~= "" and fileName or serializedResource.FileName
+				parentCell:AddText(string.format("%s | File: %s", serializedResource.Name, fileName)).Font = "Large"
 			end
 
 			local statDisplayTable = Styler:TwoColumnTable(parentCell, serializedResource.Name)
@@ -240,9 +241,10 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 					serializedResource.ModId ~= serializedResource.OriginalModId and ("| Modified By: " .. Helpers:BuildModString(serializedResource.ModId)) or "")).Font = "Large"
 			else
 				if serializedResource.FileName then
-					parentCell:AddText(string.format("%s | File: %s",
-						serializedResource.Name,
-						serializedResource.FileName:gsub("^.*[\\/]Mods[\\/]", ""):gsub("^.*[\\/]Public[\\/]", "") or serializedResource.FileName)).Font = "Large"
+					local fileName = serializedResource.FileName:gsub("^.*[\\/]Mods[\\/]", ""):gsub("^.*[\\/]Public[\\/]", "")
+					fileName = fileName ~= "" and fileName or serializedResource.FileName
+					
+					parentCell:AddText(string.format("%s | File: %s", serializedResource.Name, fileName)).Font = "Large"
 				else
 					if serializedResource.Name or serializedResource.Category then
 						parentCell:AddText(string.format("%s", serializedResource.Name or serializedResource.Category)).Font = "Large"
@@ -265,7 +267,7 @@ function ResourceManager:RenderDisplayWindow(resource, parent)
 		local success, result = xpcall(function(...)
 			if proxyRegistry[Ext.Types.GetObjectType(resource) == "stats::Object" and resource.ModifierList or Ext.Types.GetObjectType(resource)] then
 				proxyRegistry[Ext.Types.GetObjectType(resource) == "stats::Object" and resource.ModifierList or Ext.Types.GetObjectType(resource)]:RenderDisplayWindow(resource,
-				parent)
+					parent)
 			else
 				self:RenderDisplayableValue(parent, Ext.Types.Serialize(resource))
 			end

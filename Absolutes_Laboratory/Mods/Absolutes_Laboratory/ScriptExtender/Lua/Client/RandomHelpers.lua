@@ -111,6 +111,20 @@ function Helpers:CollapseExpand(collapse, targetWidth, widthFunc, groupVisibilit
 	end
 end
 
+---@param modId Guid
+---@return string? ModName
+---@return string? ModAuthor
+---@return integer[]? ModVersion
+function Helpers:BuildModFields(modId)
+	local mod = Ext.Mod.GetMod(modId)
+
+	if mod then
+		local modInfo = mod.Info
+
+		return modInfo.Name, modInfo.Author ~= "" and modInfo.Author or "Larian", modInfo.ModVersion
+	end
+end
+
 Translator:RegisterTranslation({
 	["From mod '%s' by '%s'"] = "hb46981c098c145978bd8daa53a1453aeb9c0",
 	["Originally from mod '%s' by '%s'"] = "h1d4bb3618c794d8bb495a19db4fd9a52325e",

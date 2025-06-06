@@ -38,11 +38,14 @@ function MutatorInterface:renderMutator(parent, mutator) end
 ---@param modifiers {[string]: MutationModifier}
 function MutatorInterface:renderModifiers(parent, modifiers) end
 
----@param mutator Mutator
 ---@return boolean
-function MutatorInterface:canBeAdditive(mutator)
+function MutatorInterface:canBeAdditive()
 	return false
 end
+
+---@param export MutationsConfig
+---@param mutator Mutator
+function MutatorInterface:enhanceExport(export, mutator) end
 
 ---@param entity EntityHandle
 ---@param entityVar MutatorEntityVar

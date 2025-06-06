@@ -4,7 +4,7 @@ StatSelector = SelectorInterface:new("Stats")
 ---@field id GUIDSTRING
 ---@field includeChildren boolean
 
----@class StatSelector : SelectorInterface
+---@class StatSelector : Selector
 ---@field criteriaValue StatCriteria[]
 
 local stats = {}
@@ -208,6 +208,30 @@ function StatSelector:renderSelector(parent, existingSelector)
 		buildSelects(string.upper(statSelectInput.Text))
 	end
 	updateFunc(#existingSelector.criteriaValue)
+end
+
+---@param selector StatSelector
+function StatSelector:enhanceExport(_, selector)
+	for _, characterStatCriteria in ipairs(selector.criteriaValue) do
+		---@type Character
+		local characterStat = Ext.Stats.Get(characterStatCriteria.id)
+
+		if characterStat.OriginalModId ~= "" then
+			selector.modDependencies = selector.modDependencies or {}
+			if not selector.modDependencies[characterStat.OriginalModId] then
+				local name, author, version = Helpers:BuildModFields(characterStat.OriginalModId)
+				selector.modDependencies[characterStat.OriginalModId] = {
+					modName = name,
+					modAuthor = author,
+					modVersion = version,
+					modId = characterStat.OriginalModId,
+					packagedItems = {}
+				}
+			end
+
+			selector.modDependencies[characterStat.OriginalModId].packagedItems[characterStatCriteria.id] = characterStat.Name
+		end
+	end
 end
 
 ---@param charStat Character

@@ -58,8 +58,8 @@ function TagSelector:renderSelector(parent, existingSelector)
 		Helpers:KillChildren(tagDisplay)
 
 		for _, tag in ipairs(existingSelector.criteriaValue) do
-			local delete = Styler:ImageButton(tagDisplay:AddImageButton("delete" .. tag, "ico_red_x", {16, 16}))
-			delete.OnClick = function ()
+			local delete = Styler:ImageButton(tagDisplay:AddImageButton("delete" .. tag, "ico_red_x", { 16, 16 }))
+			delete.OnClick = function()
 				table.remove(existingSelector.criteriaValue, TableUtils:IndexOf(existingSelector.criteriaValue, tag))
 				updateFunc(#existingSelector.criteriaValue)
 				displaySelectedTags()
@@ -115,11 +115,40 @@ function TagSelector:renderSelector(parent, existingSelector)
 end
 
 ---@param selector TagSelector
+function TagSelector:enhanceExport(_, selector)
+	local tagSources = Ext.StaticData.GetSources("Tag")
+
+	for _, tagId in ipairs(selector.criteriaValue) do
+		local tagSource = TableUtils:IndexOf(tagSources, function(value)
+			return TableUtils:IndexOf(value, tagId) ~= nil
+		end)
+
+		if tagSource then
+			selector.modDependencies = selector.modDependencies or {}
+			if not selector.modDependencies[tagSource] then
+				local name, author, version = Helpers:BuildModFields(tagSource)
+				selector.modDependencies[tagSource] = {
+					modName = name,
+					modAuthor = author,
+					modVersion = version,
+					modId = tagSource,
+					packagedItems = {}
+				}
+			end
+
+			---@type ResourceTag
+			local tagData = Ext.StaticData.Get(tagId, "Tag")
+			selector.modDependencies[tagSource].packagedItems[tagId] = tagData.DisplayName:Get() or tagData.Name
+		end
+	end
+end
+
+---@param selector TagSelector
 ---@return fun(entity: EntityHandle|EntityRecord): boolean
 function TagSelector:predicate(selector)
 	local tags = selector.criteriaValue
 
-	return function (entity)
+	return function(entity)
 		if type(entity) == "userdata" then
 			---@cast entity EntityHandle
 			for _, tag in pairs(tags) do
@@ -136,5 +165,5 @@ function TagSelector:predicate(selector)
 			end
 		end
 		return false
- 	end
+	end
 end

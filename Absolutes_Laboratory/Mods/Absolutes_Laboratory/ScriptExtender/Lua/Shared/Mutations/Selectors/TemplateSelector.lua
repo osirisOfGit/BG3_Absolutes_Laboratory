@@ -4,7 +4,7 @@ TemplateSelector = SelectorInterface:new("Templates")
 ---@field id GUIDSTRING
 ---@field includeChildren boolean
 
----@class TemplateSelector : SelectorInterface
+---@class TemplateSelector : Selector
 ---@field criteriaValue TemplateCriteria[]
 
 local templates = {}
@@ -219,6 +219,31 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 		buildSelects(string.upper(templateSelectInput.Text))
 	end
 	updateFunc(#existingSelector.criteriaValue)
+end
+
+---@param selector TemplateSelector
+function TemplateSelector:enhanceExport(_, selector)
+	for _, templateCriteria in ipairs(selector.criteriaValue) do
+		---@type CharacterTemplate
+		local characterTemplate = Ext.ClientTemplate.GetTemplate(templateCriteria.id)
+
+		local fileName = characterTemplate.FileName:gsub("^.*[\\/]Mods[\\/]", ""):gsub("^.*[\\/]Public[\\/]", "")
+		fileName = fileName ~= "" and fileName or characterTemplate.FileName
+
+		selector.modDependencies = selector.modDependencies or {}
+		if not selector.modDependencies[fileName] then
+			selector.modDependencies[fileName] = {
+				modName = nil,
+				modAuthor = nil,
+				modVersion = nil,
+				modId = fileName,
+				packagedItems = {}
+			}
+
+			---@type ResourceFaction
+			selector.modDependencies[fileName].packagedItems[templateCriteria.id] = characterTemplate.DisplayName:Get() or characterTemplate.Name
+		end
+	end
 end
 
 ---@param charTemplate CharacterTemplate

@@ -552,6 +552,12 @@ function MutationProfileManager:BuildProfileManager()
 				}
 			)
 		end
+
+		if profile.mutationRules and profile.mutationRules() then
+			profileMenu:AddItem("Export").OnClick = function()
+				MutationProfileExporter:exportProfile(profileId)
+			end
+		end
 		profileMenu:AddItem("Delete").OnClick = function()
 			profile.delete = true
 			if activeProfileId == profileId then

@@ -75,7 +75,7 @@ local function buildSubraceOpts(subRaces, parent, selectedSubRaces)
 	local columnIndex = 0
 	if subRaces then
 		local row = parent:AddRow()
-		local cells = { }
+		local cells = {}
 		for i = 0, parent.Columns do
 			table.insert(cells, row:AddCell())
 		end
@@ -127,7 +127,7 @@ function RaceSelector:renderSelector(parent, existingSelector)
 	raceCombo.SelectedIndex = selector.criteriaValue.RaceId and (TableUtils:IndexOf(raceOpts, translationMap[selector.criteriaValue.RaceId]) - 1) or 0
 
 	local subRaceGroup = parent:AddTable("SubRaces", 5)
-	
+
 	subRaceGroup.SizingFixedFit = true
 	buildSubraceOpts(racesWithSubraces[selector.criteriaValue.RaceId], subRaceGroup, selector.criteriaValue.SubRaceIds)
 
@@ -142,6 +142,43 @@ function RaceSelector:renderSelector(parent, existingSelector)
 			selector.criteriaValue.RaceId = nil
 			selector.criteriaValue.SubRaceIds = nil
 			selector.criteriaValue.SubRaceIds = {}
+		end
+	end
+end
+
+---@param selector RaceSelector
+function RaceSelector:enhanceExport(_, selector)
+	local raceSources = Ext.StaticData.GetSources("Race")
+
+	local sources = {
+		[selector.criteriaValue.RaceId] = TableUtils:IndexOf(raceSources, function(value)
+			return TableUtils:IndexOf(value, selector.criteriaValue.RaceId) ~= nil
+		end)
+	}
+
+	if selector.criteriaValue.SubRaceIds then
+		for _, subRaceId in ipairs(selector.criteriaValue.SubRaceIds) do
+			sources[subRaceId] = TableUtils:IndexOf(raceSources, function(value)
+				return TableUtils:IndexOf(value, subRaceId) ~= nil
+			end)
+		end
+	end
+
+	for raceId, source in pairs(sources) do
+		selector.modDependencies = selector.modDependencies or {}
+		if not selector.modDependencies[source] then
+			local name, author, version = Helpers:BuildModFields(source)
+			selector.modDependencies[source] = {
+				modName = name,
+				modAuthor = author,
+				modVersion = version,
+				modId = source,
+				packagedItems = {}
+			}
+
+			---@type ResourceRace
+			local raceData = Ext.StaticData.Get(raceId, "Race")
+			selector.modDependencies[source].packagedItems[raceId] = raceData.DisplayName:Get() or raceData.Name
 		end
 	end
 end

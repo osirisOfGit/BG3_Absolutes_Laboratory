@@ -4,7 +4,7 @@ FactionSelector = SelectorInterface:new("Factions")
 ---@field id GUIDSTRING
 ---@field includeChildren boolean
 
----@class FactionSelector : SelectorInterface
+---@class FactionSelector : Selector
 ---@field criteriaValue FactionCriteria[]
 
 local factions = {}
@@ -218,6 +218,35 @@ function FactionSelector:renderSelector(parent, existingSelector)
 		buildSelects(string.upper(factionSelectInput.Text))
 	end
 	updateFunc(#existingSelector.criteriaValue)
+end
+
+---@param selector FactionSelector
+function FactionSelector:enhanceExport(_, selector)
+	local factionSources = Ext.StaticData.GetSources("Faction")
+
+	for _, faction in ipairs(selector.criteriaValue) do
+		local factionSource = TableUtils:IndexOf(factionSources, function(value)
+			return TableUtils:IndexOf(value, faction.id) ~= nil
+		end)
+
+		if factionSource then
+			selector.modDependencies = selector.modDependencies or {}
+			if not selector.modDependencies[factionSource] then
+				local name, author, version = Helpers:BuildModFields(factionSource)
+				selector.modDependencies[factionSource] = {
+					modName = name,
+					modAuthor = author,
+					modVersion = version,
+					modId = factionSource,
+					packagedItems = {}
+				}
+			end
+
+			---@type ResourceFaction
+			local factionData = Ext.StaticData.Get(faction.id, "Faction")
+			selector.modDependencies[factionSource].packagedItems[faction.id] = factionData.Faction
+		end
+	end
 end
 
 ---@param charFaction ResourceFaction

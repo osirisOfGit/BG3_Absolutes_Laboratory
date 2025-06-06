@@ -22,6 +22,20 @@ end
 ---@param existingSelector Selector?
 function SelectorInterface:renderSelector(parent, existingSelector) end
 
+---@param export MutationsConfig
+---@param selector Selector
+function SelectorInterface:enhanceExport(export, selector)
+	self.registeredSelectors[selector.criteriaCategory]:enhanceExport(export, selector)
+	if selector.subSelectors then
+		for _, subSelector in pairs(selector.subSelectors) do
+			if type(subSelector) == "table" then
+				---@cast subSelector Selector
+				self:enhanceExport(export, subSelector)
+			end
+		end
+	end
+end
+
 ---@class SelectorPredicate
 SelectorPredicate = {
 	---@type fun(entity: EntityHandle|EntityRecord): boolean
@@ -31,7 +45,7 @@ SelectorPredicate = {
 ---@param func fun(entity: EntityHandle|EntityRecord): boolean
 ---@return SelectorPredicate instance
 function SelectorPredicate:new(func)
-	local instance = {func = func}
+	local instance = { func = func }
 
 	setmetatable(instance, self)
 	self.__index = self
