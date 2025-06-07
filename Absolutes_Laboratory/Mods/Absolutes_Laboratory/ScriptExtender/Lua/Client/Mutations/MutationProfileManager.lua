@@ -506,6 +506,49 @@ function MutationProfileManager:BuildProfileManager()
 		)
 	end
 
+	local importSelect = manageProfilePopup:AddSelectable("Import Profile", "DontClosePopups")
+
+	local importGroup = manageProfilePopup:AddGroup("Import")
+	importGroup.Visible = false
+
+	importSelect.OnClick = function()
+		if #importGroup.Children > 0 then
+			Helpers:KillChildren(importGroup)
+			importGroup.Visible = false
+		else
+			importGroup.Visible = true
+			importGroup:AddText("Enter the full file name relative to Lab's SE Folder")
+
+			local fileNameInput = importGroup:AddInputText("")
+			fileNameInput.Hint = "imported/otherProfile.json"
+
+			local importButton = importGroup:AddButton("Import")
+			importButton.SameLine = true
+
+			local timer
+			fileNameInput.OnChange = function()
+				if timer then
+					Ext.Timer.Cancel(timer)
+				end
+
+				timer = Ext.Timer.WaitFor(200, function()
+					if not FileUtils:LoadFile(fileNameInput.Text) then
+						fileNameInput:SetColor("Text", Styler:ConvertRGBAToIMGUI({ 1, 0, 0, 0.4 }))
+						importButton.Disabled = true
+					else
+						fileNameInput:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
+						importButton.Disabled = false
+					end
+				end)
+			end
+
+			importButton.OnClick = function()
+				MutationExternalProfileUtility:importProfile(FileUtils:LoadTableFile(fileNameInput.Text))
+				self:BuildProfileManager()
+			end
+		end
+	end
+
 	for profileId, profile in TableUtils:OrderedPairs(profiles) do
 		---@type ExtuiMenu
 		local profileMenu = manageProfilePopup:AddMenu(profile.name)
@@ -555,7 +598,7 @@ function MutationProfileManager:BuildProfileManager()
 
 		if profile.mutationRules and profile.mutationRules() then
 			profileMenu:AddItem("Export").OnClick = function()
-				MutationProfileExporter:exportProfile(profileId)
+				MutationExternalProfileUtility:exportProfile(profileId)
 			end
 		end
 		profileMenu:AddItem("Delete").OnClick = function()

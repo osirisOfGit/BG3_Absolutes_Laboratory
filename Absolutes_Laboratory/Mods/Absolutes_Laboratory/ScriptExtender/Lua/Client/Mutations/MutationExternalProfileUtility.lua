@@ -1,7 +1,7 @@
-MutationProfileExporter = {}
+MutationExternalProfileUtility = {}
 
 ---@param profileID Guid
-function MutationProfileExporter:exportProfile(profileID)
+function MutationExternalProfileUtility:exportProfile(profileID)
 	local mutationConfig = ConfigurationStructure.config.mutations
 
 	---@type MutationProfile
@@ -48,4 +48,9 @@ function MutationProfileExporter:exportProfile(profileID)
 	FileUtils:SaveTableToFile("ExportedProfiles/" .. profile.name .. ".json", {
 		["mutations"] = export
 	})
+end
+
+---@param profile MutationsConfig
+function MutationExternalProfileUtility:importProfile(profile)
+	
 end
