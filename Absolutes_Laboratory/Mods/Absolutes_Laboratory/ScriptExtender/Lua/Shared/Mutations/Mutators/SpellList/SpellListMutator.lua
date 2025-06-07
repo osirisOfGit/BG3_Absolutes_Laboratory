@@ -743,6 +743,10 @@ function SpellListMutator:enhanceExport(export, mutator)
 			mutator.modDependencies = mutator.modDependencies or {}
 			if not mutator.modDependencies[spell.OriginalModId] then
 				local name, author, version = Helpers:BuildModFields(spell.OriginalModId)
+				if author == "Larian" then
+					return
+				end
+
 				mutator.modDependencies[spell.OriginalModId] = {
 					modName = name,
 					modAuthor = author,
@@ -751,7 +755,7 @@ function SpellListMutator:enhanceExport(export, mutator)
 					packagedItems = {}
 				}
 			end
-			mutator.modDependencies[spell.OriginalModId][spellName] = Ext.Loca.GetTranslatedString(spell.DisplayName, spellName)
+			mutator.modDependencies[spell.OriginalModId].packagedItems[spellName] = Ext.Loca.GetTranslatedString(spell.DisplayName, spellName)
 		end
 	end
 
@@ -798,6 +802,9 @@ function SpellListMutator:enhanceExport(export, mutator)
 											spellListDef.modDependencies = spellListDef.modDependencies or {}
 											if not spellListDef.modDependencies[progressionSource] then
 												local name, author, version = Helpers:BuildModFields(progressionSource)
+												if author == "Larian" then
+													goto continue
+												end
 												spellListDef.modDependencies[progressionSource] = {
 													modName = name,
 													modAuthor = author,
@@ -810,6 +817,7 @@ function SpellListMutator:enhanceExport(export, mutator)
 											local progression = Ext.StaticData.Get(progressionId, "Progression")
 											spellListDef.modDependencies[progressionSource].packagedItems[progressionId] = progression.Name
 										end
+										::continue::
 									end
 								end
 							end
@@ -835,6 +843,9 @@ function SpellListMutator:enhanceExport(export, mutator)
 						mutator.modDependencies = mutator.modDependencies or {}
 						if not mutator.modDependencies[source] then
 							local name, author, version = Helpers:BuildModFields(source)
+							if author == "Larian" then
+								goto continue
+							end
 							mutator.modDependencies[source] = {
 								modName = name,
 								modAuthor = author,
@@ -848,6 +859,7 @@ function SpellListMutator:enhanceExport(export, mutator)
 
 						mutator.modDependencies[source][classId] = class.DisplayName:Get() or class.Name
 					end
+					::continue::
 				end
 			end
 		end

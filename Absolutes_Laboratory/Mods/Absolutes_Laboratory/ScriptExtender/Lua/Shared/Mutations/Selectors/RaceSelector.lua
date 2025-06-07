@@ -168,6 +168,9 @@ function RaceSelector:enhanceExport(_, selector)
 		selector.modDependencies = selector.modDependencies or {}
 		if not selector.modDependencies[source] then
 			local name, author, version = Helpers:BuildModFields(source)
+			if author == "Larian" then
+				goto continue
+			end
 			selector.modDependencies[source] = {
 				modName = name,
 				modAuthor = author,
@@ -180,6 +183,7 @@ function RaceSelector:enhanceExport(_, selector)
 			local raceData = Ext.StaticData.Get(raceId, "Race")
 			selector.modDependencies[source].packagedItems[raceId] = raceData.DisplayName:Get() or raceData.Name
 		end
+		::continue::
 	end
 end
 

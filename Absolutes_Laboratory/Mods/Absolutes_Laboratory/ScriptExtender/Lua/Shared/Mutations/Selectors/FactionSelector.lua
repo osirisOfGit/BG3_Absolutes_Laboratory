@@ -233,6 +233,9 @@ function FactionSelector:enhanceExport(_, selector)
 			selector.modDependencies = selector.modDependencies or {}
 			if not selector.modDependencies[factionSource] then
 				local name, author, version = Helpers:BuildModFields(factionSource)
+				if author == "Larian" then
+					goto continue
+				end
 				selector.modDependencies[factionSource] = {
 					modName = name,
 					modAuthor = author,
@@ -246,6 +249,7 @@ function FactionSelector:enhanceExport(_, selector)
 			local factionData = Ext.StaticData.Get(faction.id, "Faction")
 			selector.modDependencies[factionSource].packagedItems[faction.id] = factionData.Faction
 		end
+		::continue::
 	end
 end
 

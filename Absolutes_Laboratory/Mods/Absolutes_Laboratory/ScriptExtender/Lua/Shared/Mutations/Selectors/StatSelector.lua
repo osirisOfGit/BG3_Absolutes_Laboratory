@@ -220,6 +220,9 @@ function StatSelector:enhanceExport(_, selector)
 			selector.modDependencies = selector.modDependencies or {}
 			if not selector.modDependencies[characterStat.OriginalModId] then
 				local name, author, version = Helpers:BuildModFields(characterStat.OriginalModId)
+				if author == "Larian" then
+					goto continue
+				end
 				selector.modDependencies[characterStat.OriginalModId] = {
 					modName = name,
 					modAuthor = author,
@@ -231,6 +234,7 @@ function StatSelector:enhanceExport(_, selector)
 
 			selector.modDependencies[characterStat.OriginalModId].packagedItems[characterStatCriteria.id] = characterStat.Name
 		end
+	    ::continue::
 	end
 end
 

@@ -127,6 +127,10 @@ function TagSelector:enhanceExport(_, selector)
 			selector.modDependencies = selector.modDependencies or {}
 			if not selector.modDependencies[tagSource] then
 				local name, author, version = Helpers:BuildModFields(tagSource)
+				if author == "Larian" then
+					goto continue
+				end
+				
 				selector.modDependencies[tagSource] = {
 					modName = name,
 					modAuthor = author,
@@ -140,6 +144,7 @@ function TagSelector:enhanceExport(_, selector)
 			local tagData = Ext.StaticData.Get(tagId, "Tag")
 			selector.modDependencies[tagSource].packagedItems[tagId] = tagData.DisplayName:Get() or tagData.Name
 		end
+	    ::continue::
 	end
 end
 

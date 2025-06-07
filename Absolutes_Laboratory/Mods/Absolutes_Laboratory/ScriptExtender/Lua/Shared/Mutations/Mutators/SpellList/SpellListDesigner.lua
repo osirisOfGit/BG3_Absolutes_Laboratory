@@ -465,6 +465,9 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 											local index = TableUtils:IndexOf(subList[handle.subListName], handle.spellName)
 											if index then
 												subList[handle.subListName][index] = nil
+												if not subList[handle.subListName]() then
+													subList[handle.subListName].delete = true
+												end
 											end
 										end
 									end
@@ -497,6 +500,9 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 									local index = TableUtils:IndexOf(subList[handle.subListName], handle.spellName)
 									if index then
 										subList[handle.subListName][index] = nil
+										if not subList[handle.subListName]() then
+											subList[handle.subListName].delete = true
+										end
 									end
 								end
 								self.selectedSpells.handles = {}

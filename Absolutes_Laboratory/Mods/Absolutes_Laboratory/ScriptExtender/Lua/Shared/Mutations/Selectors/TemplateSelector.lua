@@ -230,17 +230,19 @@ function TemplateSelector:enhanceExport(_, selector)
 		local fileName = characterTemplate.FileName:gsub("^.*[\\/]Mods[\\/]", ""):gsub("^.*[\\/]Public[\\/]", ""):match("([^/\\]+)")
 		fileName = fileName ~= "" and fileName or characterTemplate.FileName
 
-		selector.modDependencies = selector.modDependencies or {}
-		if not selector.modDependencies[fileName] then
-			selector.modDependencies[fileName] = {
-				modName = nil,
-				modAuthor = nil,
-				modVersion = nil,
-				modId = fileName,
-				packagedItems = {}
-			}
+		if not TableUtils:IndexOf({ "Shared", "SharedDev", "Gustav" }, fileName) then
+			selector.modDependencies = selector.modDependencies or {}
+			if not selector.modDependencies[fileName] then
+				selector.modDependencies[fileName] = {
+					modName = nil,
+					modAuthor = nil,
+					modVersion = nil,
+					modId = fileName,
+					packagedItems = {}
+				}
 
-			selector.modDependencies[fileName].packagedItems[templateCriteria.id] = characterTemplate.DisplayName:Get() or characterTemplate.Name
+				selector.modDependencies[fileName].packagedItems[templateCriteria.id] = characterTemplate.DisplayName:Get() or characterTemplate.Name
+			end
 		end
 	end
 end
