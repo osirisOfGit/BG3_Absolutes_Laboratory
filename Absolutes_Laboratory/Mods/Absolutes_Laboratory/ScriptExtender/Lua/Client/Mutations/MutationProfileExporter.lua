@@ -45,5 +45,7 @@ function MutationProfileExporter:exportProfile(profileID)
 		end
 	end
 
-	FileUtils:SaveTableToFile("ExportedProfiles/" .. profile.name .. ".json", export)
+	FileUtils:SaveTableToFile("ExportedProfiles/" .. profile.name .. ".json", {
+		["mutations"] = export
+	})
 end

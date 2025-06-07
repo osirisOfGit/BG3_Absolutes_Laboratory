@@ -227,7 +227,7 @@ function TemplateSelector:enhanceExport(_, selector)
 		---@type CharacterTemplate
 		local characterTemplate = Ext.ClientTemplate.GetTemplate(templateCriteria.id)
 
-		local fileName = characterTemplate.FileName:gsub("^.*[\\/]Mods[\\/]", ""):gsub("^.*[\\/]Public[\\/]", "")
+		local fileName = characterTemplate.FileName:gsub("^.*[\\/]Mods[\\/]", ""):gsub("^.*[\\/]Public[\\/]", ""):match("([^/\\]+)")
 		fileName = fileName ~= "" and fileName or characterTemplate.FileName
 
 		selector.modDependencies = selector.modDependencies or {}
@@ -240,7 +240,6 @@ function TemplateSelector:enhanceExport(_, selector)
 				packagedItems = {}
 			}
 
-			---@type ResourceFaction
 			selector.modDependencies[fileName].packagedItems[templateCriteria.id] = characterTemplate.DisplayName:Get() or characterTemplate.Name
 		end
 	end

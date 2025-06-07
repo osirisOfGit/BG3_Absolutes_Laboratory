@@ -45,7 +45,9 @@ end
 
 ---@param export MutationsConfig
 ---@param mutator Mutator
-function MutatorInterface:enhanceExport(export, mutator) end
+function MutatorInterface:enhanceExport(export, mutator)
+	self.registeredMutators[mutator.targetProperty]:enhanceExport(export, mutator)
+end
 
 ---@param entity EntityHandle
 ---@param entityVar MutatorEntityVar

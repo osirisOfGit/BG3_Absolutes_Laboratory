@@ -210,6 +210,10 @@ Setting to 0 will just use base, empty will use the last non-empty value in the 
 	--#endregion
 end
 
+function HealthMutator:enhanceExport()
+	-- NOOP
+end
+
 ---@param mutatorModifier HealthClassLevelModifier
 ---@param characterLevel number
 ---@return number

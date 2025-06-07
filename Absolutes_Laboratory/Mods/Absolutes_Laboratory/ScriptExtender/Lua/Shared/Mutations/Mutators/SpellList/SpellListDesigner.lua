@@ -14,6 +14,9 @@ SpellListDesigner.progressions = {}
 
 SpellListDesigner.progressionTranslation = {}
 
+---@type {[Guid]: {[number]: Guid}}
+SpellListDesigner.progressionTableToProgression = {}
+
 function SpellListDesigner:buildProgressionIndex()
 	if not next(self.progressions) then
 		for _, progressionId in pairs(Ext.StaticData.GetAll("Progression")) do
@@ -45,6 +48,9 @@ function SpellListDesigner:buildProgressionIndex()
 				end
 				if self.progressions[progression.Name][progression.Level] and #self.progressions[progression.Name][progression.Level] == 0 then
 					self.progressions[progression.Name][progression.Level] = nil
+				else
+					self.progressionTableToProgression[progression.TableUUID] = self.progressionTableToProgression[progression.TableUUID] or {}
+					self.progressionTableToProgression[progression.TableUUID][progression.Level] = progressionId
 				end
 			end
 		end
