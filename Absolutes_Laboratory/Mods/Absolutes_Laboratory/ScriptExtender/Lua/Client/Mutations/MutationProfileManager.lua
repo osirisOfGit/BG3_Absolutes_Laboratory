@@ -521,6 +521,7 @@ function MutationProfileManager:BuildProfileManager()
 
 			local fileNameInput = importGroup:AddInputText("")
 			fileNameInput.Hint = "imported/otherProfile.json"
+			fileNameInput:SetColor("Text", Styler:ConvertRGBAToIMGUI({ 1, 0, 0, 0.4 }))
 
 			local importButton = importGroup:AddButton("Import")
 			importButton.SameLine = true

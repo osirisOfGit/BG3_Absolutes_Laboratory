@@ -53,7 +53,7 @@ end
 ---@param entityVar MutatorEntityVar
 function MutatorInterface:applyMutator(entity, entityVar)
 	local time = Ext.Timer:MonotonicTime()
-	Logger:BasicDebug("=========================== STARTING %s_%s ===========================",
+	Logger:BasicDebug("=========================== STARTING MUTATION OF %s_%s ===========================",
 		entity.DisplayName and entity.DisplayName.Name:Get() or entity.ServerCharacter.Template.Name,
 		entity.Uuid.EntityUuid)
 
