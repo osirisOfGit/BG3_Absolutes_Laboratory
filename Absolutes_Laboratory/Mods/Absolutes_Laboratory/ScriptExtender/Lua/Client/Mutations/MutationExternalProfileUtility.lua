@@ -54,10 +54,10 @@ end
 local window
 
 ---@class DependencyFailure
----@field type "Selector"|"Mutator"
----@field target string
----@field folderName string
----@field mutationName string
+---@field type "Selector"|"Mutator"|"SpellList"
+---@field target string?
+---@field folderName string?
+---@field mutationName string?
 ---@field packagedItems {string: string}
 
 ---@param export {["mutations"]: MutationsConfig}
@@ -134,6 +134,28 @@ function MutationExternalProfileUtility:importProfile(export)
 						end
 					end
 					mutator.modDependencies = nil
+				end
+			end
+		end
+	end
+
+	if mutations.spellLists then
+		for _, spellList in pairs(mutations.spellLists) do
+			if spellList.modDependencies then
+				for modId, modDependency in pairs(spellList.modDependencies) do
+					if modDependency.modName then
+						if not Ext.Mod.GetMod(modId) then
+							failedDependencies[modId] = failedDependencies[modId] or {}
+							table.insert(failedDependencies[modId], {
+								type = "SpellList",
+								target = spellList.name,
+								packagedItems = modDependency.packagedItems
+							} --[[@as DependencyFailure]]
+							)
+
+							modCache[modId] = modDependency
+						end
+					end
 				end
 			end
 		end

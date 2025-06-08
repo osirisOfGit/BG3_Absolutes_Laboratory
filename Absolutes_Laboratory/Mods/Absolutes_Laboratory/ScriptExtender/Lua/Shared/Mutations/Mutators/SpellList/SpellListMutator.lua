@@ -736,18 +736,21 @@ end
 function SpellListMutator:enhanceExport(export, mutator)
 	SpellListDesigner:buildProgressionIndex()
 
-	local function buildSpellDep(spellName)
+	---@param spellName string
+	---@param container table?
+	local function buildSpellDep(spellName, container)
 		---@type SpellData?
 		local spell = Ext.Stats.Get(spellName)
 		if spell then
-			mutator.modDependencies = mutator.modDependencies or {}
-			if not mutator.modDependencies[spell.OriginalModId] then
+			container = container or mutator
+			container.modDependencies = container.modDependencies or {}
+			if not container.modDependencies[spell.OriginalModId] then
 				local name, author, version = Helpers:BuildModFields(spell.OriginalModId)
 				if author == "Larian" then
 					return
 				end
 
-				mutator.modDependencies[spell.OriginalModId] = {
+				container.modDependencies[spell.OriginalModId] = {
 					modName = name,
 					modAuthor = author,
 					modVersion = version,
@@ -755,7 +758,7 @@ function SpellListMutator:enhanceExport(export, mutator)
 					packagedItems = {}
 				}
 			end
-			mutator.modDependencies[spell.OriginalModId].packagedItems[spellName] = Ext.Loca.GetTranslatedString(spell.DisplayName, spellName)
+			container.modDependencies[spell.OriginalModId].packagedItems[spellName] = Ext.Loca.GetTranslatedString(spell.DisplayName, spellName)
 		end
 	end
 
@@ -818,6 +821,14 @@ function SpellListMutator:enhanceExport(export, mutator)
 											spellListDef.modDependencies[progressionSource].packagedItems[progressionId] = progression.Name
 										end
 										::continue::
+									end
+								end
+
+								if levelSubList.selectedSpells then
+									for _, spells in pairs(levelSubList.selectedSpells) do
+										for _, spell in pairs(spells) do
+											buildSpellDep(spell, spellListDef)
+										end
 									end
 								end
 							end

@@ -517,7 +517,7 @@ function MutationProfileManager:BuildProfileManager()
 			importGroup.Visible = false
 		else
 			importGroup.Visible = true
-			importGroup:AddText("Enter the full file name relative to Lab's SE Folder")
+			importGroup:AddText("Enter the full, EXACT (case-sensitive) file path + name relative to Lab's SE Folder")
 
 			local fileNameInput = importGroup:AddInputText("")
 			fileNameInput.Hint = "imported/otherProfile.json"
@@ -526,8 +526,14 @@ function MutationProfileManager:BuildProfileManager()
 			local importButton = importGroup:AddButton("Import")
 			importButton.SameLine = true
 
+			local errorGroup = importGroup:AddGroup("DepErrors")
+			errorGroup.Visible = false
+
 			local timer
 			fileNameInput.OnChange = function()
+				Helpers:KillChildren(errorGroup)
+				errorGroup.Visible = false
+
 				if timer then
 					Ext.Timer.Cancel(timer)
 				end
@@ -544,8 +550,14 @@ function MutationProfileManager:BuildProfileManager()
 			end
 
 			importButton.OnClick = function()
-				MutationExternalProfileUtility:importProfile(FileUtils:LoadTableFile(fileNameInput.Text))
-				self:BuildProfileManager()
+				local importFunc, mods, showDepWindowFunc = MutationExternalProfileUtility:importProfile(FileUtils:LoadTableFile(fileNameInput.Text))
+				if not importFunc then
+					self:BuildProfileManager()
+				else
+					errorGroup.Visible = true
+					errorGroup:AddSeparatorText("Missing Dependencies!")
+
+				end
 			end
 		end
 	end
