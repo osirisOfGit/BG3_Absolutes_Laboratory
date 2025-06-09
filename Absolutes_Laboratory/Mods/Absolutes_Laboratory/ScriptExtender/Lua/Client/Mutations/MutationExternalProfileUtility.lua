@@ -220,25 +220,19 @@ function MutationExternalProfileUtility:importProfile(export)
 			for _, dep in TableUtils:OrderedPairs(failedDependency, function(key, value)
 				return value.type .. (value.folderName or "") .. (value.mutationName or "") .. value.target
 			end) do
-				local depTable = header:AddTable("headers" .. (dep.folderName or dep.type) .. (dep.mutationName or dep.target), 5)
-				local headerRow = depTable:AddRow()
-				headerRow.Headers = true
-				headerRow:AddCell():AddText("Type")
-				headerRow:AddCell():AddText("Target")
-				headerRow:AddCell():AddText("Folder Name")
-				headerRow:AddCell():AddText("Mutation Name")
+				header:AddSeparatorText(string.format("%s: %s %s", dep.type, dep.target, dep.folderName and ("|" .. dep.folderName .. "/" .. dep.mutationName) or "")).Font = "Large"
 
-				local row = depTable:AddRow()
-				row:AddCell():AddText(dep.type)
-				row:AddCell():AddText(dep.target)
-				row:AddCell():AddText(dep.folderName or "")
-				row:AddCell():AddText(dep.mutationName or "")
-
-				header:AddSeparatorText("Missing Items"):SetStyle("SeparatorTextAlign", 0.2)
-
+				local itemsTable = header:AddTable("items", 2)
+				local itemHeaderRow = itemsTable:AddRow()
+				itemHeaderRow.Headers = true
+				itemHeaderRow:AddCell():AddText("Name")
+				itemHeaderRow:AddCell():AddText("ID")
 				for id, name in pairs(dep.packagedItems) do
-					header:AddText(string.format("%s (%s)", name, id))
+					local row = itemsTable:AddRow()
+					row:AddCell():AddText(name)
+					row:AddCell():AddText(id)
 				end
+				
 				header:AddNewLine()
 			end
 		end

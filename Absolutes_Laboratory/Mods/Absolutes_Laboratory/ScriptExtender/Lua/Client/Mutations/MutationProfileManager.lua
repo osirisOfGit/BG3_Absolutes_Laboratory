@@ -554,6 +554,7 @@ function MutationProfileManager:BuildProfileManager()
 					self:BuildProfileView()
 				else
 					errorGroup.Visible = true
+					Helpers:KillChildren(errorGroup)
 
 					errorGroup:AddSeparatorText("Missing Dependencies!"):SetColor("Separator", { 1, 0, 0, 0.4 })
 					Styler:MiddleAlignedColumnLayout(errorGroup, function(ele)
