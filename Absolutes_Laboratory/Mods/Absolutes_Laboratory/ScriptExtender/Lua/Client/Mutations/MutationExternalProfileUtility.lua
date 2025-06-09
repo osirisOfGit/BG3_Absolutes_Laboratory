@@ -65,7 +65,7 @@ local window
 ---@return {[Guid]: ModDependency}? modCache
 ---@return fun()? dependencyWindow
 function MutationExternalProfileUtility:importProfile(export)
-	local mutations = export["mutations"]
+	local importedMutations = export["mutations"]
 	local mutationConfig = ConfigurationStructure.config.mutations
 
 	---@type {[Guid]: ModDependency}
@@ -108,7 +108,7 @@ function MutationExternalProfileUtility:importProfile(export)
 		end
 	end
 
-	for _, folder in pairs(mutations.folders) do
+	for _, folder in pairs(importedMutations.folders) do
 		for _, mutation in pairs(folder.mutations) do
 			for _, selector in pairs(mutation.selectors) do
 				validateSelector(folder.name, mutation.name, selector)
@@ -139,8 +139,8 @@ function MutationExternalProfileUtility:importProfile(export)
 		end
 	end
 
-	if mutations.spellLists then
-		for _, spellList in pairs(mutations.spellLists) do
+	if importedMutations.spellLists then
+		for _, spellList in pairs(importedMutations.spellLists) do
 			if spellList.modDependencies then
 				for modId, modDependency in pairs(spellList.modDependencies) do
 					if modDependency.modName then
@@ -162,40 +162,39 @@ function MutationExternalProfileUtility:importProfile(export)
 	end
 
 	local function import()
-		for profileId, profile in pairs(mutations.profiles) do
+		for profileId, profile in pairs(importedMutations.profiles) do
 			if mutationConfig.profiles[profileId] then
 				mutationConfig.profiles[profileId].delete = true
 			end
 			mutationConfig.profiles[profileId] = profile
-
-			for folderId, folder in pairs(mutations.folders) do
-				if mutationConfig.folders[folderId] then
-					mutationConfig.folders[folderId].delete = true
-				end
-
-				if TableUtils:IndexOf(mutationConfig.folders, function(value)
-						return value.name == folder.name
-					end) then
-					folder.name = string.format("%s - %s", folder.name, "Imported")
-				end
-
-				mutationConfig.folders[folderId] = folder
+		end
+		for folderId, folder in pairs(importedMutations.folders) do
+			if mutationConfig.folders[folderId] then
+				mutationConfig.folders[folderId].delete = true
 			end
 
-			if mutations.spellLists then
-				for spellListId, spellList in pairs(mutations.spellLists) do
-					if mutationConfig.spellLists[spellListId] then
-						mutationConfig.spellLists[spellListId].delete = true
-					end
+			if TableUtils:IndexOf(mutationConfig.folders, function(value)
+					return value.name == folder.name
+				end) then
+				folder.name = string.format("%s - %s", folder.name, "Imported")
+			end
 
-					if TableUtils:IndexOf(mutationConfig.spellLists, function(value)
-							return value.name == spellList.name
-						end) then
-						spellList.name = string.format("%s - %s", spellList.name, "Imported")
-					end
+			mutationConfig.folders[folderId] = folder
+		end
 
-					mutationConfig.spellLists[spellListId] = spellList
+		if importedMutations.spellLists then
+			for spellListId, spellList in pairs(importedMutations.spellLists) do
+				if mutationConfig.spellLists[spellListId] then
+					mutationConfig.spellLists[spellListId].delete = true
 				end
+
+				if TableUtils:IndexOf(mutationConfig.spellLists, function(value)
+						return value.name == spellList.name
+					end) then
+					spellList.name = string.format("%s - %s", spellList.name, "Imported")
+				end
+
+				mutationConfig.spellLists[spellListId] = spellList
 			end
 		end
 	end
@@ -219,9 +218,9 @@ function MutationExternalProfileUtility:importProfile(export)
 			local header = window:AddCollapsingHeader(string.format("%s v%s by %s", modInfo.modName, table.concat(modInfo.modVersion, "."), modInfo.modAuthor:gsub("\\n", " ")))
 
 			for _, dep in TableUtils:OrderedPairs(failedDependency, function(key, value)
-				return value.type .. value.folderName .. value.mutationName .. value.target
+				return value.type .. (value.folderName or "") .. (value.mutationName or "") .. value.target
 			end) do
-				local depTable = header:AddTable("headers" .. dep.folderName .. dep.mutationName, 5)
+				local depTable = header:AddTable("headers" .. (dep.folderName or dep.type) .. (dep.mutationName or dep.target), 5)
 				local headerRow = depTable:AddRow()
 				headerRow.Headers = true
 				headerRow:AddCell():AddText("Type")
@@ -232,13 +231,13 @@ function MutationExternalProfileUtility:importProfile(export)
 				local row = depTable:AddRow()
 				row:AddCell():AddText(dep.type)
 				row:AddCell():AddText(dep.target)
-				row:AddCell():AddText(dep.folderName)
-				row:AddCell():AddText(dep.mutationName)
+				row:AddCell():AddText(dep.folderName or "")
+				row:AddCell():AddText(dep.mutationName or "")
 
 				header:AddSeparatorText("Missing Items"):SetStyle("SeparatorTextAlign", 0.2)
 
 				for id, name in pairs(dep.packagedItems) do
-					header:AddText("%s (%s)", name, id)
+					header:AddText(string.format("%s (%s)", name, id))
 				end
 				header:AddNewLine()
 			end

@@ -531,7 +531,6 @@ function MutationProfileManager:BuildProfileManager()
 
 			local timer
 			fileNameInput.OnChange = function()
-				Helpers:KillChildren(errorGroup)
 				errorGroup.Visible = false
 
 				if timer then
@@ -552,11 +551,34 @@ function MutationProfileManager:BuildProfileManager()
 			importButton.OnClick = function()
 				local importFunc, mods, showDepWindowFunc = MutationExternalProfileUtility:importProfile(FileUtils:LoadTableFile(fileNameInput.Text))
 				if not importFunc then
-					self:BuildProfileManager()
+					self:BuildProfileView()
 				else
 					errorGroup.Visible = true
-					errorGroup:AddSeparatorText("Missing Dependencies!")
 
+					errorGroup:AddSeparatorText("Missing Dependencies!"):SetColor("Separator", { 1, 0, 0, 0.4 })
+					Styler:MiddleAlignedColumnLayout(errorGroup, function(ele)
+						ele:AddButton("Continue").OnClick = function()
+							importFunc()
+							self:BuildProfileView()
+						end
+
+						local viewReport = ele:AddButton("View Report")
+						viewReport.SameLine = true
+						viewReport.OnClick = showDepWindowFunc
+					end)
+
+					local modTable = errorGroup:AddTable("Deps", 3)
+
+					for modId, mod in TableUtils:OrderedPairs(mods, function(key, value)
+						return value.modName
+					end) do
+						local row = modTable:AddRow()
+						row:AddCell():AddText(mod.modName)
+						row:AddCell():AddText(table.concat(mod.modVersion, "."))
+						row:AddCell():AddText(mod.modAuthor)
+					end
+
+					errorGroup:AddSeparatorText("Missing Dependencies!"):SetColor("Separator", { 1, 0, 0, 0.4 })
 				end
 			end
 		end
