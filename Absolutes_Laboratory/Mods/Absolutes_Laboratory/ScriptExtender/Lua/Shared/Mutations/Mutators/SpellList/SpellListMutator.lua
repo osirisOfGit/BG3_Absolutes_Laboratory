@@ -964,7 +964,7 @@ if Ext.IsServer() then
 				end
 			end
 
-			if origValues.castedSpells then
+			if origValues.castedSpells or origValues.addedSpells then
 				local toRemove = {}
 				for _, status in pairs(entity.ServerCharacter.StatusManager.Statuses) do
 					if status.SourceSpell
