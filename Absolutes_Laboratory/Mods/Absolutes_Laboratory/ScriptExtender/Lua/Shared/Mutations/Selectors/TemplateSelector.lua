@@ -222,29 +222,34 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 end
 
 ---@param selector TemplateSelector
-function TemplateSelector:enhanceExport(_, selector)
-	for _, templateCriteria in ipairs(selector.criteriaValue) do
+function TemplateSelector:handleDependencies(_, selector, removeMissingDependencies)
+	for i, templateCriteria in ipairs(selector.criteriaValue) do
 		---@type CharacterTemplate
 		local characterTemplate = Ext.ClientTemplate.GetTemplate(templateCriteria.id)
 
-		local fileName = characterTemplate.FileName:gsub("^.*[\\/]Mods[\\/]", ""):gsub("^.*[\\/]Public[\\/]", ""):match("([^/\\]+)")
-		fileName = fileName ~= "" and fileName or characterTemplate.FileName
+		if not characterTemplate then
+			selector.criteriaValue[i] = nil
+		elseif not removeMissingDependencies then
+			local fileName = characterTemplate.FileName:gsub("^.*[\\/]Mods[\\/]", ""):gsub("^.*[\\/]Public[\\/]", ""):match("([^/\\]+)")
+			fileName = fileName ~= "" and fileName or characterTemplate.FileName
 
-		if not TableUtils:IndexOf({ "Shared", "SharedDev", "Gustav" }, fileName) then
-			selector.modDependencies = selector.modDependencies or {}
-			if not selector.modDependencies[fileName] then
-				selector.modDependencies[fileName] = {
-					modName = nil,
-					modAuthor = nil,
-					modVersion = nil,
-					modId = fileName,
-					packagedItems = {}
-				}
+			if not TableUtils:IndexOf({ "Shared", "SharedDev", "Gustav" }, fileName) then
+				selector.modDependencies = selector.modDependencies or {}
+				if not selector.modDependencies[fileName] then
+					selector.modDependencies[fileName] = {
+						modName = nil,
+						modAuthor = nil,
+						modVersion = nil,
+						modId = fileName,
+						packagedItems = {}
+					}
 
-				selector.modDependencies[fileName].packagedItems[templateCriteria.id] = characterTemplate.DisplayName:Get() or characterTemplate.Name
+					selector.modDependencies[fileName].packagedItems[templateCriteria.id] = characterTemplate.DisplayName:Get() or characterTemplate.Name
+				end
 			end
 		end
 	end
+	TableUtils:ReindexNumericTable(selector.criteriaValue)
 end
 
 ---@param charTemplate CharacterTemplate

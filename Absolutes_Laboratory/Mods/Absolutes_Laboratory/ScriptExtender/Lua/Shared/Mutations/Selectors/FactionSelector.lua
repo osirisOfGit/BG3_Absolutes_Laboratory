@@ -221,36 +221,43 @@ function FactionSelector:renderSelector(parent, existingSelector)
 end
 
 ---@param selector FactionSelector
-function FactionSelector:enhanceExport(_, selector)
+function FactionSelector:handleDependencies(_, selector, removeMissingDependencies)
 	local factionSources = Ext.StaticData.GetSources("Faction")
 
-	for _, faction in ipairs(selector.criteriaValue) do
-		local factionSource = TableUtils:IndexOf(factionSources, function(value)
-			return TableUtils:IndexOf(value, faction.id) ~= nil
-		end)
+	for i, faction in ipairs(selector.criteriaValue) do
+		---@type ResourceFaction
+		local factionData = Ext.StaticData.Get(faction.id, "Faction")
 
-		if factionSource then
-			selector.modDependencies = selector.modDependencies or {}
-			if not selector.modDependencies[factionSource] then
-				local name, author, version = Helpers:BuildModFields(factionSource)
-				if author == "Larian" then
-					goto continue
+		if not factionData then
+			selector.criteriaValue[i] = nil
+		elseif not removeMissingDependencies then
+			local factionSource = TableUtils:IndexOf(factionSources, function(value)
+				return TableUtils:IndexOf(value, faction.id) ~= nil
+			end)
+
+			if factionSource then
+				selector.modDependencies = selector.modDependencies or {}
+				if not selector.modDependencies[factionSource] then
+					local name, author, version = Helpers:BuildModFields(factionSource)
+					if author == "Larian" then
+						goto continue
+					end
+					selector.modDependencies[factionSource] = {
+						modName = name,
+						modAuthor = author,
+						modVersion = version,
+						modId = factionSource,
+						packagedItems = {}
+					}
 				end
-				selector.modDependencies[factionSource] = {
-					modName = name,
-					modAuthor = author,
-					modVersion = version,
-					modId = factionSource,
-					packagedItems = {}
-				}
-			end
 
-			---@type ResourceFaction
-			local factionData = Ext.StaticData.Get(faction.id, "Faction")
-			selector.modDependencies[factionSource].packagedItems[faction.id] = factionData.Faction
+				selector.modDependencies[factionSource].packagedItems[faction.id] = factionData.Faction
+			end
 		end
 		::continue::
 	end
+
+	TableUtils:ReindexNumericTable(selector.criteriaValue)
 end
 
 ---@param charFaction ResourceFaction

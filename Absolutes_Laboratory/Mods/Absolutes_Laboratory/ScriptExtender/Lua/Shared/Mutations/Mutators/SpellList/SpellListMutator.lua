@@ -733,32 +733,38 @@ SpellSet are specified in the template under the same name, SpellSet2 are added 
 end
 
 ---@param mutator SpellListMutator
-function SpellListMutator:enhanceExport(export, mutator)
+function SpellListMutator:handleDependencies(export, mutator, removeMissingDependencies)
 	SpellListDesigner:buildProgressionIndex()
 
 	---@param spellName string
 	---@param container table?
+	---@return boolean?
 	local function buildSpellDep(spellName, container)
 		---@type SpellData?
 		local spell = Ext.Stats.Get(spellName)
 		if spell then
-			container = container or mutator
-			container.modDependencies = container.modDependencies or {}
-			if not container.modDependencies[spell.OriginalModId] then
-				local name, author, version = Helpers:BuildModFields(spell.OriginalModId)
-				if author == "Larian" then
-					return
-				end
+			if not removeMissingDependencies then
+				container = container or mutator
+				container.modDependencies = container.modDependencies or {}
+				if not container.modDependencies[spell.OriginalModId] then
+					local name, author, version = Helpers:BuildModFields(spell.OriginalModId)
+					if author == "Larian" then
+						return
+					end
 
-				container.modDependencies[spell.OriginalModId] = {
-					modName = name,
-					modAuthor = author,
-					modVersion = version,
-					modId = spell.OriginalModId,
-					packagedItems = {}
-				}
+					container.modDependencies[spell.OriginalModId] = {
+						modName = name,
+						modAuthor = author,
+						modVersion = version,
+						modId = spell.OriginalModId,
+						packagedItems = {}
+					}
+				end
+				container.modDependencies[spell.OriginalModId].packagedItems[spellName] = Ext.Loca.GetTranslatedString(spell.DisplayName, spellName)
 			end
-			container.modDependencies[spell.OriginalModId].packagedItems[spellName] = Ext.Loca.GetTranslatedString(spell.DisplayName, spellName)
+			return true
+		else
+			return false
 		end
 	end
 
@@ -766,69 +772,88 @@ function SpellListMutator:enhanceExport(export, mutator)
 
 	for _, spellGroup in pairs(mutator.values) do
 		if spellGroup.removeSpells then
-			for _, spellToRemove in pairs(spellGroup.removeSpells) do
-				buildSpellDep(spellToRemove)
+			for i, spellToRemove in pairs(spellGroup.removeSpells) do
+				if not buildSpellDep(spellToRemove) then
+					spellGroup.removeSpells[i] = nil
+				end
 			end
+			TableUtils:ReindexNumericTable(spellGroup.removeSpells)
 		end
 
 		if spellGroup.leveledSpellPool then
 			for _, leveledSpellPool in pairs(spellGroup.leveledSpellPool) do
 				if leveledSpellPool.spells then
 					for _, spells in pairs(leveledSpellPool.spells) do
-						for _, spell in pairs(spells) do
-							buildSpellDep(spell)
+						for i, spell in pairs(spells) do
+							if not buildSpellDep(spell) then
+								spells[i] = nil
+							end
 						end
+						TableUtils:ReindexNumericTable(spells)
 					end
 				end
 
 				if leveledSpellPool.spellLists then
 					for _, spellList in pairs(leveledSpellPool.spellLists) do
 						--- @type SpellList
-						local spellListDef = TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.spellLists[spellList]._real)
+						local spellListDef = removeMissingDependencies == true
+							and export.spellLists[spellList]
+							or TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.spellLists[spellList]._real)
 
 						if spellListDef.levels then
 							for level, levelSubList in pairs(spellListDef.levels) do
 								if levelSubList.linkedProgressions then
 									for progressionTableId, sublists in pairs(levelSubList.linkedProgressions) do
 										for _, spells in pairs(sublists) do
-											for _, spell in pairs(spells) do
-												buildSpellDep(spell)
+											for i, spell in pairs(spells) do
+												if not buildSpellDep(spell) then
+													spells[i] = nil
+												end
 											end
+											TableUtils:ReindexNumericTable(spells)
 										end
 
 										local progressionId = SpellListDesigner.progressionTableToProgression[progressionTableId][level]
-
-										local progressionSource = TableUtils:IndexOf(progressionSources, function(value)
-											return TableUtils:IndexOf(value, progressionId) ~= nil
-										end)
-										if progressionSource then
-											spellListDef.modDependencies = spellListDef.modDependencies or {}
-											if not spellListDef.modDependencies[progressionSource] then
-												local name, author, version = Helpers:BuildModFields(progressionSource)
-												if author == "Larian" then
-													goto continue
-												end
-												spellListDef.modDependencies[progressionSource] = {
-													modName = name,
-													modAuthor = author,
-													modVersion = version,
-													modId = progressionSource,
-													packagedItems = {}
-												}
-											end
+										if progressionId then
 											---@type ResourceProgression
 											local progression = Ext.StaticData.Get(progressionId, "Progression")
-											spellListDef.modDependencies[progressionSource].packagedItems[progressionId] = progression.Name
+											if not progression then
+												levelSubList.linkedProgressions[progressionId] = nil
+											elseif not removeMissingDependencies then
+												local progressionSource = TableUtils:IndexOf(progressionSources, function(value)
+													return TableUtils:IndexOf(value, progressionId) ~= nil
+												end)
+												if progressionSource then
+													spellListDef.modDependencies = spellListDef.modDependencies or {}
+													if not spellListDef.modDependencies[progressionSource] then
+														local name, author, version = Helpers:BuildModFields(progressionSource)
+														if author == "Larian" then
+															goto continue
+														end
+														spellListDef.modDependencies[progressionSource] = {
+															modName = name,
+															modAuthor = author,
+															modVersion = version,
+															modId = progressionSource,
+															packagedItems = {}
+														}
+													end
+													spellListDef.modDependencies[progressionSource].packagedItems[progressionId] = progression.Name
+												end
+												::continue::
+											end
 										end
-										::continue::
 									end
 								end
 
 								if levelSubList.selectedSpells then
 									for _, spells in pairs(levelSubList.selectedSpells) do
-										for _, spell in pairs(spells) do
-											buildSpellDep(spell, spellListDef)
+										for i, spell in pairs(spells) do
+											if not buildSpellDep(spell, spellListDef) then
+												spells[i] = nil
+											end
 										end
+										TableUtils:ReindexNumericTable(spells)
 									end
 								end
 							end
@@ -846,32 +871,39 @@ function SpellListMutator:enhanceExport(export, mutator)
 		if spellGroup.criteria then
 			if spellGroup.criteria.isOneOfClasses then
 				local classSources = Ext.StaticData.GetSources("ClassDescription")
-				for _, classId in pairs(spellGroup.criteria.isOneOfClasses) do
-					local source = TableUtils:IndexOf(classSources, function(value)
-						return TableUtils:IndexOf(value, classId) ~= nil
-					end)
-					if source then
-						mutator.modDependencies = mutator.modDependencies or {}
-						if not mutator.modDependencies[source] then
-							local name, author, version = Helpers:BuildModFields(source)
-							if author == "Larian" then
-								goto continue
+				for i, classId in pairs(spellGroup.criteria.isOneOfClasses) do
+					---@type ResourceClassDescription
+					local class = Ext.StaticData.Get(classId, "ClassDescription")
+					if not class then
+						spellGroup.criteria.isOneOfClasses[i] = nil
+					elseif not removeMissingDependencies then
+						local source = TableUtils:IndexOf(classSources, function(value)
+							return TableUtils:IndexOf(value, classId) ~= nil
+						end)
+						if source then
+							mutator.modDependencies = mutator.modDependencies or {}
+							if not mutator.modDependencies[source] then
+								local name, author, version = Helpers:BuildModFields(source)
+								if author == "Larian" then
+									goto continue
+								end
+								mutator.modDependencies[source] = {
+									modName = name,
+									modAuthor = author,
+									modVersion = version,
+									modId = source,
+									packagedItems = {}
+								}
 							end
-							mutator.modDependencies[source] = {
-								modName = name,
-								modAuthor = author,
-								modVersion = version,
-								modId = source,
-								packagedItems = {}
-							}
-						end
-						---@type ResourceClassDescription
-						local class = Ext.StaticData.Get(classId, "ClassDescription")
+							---@type ResourceClassDescription
+							local class = Ext.StaticData.Get(classId, "ClassDescription")
 
-						mutator.modDependencies[source][classId] = class.DisplayName:Get() or class.Name
+							mutator.modDependencies[source][classId] = class.DisplayName:Get() or class.Name
+						end
+						::continue::
 					end
-					::continue::
 				end
+				TableUtils:ReindexNumericTable(spellGroup.criteria.isOneOfClasses)
 			end
 		end
 	end

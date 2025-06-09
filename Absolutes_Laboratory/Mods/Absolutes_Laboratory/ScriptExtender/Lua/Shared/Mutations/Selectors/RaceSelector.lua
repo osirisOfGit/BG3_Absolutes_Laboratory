@@ -147,43 +147,59 @@ function RaceSelector:renderSelector(parent, existingSelector)
 end
 
 ---@param selector RaceSelector
-function RaceSelector:enhanceExport(_, selector)
-	local raceSources = Ext.StaticData.GetSources("Race")
-
-	local sources = {
-		[selector.criteriaValue.RaceId] = TableUtils:IndexOf(raceSources, function(value)
-			return TableUtils:IndexOf(value, selector.criteriaValue.RaceId) ~= nil
-		end)
-	}
-
-	if selector.criteriaValue.SubRaceIds then
-		for _, subRaceId in ipairs(selector.criteriaValue.SubRaceIds) do
-			sources[subRaceId] = TableUtils:IndexOf(raceSources, function(value)
-				return TableUtils:IndexOf(value, subRaceId) ~= nil
-			end)
-		end
-	end
-
-	for raceId, source in pairs(sources) do
-		selector.modDependencies = selector.modDependencies or {}
-		if not selector.modDependencies[source] then
-			local name, author, version = Helpers:BuildModFields(source)
-			if author == "Larian" then
-				goto continue
-			end
-			selector.modDependencies[source] = {
-				modName = name,
-				modAuthor = author,
-				modVersion = version,
-				modId = source,
-				packagedItems = {}
+function RaceSelector:handleDependencies(_, selector, removeMissingDependencies)
+	if removeMissingDependencies then
+		if not Ext.StaticData.Get(selector.criteriaValue.RaceId, "Race") then
+			selector.criteriaValue = {
+				RaceId = nil,
+				SubRaceIds = {}
 			}
-
-			---@type ResourceRace
-			local raceData = Ext.StaticData.Get(raceId, "Race")
-			selector.modDependencies[source].packagedItems[raceId] = raceData.DisplayName:Get() or raceData.Name
+		elseif selector.criteriaValue.SubRaceIds then
+			for i, subRaceId in ipairs(selector.criteriaValue.SubRaceIds) do
+				if not Ext.StaticData.Get(subRaceId, "Race") then
+					selector.criteriaValue.SubRaceIds[i] = nil
+				end
+			end
+			TableUtils:ReindexNumericTable(selector.criteriaValue.SubRaceIds)
 		end
-		::continue::
+	else
+		local raceSources = Ext.StaticData.GetSources("Race")
+
+		local sources = {
+			[selector.criteriaValue.RaceId] = TableUtils:IndexOf(raceSources, function(value)
+				return TableUtils:IndexOf(value, selector.criteriaValue.RaceId) ~= nil
+			end)
+		}
+
+		if selector.criteriaValue.SubRaceIds then
+			for _, subRaceId in ipairs(selector.criteriaValue.SubRaceIds) do
+				sources[subRaceId] = TableUtils:IndexOf(raceSources, function(value)
+					return TableUtils:IndexOf(value, subRaceId) ~= nil
+				end)
+			end
+		end
+
+		for raceId, source in pairs(sources) do
+			selector.modDependencies = selector.modDependencies or {}
+			if not selector.modDependencies[source] then
+				local name, author, version = Helpers:BuildModFields(source)
+				if author == "Larian" then
+					goto continue
+				end
+				selector.modDependencies[source] = {
+					modName = name,
+					modAuthor = author,
+					modVersion = version,
+					modId = source,
+					packagedItems = {}
+				}
+
+				---@type ResourceRace
+				local raceData = Ext.StaticData.Get(raceId, "Race")
+				selector.modDependencies[source].packagedItems[raceId] = raceData.DisplayName:Get() or raceData.Name
+			end
+			::continue::
+		end
 	end
 end
 

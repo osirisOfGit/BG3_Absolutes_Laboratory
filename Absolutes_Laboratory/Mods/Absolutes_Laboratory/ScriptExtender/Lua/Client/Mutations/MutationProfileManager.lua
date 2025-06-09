@@ -558,7 +558,9 @@ function MutationProfileManager:BuildProfileManager()
 
 					errorGroup:AddSeparatorText("Missing Dependencies!"):SetColor("Separator", { 1, 0, 0, 0.4 })
 					Styler:MiddleAlignedColumnLayout(errorGroup, function(ele)
-						ele:AddButton("Continue").OnClick = function()
+						local continueButton = ele:AddButton("Continue")
+						continueButton:Tooltip():AddText("\t This will remove all items that depend on a missing mod while importing - it will not affect the file")
+						continueButton.OnClick = function()
 							importFunc()
 							self:BuildProfileView()
 						end

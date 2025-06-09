@@ -1,51 +1,61 @@
 MutationExternalProfileUtility = {}
 
----@param profileID Guid
-function MutationExternalProfileUtility:exportProfile(profileID)
+---@param ... Guid
+function MutationExternalProfileUtility:exportProfile(...)
 	local mutationConfig = ConfigurationStructure.config.mutations
-
-	---@type MutationProfile
-	local profile = TableUtils:DeeplyCopyTable(mutationConfig.profiles[profileID]._real)
 
 	---@type MutationsConfig
 	---@diagnostic disable-next-line: missing-fields
 	local export = {
-		profiles = {
-			[profileID] = profile
-		},
+		profiles = {},
 		folders = {},
 		spellLists = {}
 	}
 
-	for _, mutationRule in ipairs(profile.mutationRules) do
-		local folder = mutationConfig.folders[mutationRule.mutationFolderId]
+	local names = ""
 
-		if not export.folders[mutationRule.mutationFolderId] then
-			export.folders[mutationRule.mutationFolderId] = {
-				name = folder.name,
-				description = folder.description,
-				mutations = {}
-			}
+	for _, profileID in pairs({ ... }) do
+		---@type MutationProfile
+		local profile = TableUtils:DeeplyCopyTable(mutationConfig.profiles[profileID]._real)
+
+		if #names > 0 then
+			names = names .. "-" .. profile.name
+		else
+			names = profile.name
 		end
 
-		---@type Mutation
-		local mutation = TableUtils:DeeplyCopyTable(folder.mutations[mutationRule.mutationId]._real)
+		export.profiles[profileID] = profile
 
-		export.folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId] = mutation
+		for _, mutationRule in ipairs(profile.mutationRules) do
+			local folder = mutationConfig.folders[mutationRule.mutationFolderId]
 
-		for _, selector in ipairs(mutation.selectors) do
-			if type(selector) == "table" then
-				---@cast selector Selector
-				SelectorInterface:enhanceExport(export, selector)
+			if not export.folders[mutationRule.mutationFolderId] then
+				export.folders[mutationRule.mutationFolderId] = {
+					name = folder.name,
+					description = folder.description,
+					mutations = {}
+				}
 			end
-		end
 
-		for _, mutator in ipairs(mutation.mutators) do
-			MutatorInterface:enhanceExport(export, mutator)
+			---@type Mutation
+			local mutation = TableUtils:DeeplyCopyTable(folder.mutations[mutationRule.mutationId]._real)
+
+			export.folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId] = mutation
+
+			for _, selector in ipairs(mutation.selectors) do
+				if type(selector) == "table" then
+					---@cast selector Selector
+					SelectorInterface:handleDependencies(export, selector)
+				end
+			end
+
+			for _, mutator in ipairs(mutation.mutators) do
+				MutatorInterface:handleDependencies(export, mutator)
+			end
 		end
 	end
 
-	FileUtils:SaveTableToFile("ExportedProfiles/" .. profile.name .. ".json", {
+	FileUtils:SaveTableToFile("ExportedProfiles/" .. names .. ".json", {
 		["mutations"] = export
 	})
 end
@@ -157,6 +167,7 @@ function MutationExternalProfileUtility:importProfile(export)
 						end
 					end
 				end
+				spellList.modDependencies = nil
 			end
 		end
 	end
@@ -177,6 +188,19 @@ function MutationExternalProfileUtility:importProfile(export)
 					return value.name == folder.name
 				end) then
 				folder.name = string.format("%s - %s", folder.name, "Imported")
+			end
+
+			for _, mutation in pairs(folder.mutations) do
+				for _, selector in ipairs(mutation.selectors) do
+					if type(selector) == "table" then
+						---@cast selector Selector
+						SelectorInterface:handleDependencies(importedMutations, selector, true)
+					end
+				end
+
+				for _, mutator in ipairs(mutation.mutators) do
+					MutatorInterface:handleDependencies(importedMutations, mutator, true)
+				end
 			end
 
 			mutationConfig.folders[folderId] = folder
@@ -232,7 +256,7 @@ function MutationExternalProfileUtility:importProfile(export)
 					row:AddCell():AddText(name)
 					row:AddCell():AddText(id)
 				end
-				
+
 				header:AddNewLine()
 			end
 		end

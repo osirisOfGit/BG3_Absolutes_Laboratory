@@ -349,94 +349,137 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 			end) do
 				---@type SpellData
 				local spellData = Ext.Stats.Get(spellName)
+				if spellData then
+					local spellImage = parentGroup:AddImageButton(spellName .. "##" .. level, spellData.Icon, { 48, 48 })
+					if spellImage.Image.Icon == "" then
+						spellImage:Destroy()
+						spellImage = parentGroup:AddImageButton(spellName .. "##" .. level, "Item_Unknown", { 48, 48 })
+					end
+					spellImage.SameLine = #parentGroup.Children > 0 and ((#parentGroup.Children - 1) % math.floor((self.designer.LastSize[1]) / 63) ~= 0)
+					spellImage:SetColor("Button", self.subListIndex[subListName].colour)
+					spellImage.UserData = {
+						spellName = spellName,
+						subListName = subListName,
+						level = level,
+						progressionTableId = progressionTableId
+					} --[[@as SpellHandle]]
 
-				local spellImage = parentGroup:AddImageButton(spellName .. "##" .. level, spellData.Icon, { 48, 48 })
-				if spellImage.Image.Icon == "" then
-					spellImage:Destroy()
-					spellImage = parentGroup:AddImageButton(spellName .. "##" .. level, "Item_Unknown", { 48, 48 })
-				end
-				spellImage.SameLine = #parentGroup.Children > 0 and ((#parentGroup.Children - 1) % math.floor((self.designer.LastSize[1]) / 63) ~= 0)
-				spellImage:SetColor("Button", self.subListIndex[subListName].colour)
-				spellImage.UserData = {
-					spellName = spellName,
-					subListName = subListName,
-					level = level,
-					progressionTableId = progressionTableId
-				} --[[@as SpellHandle]]
+					if not progressionTableId then
+						spellImage.CanDrag = true
+						spellImage.DragDropType = "SpellReorder"
 
-				if not progressionTableId then
-					spellImage.CanDrag = true
-					spellImage.DragDropType = "SpellReorder"
-
-					---@param spellImage ExtuiImageButton
-					---@param preview ExtuiTreeParent
-					spellImage.OnDragStart = function(spellImage, preview)
-						if self.selectedSpells.context == "Main" and #self.selectedSpells.spells > 0 then
-							preview:AddText("Moving:")
-							for _, spellName in pairs(self.selectedSpells.spells) do
-								preview:AddText(spellName.spellName)
+						---@param spellImage ExtuiImageButton
+						---@param preview ExtuiTreeParent
+						spellImage.OnDragStart = function(spellImage, preview)
+							if self.selectedSpells.context == "Main" and #self.selectedSpells.spells > 0 then
+								preview:AddText("Moving:")
+								for _, spellName in pairs(self.selectedSpells.spells) do
+									preview:AddText(spellName.spellName)
+								end
+							else
+								preview:AddText("Moving " .. spellName)
 							end
-						else
-							preview:AddText("Moving " .. spellName)
 						end
 					end
-				end
 
-				spellImage.OnClick = function()
-					if Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
-						local window = Ext.IMGUI.NewWindow(spellName)
-						window.Closeable = true
-						window.AlwaysAutoResize = true
+					spellImage.OnClick = function()
+						if Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
+							local window = Ext.IMGUI.NewWindow(spellName)
+							window.Closeable = true
+							window.AlwaysAutoResize = true
 
-						window.OnClose = function()
-							window:Destroy()
-							window = nil
-						end
-						ResourceManager:RenderDisplayWindow(spellData, window)
-					elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
-						if self.selectedSpells.context ~= "Main"
-							or (self.selectedSpells.linkedSpells and not progressionTableId)
-							or (not self.selectedSpells.linkedSpells and progressionTableId)
-						then
-							self.selectedSpells.context = "Main"
-							self.selectedSpells.spells = {}
-							for _, handle in pairs(self.selectedSpells.handles) do
-								if handle.UserData.subListName then
-									handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
-								else
-									handle:SetColor("Button", { 1, 1, 1, 0 })
+							window.OnClose = function()
+								window:Destroy()
+								window = nil
+							end
+							ResourceManager:RenderDisplayWindow(spellData, window)
+						elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
+							if self.selectedSpells.context ~= "Main"
+								or (self.selectedSpells.linkedSpells and not progressionTableId)
+								or (not self.selectedSpells.linkedSpells and progressionTableId)
+							then
+								self.selectedSpells.context = "Main"
+								self.selectedSpells.spells = {}
+								for _, handle in pairs(self.selectedSpells.handles) do
+									if handle.UserData.subListName then
+										handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
+									else
+										handle:SetColor("Button", { 1, 1, 1, 0 })
+									end
+								end
+								self.selectedSpells.handles = {}
+							end
+
+							if progressionTableId then
+								self.selectedSpells.linkedSpells = true
+							else
+								self.selectedSpells.linkedSpells = false
+							end
+
+							table.insert(self.selectedSpells.spells, spellImage.UserData)
+							table.insert(self.selectedSpells.handles, spellImage)
+							spellImage:SetColor("Button", { 0, 1, 0, .8 })
+						elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Alt" then
+							if self.selectedSpells.context == "Main" then
+								local index = TableUtils:IndexOf(self.selectedSpells.spells, function(value)
+									return value.spellName == spellName
+								end)
+								if index then
+									table.remove(self.selectedSpells.spells, index)
+									table.remove(self.selectedSpells.handles, index)
+
+									spellImage:SetColor("Button", self.subListIndex[spellImage.UserData.subListName].colour)
 								end
 							end
-							self.selectedSpells.handles = {}
-						end
-
-						if progressionTableId then
-							self.selectedSpells.linkedSpells = true
 						else
-							self.selectedSpells.linkedSpells = false
-						end
+							Helpers:KillChildren(popup)
+							popup:Open()
+							for subListCategory, index in TableUtils:OrderedPairs(self.subListIndex) do
+								if subListCategory ~= subListName and (subListCategory ~= "blackListed" or progressionTableId) then
+									popup:AddSelectable("Set As " .. index.name .. "##" .. level).OnClick = function()
+										---@type SpellHandle[]
+										local handles = {}
+										if self.selectedSpells.context == "Main" and #self.selectedSpells.spells > 0 then
+											handles = self.selectedSpells.spells
+										end
 
-						table.insert(self.selectedSpells.spells, spellImage.UserData)
-						table.insert(self.selectedSpells.handles, spellImage)
-						spellImage:SetColor("Button", { 0, 1, 0, .8 })
-					elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Alt" then
-						if self.selectedSpells.context == "Main" then
-							local index = TableUtils:IndexOf(self.selectedSpells.spells, function(value)
-								return value.spellName == spellName
-							end)
-							if index then
-								table.remove(self.selectedSpells.spells, index)
-								table.remove(self.selectedSpells.handles, index)
+										if not TableUtils:IndexOf(handles, function(value)
+												return value.spellName == spellName
+											end)
+										then
+											table.insert(handles, spellImage.UserData)
+										end
 
-								spellImage:SetColor("Button", self.subListIndex[spellImage.UserData.subListName].colour)
+										for _, handle in pairs(handles) do
+											---@type SpellSubLists
+											local subList = spellList.levels[handle.level][handle.progressionTableId and "linkedProgressions" or "selectedSpells"]
+											if handle.progressionTableId then
+												subList = subList[handle.progressionTableId]
+											end
+
+											if subListCategory ~= "randomized" or not progressionTableId then
+												subList[subListCategory] = subList[subListCategory] or {}
+												table.insert(subList[subListCategory], handle.spellName)
+											end
+											if handle.subListName then
+												local index = TableUtils:IndexOf(subList[handle.subListName], handle.spellName)
+												if index then
+													subList[handle.subListName][index] = nil
+													if not subList[handle.subListName]() then
+														subList[handle.subListName].delete = true
+													end
+												end
+											end
+										end
+										self.selectedSpells.handles = {}
+										self.selectedSpells.spells = {}
+										self:buildSpellListDesigner(spellList)
+									end
+								end
 							end
-						end
-					else
-						Helpers:KillChildren(popup)
-						popup:Open()
-						for subListCategory, index in TableUtils:OrderedPairs(self.subListIndex) do
-							if subListCategory ~= subListName and (subListCategory ~= "blackListed" or progressionTableId) then
-								popup:AddSelectable("Set As " .. index.name .. "##" .. level).OnClick = function()
+
+							if not progressionTableId then
+								popup:AddSelectable("Remove").OnClick = function()
 									---@type SpellHandle[]
 									local handles = {}
 									if self.selectedSpells.context == "Main" and #self.selectedSpells.spells > 0 then
@@ -452,22 +495,13 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 
 									for _, handle in pairs(handles) do
 										---@type SpellSubLists
-										local subList = spellList.levels[handle.level][handle.progressionTableId and "linkedProgressions" or "selectedSpells"]
-										if handle.progressionTableId then
-											subList = subList[handle.progressionTableId]
-										end
+										local subList = spellList.levels[handle.level].selectedSpells
 
-										if subListCategory ~= "randomized" or not progressionTableId then
-											subList[subListCategory] = subList[subListCategory] or {}
-											table.insert(subList[subListCategory], handle.spellName)
-										end
-										if handle.subListName then
-											local index = TableUtils:IndexOf(subList[handle.subListName], handle.spellName)
-											if index then
-												subList[handle.subListName][index] = nil
-												if not subList[handle.subListName]() then
-													subList[handle.subListName].delete = true
-												end
+										local index = TableUtils:IndexOf(subList[handle.subListName], handle.spellName)
+										if index then
+											subList[handle.subListName][index] = nil
+											if not subList[handle.subListName]() then
+												subList[handle.subListName].delete = true
 											end
 										end
 									end
@@ -477,63 +511,30 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 								end
 							end
 						end
+					end
 
-						if not progressionTableId then
-							popup:AddSelectable("Remove").OnClick = function()
-								---@type SpellHandle[]
-								local handles = {}
-								if self.selectedSpells.context == "Main" and #self.selectedSpells.spells > 0 then
-									handles = self.selectedSpells.spells
-								end
+					local tooltip = spellImage:Tooltip()
 
-								if not TableUtils:IndexOf(handles, function(value)
-										return value.spellName == spellName
-									end)
-								then
-									table.insert(handles, spellImage.UserData)
-								end
-
-								for _, handle in pairs(handles) do
-									---@type SpellSubLists
-									local subList = spellList.levels[handle.level].selectedSpells
-
-									local index = TableUtils:IndexOf(subList[handle.subListName], handle.spellName)
-									if index then
-										subList[handle.subListName][index] = nil
-										if not subList[handle.subListName]() then
-											subList[handle.subListName].delete = true
-										end
-									end
-								end
-								self.selectedSpells.handles = {}
-								self.selectedSpells.spells = {}
-								self:buildSpellListDesigner(spellList)
+					spellImage.OnHoverEnter = function()
+						Helpers:KillChildren(tooltip)
+						if Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
+							ResourceManager:RenderDisplayWindow(spellData, tooltip)
+						else
+							tooltip:AddText("\t " .. spellName)
+							tooltip:AddText("\t " .. self.subListIndex[subListName].name)
+							if progressionTableId then
+								tooltip:AddText("\t  Linked from Progression " .. self.progressionTranslation[progressionTableId])
 							end
 						end
 					end
-				end
 
-				local tooltip = spellImage:Tooltip()
-
-				spellImage.OnHoverEnter = function()
-					Helpers:KillChildren(tooltip)
-					if Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
-						ResourceManager:RenderDisplayWindow(spellData, tooltip)
-					else
+					spellImage.OnHoverLeave = function()
+						Helpers:KillChildren(tooltip)
 						tooltip:AddText("\t " .. spellName)
 						tooltip:AddText("\t " .. self.subListIndex[subListName].name)
 						if progressionTableId then
-							tooltip:AddText("\t  Linked from Progression " .. self.progressionTranslation[progressionTableId])
+							tooltip:AddText("\tLinked from Progression: " .. self.progressionTranslation[progressionTableId])
 						end
-					end
-				end
-
-				spellImage.OnHoverLeave = function()
-					Helpers:KillChildren(tooltip)
-					tooltip:AddText("\t " .. spellName)
-					tooltip:AddText("\t " .. self.subListIndex[subListName].name)
-					if progressionTableId then
-						tooltip:AddText("\tLinked from Progression: " .. self.progressionTranslation[progressionTableId])
 					end
 				end
 			end

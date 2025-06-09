@@ -192,7 +192,6 @@ Setting to 0 will just use base, empty will use the last non-empty value in the 
 			local row = xpLevelTable:AddRow()
 			local levelCell = row:AddCell()
 
-
 			Styler:HyperlinkText(levelCell, xpRewardResource.Name, function(parent)
 				ResourceManager:RenderDisplayWindow(xpRewardResource, parent)
 			end)
@@ -210,7 +209,7 @@ Setting to 0 will just use base, empty will use the last non-empty value in the 
 	--#endregion
 end
 
-function HealthMutator:enhanceExport()
+function HealthMutator:handleDependencies()
 	-- NOOP
 end
 

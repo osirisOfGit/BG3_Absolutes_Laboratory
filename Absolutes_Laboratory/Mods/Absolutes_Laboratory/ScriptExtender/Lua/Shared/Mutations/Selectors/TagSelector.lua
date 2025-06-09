@@ -115,37 +115,42 @@ function TagSelector:renderSelector(parent, existingSelector)
 end
 
 ---@param selector TagSelector
-function TagSelector:enhanceExport(_, selector)
+function TagSelector:handleDependencies(_, selector, removeMissingDependencies)
 	local tagSources = Ext.StaticData.GetSources("Tag")
 
-	for _, tagId in ipairs(selector.criteriaValue) do
-		local tagSource = TableUtils:IndexOf(tagSources, function(value)
-			return TableUtils:IndexOf(value, tagId) ~= nil
-		end)
+	for i, tagId in ipairs(selector.criteriaValue) do
+		---@type ResourceTag
+		local tagData = Ext.StaticData.Get(tagId, "Tag")
+		if not tagData then
+			selector.criteriaValue[i] = nil
+		elseif not removeMissingDependencies then
+			local tagSource = TableUtils:IndexOf(tagSources, function(value)
+				return TableUtils:IndexOf(value, tagId) ~= nil
+			end)
 
-		if tagSource then
-			selector.modDependencies = selector.modDependencies or {}
-			if not selector.modDependencies[tagSource] then
-				local name, author, version = Helpers:BuildModFields(tagSource)
-				if author == "Larian" then
-					goto continue
+			if tagSource then
+				selector.modDependencies = selector.modDependencies or {}
+				if not selector.modDependencies[tagSource] then
+					local name, author, version = Helpers:BuildModFields(tagSource)
+					if author == "Larian" then
+						goto continue
+					end
+
+					selector.modDependencies[tagSource] = {
+						modName = name,
+						modAuthor = author,
+						modVersion = version,
+						modId = tagSource,
+						packagedItems = {}
+					}
 				end
-				
-				selector.modDependencies[tagSource] = {
-					modName = name,
-					modAuthor = author,
-					modVersion = version,
-					modId = tagSource,
-					packagedItems = {}
-				}
-			end
 
-			---@type ResourceTag
-			local tagData = Ext.StaticData.Get(tagId, "Tag")
-			selector.modDependencies[tagSource].packagedItems[tagId] = tagData.DisplayName:Get() or tagData.Name
+				selector.modDependencies[tagSource].packagedItems[tagId] = tagData.DisplayName:Get() or tagData.Name
+			end
+			::continue::
 		end
-	    ::continue::
 	end
+	TableUtils:ReindexNumericTable(selector.criteriaValue)
 end
 
 ---@param selector TagSelector

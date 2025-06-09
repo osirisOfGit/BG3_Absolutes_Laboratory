@@ -211,31 +211,35 @@ function StatSelector:renderSelector(parent, existingSelector)
 end
 
 ---@param selector StatSelector
-function StatSelector:enhanceExport(_, selector)
-	for _, characterStatCriteria in ipairs(selector.criteriaValue) do
+function StatSelector:handleDependencies(_, selector, removeMissingDependencies)
+	for i, characterStatCriteria in ipairs(selector.criteriaValue) do
 		---@type Character
 		local characterStat = Ext.Stats.Get(characterStatCriteria.id)
-
-		if characterStat.OriginalModId ~= "" then
-			selector.modDependencies = selector.modDependencies or {}
-			if not selector.modDependencies[characterStat.OriginalModId] then
-				local name, author, version = Helpers:BuildModFields(characterStat.OriginalModId)
-				if author == "Larian" then
-					goto continue
+		if not characterStat then
+			selector.criteriaValue[i] = nil
+		elseif not removeMissingDependencies then
+			if characterStat.OriginalModId ~= "" then
+				selector.modDependencies = selector.modDependencies or {}
+				if not selector.modDependencies[characterStat.OriginalModId] then
+					local name, author, version = Helpers:BuildModFields(characterStat.OriginalModId)
+					if author == "Larian" then
+						goto continue
+					end
+					selector.modDependencies[characterStat.OriginalModId] = {
+						modName = name,
+						modAuthor = author,
+						modVersion = version,
+						modId = characterStat.OriginalModId,
+						packagedItems = {}
+					}
 				end
-				selector.modDependencies[characterStat.OriginalModId] = {
-					modName = name,
-					modAuthor = author,
-					modVersion = version,
-					modId = characterStat.OriginalModId,
-					packagedItems = {}
-				}
-			end
 
-			selector.modDependencies[characterStat.OriginalModId].packagedItems[characterStatCriteria.id] = characterStat.Name
+				selector.modDependencies[characterStat.OriginalModId].packagedItems[characterStatCriteria.id] = characterStat.Name
+			end
 		end
-	    ::continue::
+		::continue::
 	end
+	TableUtils:ReindexNumericTable(selector.criteriaValue)
 end
 
 ---@param charStat Character

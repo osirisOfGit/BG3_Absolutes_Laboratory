@@ -24,13 +24,14 @@ function SelectorInterface:renderSelector(parent, existingSelector) end
 
 ---@param export MutationsConfig
 ---@param selector Selector
-function SelectorInterface:enhanceExport(export, selector)
-	self.registeredSelectors[selector.criteriaCategory]:enhanceExport(export, selector)
+---@param removeMissingDependencies boolean?
+function SelectorInterface:handleDependencies(export, selector, removeMissingDependencies)
+	self.registeredSelectors[selector.criteriaCategory]:handleDependencies(export, selector, removeMissingDependencies)
 	if selector.subSelectors then
 		for _, subSelector in pairs(selector.subSelectors) do
 			if type(subSelector) == "table" then
 				---@cast subSelector Selector
-				self:enhanceExport(export, subSelector)
+				self:handleDependencies(export, subSelector, removeMissingDependencies)
 			end
 		end
 	end

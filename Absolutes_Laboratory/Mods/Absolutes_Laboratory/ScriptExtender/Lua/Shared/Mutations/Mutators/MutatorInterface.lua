@@ -45,8 +45,9 @@ end
 
 ---@param export MutationsConfig
 ---@param mutator Mutator
-function MutatorInterface:enhanceExport(export, mutator)
-	self.registeredMutators[mutator.targetProperty]:enhanceExport(export, mutator)
+---@param removeMissingDependencies boolean?
+function MutatorInterface:handleDependencies(export, mutator, removeMissingDependencies)
+	self.registeredMutators[mutator.targetProperty]:handleDependencies(export, mutator, removeMissingDependencies)
 end
 
 ---@param entity EntityHandle

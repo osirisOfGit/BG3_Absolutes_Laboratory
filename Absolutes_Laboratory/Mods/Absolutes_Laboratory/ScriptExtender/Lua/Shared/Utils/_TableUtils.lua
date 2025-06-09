@@ -157,15 +157,13 @@ function TableUtils:IndexOf(list, str)
 end
 
 --- Reindexes a table with numeric keys so they increment sequentially from 1, modifying the input table in-place
----@param tbl table
----@return table
+---@generic T:table
+---@param tbl T
+---@return T
 function TableUtils:ReindexNumericTable(tbl)
 	local values = {}
-	for _, value in pairs(tbl) do
+	for k, value in pairs(tbl) do
 		table.insert(values, value)
-	end
-	-- Clear the original table
-	for k in pairs(tbl) do
 		tbl[k] = nil
 	end
 	-- Reinsert values with sequential numeric keys
