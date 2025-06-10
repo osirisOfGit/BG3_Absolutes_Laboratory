@@ -202,10 +202,7 @@ function MutationExternalProfileUtility:exportProfile(forMod, ...)
 
 	if forMod then
 		names = "AbsolutesLaboratory_Mutations"
-		local deps = self:BuildMetaDependencyBlock(export)
-		if deps then
-			FileUtils:SaveStringContentToFile("ExportedProfiles/ExportedModMetaLsxDependencies.lsx", deps)
-		end
+		FileUtils:SaveStringContentToFile("ExportedProfiles/ExportedModMetaLsxDependencies.lsx", self:BuildMetaDependencyBlock(export) or "")
 	end
 
 	FileUtils:SaveTableToFile("ExportedProfiles/" .. names .. ".json", {

@@ -581,7 +581,7 @@ function MutationProfileManager:BuildProfileManager()
 					end) do
 						local row = modTable:AddRow()
 						if failedDependencies[modId] then
-							row:SetColor("Text", { 1, 0, 0, 0.4 })
+							row:SetColor("Text", { 1, 0, 0, 0.6 })
 						end
 
 						row:AddCell():AddText(mod.modName)
