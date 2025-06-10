@@ -553,7 +553,7 @@ function MutationProfileManager:BuildProfileManager()
 			end
 
 			importButton.OnClick = function()
-				local importFunc, mods, showDepWindowFunc = MutationExternalProfileUtility:importProfile(FileUtils:LoadTableFile(fileNameInput.Text))
+				local importFunc, mods, failedDependencies, showDepWindowFunc = MutationExternalProfileUtility:importProfile(FileUtils:LoadTableFile(fileNameInput.Text))
 				if not importFunc then
 					self:BuildProfileView()
 				else
@@ -580,6 +580,10 @@ function MutationProfileManager:BuildProfileManager()
 						return value.modName
 					end) do
 						local row = modTable:AddRow()
+						if failedDependencies[modId] then
+							row:SetColor("Text", { 1, 0, 0, 0.4 })
+						end
+
 						row:AddCell():AddText(mod.modName)
 						row:AddCell():AddText(table.concat(mod.modVersion, "."))
 						row:AddCell():AddText(mod.modAuthor)
@@ -649,7 +653,11 @@ function MutationProfileManager:BuildProfileManager()
 
 		if profile.mutationRules and profile.mutationRules() then
 			profileMenu:AddItem("Export").OnClick = function()
-				MutationExternalProfileUtility:exportProfile(profileId)
+				MutationExternalProfileUtility:exportProfile(false, profileId)
+			end
+
+			profileMenu:AddItem("Export For Mod").OnClick = function()
+				MutationExternalProfileUtility:exportProfile(true, profileId)
 			end
 		end
 		profileMenu:AddItem("Delete").OnClick = function()
@@ -679,7 +687,23 @@ function MutationProfileManager:BuildProfileManager()
 				end
 
 				if next(profilesToExport) then
-					MutationExternalProfileUtility:exportProfile(table.unpack(profilesToExport))
+					MutationExternalProfileUtility:exportProfile(false, table.unpack(profilesToExport))
+				end
+			end
+
+			local exportForModButton = exportProfilesMenu:AddSelectable("Export For mod")
+			exportForModButton:SetStyle("SelectableTextAlign", 0.5)
+			exportForModButton.OnClick = function()
+				local profilesToExport = {}
+
+				for _, child in pairs(exportProfilesMenu.Children) do
+					if child.UserData and child.Checked then
+						table.insert(profilesToExport, child.UserData)
+					end
+				end
+
+				if next(profilesToExport) then
+					MutationExternalProfileUtility:exportProfile(true, table.unpack(profilesToExport))
 				end
 			end
 		end)

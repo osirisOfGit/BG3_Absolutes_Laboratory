@@ -1,7 +1,152 @@
 MutationExternalProfileUtility = {}
 
+---@param importedMutations MutationsConfig
+---@return { [string]: ModDependency } modCache
+---@return { [string]: DependencyFailure[] } failedDependencies
+function MutationExternalProfileUtility:ValidateMutations(importedMutations)
+	---@type {[Guid]: ModDependency}
+	local modCache = {}
+
+	---@type {[Guid]: DependencyFailure[]}
+	local failedDependencies = {}
+
+	---@param folderName string
+	---@param mutationName string
+	---@param selector Selector
+	local function validateSelector(folderName, mutationName, selector)
+		if type(selector) == "table" then
+			if selector.modDependencies then
+				for modId, modDependency in pairs(selector.modDependencies) do
+					modCache[modId] = modDependency
+					if modDependency.modName or not Ext.Template.GetTemplate(next(modDependency.packagedItems)) then
+						if not Ext.Mod.GetMod(modId) then
+							failedDependencies[modId] = failedDependencies[modId] or {}
+							table.insert(failedDependencies[modId], {
+								type = "Selector",
+								target = selector.criteriaCategory,
+								folderName = folderName,
+								mutationName = mutationName,
+								packagedItems = modDependency.packagedItems
+							} --[[@as DependencyFailure]]
+							)
+						end
+					end
+				end
+				selector.modDependencies = nil
+			end
+
+			if selector.subSelectors then
+				for _, subSelector in pairs(selector.subSelectors) do
+					validateSelector(folderName, mutationName, subSelector)
+				end
+			end
+		end
+	end
+
+	for _, folder in pairs(importedMutations.folders) do
+		for _, mutation in pairs(folder.mutations) do
+			for _, selector in pairs(mutation.selectors) do
+				validateSelector(folder.name, mutation.name, selector)
+			end
+
+			for _, mutator in pairs(mutation.mutators) do
+				if mutator.modDependencies then
+					for modId, modDependency in pairs(mutator.modDependencies) do
+						modCache[modId] = modDependency
+						if modDependency.modName then
+							if not Ext.Mod.GetMod(modId) then
+								failedDependencies[modId] = failedDependencies[modId] or {}
+								table.insert(failedDependencies[modId], {
+									type = "Mutator",
+									target = mutator.targetProperty,
+									folderName = folder.name,
+									mutationName = mutation.name,
+									packagedItems = modDependency.packagedItems
+								} --[[@as DependencyFailure]]
+								)
+
+								modCache[modId] = modDependency
+							end
+						end
+					end
+					mutator.modDependencies = nil
+				end
+			end
+		end
+	end
+
+	if importedMutations.spellLists then
+		for _, spellList in pairs(importedMutations.spellLists) do
+			if spellList.modDependencies then
+				for modId, modDependency in pairs(spellList.modDependencies) do
+					modCache[modId] = modDependency
+					if modDependency.modName then
+						if not Ext.Mod.GetMod(modId) then
+							failedDependencies[modId] = failedDependencies[modId] or {}
+							table.insert(failedDependencies[modId], {
+								type = "SpellList",
+								target = spellList.name,
+								packagedItems = modDependency.packagedItems
+							} --[[@as DependencyFailure]]
+							)
+						end
+					end
+				end
+				spellList.modDependencies = nil
+			end
+		end
+	end
+
+	return modCache, failedDependencies
+end
+
+local dependencyBlock = [[
+<node id="ModuleShortDesc">
+	<attribute id="Folder" type="LSWString" value="%s" />
+	<attribute id="MD5" type="LSString" value="" />
+	<attribute id="Name" type="FixedString" value="%s" />
+	<attribute id="UUID" type="FixedString" value="%s" />
+	<attribute id="Version64" type="int64" value="%s" />
+</node>
+]]
+function MutationExternalProfileUtility:BuildMetaDependencyBlock(mutationConfig)
+	local mods = self:ValidateMutations(TableUtils:DeeplyCopyTable(mutationConfig))
+
+	if next(mods) then
+		local output = ""
+		for modId in TableUtils:OrderedPairs(mods, function(key, value)
+			return value.modName
+		end) do
+			local modInfo = Ext.Mod.GetMod(modId)
+			if modInfo then
+				local modInfo = modInfo.Info
+				if #output ~= 0 then
+					output = output .. "\n"
+				end
+
+				local ver = 0
+
+				ver = ver + (modInfo.ModVersion[1] * 36028797018963968)
+				ver = ver + (modInfo.ModVersion[2] * 140737488355328)
+				ver = ver + (modInfo.ModVersion[3] * 2147483648)
+				ver = ver + (modInfo.ModVersion[4] * 1)
+
+				output = output .. string.format(dependencyBlock,
+					modInfo.Directory,
+					modInfo.Name,
+					modInfo.ModuleUUID,
+					ver)
+			end
+		end
+		if #output > 0 then
+			return output
+		end
+	end
+end
+
+---@param forMod boolean
 ---@param ... Guid
-function MutationExternalProfileUtility:exportProfile(...)
+function MutationExternalProfileUtility:exportProfile(forMod, ...)
 	local mutationConfig = ConfigurationStructure.config.mutations
 
 	---@type MutationsConfig
@@ -55,6 +200,14 @@ function MutationExternalProfileUtility:exportProfile(...)
 		end
 	end
 
+	if forMod then
+		names = "AbsolutesLaboratory_Mutations"
+		local deps = self:BuildMetaDependencyBlock(export)
+		if deps then
+			FileUtils:SaveStringContentToFile("ExportedProfiles/ExportedModMetaLsxDependencies.lsx", deps)
+		end
+	end
+
 	FileUtils:SaveTableToFile("ExportedProfiles/" .. names .. ".json", {
 		["mutations"] = export
 	})
@@ -73,104 +226,13 @@ local window
 ---@param export {["mutations"]: MutationsConfig}
 ---@return fun()? import
 ---@return {[Guid]: ModDependency}? modCache
+---@return { [string]: DependencyFailure[] }? failedDependencies
 ---@return fun()? dependencyWindow
 function MutationExternalProfileUtility:importProfile(export)
 	local importedMutations = export["mutations"]
 	local mutationConfig = ConfigurationStructure.config.mutations
 
-	---@type {[Guid]: ModDependency}
-	local modCache = {}
-
-	---@type {[Guid]: DependencyFailure[]}
-	local failedDependencies = {}
-
-	---@param folderName string
-	---@param mutationName string
-	---@param selector Selector
-	local function validateSelector(folderName, mutationName, selector)
-		if type(selector) == "table" then
-			if selector.modDependencies then
-				for modId, modDependency in pairs(selector.modDependencies) do
-					if modDependency.modName or not Ext.Template.GetTemplate(next(modDependency.packagedItems)) then
-						if not Ext.Mod.GetMod(modId) then
-							failedDependencies[modId] = failedDependencies[modId] or {}
-							table.insert(failedDependencies[modId], {
-								type = "Selector",
-								target = selector.criteriaCategory,
-								folderName = folderName,
-								mutationName = mutationName,
-								packagedItems = modDependency.packagedItems
-							} --[[@as DependencyFailure]]
-							)
-
-							modCache[modId] = modDependency
-						end
-					end
-				end
-				selector.modDependencies = nil
-			end
-
-			if selector.subSelectors then
-				for _, subSelector in pairs(selector.subSelectors) do
-					validateSelector(folderName, mutationName, subSelector)
-				end
-			end
-		end
-	end
-
-	for _, folder in pairs(importedMutations.folders) do
-		for _, mutation in pairs(folder.mutations) do
-			for _, selector in pairs(mutation.selectors) do
-				validateSelector(folder.name, mutation.name, selector)
-			end
-
-			for _, mutator in pairs(mutation.mutators) do
-				if mutator.modDependencies then
-					for modId, modDependency in pairs(mutator.modDependencies) do
-						if modDependency.modName then
-							if not Ext.Mod.GetMod(modId) then
-								failedDependencies[modId] = failedDependencies[modId] or {}
-								table.insert(failedDependencies[modId], {
-									type = "Mutator",
-									target = mutator.targetProperty,
-									folderName = folder.name,
-									mutationName = mutation.name,
-									packagedItems = modDependency.packagedItems
-								} --[[@as DependencyFailure]]
-								)
-
-								modCache[modId] = modDependency
-							end
-						end
-					end
-					mutator.modDependencies = nil
-				end
-			end
-		end
-	end
-
-	if importedMutations.spellLists then
-		for _, spellList in pairs(importedMutations.spellLists) do
-			if spellList.modDependencies then
-				for modId, modDependency in pairs(spellList.modDependencies) do
-					if modDependency.modName then
-						if not Ext.Mod.GetMod(modId) then
-							failedDependencies[modId] = failedDependencies[modId] or {}
-							table.insert(failedDependencies[modId], {
-								type = "SpellList",
-								target = spellList.name,
-								packagedItems = modDependency.packagedItems
-							} --[[@as DependencyFailure]]
-							)
-
-							modCache[modId] = modDependency
-						end
-					end
-				end
-				spellList.modDependencies = nil
-			end
-		end
-	end
+	local modCache, failedDependencies = self:ValidateMutations(mutationConfig)
 
 	local function import()
 		for profileId, profile in pairs(importedMutations.profiles) do
@@ -214,7 +276,8 @@ function MutationExternalProfileUtility:importProfile(export)
 
 				if TableUtils:IndexOf(mutationConfig.spellLists, function(value)
 						return value.name == spellList.name
-					end) then
+					end)
+				then
 					spellList.name = string.format("%s - %s", spellList.name, "Imported")
 				end
 
@@ -263,7 +326,7 @@ function MutationExternalProfileUtility:importProfile(export)
 	end
 
 	if next(failedDependencies) then
-		return import, modCache, buildDepWindow
+		return import, modCache, failedDependencies, buildDepWindow
 	else
 		import()
 	end
