@@ -297,7 +297,7 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 	
 	List of Shortcuts:
 	- Shift: Hold before hovering on a spell to view its complete tooltip. Click on a spell while holding to launch a dedicated window for that tooltip
-	- Ctrl: Multi-select, adding those spells to a group that you can collectively drag and drop or assign to one category. You can only multi-select spells that are identical typse (linked, non-linked, in browser sidebar)
+	- Ctrl: Multi-select, adding those spells to a group that you can collectively drag and drop or assign to one category. You can only multi-select spells that are identical types (linked, non-linked, in browser sidebar)
 	- Alt: Remove a spell from the ongoing multi-select
 	]])
 	local deleteAllButton = self.designer:AddButton("Delete All Non-Linked Spells")

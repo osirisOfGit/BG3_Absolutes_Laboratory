@@ -434,7 +434,11 @@ function MutationProfileManager:BuildProfileManager()
 	profileCombo.WidthFitPreview = true
 
 	local sIndex = -1
-	local opt = { "Disabled" }
+	local opt = {}
+	if activeProfileId then
+		table.insert(opt, "Disabled")
+	end
+
 	for profileId, profile in TableUtils:OrderedPairs(profiles) do
 		table.insert(opt, profile.name)
 		if activeProfileId == profileId then
@@ -506,7 +510,7 @@ function MutationProfileManager:BuildProfileManager()
 		)
 	end
 
-	local importSelect = manageProfilePopup:AddSelectable("Import Profile", "DontClosePopups")
+	local importSelect = manageProfilePopup:AddSelectable("Import Profile(s)", "DontClosePopups")
 
 	local importGroup = manageProfilePopup:AddGroup("Import")
 	importGroup.Visible = false
@@ -587,7 +591,16 @@ function MutationProfileManager:BuildProfileManager()
 		end
 	end
 
+	---@type ExtuiMenu
+	local exportProfilesMenu = manageProfilePopup:AddMenu("Export Profile(s)")
+
+	local sep = manageProfilePopup:AddSeparatorText("Profiles")
+	sep:SetStyle("SeparatorTextAlign", 0.5)
+	-- sep.Font = "Small"
+
 	for profileId, profile in TableUtils:OrderedPairs(profiles) do
+		exportProfilesMenu:AddCheckbox(profile.name).UserData = profileId
+
 		---@type ExtuiMenu
 		local profileMenu = manageProfilePopup:AddMenu(profile.name)
 		profileMenu:AddItem("Edit").OnClick = function()
@@ -647,6 +660,29 @@ function MutationProfileManager:BuildProfileManager()
 			end
 			self:BuildProfileManager()
 		end
+	end
+
+	if #exportProfilesMenu.Children == 0 then
+		exportProfilesMenu:Destroy()
+	else
+		Styler:MiddleAlignedColumnLayout(exportProfilesMenu, function(ele)
+			local exportButton = exportProfilesMenu:AddSelectable("Export")
+			exportButton:SetStyle("SelectableTextAlign", 0.5)
+
+			exportButton.OnClick = function()
+				local profilesToExport = {}
+
+				for _, child in pairs(exportProfilesMenu.Children) do
+					if child.UserData and child.Checked then
+						table.insert(profilesToExport, child.UserData)
+					end
+				end
+
+				if next(profilesToExport) then
+					MutationExternalProfileUtility:exportProfile(table.unpack(profilesToExport))
+				end
+			end
+		end)
 	end
 
 	manageProfileButton.OnClick = function()
