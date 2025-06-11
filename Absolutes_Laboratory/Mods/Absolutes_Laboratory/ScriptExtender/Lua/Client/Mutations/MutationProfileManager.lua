@@ -674,7 +674,7 @@ function MutationProfileManager:BuildProfileManager()
 		exportProfilesMenu:Destroy()
 	else
 		Styler:MiddleAlignedColumnLayout(exportProfilesMenu, function(ele)
-			local exportButton = exportProfilesMenu:AddSelectable("Export")
+			local exportButton = ele:AddSelectable("Export")
 			exportButton:SetStyle("SelectableTextAlign", 0.5)
 
 			exportButton.OnClick = function()
@@ -691,7 +691,7 @@ function MutationProfileManager:BuildProfileManager()
 				end
 			end
 
-			local exportForModButton = exportProfilesMenu:AddSelectable("Export For mod")
+			local exportForModButton = ele:AddSelectable("Export For Mod")
 			exportForModButton:SetStyle("SelectableTextAlign", 0.5)
 			exportForModButton.OnClick = function()
 				local profilesToExport = {}

@@ -18,7 +18,7 @@ function MutationExternalProfileUtility:ValidateMutations(importedMutations)
 			if selector.modDependencies then
 				for modId, modDependency in pairs(selector.modDependencies) do
 					modCache[modId] = modDependency
-					if modDependency.modName or not Ext.Template.GetTemplate(next(modDependency.packagedItems)) then
+					if modDependency.modName then
 						if not Ext.Mod.GetMod(modId) then
 							failedDependencies[modId] = failedDependencies[modId] or {}
 							table.insert(failedDependencies[modId], {

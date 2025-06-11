@@ -76,7 +76,9 @@ ConfigurationStructure.DynamicClassDefinitions.mutations = {
 	---@type SelectorQuery
 	selectors = {},
 	---@type Mutator[]
-	mutators = {}
+	mutators = {},
+	---@type string?
+	modId = nil,
 }
 
 ---@class MutationFolder

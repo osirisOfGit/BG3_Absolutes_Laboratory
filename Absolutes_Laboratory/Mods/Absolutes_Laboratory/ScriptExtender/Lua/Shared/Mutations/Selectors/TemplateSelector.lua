@@ -234,17 +234,27 @@ function TemplateSelector:handleDependencies(_, selector, removeMissingDependenc
 			fileName = fileName ~= "" and fileName or characterTemplate.FileName
 
 			if not TableUtils:IndexOf({ "Shared", "SharedDev", "Gustav" }, fileName) then
+				---@type ModuleInfo
+				local modInfo
+				for _, modId in pairs(Ext.Mod.GetLoadOrder()) do
+					local mod = Ext.Mod.GetMod(modId)
+					if fileName:find(mod.Info.Directory) then
+						modInfo = mod.Info
+						break
+					end
+				end
+
 				selector.modDependencies = selector.modDependencies or {}
-				if not selector.modDependencies[fileName] then
-					selector.modDependencies[fileName] = {
-						modName = nil,
-						modAuthor = nil,
-						modVersion = nil,
-						modId = fileName,
+				if not selector.modDependencies[modInfo.ModuleUUID] then
+					selector.modDependencies[modInfo.ModuleUUID] = {
+						modName = modInfo.Name,
+						modAuthor = modInfo.Author,
+						modVersion = modInfo.ModVersion,
+						modId = modInfo.ModuleUUID,
 						packagedItems = {}
 					}
 
-					selector.modDependencies[fileName].packagedItems[templateCriteria.id] = characterTemplate.DisplayName:Get() or characterTemplate.Name
+					selector.modDependencies[modInfo.ModuleUUID].packagedItems[templateCriteria.id] = characterTemplate.DisplayName:Get() or characterTemplate.Name
 				end
 			end
 		end
