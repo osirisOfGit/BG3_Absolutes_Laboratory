@@ -34,11 +34,12 @@ function TagSelector:renderSelector(parent, existingSelector)
 
 	init()
 
-	local updateFunc
-	parent, updateFunc = Styler:DynamicLabelTree(parent:AddTree("Tags"))
-	parent:SetColor("Header", { 1, 1, 1, 0 })
+	local tagTree, updateFunc = Styler:DynamicLabelTree(parent:AddTree("Tags"))
+	tagTree.Disabled = false
+	tagTree:SetColor("Header", { 1, 1, 1, 0 })
 
-	local tagTable = Styler:TwoColumnTable(parent, "tags")
+	local tagTable = Styler:TwoColumnTable(tagTree, "tags")
+	tagTable.Disabled = parent.Disabled
 	tagTable.ColumnDefs[1].Width = 300 * Styler:ScaleFactor()
 	local row = tagTable:AddRow()
 

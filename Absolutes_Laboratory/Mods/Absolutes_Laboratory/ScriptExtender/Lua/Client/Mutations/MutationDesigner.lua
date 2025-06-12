@@ -7,7 +7,12 @@ Ext.Require("Shared/Mutations/Mutators/MutatorInterface.lua")
 ---@param parent ExtuiTreeParent
 ---@param existingMutation Mutation
 function MutationDesigner:RenderMutationManager(parent, existingMutation)
+	if existingMutation.modId then
+		Styler:CheapTextAlign("Mod-Added Mutation - You can browse, but not edit", parent, "Large")
+	end
+
 	local managerTable = parent:AddTable("ManagerTable", 2)
+	managerTable.Disabled = existingMutation.modId ~= nil
 	managerTable.Borders = true
 
 	local row = managerTable:AddRow()
@@ -16,6 +21,7 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 	Styler:CheapTextAlign("Selectors", selectorColumn, "Big").UserData = "keep"
 	Styler:MiddleAlignedColumnLayout(selectorColumn, function(ele)
 		local dryRunButton = ele:AddButton("Dry Run Selectors")
+		dryRunButton.Disabled = false
 		dryRunButton.UserData = "keep"
 
 		---@type ExtuiWindow
@@ -64,7 +70,7 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 							end
 						end)
 
-						Styler:MiddleAlignedColumnLayout(group, function (ele)
+						Styler:MiddleAlignedColumnLayout(group, function(ele)
 							local hyperlink = Styler:HyperlinkText(ele, record.Name, function(parent)
 								CharacterWindow:BuildWindow(parent, entity)
 							end)

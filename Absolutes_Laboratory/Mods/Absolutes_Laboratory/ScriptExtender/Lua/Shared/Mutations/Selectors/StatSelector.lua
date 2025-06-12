@@ -69,11 +69,12 @@ function StatSelector:renderSelector(parent, existingSelector)
 
 	existingSelector.criteriaValue = existingSelector.criteriaValue or {}
 
-	local updateFunc
-	parent, updateFunc = Styler:DynamicLabelTree(parent:AddTree("Stats"))
-	parent:SetColor("Header", { 1, 1, 1, 0 })
+	local statTree, updateFunc = Styler:DynamicLabelTree(parent:AddTree("Stats"))
+	statTree.Disabled = false
+	statTree:SetColor("Header", { 1, 1, 1, 0 })
 
-	local statTable = Styler:TwoColumnTable(parent, "stats")
+	local statTable = Styler:TwoColumnTable(statTree, "stats")
+	statTable.Disabled = parent.Disabled
 	statTable.ColumnDefs[1].Width = 300 * Styler:ScaleFactor()
 
 	local row = statTable:AddRow()

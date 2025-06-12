@@ -29,7 +29,7 @@ if Ext.Mod.IsModLoaded("755a8a72-407f-4f0d-9a33-274ac0f0b53d") then
 		--- @param tabHeader ExtuiTabItem
 		function(tabHeader)
 			MutationProfileManager:init(tabHeader)
-			MutationProfileManager:BuildProfileView()
+			MutationProfileManager:BuildFolderManager()
 		end)
 end
 
@@ -147,7 +147,7 @@ function MutationProfileManager:init(parent)
 	end
 end
 
-function MutationProfileManager:BuildProfileView()
+function MutationProfileManager:BuildFolderManager()
 	activeMutationView = nil
 
 	Helpers:KillChildren(self.userFolderGroup)
@@ -179,7 +179,7 @@ function MutationProfileManager:BuildProfileView()
 					} --[[@as Mutation]]
 
 					self.formBuilderWindow.Open = false
-					self:BuildProfileView()
+					self:BuildFolderManager()
 				end,
 				{
 					{
@@ -207,7 +207,7 @@ function MutationProfileManager:BuildProfileView()
 					folder.description = formResults.Description
 
 					self.formBuilderWindow.Open = false
-					self:BuildProfileView()
+					self:BuildFolderManager()
 				end,
 				{
 					{
@@ -236,7 +236,7 @@ function MutationProfileManager:BuildProfileView()
 				end
 			end
 
-			self:BuildProfileView()
+			self:BuildFolderManager()
 		end
 
 		for mutationId, mutation in TableUtils:OrderedPairs(folder.mutations) do
@@ -264,7 +264,7 @@ function MutationProfileManager:BuildProfileView()
 					end
 				end
 
-				self:BuildProfileView()
+				self:BuildFolderManager()
 			end
 
 			mutationPopup:AddSelectable("Edit Details").OnClick = function()
@@ -278,7 +278,7 @@ function MutationProfileManager:BuildProfileView()
 						mutation.description = formResults.Description
 
 						self.formBuilderWindow.Open = false
-						self:BuildProfileView()
+						self:BuildFolderManager()
 					end,
 					{
 						{
@@ -310,7 +310,7 @@ function MutationProfileManager:BuildProfileView()
 									end
 								end
 							end
-							self:BuildProfileView()
+							self:BuildFolderManager()
 						end
 					end
 				end
@@ -389,7 +389,7 @@ function MutationProfileManager:BuildProfileView()
 				} --[[@as MutationFolder]]
 
 				self.formBuilderWindow.Open = false
-				self:BuildProfileView()
+				self:BuildFolderManager()
 			end,
 			{
 				{
@@ -418,7 +418,7 @@ function MutationProfileManager:BuildProfileManager()
 				Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = nil
 				activeProfileId = nil
 			end
-			self:BuildProfileView()
+			self:BuildFolderManager()
 		end)
 		return
 	end
@@ -454,7 +454,7 @@ function MutationProfileManager:BuildProfileManager()
 		Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = activeProfileId
 
 		Helpers:KillChildren(self.rulesOrderGroup, self.mutationDesigner)
-		self:BuildProfileView()
+		self:BuildFolderManager()
 	end
 
 	local manageProfileButton = Styler:ImageButton(self.profileManagerParent:AddImageButton("Manage", "ico_edit_d", { 32, 32 }))
@@ -555,7 +555,7 @@ function MutationProfileManager:BuildProfileManager()
 			importButton.OnClick = function()
 				local importFunc, mods, failedDependencies, showDepWindowFunc = MutationExternalProfileUtility:importProfile(FileUtils:LoadTableFile(fileNameInput.Text))
 				if not importFunc then
-					self:BuildProfileView()
+					self:BuildFolderManager()
 				else
 					errorGroup.Visible = true
 					Helpers:KillChildren(errorGroup)
@@ -566,7 +566,7 @@ function MutationProfileManager:BuildProfileManager()
 						continueButton:Tooltip():AddText("\t This will remove all items that depend on a missing mod while importing - it will not affect the file")
 						continueButton.OnClick = function()
 							importFunc()
-							self:BuildProfileView()
+							self:BuildFolderManager()
 						end
 
 						local viewReport = ele:AddButton("View Report")
@@ -819,7 +819,7 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 					end
 				end
 
-				local folders = ConfigurationStructure.config.mutations.folders
+				local folders = MutationConfigurationProxy.folders
 
 				local mutationButton = row:AddButton(folders[mutationRule.mutationFolderId].name ..
 					"/" .. folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId].name)

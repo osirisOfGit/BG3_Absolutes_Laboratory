@@ -80,12 +80,14 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 
 	existingSelector.criteriaValue = existingSelector.criteriaValue or {}
 
-	local updateFunc
-	parent, updateFunc = Styler:DynamicLabelTree(parent:AddTree("Templates"))
-	parent:SetColor("Header", { 1, 1, 1, 0 })
+	local templateTree, updateFunc = Styler:DynamicLabelTree(parent:AddTree("Templates"))
+	templateTree:SetColor("Header", { 1, 1, 1, 0 })
+	templateTree.Disabled = false
 
-	local templateTable = Styler:TwoColumnTable(parent, "templates")
+	local templateTable = Styler:TwoColumnTable(templateTree, "templates")
+	templateTable.Disabled = parent.Disabled
 	templateTable.ColumnDefs[1].Width = 300 * Styler:ScaleFactor()
+	
 	local row = templateTable:AddRow()
 
 	local templateSelectCell = row:AddCell()

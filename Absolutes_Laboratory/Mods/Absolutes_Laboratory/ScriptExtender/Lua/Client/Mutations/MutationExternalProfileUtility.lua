@@ -201,6 +201,21 @@ function MutationExternalProfileUtility:exportProfile(forMod, ...)
 	end
 
 	if forMod then
+		for folderId, folder in pairs(export.folders) do
+			export.folders[folderId .. "Exported"] = folder
+			export.folders[folderId] = nil
+		end
+
+		for spellListId, spellList in pairs(export.spellLists) do
+			export.spellLists[spellListId .. "Exported"] = spellList
+			export.spellLists[spellListId] = nil
+		end
+
+		for profileId, profile in pairs(export.profiles) do
+			export.profiles[profileId .. "Exported"] = profile
+			export.profiles[profileId] = nil
+		end
+
 		names = MutationModProxy.Filename
 		FileUtils:SaveStringContentToFile("ExportedProfiles/ExportedModMetaLsxDependencies.lsx", self:BuildMetaDependencyBlock(export) or "")
 	end

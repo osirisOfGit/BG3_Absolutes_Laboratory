@@ -79,11 +79,12 @@ function FactionSelector:renderSelector(parent, existingSelector)
 
 	existingSelector.criteriaValue = existingSelector.criteriaValue or {}
 
-	local updateFunc
-	parent, updateFunc = Styler:DynamicLabelTree(parent:AddTree("Factions"))
-	parent:SetColor("Header", { 1, 1, 1, 0 })
+	local factionTree, updateFunc = Styler:DynamicLabelTree(parent:AddTree("Factions"))
+	factionTree.Disabled = false
+	factionTree:SetColor("Header", { 1, 1, 1, 0 })
 
-	local factionTable = Styler:TwoColumnTable(parent, "factions")
+	local factionTable = Styler:TwoColumnTable(factionTree, "factions")
+	factionTable.Disabled = parent.Disabled
 	factionTable.ColumnDefs[1].Width = 300 * Styler:ScaleFactor()
 
 	local row = factionTable:AddRow()
