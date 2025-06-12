@@ -64,7 +64,7 @@ ConfigurationStructure.DynamicClassDefinitions.mutator = {
 	---@type {[string]: MutationModifier}?
 	modifiers = nil,
 	---@type ModDependencies
-	modDependencies = nil
+	modDependencies = nil,
 }
 
 --#endregion
@@ -86,7 +86,9 @@ ConfigurationStructure.DynamicClassDefinitions.folders = {
 	name = "",
 	description = "",
 	---@type {[Guid]: Mutation}
-	mutations = {}
+	mutations = {},
+	---@type Guid?
+	modId = nil
 }
 
 ---@type {[Guid] : MutationFolder}
@@ -101,6 +103,8 @@ ConfigurationStructure.DynamicClassDefinitions.profile = {
 	defaultActive = false,
 	---@type MutationProfileRule[]
 	mutationRules = {},
+	---@type Guid?
+	modId = nil
 }
 
 ---@class MutationProfileRule

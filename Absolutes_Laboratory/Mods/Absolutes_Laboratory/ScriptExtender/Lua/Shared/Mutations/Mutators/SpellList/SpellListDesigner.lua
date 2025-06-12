@@ -84,7 +84,7 @@ SpellListDesigner.displayTable = nil
 local activeSpellList
 
 function SpellListDesigner:buildSpellDesignerWindow(activeList)
-	local spellLists = ConfigurationStructure.config.mutations.spellLists
+	local spellLists = MutationConfigurationProxy.spellLists
 
 	if not self.spellListDesignerWindow then
 		self:buildProgressionIndex()

@@ -29,7 +29,7 @@ SpellListMutator = MutatorInterface:new("SpellList")
 function SpellListMutator:renderMutator(parent, mutator)
 	mutator.values = mutator.values or {}
 	Helpers:KillChildren(parent)
-	local configuredSpellLists = ConfigurationStructure.config.mutations.spellLists
+	local configuredSpellLists = MutationConfigurationProxy.spellLists
 
 	parent:AddButton("Open SpellList Designer").OnClick = function()
 		SpellListDesigner:buildSpellDesignerWindow()
@@ -1239,7 +1239,7 @@ if Ext.IsServer() then
 							spellListId = leveledSpellPool.spellLists[1]
 						end
 
-						if spellListId and ConfigurationStructure.config.mutations.spellLists[spellListId] then
+						if spellListId and MutationConfigurationProxy.spellLists[spellListId] then
 							local nextAnchor = math.min((spellMutatorGroup.leveledSpellPool[lSP + 1] and spellMutatorGroup.leveledSpellPool[lSP + 1].anchorLevel - 1) or 30,
 								entity.AvailableLevel.Level)
 
@@ -1260,7 +1260,7 @@ if Ext.IsServer() then
 
 							local cLevel = nextAnchor == maxAppliedLevel + 1 and nextAnchor or nextAnchor - maxAppliedLevel
 
-							local spellList = ConfigurationStructure.config.mutations.spellLists[spellListId]
+							local spellList = MutationConfigurationProxy.spellLists[spellListId]
 							Logger:BasicDebug("Selected spellList %s (%s) for anchor level %s, using levels %s-%s",
 								spellList.name,
 								spellListId,

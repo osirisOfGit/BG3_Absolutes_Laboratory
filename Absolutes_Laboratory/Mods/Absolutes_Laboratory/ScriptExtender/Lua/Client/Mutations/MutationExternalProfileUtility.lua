@@ -147,7 +147,7 @@ end
 ---@param forMod boolean
 ---@param ... Guid
 function MutationExternalProfileUtility:exportProfile(forMod, ...)
-	local mutationConfig = ConfigurationStructure.config.mutations
+	local mutationConfig = MutationConfigurationProxy
 
 	---@type MutationsConfig
 	---@diagnostic disable-next-line: missing-fields
@@ -201,7 +201,7 @@ function MutationExternalProfileUtility:exportProfile(forMod, ...)
 	end
 
 	if forMod then
-		names = "AbsolutesLaboratory_Mutations"
+		names = MutationModProxy.Filename
 		FileUtils:SaveStringContentToFile("ExportedProfiles/ExportedModMetaLsxDependencies.lsx", self:BuildMetaDependencyBlock(export) or "")
 	end
 
