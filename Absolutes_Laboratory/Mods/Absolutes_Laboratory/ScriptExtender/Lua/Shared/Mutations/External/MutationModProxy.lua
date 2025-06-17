@@ -29,6 +29,9 @@ local function setModProxyFields(tbl, key, target)
 		if mutationConfig.folders then
 			for folderId, folder in pairs(mutationConfig.folders) do
 				folder.modId = modId
+				for _, mutation in pairs(folder.mutations) do
+					mutation.modId = modId
+				end
 				rawset(MutationModProxy.ModProxy.folders, folderId, folder)
 			end
 		end
@@ -57,6 +60,9 @@ MutationModProxy.ModProxy = {
 	}),
 	folders = setmetatable({}, {
 		__mode = "k",
+		__len = function(t)
+			return TableUtils:CountElements(modList)
+		end,
 		__index = function(t, k)
 			return setModProxyFields(t, k, "folders")
 		end,

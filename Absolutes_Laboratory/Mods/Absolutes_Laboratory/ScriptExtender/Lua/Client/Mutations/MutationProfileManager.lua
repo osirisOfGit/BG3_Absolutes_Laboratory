@@ -14,6 +14,8 @@ MutationProfileManager = {
 	---@type ExtuiGroup
 	userFolderGroup = nil,
 	---@type ExtuiGroup
+	modFolderGroup = nil,
+	---@type ExtuiGroup
 	profileGroup = nil,
 	---@type ExtuiWindow?
 	formBuilderWindow = nil
@@ -78,6 +80,15 @@ function MutationProfileManager:init(parent)
 					end
 				end
 			end
+		end
+
+		if #MutationModProxy.ModProxy.folders > 0 then
+			self.selectionParent:AddSeparatorText("Mod-Added Mutations"):SetStyle("SeparatorTextAlign", 0.5)
+			self.modFolderGroup = self.selectionParent:AddGroup("ModFolders")
+			self.modFolderGroup.DragDropType = "MutationRules"
+			self.modFolderGroup.OnDragDrop = self.userFolderGroup.OnDragDrop
+		else
+			self.modFolderGroup = self.selectionParent:AddGroup("ModFolders")
 		end
 
 		local rightPanel = row:AddCell()
@@ -405,7 +416,49 @@ function MutationProfileManager:BuildFolderManager()
 		)
 	end
 
+	self:BuildModFolders()
 	self:BuildProfileManager()
+end
+
+function MutationProfileManager:BuildModFolders()
+	if #MutationModProxy.ModProxy.folders > 0 then
+		Helpers:KillChildren(self.modFolderGroup)
+
+		for modId, modCache in pairs(MutationModProxy.ModProxy.folders) do
+			---@cast modCache LocalModCache
+
+			self.modFolderGroup:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name)
+
+			for folderId in TableUtils:OrderedPairs(modCache.folders, function(_, folderName)
+				return folderName
+			end) do
+				local folder = MutationModProxy.ModProxy.folders[folderId]
+
+				local folderHeader = self.modFolderGroup:AddTree(folder.name)
+				folderHeader.UserData = folderId
+				folderHeader:SetColor("Header", { 1, 1, 1, 0 })
+				if folder.description ~= "" then
+					folderHeader:Tooltip():AddText("\t " .. folder.description)
+				end
+
+				for mutationId, mutation in TableUtils:OrderedPairs(folder.mutations, function(_, value)
+					return value.name
+				end) do
+					---@type ExtuiSelectable
+					local mutationSelectable = folderHeader:AddSelectable(mutation.name)
+					if mutation.description ~= "" then
+						mutationSelectable:Tooltip():AddText("\t " .. mutation.description)
+					end
+					mutationSelectable.CanDrag = true
+					mutationSelectable.DragDropType = "MutationRules"
+					mutationSelectable.UserData = {
+						mutationFolderId = folderId,
+						mutationId = mutationId
+					}
+				end
+			end
+		end
+	end
 end
 
 local triedOnce
@@ -750,7 +803,7 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 
 					if activeProfile.mutationRules[row.UserData] then
 						local removeRule = activeProfile.mutationRules[row.UserData]
-						for _, ele in pairs(self.userFolderGroup.Children) do
+						for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
 							---@cast ele ExtuiCollapsingHeader
 							if ele.UserData == removeRule.mutationFolderId then
 								for _, mutation in pairs(ele.Children) do
@@ -793,7 +846,7 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 							if activeProfile.mutationRules[orderNumberInput.Value[1]] then
 								local ruletoRemove = activeProfile.mutationRules[orderNumberInput.Value[1]]
 
-								for _, ele in pairs(self.userFolderGroup.Children) do
+								for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
 									---@cast ele ExtuiCollapsingHeader
 									if ele.UserData == ruletoRemove.mutationFolderId then
 										for _, mutation in pairs(ele.Children) do
@@ -843,7 +896,7 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 
 				mutationButton.OnClick = function()
 					if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
-						for _, ele in pairs(self.userFolderGroup.Children) do
+						for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
 							---@cast ele ExtuiCollapsingHeader
 							if ele.UserData == mutationRule.mutationFolderId then
 								for _, mutation in pairs(ele.Children) do
