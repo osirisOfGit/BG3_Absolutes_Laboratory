@@ -12,7 +12,6 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 	end
 
 	local managerTable = parent:AddTable("ManagerTable", 2)
-	-- managerTable.Disabled = existingMutation.modId ~= nil
 	managerTable.Borders = true
 
 	local row = managerTable:AddRow()
