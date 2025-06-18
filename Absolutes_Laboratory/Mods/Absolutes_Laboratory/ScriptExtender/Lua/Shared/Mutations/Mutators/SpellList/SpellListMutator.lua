@@ -31,7 +31,9 @@ function SpellListMutator:renderMutator(parent, mutator)
 	Helpers:KillChildren(parent)
 	local configuredSpellLists = MutationConfigurationProxy.spellLists
 
-	parent:AddButton("Open SpellList Designer").OnClick = function()
+	local spellListDesignerButton = parent:AddButton("Open SpellList Designer")
+	spellListDesignerButton.UserData = "EnableForMods"
+	spellListDesignerButton.OnClick = function()
 		SpellListDesigner:buildSpellDesignerWindow()
 	end
 
@@ -347,7 +349,7 @@ function SpellListMutator:renderRandomizedAmountSettings(parent, spellMutatorGro
 
 	spellMutatorGroup.randomizedSpellPoolSize = spellMutatorGroup.randomizedSpellPoolSize or {}
 	local randomizedSpellPoolSize = spellMutatorGroup.randomizedSpellPoolSize
-	if not randomizedSpellPoolSize() then
+	if (not randomizedSpellPoolSize.__call and not next(randomizedSpellPoolSize)) or (randomizedSpellPoolSize.__call and not randomizedSpellPoolSize()) then
 		randomizedSpellPoolSize[1] = 2
 		randomizedSpellPoolSize[3] = 0
 		randomizedSpellPoolSize[5] = 1

@@ -19,6 +19,8 @@ local function setModProxyFields(tbl, key, target)
 
 	if modId then
 		local mutationConfig = MutationModProxy:ImportMutation(modId)
+		TableUtils:ConvertStringifiedNumberIndexes(mutationConfig)
+		
 		if mutationConfig.profiles then
 			for profileId, profile in pairs(mutationConfig.profiles) do
 				profile.modId = modId
@@ -32,6 +34,7 @@ local function setModProxyFields(tbl, key, target)
 				for _, mutation in pairs(folder.mutations) do
 					mutation.modId = modId
 				end
+
 				rawset(MutationModProxy.ModProxy.folders, folderId, folder)
 			end
 		end
@@ -60,7 +63,8 @@ MutationModProxy.ModProxy = {
 	}),
 	folders = setmetatable({}, {
 		__mode = "k",
-		__len = function(t)
+		__call = function(t)
+			MutationModProxy:ImportMutationsFromMods()
 			return TableUtils:CountElements(modList)
 		end,
 		__index = function(t, k)
@@ -88,9 +92,9 @@ function MutationModProxy:ImportMutation(modId)
 	local mod = Ext.Mod.GetMod(modId)
 	if mod then
 		---@type MutationsConfig?
-		local mutations = FileUtils:LoadTableFile(string.format("Mods/%s/%s", mod.Info.Directory, self.Filename), "data")
+		local mutations = FileUtils:LoadTableFile(string.format("Mods/%s/%s", mod.Info.Directory, self.Filename .. ".json"), "data")
 		if mutations then
-			return mutations, modId
+			return mutations.mutations, modId
 		end
 	end
 end

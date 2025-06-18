@@ -8,6 +8,8 @@
 			"type": "shell",
 			// mklink /J "D:\GOG\Baldurs Gate 3\Data\Mods\Absolutes_Laboratory" "D:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory"
 			// mklink /J "D:\GOG\Baldurs Gate 3\Data\Public\Absolutes_Laboratory" "D:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Public\Absolutes_Laboratory"
+
+			// mklink /J "D:\GOG\Baldurs Gate 3\Data\Mods\Export_Mod_Example" "D:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Export_Mod_Example\Mods\Export_Mod_Example"
 			"windows": {
 				"command": "Start-Process",
 				"args": [

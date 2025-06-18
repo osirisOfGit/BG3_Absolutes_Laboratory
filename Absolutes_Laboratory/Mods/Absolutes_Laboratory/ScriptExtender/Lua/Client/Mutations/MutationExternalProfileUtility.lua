@@ -111,6 +111,14 @@ local dependencyBlock = [[
 ]]
 function MutationExternalProfileUtility:BuildMetaDependencyBlock(mutationConfig)
 	local mods = self:ValidateMutations(TableUtils:DeeplyCopyTable(mutationConfig))
+	local lab = Ext.Mod.GetMod(ModuleUUID).Info
+	mods[ModuleUUID] = {
+		modId = ModuleUUID,
+		modName = lab.Name,
+		modAuthor = lab.Author,
+		modVersion = lab.ModVersion,
+		packagedItems = nil
+	}
 
 	if next(mods) then
 		local output = ""

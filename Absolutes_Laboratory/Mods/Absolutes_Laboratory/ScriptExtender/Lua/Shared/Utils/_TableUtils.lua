@@ -224,10 +224,14 @@ end
 ---@param tbl table
 function TableUtils:ConvertStringifiedNumberIndexes(tbl)
 	for key, value in TableUtils:OrderedPairs(tbl) do
-		local numericKey = tonumber(key)
+		local numericKey = type(key) ~= "number" and tonumber(key) or nil
 		if numericKey then
 			tbl[key] = nil
 			tbl[numericKey] = value
+		end
+
+		if type(value) == "table" then
+			self:ConvertStringifiedNumberIndexes(value)
 		end
 	end
 end

@@ -204,6 +204,9 @@ end
 ---@param altTooltip string?
 ---@return fun():boolean?
 function Styler:HyperlinkRenderable(renderable, item, modifier, modifierOnHover, altTooltip, callback)
+	-- Used in MutationDesigner to ensure hover events fire for links when viewing mod-added mutations
+	renderable.UserData = "EnableForMods"
+
 	---@type ExtuiTooltip
 	local tooltip = renderable:Tooltip()
 
