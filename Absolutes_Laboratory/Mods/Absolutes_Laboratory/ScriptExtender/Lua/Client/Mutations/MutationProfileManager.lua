@@ -168,6 +168,8 @@ function MutationProfileManager:BuildFolderManager()
 	for folderId, folder in TableUtils:OrderedPairs(folders) do
 		local folderHeader = self.userFolderGroup:AddTree(folder.name)
 		folderHeader.UserData = folderId
+		folderHeader.IDContext = folderId
+
 		folderHeader:SetColor("Header", { 1, 1, 1, 0 })
 		if folder.description ~= "" then
 			folderHeader:Tooltip():AddText("\t " .. folder.description)
@@ -267,6 +269,8 @@ function MutationProfileManager:BuildFolderManager()
 		for mutationId, mutation in TableUtils:OrderedPairs(folder.mutations) do
 			---@type ExtuiSelectable
 			local mutationSelectable = folderHeader:AddSelectable(mutation.name)
+			mutationSelectable.IDContext = mutationId
+			
 			if mutation.description ~= "" then
 				mutationSelectable:Tooltip():AddText("\t " .. mutation.description)
 			end
