@@ -240,9 +240,23 @@ function MutationProfileManager:BuildFolderManager()
 			folder.delete = true
 
 			for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
-				for _, mutRule in TableUtils:OrderedPairs(profile.mutationRules) do
+				local largestIndex = 0
+
+				local toDelete = {}
+				for i, mutRule in TableUtils:OrderedPairs(profile.mutationRules) do
+					largestIndex = i > largestIndex and i or largestIndex
+
 					if mutRule.mutationFolderId == folderId then
-						mutRule.delete = true
+						toDelete[#toDelete + 1] = i - #toDelete
+					end
+				end
+
+				for _, indexToDelete in ipairs(toDelete) do
+					for x = indexToDelete, largestIndex do
+						if profile.mutationRules[x] then
+							profile.mutationRules[x].delete = true
+						end
+						profile.mutationRules[x] = TableUtils:DeeplyCopyTable(profile.mutationRules._real[x + 1])
 					end
 				end
 			end
@@ -268,9 +282,23 @@ function MutationProfileManager:BuildFolderManager()
 				mutation.delete = true
 
 				for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
-					for _, mutRule in TableUtils:OrderedPairs(profile.mutationRules) do
+					local largestIndex = 0
+
+					local toDelete = {}
+					for i, mutRule in TableUtils:OrderedPairs(profile.mutationRules) do
+						largestIndex = i > largestIndex and i or largestIndex
+
 						if mutRule.mutationFolderId == folderId and mutRule.mutationId == mutationId then
-							mutRule.delete = true
+							toDelete[#toDelete + 1] = i - #toDelete
+						end
+					end
+
+					for _, indexToDelete in ipairs(toDelete) do
+						for x = indexToDelete, largestIndex do
+							if profile.mutationRules[x] then
+								profile.mutationRules[x].delete = true
+							end
+							profile.mutationRules[x] = TableUtils:DeeplyCopyTable(profile.mutationRules._real[x + 1])
 						end
 					end
 				end
@@ -553,6 +581,7 @@ function MutationProfileManager:BuildProfileManager()
 	profileCombo.SelectedIndex = sIndex - 1
 	profileCombo.OnChange = function()
 		local selectedName = profileCombo.Options[profileCombo.SelectedIndex + 1]
+		_D(selectedName:sub(#selectedName - 2))
 		local isModProfile = selectedName:sub(#selectedName - 2) == "(M)"
 
 		activeProfileId = TableUtils:IndexOf(combinedProfiles, function(value)
@@ -976,7 +1005,7 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 			mutationButton.IDContext = mutationRule.mutationFolderId .. mutationRule.mutationId
 			mutationButton.SameLine = true
 			mutationButton.UserData = activeProfile.modId and mutationRule or mutationRule._real
-			
+
 			if not activeProfile.modId then
 				mutationButton.CanDrag = true
 				mutationButton.DragDropType = "MutationRules"

@@ -44,55 +44,77 @@ function MutationExternalProfileUtility:ValidateMutations(importedMutations)
 	end
 
 	for _, folder in pairs(importedMutations.folders) do
-		for _, mutation in pairs(folder.mutations) do
-			for _, selector in pairs(mutation.selectors) do
-				validateSelector(folder.name, mutation.name, selector)
-			end
+		if not folder.modId then
+			for _, mutation in pairs(folder.mutations) do
+				for _, selector in pairs(mutation.selectors) do
+					validateSelector(folder.name, mutation.name, selector)
+				end
 
-			for _, mutator in pairs(mutation.mutators) do
-				if mutator.modDependencies then
-					for modId, modDependency in pairs(mutator.modDependencies) do
-						modCache[modId] = modDependency
-						if modDependency.modName then
-							if not Ext.Mod.GetMod(modId) then
-								failedDependencies[modId] = failedDependencies[modId] or {}
-								table.insert(failedDependencies[modId], {
-									type = "Mutator",
-									target = mutator.targetProperty,
-									folderName = folder.name,
-									mutationName = mutation.name,
-									packagedItems = modDependency.packagedItems
-								} --[[@as DependencyFailure]]
-								)
+				for _, mutator in pairs(mutation.mutators) do
+					if mutator.modDependencies then
+						for modId, modDependency in pairs(mutator.modDependencies) do
+							modCache[modId] = modDependency
+							if modDependency.modName then
+								if not Ext.Mod.GetMod(modId) then
+									failedDependencies[modId] = failedDependencies[modId] or {}
+									table.insert(failedDependencies[modId], {
+										type = "Mutator",
+										target = mutator.targetProperty,
+										folderName = folder.name,
+										mutationName = mutation.name,
+										packagedItems = modDependency.packagedItems
+									} --[[@as DependencyFailure]]
+									)
 
-								modCache[modId] = modDependency
+									modCache[modId] = modDependency
+								end
 							end
 						end
+						mutator.modDependencies = nil
 					end
-					mutator.modDependencies = nil
 				end
 			end
+		else
+			local name, author, version = Helpers:BuildModFields(folder.modId)
+			modCache[folder.modId] = {
+				modAuthor = author,
+				modName = name,
+				modVersion = version,
+				modId = folder.modId,
+				packagedItems = nil
+			} --[[@as ModDependency]]
 		end
 	end
 
 	if importedMutations.spellLists then
 		for _, spellList in pairs(importedMutations.spellLists) do
-			if spellList.modDependencies then
-				for modId, modDependency in pairs(spellList.modDependencies) do
-					modCache[modId] = modDependency
-					if modDependency.modName then
-						if not Ext.Mod.GetMod(modId) then
-							failedDependencies[modId] = failedDependencies[modId] or {}
-							table.insert(failedDependencies[modId], {
-								type = "SpellList",
-								target = spellList.name,
-								packagedItems = modDependency.packagedItems
-							} --[[@as DependencyFailure]]
-							)
+			if not spellList.modId then
+				if spellList.modDependencies then
+					for modId, modDependency in pairs(spellList.modDependencies) do
+						modCache[modId] = modDependency
+						if modDependency.modName then
+							if not Ext.Mod.GetMod(modId) then
+								failedDependencies[modId] = failedDependencies[modId] or {}
+								table.insert(failedDependencies[modId], {
+									type = "SpellList",
+									target = spellList.name,
+									packagedItems = modDependency.packagedItems
+								} --[[@as DependencyFailure]]
+								)
+							end
 						end
 					end
+					spellList.modDependencies = nil
 				end
-				spellList.modDependencies = nil
+			else
+				local name, author, version = Helpers:BuildModFields(spellList.modId)
+				modCache[spellList.modId] = {
+					modAuthor = author,
+					modName = name,
+					modVersion = version,
+					modId = spellList.modId,
+					packagedItems = nil
+				} --[[@as ModDependency]]
 			end
 		end
 	end
@@ -109,8 +131,13 @@ local dependencyBlock = [[
 	<attribute id="Version64" type="int64" value="%s" />
 </node>
 ]]
-function MutationExternalProfileUtility:BuildMetaDependencyBlock(mutationConfig)
+
+---@param mutationConfig MutationsConfig
+---@param extraDependencies ModDependency[]
+---@return string?
+function MutationExternalProfileUtility:BuildMetaDependencyBlock(mutationConfig, extraDependencies)
 	local mods = self:ValidateMutations(TableUtils:DeeplyCopyTable(mutationConfig))
+
 	local lab = Ext.Mod.GetMod(ModuleUUID).Info
 	mods[ModuleUUID] = {
 		modId = ModuleUUID,
@@ -122,9 +149,7 @@ function MutationExternalProfileUtility:BuildMetaDependencyBlock(mutationConfig)
 
 	if next(mods) then
 		local output = ""
-		for modId in TableUtils:OrderedPairs(mods, function(key, value)
-			return value.modName
-		end) do
+		for modId in TableUtils:CombinedPairs(mods, extraDependencies) do
 			local modInfo = Ext.Mod.GetMod(modId)
 			if modInfo then
 				local modInfo = modInfo.Info
@@ -155,8 +180,6 @@ end
 ---@param forMod boolean
 ---@param ... Guid
 function MutationExternalProfileUtility:exportProfile(forMod, ...)
-	local mutationConfig = MutationConfigurationProxy
-
 	---@type MutationsConfig
 	---@diagnostic disable-next-line: missing-fields
 	local export = {
@@ -167,9 +190,12 @@ function MutationExternalProfileUtility:exportProfile(forMod, ...)
 
 	local names = ""
 
+	---@type {[Guid] : ModDependency}
+	local mutationDependencies = {}
+
 	for _, profileID in pairs({ ... }) do
 		---@type MutationProfile
-		local profile = TableUtils:DeeplyCopyTable(mutationConfig.profiles[profileID]._real)
+		local profile = TableUtils:DeeplyCopyTable(MutationConfigurationProxy.profiles[profileID]._real)
 
 		if #names > 0 then
 			names = names .. "-" .. profile.name
@@ -177,59 +203,52 @@ function MutationExternalProfileUtility:exportProfile(forMod, ...)
 			names = profile.name
 		end
 
-		export.profiles[profileID] = profile
+		export.profiles[profileID .. "Exported"] = profile
 
 		for _, mutationRule in ipairs(profile.mutationRules) do
-			local folder = mutationConfig.folders[mutationRule.mutationFolderId]
+			local folder = MutationConfigurationProxy.folders[mutationRule.mutationFolderId]
 
-			if not export.folders[mutationRule.mutationFolderId] then
-				export.folders[mutationRule.mutationFolderId] = {
-					name = folder.name,
-					description = folder.description,
-					mutations = {}
-				}
-			end
-
-			---@type Mutation
-			local mutation = TableUtils:DeeplyCopyTable(folder.mutations[mutationRule.mutationId]._real)
-
-			export.folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId] = mutation
-
-			for _, selector in ipairs(mutation.selectors) do
-				if type(selector) == "table" then
-					---@cast selector Selector
-					SelectorInterface:handleDependencies(export, selector)
+			if not folder.modId then
+				mutationRule.mutationFolderId = mutationRule.mutationFolderId .. "Exported"
+				if not export.folders[mutationRule.mutationFolderId] then
+					export.folders[mutationRule.mutationFolderId] = {
+						name = folder.name,
+						description = folder.description,
+						mutations = {}
+					}
 				end
-			end
 
-			for _, mutator in ipairs(mutation.mutators) do
-				MutatorInterface:handleDependencies(export, mutator)
+				---@type Mutation
+				local mutation = TableUtils:DeeplyCopyTable(folder.modId and folder.mutations[mutationRule.mutationId] or folder.mutations[mutationRule.mutationId]._real)
+
+				export.folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId] = mutation
+
+				for _, selector in ipairs(mutation.selectors) do
+					if type(selector) == "table" then
+						---@cast selector Selector
+						SelectorInterface:handleDependencies(export, selector)
+					end
+				end
+
+				for _, mutator in ipairs(mutation.mutators) do
+					MutatorInterface:handleDependencies(export, mutator)
+				end
+			else
+				local name, author, version = Helpers:BuildModFields(folder.modId)
+				mutationDependencies[folder.modId] = {
+					modAuthor = author,
+					modName = name,
+					modVersion = version,
+					modId = folder.modId,
+					packagedItems = nil
+				} --[[@as ModDependency]]
 			end
 		end
 	end
 
 	if forMod then
-		for folderId, folder in pairs(export.folders) do
-			export.folders[folderId .. "Exported"] = folder
-			export.folders[folderId] = nil
-		end
-
-		for spellListId, spellList in pairs(export.spellLists) do
-			export.spellLists[spellListId .. "Exported"] = spellList
-			export.spellLists[spellListId] = nil
-		end
-
-		for profileId, profile in pairs(export.profiles) do
-			for _, mutationRule in pairs(profile.mutationRules) do
-				mutationRule.mutationFolderId = mutationRule.mutationFolderId .. "Exported"
-			end
-
-			export.profiles[profileId .. "Exported"] = profile
-			export.profiles[profileId] = nil
-		end
-
 		names = MutationModProxy.Filename
-		FileUtils:SaveStringContentToFile("ExportedProfiles/ExportedModMetaLsxDependencies.lsx", self:BuildMetaDependencyBlock(export) or "")
+		FileUtils:SaveStringContentToFile("ExportedProfiles/ExportedModMetaLsxDependencies.lsx", self:BuildMetaDependencyBlock(export, mutationDependencies) or "")
 	end
 
 	FileUtils:SaveTableToFile("ExportedProfiles/" .. names .. ".json", {

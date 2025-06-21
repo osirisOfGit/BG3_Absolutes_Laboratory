@@ -26,7 +26,7 @@
 												"anchorLevel" : 1,
 												"spellLists" : 
 												[
-													"6d748445-534a-447c-8f04-1d2b9d88e658"
+													"6d748445-534a-447c-8f04-1d2b9d88e658Exported"
 												],
 												"spells" : 
 												{
@@ -119,6 +119,10 @@
 						"additive" : true,
 						"mutationFolderId" : "cd67a98b-1661-4927-8126-ae54e13458c8Exported",
 						"mutationId" : "ddec06e0-f13b-4af0-8530-7cc527516512"
+					},
+					{
+						"mutationFolderId" : "cd67a98b-1661-4927-8126-ae54e13458c8Exported",
+						"mutationId" : "ddec06e0-f13b-4af0-8530-7cc527516512"
 					}
 				],
 				"name" : "Profile SEcond"
@@ -126,7 +130,7 @@
 		},
 		"spellLists" : 
 		{
-			"6d748445-534a-447c-8f04-1d2b9d88e658ExportedExported" : 
+			"6d748445-534a-447c-8f04-1d2b9d88e658Exported" : 
 			{
 				"description" : "ttes",
 				"levels" : 
