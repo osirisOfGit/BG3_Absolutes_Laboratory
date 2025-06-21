@@ -877,8 +877,8 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 	for counter = 1, numOfMutations do
 		local row = self.rulesOrderGroup:AddGroup("MutationGroup" .. counter)
 
+		row.UserData = counter
 		if not activeProfile.modId then
-			row.UserData = counter
 			row.DragDropType = "MutationRules"
 			---@param row ExtuiGroup
 			---@param dropped ExtuiSelectable|ExtuiButton
@@ -974,9 +974,9 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 			end
 
 			mutationButton.IDContext = mutationRule.mutationFolderId .. mutationRule.mutationId
-			mutationButton.UserData = mutationRule._real
 			mutationButton.SameLine = true
-
+			mutationButton.UserData = activeProfile.modId and mutationRule or mutationRule._real
+			
 			if not activeProfile.modId then
 				mutationButton.CanDrag = true
 				mutationButton.DragDropType = "MutationRules"

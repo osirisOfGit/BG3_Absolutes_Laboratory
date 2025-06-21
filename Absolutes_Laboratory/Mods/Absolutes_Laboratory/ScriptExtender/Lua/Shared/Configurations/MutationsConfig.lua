@@ -113,10 +113,6 @@ ConfigurationStructure.DynamicClassDefinitions.profileMutationRule = {
 	mutationFolderId = "",
 	---@type Guid
 	mutationId = "",
-	---@type string?
-	modId = nil,
-	---@type string?
-	modName = nil,
 	---@type boolean
 	additive = false
 }

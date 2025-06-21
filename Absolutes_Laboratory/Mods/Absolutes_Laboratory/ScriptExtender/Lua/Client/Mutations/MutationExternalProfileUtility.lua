@@ -220,6 +220,10 @@ function MutationExternalProfileUtility:exportProfile(forMod, ...)
 		end
 
 		for profileId, profile in pairs(export.profiles) do
+			for _, mutationRule in pairs(profile.mutationRules) do
+				mutationRule.mutationFolderId = mutationRule.mutationFolderId .. "Exported"
+			end
+
 			export.profiles[profileId .. "Exported"] = profile
 			export.profiles[profileId] = nil
 		end

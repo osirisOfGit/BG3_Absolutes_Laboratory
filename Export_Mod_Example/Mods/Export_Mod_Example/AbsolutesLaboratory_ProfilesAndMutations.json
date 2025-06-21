@@ -64,10 +64,6 @@
 										"includeChildren" : false
 									},
 									{
-										"id" : "DEN_Rath",
-										"includeChildren" : false
-									},
-									{
 										"id" : "MMM_ABZEALOT_M",
 										"includeChildren" : false
 									},
@@ -113,19 +109,6 @@
 		},
 		"profiles" : 
 		{
-			"a2399afa-27eb-4463-a205-e91a5a999dc4" : 
-			{
-				"defaultActive" : false,
-				"description" : "",
-				"mutationRules" : 
-				[
-					{
-						"mutationFolderId" : "cd67a98b-1661-4927-8126-ae54e13458c8",
-						"mutationId" : "ddec06e0-f13b-4af0-8530-7cc527516512"
-					}
-				],
-				"name" : "Prof"
-			},
 			"b08a3bd9-395a-4a72-a747-a96a8e7aed73Exported" : 
 			{
 				"defaultActive" : false,
@@ -134,7 +117,7 @@
 				[
 					{
 						"additive" : true,
-						"mutationFolderId" : "cd67a98b-1661-4927-8126-ae54e13458c8",
+						"mutationFolderId" : "cd67a98b-1661-4927-8126-ae54e13458c8Exported",
 						"mutationId" : "ddec06e0-f13b-4af0-8530-7cc527516512"
 					}
 				],
@@ -143,7 +126,7 @@
 		},
 		"spellLists" : 
 		{
-			"6d748445-534a-447c-8f04-1d2b9d88e658Exported" : 
+			"6d748445-534a-447c-8f04-1d2b9d88e658ExportedExported" : 
 			{
 				"description" : "ttes",
 				"levels" : 
