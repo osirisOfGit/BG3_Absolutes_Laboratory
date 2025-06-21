@@ -10,8 +10,7 @@ local informedUserOfHostRestriction = false
 -- This allows us to react to any changes made to fields at any level in the structure and send a NetMessage
 -- just by defining the base table, ConfigurationStructure.config. Client/* implementations can now
 -- reference any slice of this table and allow their IMGUI elements to modify the table without
--- any additional logic for letting the server know there were changes. Only works for this implementation -
--- too fragile for general use
+-- any additional logic for letting the server know there were changes.
 function ConfigurationStructure:generate_recursive_metatable(proxy_table, real_table)
 	proxy_table._real = real_table
 

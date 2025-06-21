@@ -502,6 +502,7 @@ local triedOnce
 function MutationProfileManager:BuildProfileManager()
 	if not activeProfileId and not triedOnce then
 		triedOnce = true
+		-- MCM seems to initialize the tab before the ModVars are loaded, so need to do a deferred load
 		Ext.Timer.WaitFor(1000, function()
 			activeProfileId = Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile
 			if not ConfigurationStructure.config.mutations.profiles[activeProfileId] then
@@ -529,17 +530,41 @@ function MutationProfileManager:BuildProfileManager()
 		table.insert(opt, "Disabled")
 	end
 
-	for profileId, profile in TableUtils:OrderedPairs(profiles) do
-		table.insert(opt, profile.name)
+	---@type {[Guid] : MutationProfile}
+	local combinedProfiles = TableUtils:DeeplyCopyTable(profiles._real)
+
+	for _, modCache in pairs(MutationModProxy.ModProxy.profiles) do
+		---@cast modCache LocalModCache
+		for profileId in pairs(modCache.profiles) do
+			combinedProfiles[profileId] = MutationModProxy.ModProxy.profiles[profileId]
+		end
+	end
+
+	for profileId, profile in TableUtils:OrderedPairs(combinedProfiles, function(_, value)
+		return value.name
+	end) do
+		table.insert(opt, profile.name .. (profile.modId and "(M)" or ""))
 		if activeProfileId == profileId then
 			sIndex = #opt
 		end
 	end
+
 	profileCombo.Options = opt
 	profileCombo.SelectedIndex = sIndex - 1
 	profileCombo.OnChange = function()
-		activeProfileId = TableUtils:IndexOf(profiles, function(value)
-			return value.name == profileCombo.Options[profileCombo.SelectedIndex + 1]
+		local selectedName = profileCombo.Options[profileCombo.SelectedIndex + 1]
+		local isModProfile = selectedName:sub(#selectedName - 2) == "(M)"
+
+		activeProfileId = TableUtils:IndexOf(combinedProfiles, function(value)
+			if isModProfile then
+				if value.modId then
+					return value.name == selectedName:sub(1, #selectedName - 3)
+				else
+					return false
+				end
+			else
+				return value.name == selectedName
+			end
 		end)
 		Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = activeProfileId
 
@@ -690,73 +715,90 @@ function MutationProfileManager:BuildProfileManager()
 
 	local sep = manageProfilePopup:AddSeparatorText("Profiles")
 	sep:SetStyle("SeparatorTextAlign", 0.5)
-	-- sep.Font = "Small"
 
-	for profileId, profile in TableUtils:OrderedPairs(profiles) do
-		exportProfilesMenu:AddCheckbox(profile.name).UserData = profileId
+	for profileId, profile in TableUtils:OrderedPairs(combinedProfiles, function(key, value)
+		return value.name
+	end) do
+		if not profile.modId then
+			exportProfilesMenu:AddCheckbox(profile.name).UserData = profileId
+		end
 
 		---@type ExtuiMenu
-		local profileMenu = manageProfilePopup:AddMenu(profile.name)
-		profileMenu:AddItem("Edit").OnClick = function()
-			self.formBuilderWindow.Label = "Edit " .. profileId
-			Helpers:KillChildren(self.formBuilderWindow)
-			self.formBuilderWindow.Open = true
-			self.formBuilderWindow:SetFocus()
-			FormBuilder:CreateForm(self.formBuilderWindow, function(formResults)
-					profile.name = formResults.Name
-					profile.description = formResults.Description
-					profile.defaultActive = formResults.defaultActive
+		local profileMenu = manageProfilePopup:AddMenu(profile.name .. (profile.modId and "(M)" or ""))
 
-					if formResults.defaultActive then
-						for id, profile in pairs(profiles) do
-							if id ~= profileId then
-								profile.defaultActive = false
+		profileMenu:AddItem("Copy").OnClick = function()
+			local profile = profile.modId and profile or profile._real
+
+			local id = FormBuilder:generateGUID()
+			profiles[id] = TableUtils:DeeplyCopyTable(profile)
+			profiles[id].name = profiles[id].name .. " (COPY)"
+			profiles[id].modId = nil
+
+			self:BuildProfileManager()
+		end
+
+		if not profile.modId then
+			profileMenu:AddItem("Edit").OnClick = function()
+				self.formBuilderWindow.Label = "Edit " .. profileId
+				Helpers:KillChildren(self.formBuilderWindow)
+				self.formBuilderWindow.Open = true
+				self.formBuilderWindow:SetFocus()
+				FormBuilder:CreateForm(self.formBuilderWindow, function(formResults)
+						profile.name = formResults.Name
+						profile.description = formResults.Description
+						profile.defaultActive = formResults.defaultActive
+
+						if formResults.defaultActive then
+							for id, profile in pairs(profiles) do
+								if id ~= profileId then
+									profile.defaultActive = false
+								end
 							end
 						end
-					end
 
-					self.formBuilderWindow.Open = false
+						self.formBuilderWindow.Open = false
 
-					self:BuildProfileManager()
-				end,
-				{
+						self:BuildProfileManager()
+					end,
 					{
-						label = "Name",
-						type = "Text",
-						errorMessageIfEmpty = "Required Field",
-						defaultValue = profile.name
-					},
-					{
-						label = "Description",
-						type = "Multiline",
-						defaultValue = profile.description
-					},
-					{
-						label = "Active By Default for New Games?",
-						propertyField = "defaultActive",
-						type = "Checkbox",
-						defaultValue = profile.defaultActive
+						{
+							label = "Name",
+							type = "Text",
+							errorMessageIfEmpty = "Required Field",
+							defaultValue = profile.name
+						},
+						{
+							label = "Description",
+							type = "Multiline",
+							defaultValue = profile.description
+						},
+						{
+							label = "Active By Default for New Games?",
+							propertyField = "defaultActive",
+							type = "Checkbox",
+							defaultValue = profile.defaultActive
+						}
 					}
-				}
-			)
-		end
-
-		if profile.mutationRules and profile.mutationRules() then
-			profileMenu:AddItem("Export").OnClick = function()
-				MutationExternalProfileUtility:exportProfile(false, profileId)
+				)
 			end
 
-			profileMenu:AddItem("Export For Mod").OnClick = function()
-				MutationExternalProfileUtility:exportProfile(true, profileId)
+			if profile.mutationRules and next(profile.mutationRules) then
+				profileMenu:AddItem("Export").OnClick = function()
+					MutationExternalProfileUtility:exportProfile(false, profileId)
+				end
+
+				profileMenu:AddItem("Export For Mod").OnClick = function()
+					MutationExternalProfileUtility:exportProfile(true, profileId)
+				end
 			end
-		end
-		profileMenu:AddItem("Delete").OnClick = function()
-			profile.delete = true
-			if activeProfileId == profileId then
-				activeProfileId = nil
-				Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = activeProfileId
+			profileMenu:AddItem("Delete").OnClick = function()
+				profile.delete = true
+				if activeProfileId == profileId then
+					activeProfileId = nil
+					Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = activeProfileId
+				end
+				self:BuildProfileManager()
 			end
-			self:BuildProfileManager()
 		end
 	end
 
@@ -814,7 +856,7 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 	---@type MutationProfile
 	local activeProfile
 	if activeProfileId then
-		activeProfile = ConfigurationStructure.config.mutations.profiles[activeProfileId]
+		activeProfile = MutationConfigurationProxy.profiles[activeProfileId]
 	else
 		return
 	end
@@ -834,52 +876,56 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 
 	for counter = 1, numOfMutations do
 		local row = self.rulesOrderGroup:AddGroup("MutationGroup" .. counter)
-		row.UserData = counter
-		row.DragDropType = "MutationRules"
-		---@param row ExtuiGroup
-		---@param dropped ExtuiSelectable|ExtuiButton
-		row.OnDragDrop = function(row, dropped)
-			if tonumber(dropped.ParentElement.UserData) then
-				activeProfile.mutationRules[dropped.ParentElement.UserData].delete = true
-				if activeProfile.mutationRules[row.UserData] then
-					activeProfile.mutationRules[dropped.ParentElement.UserData] = activeProfile.mutationRules[row.UserData]._real
-				end
-			else
-				dropped.SelectableDisabled = true
 
-				if activeProfile.mutationRules[row.UserData] then
-					local removeRule = activeProfile.mutationRules[row.UserData]
-					for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
-						---@cast ele ExtuiCollapsingHeader
-						if ele.UserData == removeRule.mutationFolderId then
-							for _, mutation in pairs(ele.Children) do
-								---@cast mutation ExtuiSelectable
+		if not activeProfile.modId then
+			row.UserData = counter
+			row.DragDropType = "MutationRules"
+			---@param row ExtuiGroup
+			---@param dropped ExtuiSelectable|ExtuiButton
+			row.OnDragDrop = function(row, dropped)
+				if tonumber(dropped.ParentElement.UserData) then
+					activeProfile.mutationRules[dropped.ParentElement.UserData].delete = true
+					if activeProfile.mutationRules[row.UserData] then
+						activeProfile.mutationRules[dropped.ParentElement.UserData] = activeProfile.mutationRules[row.UserData]._real
+					end
+				else
+					dropped.SelectableDisabled = true
 
-								if mutation.UserData and mutation.UserData.mutationId == removeRule.mutationId then
-									mutation.SelectableDisabled = false
-									goto continue
+					if activeProfile.mutationRules[row.UserData] then
+						local removeRule = activeProfile.mutationRules[row.UserData]
+						for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
+							---@cast ele ExtuiCollapsingHeader
+							if ele.UserData == removeRule.mutationFolderId then
+								for _, mutation in pairs(ele.Children) do
+									---@cast mutation ExtuiSelectable
+
+									if mutation.UserData and mutation.UserData.mutationId == removeRule.mutationId then
+										mutation.SelectableDisabled = false
+										goto continue
+									end
 								end
 							end
 						end
+						::continue::
 					end
-					::continue::
 				end
+
+				if activeProfile.mutationRules[row.UserData] then
+					activeProfile.mutationRules[row.UserData].delete = true
+				end
+
+				activeProfile.mutationRules[row.UserData] = {
+					additive = dropped.UserData.additive,
+					mutationFolderId = dropped.UserData.mutationFolderId,
+					mutationId = dropped.UserData.mutationId,
+				}
+
+				self:BuildRuleManager(activeMutationView and activeMutationView.Label)
 			end
-
-			if activeProfile.mutationRules[row.UserData] then
-				activeProfile.mutationRules[row.UserData].delete = true
-			end
-
-			activeProfile.mutationRules[row.UserData] = {
-				additive = dropped.UserData.additive,
-				mutationFolderId = dropped.UserData.mutationFolderId,
-				mutationId = dropped.UserData.mutationId,
-			}
-
-			self:BuildRuleManager(activeMutationView and activeMutationView.Label)
 		end
 
 		local orderNumberInput = row:AddInputInt("##" .. counter, counter)
+		orderNumberInput.Disabled = activeProfile.modId ~= nil
 		orderNumberInput.AutoSelectAll = true
 		orderNumberInput.ItemWidth = 40
 
@@ -930,8 +976,11 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 			mutationButton.IDContext = mutationRule.mutationFolderId .. mutationRule.mutationId
 			mutationButton.UserData = mutationRule._real
 			mutationButton.SameLine = true
-			mutationButton.CanDrag = true
-			mutationButton.DragDropType = "MutationRules"
+
+			if not activeProfile.modId then
+				mutationButton.CanDrag = true
+				mutationButton.DragDropType = "MutationRules"
+			end
 
 			local mutation = folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId]
 			if not mutation.modId and (not mutation.selectors() or not mutation.mutators()) then
@@ -946,7 +995,7 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 			end
 
 			mutationButton.OnClick = function()
-				if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
+				if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" and not activeProfile.modId then
 					for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
 						---@cast ele ExtuiCollapsingHeader
 						if ele.UserData == mutationRule.mutationFolderId then
@@ -1017,6 +1066,7 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 				end)
 			then
 				local additiveCheckbox = row:AddCheckbox("", mutationRule.additive)
+				additiveCheckbox.Disabled = activeProfile.modId ~= nil
 				additiveCheckbox:Tooltip():AddText(
 					"\t If checked, relevant mutators under this mutation will be _additive_, meaning they will be combined with any mutators of the same type that are applicable from mutations earlier in the flow.\n If unchecked, mutators of the same type from earlier mutations will be replaced with these.")
 
