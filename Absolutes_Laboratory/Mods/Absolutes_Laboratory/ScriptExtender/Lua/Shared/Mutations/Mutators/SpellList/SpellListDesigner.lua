@@ -84,7 +84,7 @@ SpellListDesigner.displayTable = nil
 local activeSpellList
 
 function SpellListDesigner:buildSpellDesignerWindow(activeList)
-	local spellLists = MutationConfigurationProxy.spellLists
+	local spellLists = ConfigurationStructure.config.mutations.spellLists
 
 	if not self.spellListDesignerWindow then
 		self:buildProgressionIndex()
@@ -150,7 +150,7 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 				end
 				self.subListIndex[subListName].colour = colorEdit.Color
 				Helpers:KillChildren(self.designer)
-				self:buildSpellListDesigner(spellLists[activeSpellList.UserData])
+				self:buildSpellListDesigner(MutationConfigurationProxy.spellLists[activeSpellList.UserData])
 			end
 		end
 	else
@@ -172,6 +172,7 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 	end) do
 		---@type ExtuiSelectable
 		local spellListSelect = self.lists:AddSelectable(spellList.name)
+		spellListSelect.IDContext = guid
 		if spellList.description and spellList.description ~= "" then
 			spellListSelect:Tooltip():AddText("\t " .. spellList.description)
 		end
@@ -265,6 +266,72 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 			}
 		})
 	end
+
+	self:addModSpellLists(self.lists, activeList)
+end
+
+---@param parent ExtuiTreeParent
+function SpellListDesigner:addModSpellLists(parent, activeList)
+	if MutationModProxy.ModProxy.spellLists() then
+		---@type {[Guid]: Guid[]}
+		local modSpellLists = {}
+
+		for modId, modCache in pairs(MutationModProxy.ModProxy.spellLists) do
+			---@cast modCache LocalModCache
+
+			if modCache.spellLists and next(modCache.spellLists) then
+				modSpellLists[modId] = {}
+				for spellListId in pairs(modCache.spellLists) do
+					table.insert(modSpellLists[modId], spellListId)
+				end
+			end
+		end
+
+		if next(modSpellLists) then
+			parent:AddSeparatorText("Mod-Added Lists"):SetStyle("SeparatorTextAlign", 0.5)
+
+			for modId, spellLists in TableUtils:OrderedPairs(modSpellLists, function(key, value)
+				return Ext.Mod.GetMod(key).Info.Name
+			end) do
+				parent:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name)
+
+				for _, guid in TableUtils:OrderedPairs(spellLists, function(key, value)
+					return MutationModProxy.ModProxy.spellLists[value].name
+				end) do
+					local spellList = MutationModProxy.ModProxy.spellLists[guid]
+
+					---@type ExtuiSelectable
+					local spellListSelect = parent:AddSelectable(spellList.name)
+					spellListSelect.IDContext = guid
+					spellListSelect.UserData = guid
+					if spellList.description and spellList.description ~= "" then
+						spellListSelect:Tooltip():AddText("\t " .. spellList.description)
+					end
+
+					spellListSelect.OnClick = function()
+						if activeSpellList then
+							activeSpellList.Selected = false
+							Helpers:KillChildren(self.designer)
+						end
+						self.designer.Visible = true
+
+						activeSpellList = spellListSelect
+
+						self.browser.Visible = false
+						self:buildProgressionBrowser(spellList)
+						self:buildSpellBrowser(spellList)
+
+						self:buildSpellListDesigner(spellList)
+					end
+
+					if guid == activeList then
+						spellListSelect.Selected = true
+						spellListSelect:OnClick()
+					end
+				end
+			end
+		end
+	end
 end
 
 ---@param spellList SpellList
@@ -275,6 +342,11 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 	if spellList.description and spellList.description ~= "" then
 		headerTitle.Label = headerTitle.Label .. "( ? )"
 		headerTitle:Tooltip():AddText("\t " .. spellList.description).TextWrapPos = 800 * Styler:ScaleFactor()
+	end
+
+	if spellList.modId then
+		Styler:CheapTextAlign(Ext.Mod.GetMod(spellList.modId).Info.Name, self.designer)
+		Styler:CheapTextAlign("Mod-Added List - You can browse, but not edit", self.designer, "Large"):SetColor("Text", { 1, 0, 0, 0.45 })
 	end
 
 	if self.designer.LastSize[1] == 0 then
@@ -301,6 +373,7 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 	- Alt: Remove a spell from the ongoing multi-select
 	]])
 	local deleteAllButton = self.designer:AddButton("Delete All Non-Linked Spells")
+	deleteAllButton.Disabled = spellList.modId ~= nil
 	deleteAllButton.OnClick = function()
 		for _, leveledSubList in TableUtils:OrderedPairs(spellList.levels) do
 			if leveledSubList.selectedSpells then
@@ -344,7 +417,7 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 			end
 
 			---@cast subList SpellName[]
-			for sI, spellName in TableUtils:OrderedPairs(subList, function(key)
+			for _, spellName in TableUtils:OrderedPairs(subList, function(key)
 				return subList[key]
 			end) do
 				---@type SpellData
@@ -364,7 +437,8 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 						progressionTableId = progressionTableId
 					} --[[@as SpellHandle]]
 
-					if not progressionTableId then
+
+					if not spellList.modId and not progressionTableId then
 						spellImage.CanDrag = true
 						spellImage.DragDropType = "SpellReorder"
 
@@ -393,50 +467,94 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 								window = nil
 							end
 							ResourceManager:RenderDisplayWindow(spellData, window)
-						elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
-							if self.selectedSpells.context ~= "Main"
-								or (self.selectedSpells.linkedSpells and not progressionTableId)
-								or (not self.selectedSpells.linkedSpells and progressionTableId)
-							then
-								self.selectedSpells.context = "Main"
-								self.selectedSpells.spells = {}
-								for _, handle in pairs(self.selectedSpells.handles) do
-									if handle.UserData.subListName then
-										handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
-									else
-										handle:SetColor("Button", { 1, 1, 1, 0 })
+						elseif not spellList.modId then
+							if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
+								if self.selectedSpells.context ~= "Main"
+									or (self.selectedSpells.linkedSpells and not progressionTableId)
+									or (not self.selectedSpells.linkedSpells and progressionTableId)
+								then
+									self.selectedSpells.context = "Main"
+									self.selectedSpells.spells = {}
+									for _, handle in pairs(self.selectedSpells.handles) do
+										if handle.UserData.subListName then
+											handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
+										else
+											handle:SetColor("Button", { 1, 1, 1, 0 })
+										end
+									end
+									self.selectedSpells.handles = {}
+								end
+
+								if progressionTableId then
+									self.selectedSpells.linkedSpells = true
+								else
+									self.selectedSpells.linkedSpells = false
+								end
+
+								table.insert(self.selectedSpells.spells, spellImage.UserData)
+								table.insert(self.selectedSpells.handles, spellImage)
+								spellImage:SetColor("Button", { 0, 1, 0, .8 })
+							elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Alt" then
+								if self.selectedSpells.context == "Main" then
+									local index = TableUtils:IndexOf(self.selectedSpells.spells, function(value)
+										return value.spellName == spellName
+									end)
+									if index then
+										table.remove(self.selectedSpells.spells, index)
+										table.remove(self.selectedSpells.handles, index)
+
+										spellImage:SetColor("Button", self.subListIndex[spellImage.UserData.subListName].colour)
 									end
 								end
-								self.selectedSpells.handles = {}
-							end
-
-							if progressionTableId then
-								self.selectedSpells.linkedSpells = true
 							else
-								self.selectedSpells.linkedSpells = false
-							end
+								Helpers:KillChildren(popup)
+								popup:Open()
+								for subListCategory, index in TableUtils:OrderedPairs(self.subListIndex) do
+									if subListCategory ~= subListName and (subListCategory ~= "blackListed" or progressionTableId) then
+										popup:AddSelectable("Set As " .. index.name .. "##" .. level).OnClick = function()
+											---@type SpellHandle[]
+											local handles = {}
+											if self.selectedSpells.context == "Main" and #self.selectedSpells.spells > 0 then
+												handles = self.selectedSpells.spells
+											end
 
-							table.insert(self.selectedSpells.spells, spellImage.UserData)
-							table.insert(self.selectedSpells.handles, spellImage)
-							spellImage:SetColor("Button", { 0, 1, 0, .8 })
-						elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Alt" then
-							if self.selectedSpells.context == "Main" then
-								local index = TableUtils:IndexOf(self.selectedSpells.spells, function(value)
-									return value.spellName == spellName
-								end)
-								if index then
-									table.remove(self.selectedSpells.spells, index)
-									table.remove(self.selectedSpells.handles, index)
+											if not TableUtils:IndexOf(handles, function(value)
+													return value.spellName == spellName
+												end)
+											then
+												table.insert(handles, spellImage.UserData)
+											end
 
-									spellImage:SetColor("Button", self.subListIndex[spellImage.UserData.subListName].colour)
+											for _, handle in pairs(handles) do
+												---@type SpellSubLists
+												local subList = spellList.levels[handle.level][handle.progressionTableId and "linkedProgressions" or "selectedSpells"]
+												if handle.progressionTableId then
+													subList = subList[handle.progressionTableId]
+												end
+
+												if subListCategory ~= "randomized" or not progressionTableId then
+													subList[subListCategory] = subList[subListCategory] or {}
+													table.insert(subList[subListCategory], handle.spellName)
+												end
+												if handle.subListName then
+													local index = TableUtils:IndexOf(subList[handle.subListName], handle.spellName)
+													if index then
+														subList[handle.subListName][index] = nil
+														if not subList[handle.subListName]() then
+															subList[handle.subListName].delete = true
+														end
+													end
+												end
+											end
+											self.selectedSpells.handles = {}
+											self.selectedSpells.spells = {}
+											self:buildSpellListDesigner(spellList)
+										end
+									end
 								end
-							end
-						else
-							Helpers:KillChildren(popup)
-							popup:Open()
-							for subListCategory, index in TableUtils:OrderedPairs(self.subListIndex) do
-								if subListCategory ~= subListName and (subListCategory ~= "blackListed" or progressionTableId) then
-									popup:AddSelectable("Set As " .. index.name .. "##" .. level).OnClick = function()
+
+								if not progressionTableId then
+									popup:AddSelectable("Remove").OnClick = function()
 										---@type SpellHandle[]
 										local handles = {}
 										if self.selectedSpells.context == "Main" and #self.selectedSpells.spells > 0 then
@@ -452,22 +570,13 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 
 										for _, handle in pairs(handles) do
 											---@type SpellSubLists
-											local subList = spellList.levels[handle.level][handle.progressionTableId and "linkedProgressions" or "selectedSpells"]
-											if handle.progressionTableId then
-												subList = subList[handle.progressionTableId]
-											end
+											local subList = spellList.levels[handle.level].selectedSpells
 
-											if subListCategory ~= "randomized" or not progressionTableId then
-												subList[subListCategory] = subList[subListCategory] or {}
-												table.insert(subList[subListCategory], handle.spellName)
-											end
-											if handle.subListName then
-												local index = TableUtils:IndexOf(subList[handle.subListName], handle.spellName)
-												if index then
-													subList[handle.subListName][index] = nil
-													if not subList[handle.subListName]() then
-														subList[handle.subListName].delete = true
-													end
+											local index = TableUtils:IndexOf(subList[handle.subListName], handle.spellName)
+											if index then
+												subList[handle.subListName][index] = nil
+												if not subList[handle.subListName]() then
+													subList[handle.subListName].delete = true
 												end
 											end
 										end
@@ -475,39 +584,6 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 										self.selectedSpells.spells = {}
 										self:buildSpellListDesigner(spellList)
 									end
-								end
-							end
-
-							if not progressionTableId then
-								popup:AddSelectable("Remove").OnClick = function()
-									---@type SpellHandle[]
-									local handles = {}
-									if self.selectedSpells.context == "Main" and #self.selectedSpells.spells > 0 then
-										handles = self.selectedSpells.spells
-									end
-
-									if not TableUtils:IndexOf(handles, function(value)
-											return value.spellName == spellName
-										end)
-									then
-										table.insert(handles, spellImage.UserData)
-									end
-
-									for _, handle in pairs(handles) do
-										---@type SpellSubLists
-										local subList = spellList.levels[handle.level].selectedSpells
-
-										local index = TableUtils:IndexOf(subList[handle.subListName], handle.spellName)
-										if index then
-											subList[handle.subListName][index] = nil
-											if not subList[handle.subListName]() then
-												subList[handle.subListName].delete = true
-											end
-										end
-									end
-									self.selectedSpells.handles = {}
-									self.selectedSpells.spells = {}
-									self:buildSpellListDesigner(spellList)
 								end
 							end
 						end
@@ -546,7 +622,10 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 		listGroup:SetColor("Border", { 1, 0, 0, 1 })
 		listGroup:AddText(tostring(level) .. (level < 10 and "  " or "")).Font = "Big"
 		listGroup.UserData = level
-		listGroup.DragDropType = "SpellReorder"
+		if not spellList.modId then
+			listGroup.DragDropType = "SpellReorder"
+		end
+
 		local spellGroup = listGroup:AddGroup("spells")
 		spellGroup.SameLine = true
 
@@ -700,7 +779,7 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 
 							local tableUUID = self.progressionTranslation[progressionName]
 							local hasProgression = TableUtils:IndexOf(spellList.levels, function(value)
-								return value.linkedProgressions[tableUUID] ~= nil
+								return value.linkedProgressions and value.linkedProgressions[tableUUID] ~= nil
 							end)
 							local linkButton = ele:AddButton(hasProgression and "Unlink" or "Link")
 							linkButton.SameLine = true

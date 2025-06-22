@@ -3,20 +3,58 @@
 	{
 		"folders" : 
 		{
-			"d89bf6fb-49cd-4b4d-86fb-55f9e48fff63Exported" : 
+			"1488a99d-7339-42a8-a472-773ea1ef2759Exported" : 
 			{
-				"description" : "",
+				"description" : "Handles all Goblin-specific shenanigans\n",
 				"mutations" : 
 				{
-					"212e5d4e-de66-46ff-89bf-dccce562c37c" : 
+					"6b38ff4d-e9cf-4068-be00-7a3ffd294c4e" : 
 					{
-						"description" : "",
-						"mutators" : [],
-						"name" : "test",
-						"selectors" : []
+						"description" : "Main mutators",
+						"mutators" : 
+						[
+							{
+								"modifiers" : [],
+								"targetProperty" : "SpellList",
+								"values" : 
+								[
+									{
+										"leveledSpellPool" : 
+										[
+											{
+												"anchorLevel" : 1,
+												"spellLists" : 
+												[
+													"6d748445-534a-447c-8f04-1d2b9d88e658Exported"
+												]
+											}
+										],
+										"randomizedSpellPoolSize" : []
+									}
+								]
+							}
+						],
+						"name" : "Core",
+						"selectors" : 
+						[
+							{
+								"criteriaCategory" : "Race",
+								"criteriaValue" : 
+								{
+									"RaceId" : "899d275e-9893-490a-9cd5-be856794929f",
+									"SubRaceIds" : 
+									[
+										"54fb4eb9-2cb9-4925-a94f-c16d15e20999"
+									]
+								},
+								"inclusive" : true,
+								"modDependencies" : [],
+								"subSelectors" : []
+							}
+						]
 					}
 				},
-				"name" : "test2"
+				"name" : "Blasted Gobbos"
 			}
 		},
 		"profiles" : 
@@ -28,13 +66,210 @@
 				"mutationRules" : 
 				[
 					{
-						"mutationFolderId" : "d89bf6fb-49cd-4b4d-86fb-55f9e48fff63Exported",
-						"mutationId" : "212e5d4e-de66-46ff-89bf-dccce562c37c"
+						"mutationFolderId" : "1488a99d-7339-42a8-a472-773ea1ef2759Exported",
+						"mutationId" : "6b38ff4d-e9cf-4068-be00-7a3ffd294c4e"
 					}
 				],
 				"name" : "Profile SEcond"
 			}
 		},
-		"spellLists" : []
+		"spellLists" : 
+		{
+			"6d748445-534a-447c-8f04-1d2b9d88e658Exported" : 
+			{
+				"description" : "ttes",
+				"levels" : 
+				{
+					"1" : 
+					{
+						"linkedProgressions" : 
+						{
+							"229c98da-2cd1-4a5e-8051-9d90ec7931e7" : 
+							{
+								"blackListed" : [],
+								"guaranteed" : [],
+								"onLoadOnly" : [],
+								"randomized" : [],
+								"startOfCombatOnly" : []
+							},
+							"64474b62-b4f5-46b3-b94a-c676c6da3116" : 
+							{
+								"blackListed" : [],
+								"guaranteed" : [],
+								"onLoadOnly" : [],
+								"randomized" : [],
+								"startOfCombatOnly" : []
+							}
+						},
+						"selectedSpells" : 
+						{
+							"randomized" : []
+						}
+					},
+					"10" : 
+					{
+						"linkedProgressions" : 
+						{
+							"229c98da-2cd1-4a5e-8051-9d90ec7931e7" : 
+							{
+								"blackListed" : [],
+								"guaranteed" : [],
+								"onLoadOnly" : [],
+								"randomized" : [],
+								"startOfCombatOnly" : []
+							}
+						}
+					},
+					"11" : 
+					{
+						"linkedProgressions" : 
+						{
+							"229c98da-2cd1-4a5e-8051-9d90ec7931e7" : 
+							{
+								"blackListed" : [],
+								"guaranteed" : [],
+								"onLoadOnly" : [],
+								"randomized" : [],
+								"startOfCombatOnly" : []
+							},
+							"64474b62-b4f5-46b3-b94a-c676c6da3116" : 
+							{
+								"blackListed" : [],
+								"guaranteed" : [],
+								"onLoadOnly" : [],
+								"randomized" : [],
+								"startOfCombatOnly" : []
+							}
+						}
+					},
+					"2" : 
+					{
+						"linkedProgressions" : 
+						{
+							"229c98da-2cd1-4a5e-8051-9d90ec7931e7" : 
+							{
+								"blackListed" : [],
+								"guaranteed" : [],
+								"onLoadOnly" : [],
+								"randomized" : [],
+								"startOfCombatOnly" : []
+							},
+							"64474b62-b4f5-46b3-b94a-c676c6da3116" : 
+							{
+								"blackListed" : [],
+								"guaranteed" : [],
+								"onLoadOnly" : [],
+								"randomized" : [],
+								"startOfCombatOnly" : []
+							}
+						}
+					},
+					"3" : 
+					{
+						"linkedProgressions" : 
+						{
+							"229c98da-2cd1-4a5e-8051-9d90ec7931e7" : 
+							{
+								"blackListed" : [],
+								"guaranteed" : [],
+								"onLoadOnly" : [],
+								"randomized" : [],
+								"startOfCombatOnly" : []
+							},
+							"64474b62-b4f5-46b3-b94a-c676c6da3116" : 
+							{
+								"blackListed" : [],
+								"guaranteed" : [],
+								"onLoadOnly" : [],
+								"randomized" : [],
+								"startOfCombatOnly" : []
+							}
+						}
+					},
+					"5" : 
+					{
+						"linkedProgressions" : 
+						{
+							"229c98da-2cd1-4a5e-8051-9d90ec7931e7" : 
+							{
+								"blackListed" : [],
+								"guaranteed" : [],
+								"onLoadOnly" : [],
+								"randomized" : [],
+								"startOfCombatOnly" : []
+							},
+							"64474b62-b4f5-46b3-b94a-c676c6da3116" : 
+							{
+								"blackListed" : [],
+								"guaranteed" : [],
+								"onLoadOnly" : [],
+								"randomized" : [],
+								"startOfCombatOnly" : []
+							}
+						}
+					},
+					"6" : 
+					{
+						"linkedProgressions" : 
+						{
+							"229c98da-2cd1-4a5e-8051-9d90ec7931e7" : 
+							{
+								"blackListed" : [],
+								"guaranteed" : [],
+								"onLoadOnly" : [],
+								"randomized" : [],
+								"startOfCombatOnly" : []
+							}
+						}
+					},
+					"7" : 
+					{
+						"linkedProgressions" : 
+						{
+							"229c98da-2cd1-4a5e-8051-9d90ec7931e7" : 
+							{
+								"blackListed" : [],
+								"guaranteed" : [],
+								"onLoadOnly" : [],
+								"randomized" : [],
+								"startOfCombatOnly" : []
+							},
+							"64474b62-b4f5-46b3-b94a-c676c6da3116" : 
+							{
+								"blackListed" : [],
+								"guaranteed" : [],
+								"onLoadOnly" : [],
+								"randomized" : [],
+								"startOfCombatOnly" : []
+							}
+						}
+					},
+					"9" : 
+					{
+						"linkedProgressions" : 
+						{
+							"229c98da-2cd1-4a5e-8051-9d90ec7931e7" : 
+							{
+								"blackListed" : [],
+								"guaranteed" : [],
+								"onLoadOnly" : [],
+								"randomized" : [],
+								"startOfCombatOnly" : []
+							},
+							"64474b62-b4f5-46b3-b94a-c676c6da3116" : 
+							{
+								"blackListed" : [],
+								"guaranteed" : [],
+								"onLoadOnly" : [],
+								"randomized" : [],
+								"startOfCombatOnly" : []
+							}
+						}
+					}
+				},
+				"modDependencies" : [],
+				"name" : "High Variance"
+			}
+		}
 	}
 }

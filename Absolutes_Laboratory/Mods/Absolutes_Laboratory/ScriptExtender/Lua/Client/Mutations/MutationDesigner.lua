@@ -101,10 +101,10 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 
 	if existingMutation.modId then
 		---@param parent ExtuiTreeParent
-		local function reenableNavigatableElements(parent)
+		local function disableNonNavigatableElements(parent)
 			local success = pcall(function(...)
 				for _, child in pairs(parent.Children) do
-					reenableNavigatableElements(child)
+					disableNonNavigatableElements(child)
 				end
 			end)
 
@@ -115,8 +115,8 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 			end
 		end
 
-		reenableNavigatableElements(selectorColumn)
-		reenableNavigatableElements(mutatorColumn)
+		disableNonNavigatableElements(selectorColumn)
+		disableNonNavigatableElements(mutatorColumn)
 	end
 end
 

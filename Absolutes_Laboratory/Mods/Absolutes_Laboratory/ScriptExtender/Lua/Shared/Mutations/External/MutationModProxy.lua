@@ -20,7 +20,7 @@ local function setModProxyFields(tbl, key, target)
 	if modId then
 		local mutationConfig = MutationModProxy:ImportMutation(modId)
 		TableUtils:ConvertStringifiedNumberIndexes(mutationConfig)
-		
+
 		if mutationConfig.profiles then
 			for profileId, profile in pairs(mutationConfig.profiles) do
 				profile.modId = modId
@@ -78,6 +78,10 @@ MutationModProxy.ModProxy = {
 		__mode = "k",
 		__index = function(t, k)
 			return setModProxyFields(t, k, "spellLists")
+		end,
+		__call = function(t)
+			MutationModProxy:ImportMutationsFromMods()
+			return TableUtils:CountElements(modList)
 		end,
 		__pairs = function(t)
 			return pairs(modList)

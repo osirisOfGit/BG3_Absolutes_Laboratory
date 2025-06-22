@@ -126,7 +126,7 @@ function SpellListMutator:renderMutator(parent, mutator)
 						Helpers:KillChildren(popup)
 						popup:Open()
 
-						for id, spellList in TableUtils:OrderedPairs(configuredSpellLists, function(key)
+						for id, spellList in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.spellLists, function(key)
 							return configuredSpellLists[key].name
 						end) do
 							---@type ExtuiSelectable
@@ -143,6 +143,51 @@ function SpellListMutator:renderMutator(parent, mutator)
 								end
 								Helpers:KillChildren(poolGroup)
 								renderPools()
+							end
+						end
+
+						if MutationModProxy.ModProxy.spellLists() then
+							---@type {[Guid]: Guid[]}
+							local modSpellLists = {}
+
+							for modId, modCache in pairs(MutationModProxy.ModProxy.spellLists) do
+								---@cast modCache LocalModCache
+
+								if modCache.spellLists and next(modCache.spellLists) then
+									modSpellLists[modId] = {}
+									for spellListId in pairs(modCache.spellLists) do
+										table.insert(modSpellLists[modId], spellListId)
+									end
+								end
+							end
+
+							if next(modSpellLists) then
+								for modId, spellLists in TableUtils:OrderedPairs(modSpellLists, function(key, value)
+									return Ext.Mod.GetMod(key).Info.Name
+								end) do
+									popup:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name).Font = "Small"
+
+									for _, guid in TableUtils:OrderedPairs(spellLists, function(key, value)
+										return MutationModProxy.ModProxy.spellLists[value].name
+									end) do
+										local spellList = MutationModProxy.ModProxy.spellLists[guid]
+										---@type ExtuiSelectable
+										local select = popup:AddSelectable(spellList.name, "DontClosePopups")
+										select.Selected = TableUtils:IndexOf(leveledSpellPool.spellLists, guid) ~= nil
+										select.OnClick = function()
+											local index = TableUtils:IndexOf(leveledSpellPool.spellLists, guid)
+											if index then
+												leveledSpellPool.spellLists[index] = nil
+												select.Selected = false
+											else
+												select.Selected = true
+												table.insert(leveledSpellPool.spellLists, guid)
+											end
+											Helpers:KillChildren(poolGroup)
+											renderPools()
+										end
+									end
+								end
 							end
 						end
 					end
@@ -803,7 +848,7 @@ function SpellListMutator:handleDependencies(export, mutator, removeMissingDepen
 							local spellListDef = removeMissingDependencies == true
 								and export.spellLists[spellListId]
 								or TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.spellLists[spellListId]._real)
-							
+
 							spellListId = spellListId .. "Exported"
 							leveledSpellPool.spellLists[l] = spellListId
 
@@ -872,7 +917,7 @@ function SpellListMutator:handleDependencies(export, mutator, removeMissingDepen
 							end
 						else
 							local name, author, version = Helpers:BuildModFields(spellListModId)
-
+							mutator.modDependencies = mutator.modDependencies or {}
 							mutator.modDependencies[spellListModId] = {
 								modAuthor = author,
 								modName = name,
