@@ -594,9 +594,10 @@ function MutationProfileManager:BuildProfileManager()
 				else
 					return false
 				end
-			else
+			elseif not value.modId then
 				return value.name == selectedName
 			end
+			return false
 		end)
 		Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = activeProfileId
 
