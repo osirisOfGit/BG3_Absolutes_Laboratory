@@ -750,14 +750,18 @@ function MutationProfileManager:BuildProfileManager()
 	sep:SetStyle("SeparatorTextAlign", 0.5)
 
 	for profileId, profile in TableUtils:OrderedPairs(combinedProfiles, function(key, value)
-		return value.name
+		return (value.modId and ("Z" .. value.modId) or "") .. value.name
 	end) do
 		if not profile.modId then
 			exportProfilesMenu:AddCheckbox(profile.name).UserData = profileId
 		end
 
 		---@type ExtuiMenu
-		local profileMenu = manageProfilePopup:AddMenu(profile.name .. (profile.modId and "(M)" or ""))
+		local profileMenu = manageProfilePopup:AddMenu(profile.name .. (profile.modId and " (M)" or ""))
+
+		if profile.modId then
+			profileMenu:AddSeparatorText("From " .. Ext.Mod.GetMod(profile.modId).Info.Name):SetStyle("Alpha", 0.5)
+		end
 
 		profileMenu:AddItem("Copy").OnClick = function()
 			local copiedProfile = TableUtils:DeeplyCopyTable(profile)
