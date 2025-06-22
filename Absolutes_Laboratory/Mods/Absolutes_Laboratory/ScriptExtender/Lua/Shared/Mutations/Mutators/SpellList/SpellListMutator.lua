@@ -394,7 +394,7 @@ function SpellListMutator:renderRandomizedAmountSettings(parent, spellMutatorGro
 
 	spellMutatorGroup.randomizedSpellPoolSize = spellMutatorGroup.randomizedSpellPoolSize or {}
 	local randomizedSpellPoolSize = spellMutatorGroup.randomizedSpellPoolSize
-	if (not randomizedSpellPoolSize.__call and not next(randomizedSpellPoolSize)) or (randomizedSpellPoolSize.__call and not randomizedSpellPoolSize()) then
+	if getmetatable(randomizedSpellPoolSize) and getmetatable(randomizedSpellPoolSize).__call and not randomizedSpellPoolSize() then
 		randomizedSpellPoolSize[1] = 2
 		randomizedSpellPoolSize[3] = 0
 		randomizedSpellPoolSize[5] = 1
@@ -434,7 +434,7 @@ This will cause Lab to give the entity 3 random spells from the selected Spell L
 			if not randomizedSpellPoolSize[input.Value[1]] then
 				randomizedSpellPoolSize[input.Value[1]] = numSpells
 				randomizedSpellPoolSize[level] = nil
-				self:renderCriteriaAndExtras(parent, spellMutatorGroup)
+				self:renderRandomizedAmountSettings(parent, spellMutatorGroup)
 			else
 				input.Value = { level, level, level, level }
 			end
@@ -1325,7 +1325,7 @@ if Ext.IsServer() then
 
 							local spellList = MutationConfigurationProxy.spellLists[spellListId]
 							Logger:BasicDebug("Selected spellList %s (%s) for anchor level %s, using levels %s-%s",
-								spellList.name,
+								spellList.name .. (spellList.modId and (" from mod " .. Ext.Mod.GetMod(spellList.modId).Info.Name) or ""),
 								spellListId,
 								leveledSpellPool.anchorLevel,
 								startingSpellListLevel,

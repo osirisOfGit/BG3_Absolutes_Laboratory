@@ -537,7 +537,7 @@ function MutationProfileManager:BuildProfileManager()
 		-- MCM seems to initialize the tab before the ModVars are loaded, so need to do a deferred load
 		Ext.Timer.WaitFor(1000, function()
 			activeProfileId = Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile
-			if not ConfigurationStructure.config.mutations.profiles[activeProfileId] then
+			if not MutationConfigurationProxy.profiles[activeProfileId] then
 				Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = nil
 				activeProfileId = nil
 			end

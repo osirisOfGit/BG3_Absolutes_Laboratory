@@ -14,7 +14,7 @@ local function setModProxyFields(tbl, key, target)
 	MutationModProxy:ImportMutationsFromMods()
 
 	local modId = TableUtils:IndexOf(modList, function(value)
-		return value[target][key] ~= nil
+		return value[target] and value[target][key] ~= nil
 	end)
 
 	if modId then

@@ -15,7 +15,7 @@ function MutationProfileExecutor:ExecuteProfile()
 		Logger:BasicInfo("Recorder is currently running - skipping Mutations")
 		return
 	end
-	local config = ConfigurationStructure:GetRealConfigCopy().mutations
+	local config = MutationConfigurationProxy
 	local activeProfile = config.profiles[Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile]
 
 	if activeProfile and next(activeProfile.mutationRules) then
@@ -75,7 +75,10 @@ function MutationProfileExecutor:ExecuteProfile()
 				entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = next(entityVar.appliedMutators) and entityVar or nil
 			end
 		end
-		Logger:BasicInfo("======= Mutated %s Entities in %dms under Profile %s =======", counter, Ext.Timer:MonotonicTime() - time, activeProfile.name)
+		Logger:BasicInfo("======= Mutated %s Entities in %dms under Profile %s =======",
+			counter,
+			Ext.Timer:MonotonicTime() - time,
+			activeProfile.name .. (activeProfile.modId and string.format(" (from mod %s)", Ext.Mod.GetMod(activeProfile.modId).Info.Name) or ""))
 	else
 		local time = Ext.Timer:MonotonicTime()
 		local counter = 0

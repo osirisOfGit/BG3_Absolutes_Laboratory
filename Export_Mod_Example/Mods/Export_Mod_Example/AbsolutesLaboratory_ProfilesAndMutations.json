@@ -25,11 +25,18 @@
 												"anchorLevel" : 1,
 												"spellLists" : 
 												[
-													"6d748445-534a-447c-8f04-1d2b9d88e658Exported"
+													"d646893f-bdb5-4ad6-acc2-5d110a7ce833Exported"
 												]
 											}
 										],
-										"randomizedSpellPoolSize" : []
+										"randomizedSpellPoolSize" : 
+										{
+											"1" : 2,
+											"10" : 1,
+											"3" : 0,
+											"5" : 1,
+											"7" : 0
+										}
 									}
 								]
 							}
@@ -66,6 +73,7 @@
 				"mutationRules" : 
 				[
 					{
+						"additive" : true,
 						"mutationFolderId" : "1488a99d-7339-42a8-a472-773ea1ef2759Exported",
 						"mutationId" : "6b38ff4d-e9cf-4068-be00-7a3ffd294c4e"
 					}
@@ -75,92 +83,20 @@
 		},
 		"spellLists" : 
 		{
-			"6d748445-534a-447c-8f04-1d2b9d88e658Exported" : 
+			"d646893f-bdb5-4ad6-acc2-5d110a7ce833Exported" : 
 			{
-				"description" : "ttes",
+				"description" : "",
 				"levels" : 
 				{
 					"1" : 
 					{
 						"linkedProgressions" : 
 						{
-							"229c98da-2cd1-4a5e-8051-9d90ec7931e7" : 
+							"b82864a7-b093-4553-a802-e176831029c1" : 
 							{
 								"blackListed" : [],
-								"guaranteed" : [],
 								"onLoadOnly" : [],
-								"randomized" : [],
-								"startOfCombatOnly" : []
-							},
-							"64474b62-b4f5-46b3-b94a-c676c6da3116" : 
-							{
-								"blackListed" : [],
-								"guaranteed" : [],
-								"onLoadOnly" : [],
-								"randomized" : [],
-								"startOfCombatOnly" : []
-							}
-						},
-						"selectedSpells" : 
-						{
-							"randomized" : []
-						}
-					},
-					"10" : 
-					{
-						"linkedProgressions" : 
-						{
-							"229c98da-2cd1-4a5e-8051-9d90ec7931e7" : 
-							{
-								"blackListed" : [],
-								"guaranteed" : [],
-								"onLoadOnly" : [],
-								"randomized" : [],
-								"startOfCombatOnly" : []
-							}
-						}
-					},
-					"11" : 
-					{
-						"linkedProgressions" : 
-						{
-							"229c98da-2cd1-4a5e-8051-9d90ec7931e7" : 
-							{
-								"blackListed" : [],
-								"guaranteed" : [],
-								"onLoadOnly" : [],
-								"randomized" : [],
-								"startOfCombatOnly" : []
-							},
-							"64474b62-b4f5-46b3-b94a-c676c6da3116" : 
-							{
-								"blackListed" : [],
-								"guaranteed" : [],
-								"onLoadOnly" : [],
-								"randomized" : [],
-								"startOfCombatOnly" : []
-							}
-						}
-					},
-					"2" : 
-					{
-						"linkedProgressions" : 
-						{
-							"229c98da-2cd1-4a5e-8051-9d90ec7931e7" : 
-							{
-								"blackListed" : [],
-								"guaranteed" : [],
-								"onLoadOnly" : [],
-								"randomized" : [],
-								"startOfCombatOnly" : []
-							},
-							"64474b62-b4f5-46b3-b94a-c676c6da3116" : 
-							{
-								"blackListed" : [],
-								"guaranteed" : [],
-								"onLoadOnly" : [],
-								"randomized" : [],
-								"startOfCombatOnly" : []
+								"randomized" : []
 							}
 						}
 					},
@@ -168,21 +104,9 @@
 					{
 						"linkedProgressions" : 
 						{
-							"229c98da-2cd1-4a5e-8051-9d90ec7931e7" : 
+							"b82864a7-b093-4553-a802-e176831029c1" : 
 							{
-								"blackListed" : [],
-								"guaranteed" : [],
-								"onLoadOnly" : [],
-								"randomized" : [],
-								"startOfCombatOnly" : []
-							},
-							"64474b62-b4f5-46b3-b94a-c676c6da3116" : 
-							{
-								"blackListed" : [],
-								"guaranteed" : [],
-								"onLoadOnly" : [],
-								"randomized" : [],
-								"startOfCombatOnly" : []
+								"randomized" : []
 							}
 						}
 					},
@@ -190,35 +114,9 @@
 					{
 						"linkedProgressions" : 
 						{
-							"229c98da-2cd1-4a5e-8051-9d90ec7931e7" : 
+							"b82864a7-b093-4553-a802-e176831029c1" : 
 							{
-								"blackListed" : [],
-								"guaranteed" : [],
-								"onLoadOnly" : [],
-								"randomized" : [],
-								"startOfCombatOnly" : []
-							},
-							"64474b62-b4f5-46b3-b94a-c676c6da3116" : 
-							{
-								"blackListed" : [],
-								"guaranteed" : [],
-								"onLoadOnly" : [],
-								"randomized" : [],
-								"startOfCombatOnly" : []
-							}
-						}
-					},
-					"6" : 
-					{
-						"linkedProgressions" : 
-						{
-							"229c98da-2cd1-4a5e-8051-9d90ec7931e7" : 
-							{
-								"blackListed" : [],
-								"guaranteed" : [],
-								"onLoadOnly" : [],
-								"randomized" : [],
-								"startOfCombatOnly" : []
+								"randomized" : []
 							}
 						}
 					},
@@ -226,21 +124,9 @@
 					{
 						"linkedProgressions" : 
 						{
-							"229c98da-2cd1-4a5e-8051-9d90ec7931e7" : 
+							"b82864a7-b093-4553-a802-e176831029c1" : 
 							{
-								"blackListed" : [],
-								"guaranteed" : [],
-								"onLoadOnly" : [],
-								"randomized" : [],
-								"startOfCombatOnly" : []
-							},
-							"64474b62-b4f5-46b3-b94a-c676c6da3116" : 
-							{
-								"blackListed" : [],
-								"guaranteed" : [],
-								"onLoadOnly" : [],
-								"randomized" : [],
-								"startOfCombatOnly" : []
+								"randomized" : []
 							}
 						}
 					},
@@ -248,27 +134,15 @@
 					{
 						"linkedProgressions" : 
 						{
-							"229c98da-2cd1-4a5e-8051-9d90ec7931e7" : 
+							"b82864a7-b093-4553-a802-e176831029c1" : 
 							{
-								"blackListed" : [],
-								"guaranteed" : [],
-								"onLoadOnly" : [],
-								"randomized" : [],
-								"startOfCombatOnly" : []
-							},
-							"64474b62-b4f5-46b3-b94a-c676c6da3116" : 
-							{
-								"blackListed" : [],
-								"guaranteed" : [],
-								"onLoadOnly" : [],
-								"randomized" : [],
-								"startOfCombatOnly" : []
+								"randomized" : []
 							}
 						}
 					}
 				},
 				"modDependencies" : [],
-				"name" : "High Variance"
+				"name" : "Test"
 			}
 		}
 	}
