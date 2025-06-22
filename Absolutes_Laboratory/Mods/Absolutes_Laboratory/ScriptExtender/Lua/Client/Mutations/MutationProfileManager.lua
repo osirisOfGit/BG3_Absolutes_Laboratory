@@ -282,6 +282,16 @@ function MutationProfileManager:BuildFolderManager()
 			}
 
 			local mutationPopup = folderHeader:AddPopup(mutationId)
+
+			mutationPopup:AddSelectable("Copy").OnClick = function()
+				---@type Mutation
+				local mut = TableUtils:DeeplyCopyTable(mutation._real)
+				mut.name = mut.name .. "COPY"
+
+				folder.mutations[FormBuilder:generateGUID()] = mut
+				self:BuildFolderManager()
+			end
+
 			mutationPopup:AddSelectable("Delete").OnClick = function()
 				mutation.delete = true
 
