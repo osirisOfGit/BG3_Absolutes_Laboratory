@@ -270,7 +270,7 @@ function MutationProfileManager:BuildFolderManager()
 			---@type ExtuiSelectable
 			local mutationSelectable = folderHeader:AddSelectable(mutation.name)
 			mutationSelectable.IDContext = mutationId
-			
+
 			if mutation.description ~= "" then
 				mutationSelectable:Tooltip():AddText("\t " .. mutation.description)
 			end
@@ -585,7 +585,6 @@ function MutationProfileManager:BuildProfileManager()
 	profileCombo.SelectedIndex = sIndex - 1
 	profileCombo.OnChange = function()
 		local selectedName = profileCombo.Options[profileCombo.SelectedIndex + 1]
-		_D(selectedName:sub(#selectedName - 2))
 		local isModProfile = selectedName:sub(#selectedName - 2) == "(M)"
 
 		activeProfileId = TableUtils:IndexOf(combinedProfiles, function(value)
@@ -760,12 +759,11 @@ function MutationProfileManager:BuildProfileManager()
 		local profileMenu = manageProfilePopup:AddMenu(profile.name .. (profile.modId and "(M)" or ""))
 
 		profileMenu:AddItem("Copy").OnClick = function()
-			local profile = profile.modId and profile or profile._real
+			local copiedProfile = TableUtils:DeeplyCopyTable(profile)
+			copiedProfile.name = copiedProfile.name .. " (COPY)"
+			copiedProfile.modId = nil
 
-			local id = FormBuilder:generateGUID()
-			profiles[id] = TableUtils:DeeplyCopyTable(profile)
-			profiles[id].name = profiles[id].name .. " (COPY)"
-			profiles[id].modId = nil
+			profiles[FormBuilder:generateGUID()] = copiedProfile
 
 			self:BuildProfileManager()
 		end
@@ -788,6 +786,8 @@ function MutationProfileManager:BuildProfileManager()
 								end
 							end
 						end
+						profiles[profileId].delete = true
+						profiles[profileId] = profile
 
 						self.formBuilderWindow.Open = false
 
@@ -825,7 +825,7 @@ function MutationProfileManager:BuildProfileManager()
 				end
 			end
 			profileMenu:AddItem("Delete").OnClick = function()
-				profile.delete = true
+				profiles[profileId].delete = true
 				if activeProfileId == profileId then
 					activeProfileId = nil
 					Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = activeProfileId

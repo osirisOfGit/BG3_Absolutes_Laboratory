@@ -1,5 +1,0 @@
-{
-    "RequiredVersion": 22,
-    "ModTable": "Export_Mod_Example",
-    "FeatureFlags": ["Lua"]
-}
