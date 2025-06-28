@@ -529,6 +529,7 @@ function MutationProfileManager:BuildModFolders()
 					mutationSelectable.OnClick = function()
 						if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
 							modPopup:Open()
+							Helpers:KillChildren(modPopup)
 
 							---@type ExtuiMenu
 							local copyMenu = modPopup:AddMenu("Copy Mutation To Folder")
