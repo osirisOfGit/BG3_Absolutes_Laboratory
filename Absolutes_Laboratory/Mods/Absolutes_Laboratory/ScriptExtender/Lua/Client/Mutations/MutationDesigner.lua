@@ -185,7 +185,13 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 				andText:SetColor("Button", { 0, 0, 0, 0 })
 				orText:SetColor("Button", { 0.38, 0.26, 0.21, 0.78 })
 			end
+
+			andOrSlider.OnActivate = function ()
+				andOrSlider.Disabled = true
+			end
 			andOrSlider.OnDeactivate = function()
+				andOrSlider.Disabled = false
+				
 				existingSelector[i] = existingSelector[i] == "AND" and "OR" or "AND"
 				local newValue = existingSelector[i] == "AND" and 0 or 1
 				andOrSlider.Value = { newValue, newValue, newValue, newValue }
