@@ -104,16 +104,31 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 					name = translationMap[class.ParentGuid] .. " - " .. name
 				end
 
-				Styler:HyperlinkText(groupRow:AddCell(), name, function(parent)
-					ResourceManager:RenderDisplayWindow(Ext.StaticData.Get(classId, "ClassDescription"), parent)
-				end)
+				local classCell = groupRow:AddCell()
+				local deleteClass = Styler:ImageButton(classCell:AddImageButton("delete" .. classId, "ico_red_x", { 16, 16 }))
+				deleteClass.OnClick = function ()
+					classConditionalGroup.classIds[classId] = nil
+					if TableUtils:CountElements(classConditionalGroup.classIds) ~= 0 then
+						for otherID, otherLevelPercentage in pairs(classConditionalGroup.classIds) do
+							if levelPercentage + otherLevelPercentage <= 100 then
+								classConditionalGroup.classIds[otherID] = otherLevelPercentage + levelPercentage
+								break
+							end
+						end
+					end
 
-				local levelPercentageInput = groupRow:AddCell():AddInputInt("%", levelPercentage * 100)
+					self:renderMutator(parent, mutator)
+				end
+
+				Styler:HyperlinkText(classCell, name, function(parent)
+					ResourceManager:RenderDisplayWindow(Ext.StaticData.Get(classId, "ClassDescription"), parent)
+				end).SameLine = true
+
+				local levelPercentageInput = groupRow:AddCell():AddInputInt("%", levelPercentage)
 				levelPercentageInput.IDContext = classId
 				levelPercentageInput.UserData = classId
 				levelPercentageInput.ItemWidth = 40
 				levelPercentageInput.SameLine = true
-
 
 				if TableUtils:CountElements(classConditionalGroup.classIds) == 1 then
 					levelPercentageInput.Disabled = true
@@ -143,7 +158,7 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 								local input = childRow.Children[2].Children[1]
 								if input.UserData then
 									---@cast input ExtuiInputInt
-									classConditionalGroup.classIds[input.UserData] = input.Value[1] / 100
+									classConditionalGroup.classIds[input.UserData] = input.Value[1]
 								end
 							end
 
@@ -173,7 +188,7 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 
 					menu:AddSelectable(translationMap[classId]).OnClick = function()
 						classConditionalGroup.classIds = classConditionalGroup.classIds or {}
-						classConditionalGroup.classIds[classId] = TableUtils:CountElements(classConditionalGroup.classIds) == 0 and 1 or 0
+						classConditionalGroup.classIds[classId] = TableUtils:CountElements(classConditionalGroup.classIds) == 0 and 100 or 0
 
 						self:renderMutator(parent, mutator)
 					end
@@ -187,7 +202,7 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 
 						menu:AddSelectable(translationMap[subclassId]).OnClick = function()
 							classConditionalGroup.classIds = classConditionalGroup.classIds or {}
-							classConditionalGroup.classIds[subclassId] = TableUtils:CountElements(classConditionalGroup.classIds) == 0 and 1 or 0
+							classConditionalGroup.classIds[subclassId] = TableUtils:CountElements(classConditionalGroup.classIds) == 0 and 100 or 0
 
 							self:renderMutator(parent, mutator)
 						end
