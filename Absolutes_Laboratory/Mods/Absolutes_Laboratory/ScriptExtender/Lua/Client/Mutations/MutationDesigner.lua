@@ -124,124 +124,94 @@ end
 ---@param existingSelector SelectorQuery
 function MutationDesigner:RenderSelectors(parent, existingSelector)
 	local selectorQueryTable = Styler:TwoColumnTable(parent, "selectorQuery")
-	selectorQueryTable.ColumnDefs[1].Width = 20
 	selectorQueryTable.Resizable = false
 	selectorQueryTable.Borders = false
 	selectorQueryTable.BordersV = false
 	selectorQueryTable.BordersH = true
 
-	for i, selectorEntry in TableUtils:OrderedPairs(existingSelector) do
+	for i = 0, #existingSelector, 2 do
+		local andOrEntry = existingSelector[i]
+		local selectorEntry = existingSelector[i + 1]
+
+		if not selectorEntry then
+			break
+		end
+
 		local row = selectorQueryTable:AddRow()
+		local sideCell = row:AddCell()
 
-		if type(selectorEntry) ~= "string" or not existingSelector[i + 1] then
-			local delete = Styler:ImageButton(row:AddCell():AddImageButton("delete", "ico_red_x", { 16, 16 }))
-			delete.OnClick = function()
-				local nonproxyCopy = {}
-				-- Pairs returns the non-proxy version of the configuration structure, but ipairs don't, so we do this nonsense to not
-				-- insert the proxy tables into the non-proxy backend
-				for n, v in pairs(existingSelector) do
-					nonproxyCopy[n] = v
-				end
-				table.remove(nonproxyCopy, i)
-				if type(nonproxyCopy[1]) == "string" then
-					table.remove(nonproxyCopy, 1)
-				end
-
-				for x in ipairs(existingSelector) do
+		local delete = Styler:ImageButton(sideCell:AddImageButton("delete", "ico_red_x", { 16, 16 }))
+		delete.OnClick = function()
+			for x = i, TableUtils:CountElements(existingSelector), 2 do
+				if x > 0 then
 					existingSelector[x] = nil
-					existingSelector[x] = nonproxyCopy[x]
+					existingSelector[x] = existingSelector[x + 2]
 				end
-				existingSelector[#existingSelector] = nil
 
-				Helpers:KillChildren(parent)
-				self:RenderSelectors(parent, existingSelector)
+				existingSelector[x + 1].delete = true
+				existingSelector[x + 1] = TableUtils:DeeplyCopyTable(existingSelector._real[x + 3])
 			end
-		else
-			row:AddCell()
+
+			Helpers:KillChildren(parent)
+			self:RenderSelectors(parent, existingSelector)
+		end
+
+		if andOrEntry then
+			local andOrButton = sideCell:AddButton(andOrEntry)
+			andOrButton.SameLine = true
+			andOrButton.OnClick = function()
+				existingSelector[i] = existingSelector[i] == "AND" and "OR" or "AND"
+				andOrButton.Label = existingSelector[i]
+			end
 		end
 
 		local entryCell = row:AddCell()
-		if type(selectorEntry) == "string" then
-			local sliderToPreventTextOffset = entryCell:AddSliderInt("", 0, 0, 0)
-			sliderToPreventTextOffset:SetStyle("Alpha", 0)
-			sliderToPreventTextOffset.ItemWidth = 0
+		---@cast selectorEntry Selector
 
-			local andText = entryCell:AddButton("AND")
-			andText.Disabled = true
-			andText:SetColor("Button", { 0, 0, 0, 0 })
-			andText.SameLine = true
+		local inclusiveBox = entryCell:AddCheckbox("Inclusive")
+		inclusiveBox.Checked = selectorEntry.inclusive
+		inclusiveBox.OnChange = function()
+			selectorEntry.inclusive = inclusiveBox.Checked
+		end
 
-			local andOrSlider = entryCell:AddSliderInt("", selectorEntry == "AND" and 0 or 1, 0, 1)
-			andOrSlider:SetColor("Text", { 1, 1, 1, 0 })
-			andOrSlider.SameLine = true
-			andOrSlider.ItemWidth = 80 * Styler:ScaleFactor()
+		local selectorCombo = entryCell:AddCombo("")
+		selectorCombo.SameLine = true
+		selectorCombo.WidthFitPreview = true
+		local opts = {}
+		for selectorName in TableUtils:OrderedPairs(SelectorInterface.registeredSelectors) do
+			table.insert(opts, selectorName)
+		end
+		selectorCombo.Options = opts
+		selectorCombo.SelectedIndex = selectorEntry.criteriaCategory and (TableUtils:IndexOf(opts, selectorEntry.criteriaCategory) - 1) or -1
 
-			local orText = entryCell:AddButton("OR")
-			orText.Disabled = true
-			orText:SetColor("Button", { 0.38, 0.26, 0.21, 0.78 })
-			orText.SameLine = true
+		local selectorGroup = entryCell:AddGroup("selector")
 
-			if existingSelector[i] == "AND" then
-				andText:SetColor("Button", { 0.38, 0.26, 0.21, 0.78 })
-				orText:SetColor("Button", { 0, 0, 0, 0 })
-			else
-				andText:SetColor("Button", { 0, 0, 0, 0 })
-				orText:SetColor("Button", { 0.38, 0.26, 0.21, 0.78 })
-			end
-			andOrSlider.OnDeactivate = function()
-				existingSelector[i] = existingSelector[i] == "AND" and "OR" or "AND"
-				local newValue = existingSelector[i] == "AND" and 0 or 1
-				andOrSlider.Value = { newValue, newValue, newValue, newValue }
-
-				Helpers:KillChildren(parent)
-				self:RenderSelectors(parent, existingSelector)
-			end
-		else
-			---@cast selectorEntry Selector
-
-			local inclusiveBox = entryCell:AddCheckbox("Inclusive")
-			inclusiveBox.Checked = selectorEntry.inclusive
-			inclusiveBox.OnChange = function()
-				selectorEntry.inclusive = inclusiveBox.Checked
+		selectorCombo.OnChange = function()
+			Helpers:KillChildren(selectorGroup)
+			if selectorEntry.criteriaValue then
+				selectorEntry.criteriaValue.delete = true
+				selectorEntry.criteriaValue = nil
 			end
 
-			local selectorCombo = entryCell:AddCombo("")
-			selectorCombo.SameLine = true
-			selectorCombo.WidthFitPreview = true
-			local opts = {}
-			for selectorName in TableUtils:OrderedPairs(SelectorInterface.registeredSelectors) do
-				table.insert(opts, selectorName)
-			end
-			selectorCombo.Options = opts
-			selectorCombo.SelectedIndex = selectorEntry.criteriaCategory and (TableUtils:IndexOf(opts, selectorEntry.criteriaCategory) - 1) or -1
+			selectorEntry.criteriaCategory = selectorCombo.Options[selectorCombo.SelectedIndex + 1]
+			SelectorInterface.registeredSelectors[selectorEntry.criteriaCategory]:renderSelector(selectorGroup, selectorEntry)
+			self:RenderSelectors(selectorGroup:AddGroup("SubSelectors"), selectorEntry.subSelectors)
+		end
 
-			local selectorGroup = entryCell:AddGroup("selector")
-
-			selectorCombo.OnChange = function()
-				Helpers:KillChildren(selectorGroup)
-				if selectorEntry.criteriaValue then
-					selectorEntry.criteriaValue.delete = true
-					selectorEntry.criteriaValue = nil
-				end
-
-				selectorEntry.criteriaCategory = selectorCombo.Options[selectorCombo.SelectedIndex + 1]
-				SelectorInterface.registeredSelectors[selectorEntry.criteriaCategory]:renderSelector(selectorGroup, selectorEntry)
-				self:RenderSelectors(selectorGroup:AddGroup("SubSelectors"), selectorEntry.subSelectors)
-			end
-
-			if selectorEntry.criteriaCategory then
-				SelectorInterface.registeredSelectors[selectorEntry.criteriaCategory]:renderSelector(selectorGroup, selectorEntry)
-				self:RenderSelectors(selectorGroup:AddGroup("SubSelectors"), selectorEntry.subSelectors)
-			end
+		if selectorEntry.criteriaCategory then
+			SelectorInterface.registeredSelectors[selectorEntry.criteriaCategory]:renderSelector(selectorGroup, selectorEntry)
+			self:RenderSelectors(selectorGroup:AddGroup("SubSelectors"), selectorEntry.subSelectors)
 		end
 	end
 
 	Styler:MiddleAlignedColumnLayout(parent, function(ele)
 		local addNewEntryButton = ele:AddButton("Add New Entry")
 		addNewEntryButton.OnClick = function()
-			table.insert(existingSelector,
-				(#existingSelector == 0 or type(existingSelector[#existingSelector]) == "string") and
-				TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.selector) or "AND")
+			if #existingSelector >= 1 then
+				table.insert(existingSelector, "AND")
+			end
+			table.insert(existingSelector, TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.selector))
+
 			Helpers:KillChildren(parent)
 			self:RenderSelectors(parent, existingSelector)
 		end
