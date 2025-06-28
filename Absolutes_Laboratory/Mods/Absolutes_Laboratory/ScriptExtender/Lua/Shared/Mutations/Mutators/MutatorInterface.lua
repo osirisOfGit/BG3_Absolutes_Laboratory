@@ -43,6 +43,10 @@ function MutatorInterface:canBeAdditive()
 	return false
 end
 
+function MutatorInterface:priority()
+	return 9999
+end
+
 ---@param export MutationsConfig
 ---@param mutator Mutator
 ---@param removeMissingDependencies boolean?
@@ -111,4 +115,5 @@ function MutatorInterface:undoMutator(entity, entityVar)
 end
 
 Ext.Require("Shared/Mutations/Mutators/HealthMutator.lua")
+Ext.Require("Shared/Mutations/Mutators/ClassesAndSubclassesMutator.lua")
 Ext.Require("Shared/Mutations/Mutators/SpellList/SpellListMutator.lua")
