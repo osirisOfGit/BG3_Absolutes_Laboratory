@@ -126,7 +126,7 @@ function RaceSelector:renderSelector(parent, existingSelector)
 	raceCombo.Options = raceOpts
 	raceCombo.SelectedIndex = selector.criteriaValue.RaceId and (TableUtils:IndexOf(raceOpts, translationMap[selector.criteriaValue.RaceId]) - 1) or 0
 
-	local subRaceGroup = parent:AddTable("SubRaces", 5)
+	local subRaceGroup = parent:AddTable("SubRaces", 6)
 
 	subRaceGroup.SizingFixedFit = true
 	buildSubraceOpts(racesWithSubraces[selector.criteriaValue.RaceId], subRaceGroup, selector.criteriaValue.SubRaceIds)

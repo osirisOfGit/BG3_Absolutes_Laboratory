@@ -204,18 +204,16 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 		end
 	end
 
-	Styler:MiddleAlignedColumnLayout(parent, function(ele)
-		local addNewEntryButton = ele:AddButton("Add New Entry")
-		addNewEntryButton.OnClick = function()
-			if #existingSelector >= 1 then
-				table.insert(existingSelector, "AND")
-			end
-			table.insert(existingSelector, TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.selector))
-
-			Helpers:KillChildren(parent)
-			self:RenderSelectors(parent, existingSelector)
+	local addNewEntryButton = parent:AddButton("Add New Entry")
+	addNewEntryButton.OnClick = function()
+		if #existingSelector >= 1 then
+			table.insert(existingSelector, "AND")
 		end
-	end)
+		table.insert(existingSelector, TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.selector))
+
+		Helpers:KillChildren(parent)
+		self:RenderSelectors(parent, existingSelector)
+	end
 end
 
 ---@param parent ExtuiTreeParent
