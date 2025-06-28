@@ -542,7 +542,7 @@ function MutationProfileManager:BuildModFolders()
 							end) do
 								copyMenu:AddSelectable(userFolder.name).OnClick = function()
 									if TableUtils:IndexOf(userFolder.mutations, function(value)
-											return value.name == mut.name
+											return value.name == mut.name		
 										end) then
 										mut.name = mut.name .. " (COPY)"
 									end
