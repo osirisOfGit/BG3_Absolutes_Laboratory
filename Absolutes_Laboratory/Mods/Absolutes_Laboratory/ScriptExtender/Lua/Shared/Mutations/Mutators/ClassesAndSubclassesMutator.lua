@@ -5,8 +5,9 @@ function ClassesAndSubclassesMutator:priority()
 end
 
 ---@class ClassesConditionalGroup
----@field classIds {[Guid] : number}
----@field spellListDependencies Guid[]
+---@field classIds {[Guid] : number}?
+---@field spellListDependencies Guid[]?
+---@field numberOfSpellLists number?
 
 ---@class ClassesAndSubclassesMutator : Mutator
 ---@field values ClassesConditionalGroup[]
@@ -226,6 +227,69 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 					if menu.Disabled then
 						menu:SetStyle("Alpha", 0.5)
 					end
+				end
+			end
+		end
+
+		local conditionalCell = classRow:AddCell()
+
+		conditionalCell:AddText("Must have been assigned ")
+		local spellListNumberInput = conditionalCell:AddInputInt("", classConditionalGroup.numberOfSpellLists or 0)
+		spellListNumberInput.ItemWidth = 40
+		spellListNumberInput.SameLine = true
+		spellListNumberInput.OnDeactivate = function()
+			if spellListNumberInput.Value[1] < 0 then
+				spellListNumberInput.Value = { 0, 0, 0, 0 }
+			end
+			classConditionalGroup.numberOfSpellLists = spellListNumberInput.Value[1]
+		end
+
+		conditionalCell:AddText(" or more of the following Spell Lists:").SameLine = true
+
+		if classConditionalGroup.spellListDependencies then
+			for i, spellListId in TableUtils:OrderedPairs(classConditionalGroup.spellListDependencies, function(key, value)
+				return MutationConfigurationProxy.spellLists[value].name
+			end) do
+				local delete = Styler:ImageButton(conditionalCell:AddImageButton("delete" .. spellListId, "ico_red_x", { 16, 16 }))
+				delete.OnClick = function()
+					for x = i, TableUtils:CountElements(classConditionalGroup.spellListDependencies) do
+						classConditionalGroup.spellListDependencies[x] = classConditionalGroup.spellListDependencies[x + 1]
+					end
+
+					self:renderMutator(parent, mutator)
+				end
+
+				local spellList = MutationConfigurationProxy.spellLists[spellListId]
+				local spellListLink = conditionalCell:AddTextLink(spellList.name .. (spellList.modId and string.format(" (%s)", Ext.Mod.GetMod(spellList.modId).Info.Name) or ""))
+				spellListLink.IDContext = spellListId
+				spellListLink.SameLine = true
+				spellListLink.OnClick = function()
+					SpellListDesigner:buildSpellDesignerWindow(spellListId)
+				end
+			end
+		end
+
+		conditionalCell:AddButton("Add Spell List").OnClick = function()
+			Helpers:KillChildren(popup)
+			popup:Open()
+
+			for spellListId, spellList in TableUtils:OrderedPairs(MutationConfigurationProxy.spellLists, function(key, value)
+				return value.name .. (value.modId and string.format(" (%s)", Ext.Mod.GetMod(value.modId).Info.Name) or "")
+			end) do
+				---@type ExtuiSelectable
+				local select = popup:AddSelectable(spellList.name .. (spellList.modId and string.format(" (%s)", Ext.Mod.GetMod(spellList.modId).Info.Name) or ""))
+				select.Selected = TableUtils:IndexOf(classConditionalGroup.spellListDependencies, spellListId) ~= nil
+				select.OnClick = function()
+					-- selected is flipped by the time this fires
+					if not select.Selected then
+						for x = TableUtils:IndexOf(classConditionalGroup.spellListDependencies, spellListId), TableUtils:CountElements(classConditionalGroup.spellListDependencies) do
+							classConditionalGroup.spellListDependencies[x] = classConditionalGroup.spellListDependencies[x + 1]
+						end
+					else
+						classConditionalGroup.spellListDependencies = classConditionalGroup.spellListDependencies or {}
+						table.insert(classConditionalGroup.spellListDependencies, spellListId)
+					end
+					self:renderMutator(parent, mutator)
 				end
 			end
 		end

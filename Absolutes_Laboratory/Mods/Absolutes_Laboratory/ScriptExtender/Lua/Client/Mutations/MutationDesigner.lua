@@ -265,7 +265,11 @@ function MutationDesigner:RenderMutators(parent, mutators)
 	mutatorTable.Borders = false
 	mutatorTable.BordersH = true
 
-	for i, mutator in TableUtils:OrderedPairs(mutators) do
+	for i, mutator in TableUtils:OrderedPairs(mutators, function(key, value)
+		return MutatorInterface.registeredMutators[value.targetProperty]
+			and MutatorInterface.registeredMutators[value.targetProperty]:priority()
+			or MutatorInterface:priority() * 2 -- just making sure unconfigured mutators are shown last
+	end) do
 		local row = mutatorTable:AddRow()
 		local delete = Styler:ImageButton(row:AddCell():AddImageButton("delete" .. mutator.targetProperty, "ico_red_x", { 16, 16 }))
 		delete.OnClick = function()

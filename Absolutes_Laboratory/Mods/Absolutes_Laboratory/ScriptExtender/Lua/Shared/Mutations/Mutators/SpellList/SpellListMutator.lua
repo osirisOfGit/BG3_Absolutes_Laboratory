@@ -3,6 +3,10 @@ Ext.Require("Shared/Mutations/Mutators/SpellList/SpellListDesigner.lua")
 ---@class SpellListMutatorClass : MutatorInterface
 SpellListMutator = MutatorInterface:new("SpellList")
 
+function SpellListMutator:priority()
+	return 10
+end
+
 ---@class SpellListAbilityScoreCondition
 ---@field comparator "gte"|"lte"
 ---@field value number
@@ -50,7 +54,6 @@ function SpellListMutator:renderMutator(parent, mutator)
 		local groupCell = parentRow:AddCell()
 
 		local header = groupCell:AddCollapsingHeader("Group " .. sMG)
-		header.DefaultOpen = true
 
 		local delete = Styler:ImageButton(header:AddImageButton("delete" .. mutator.targetProperty, "ico_red_x", { 16, 16 }))
 		delete:Tooltip():AddText("\t Delete Group")
