@@ -106,7 +106,7 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 
 				local classCell = groupRow:AddCell()
 				local deleteClass = Styler:ImageButton(classCell:AddImageButton("delete" .. classId, "ico_red_x", { 16, 16 }))
-				deleteClass.OnClick = function ()
+				deleteClass.OnClick = function()
 					classConditionalGroup.classIds[classId] = nil
 					if TableUtils:CountElements(classConditionalGroup.classIds) ~= 0 then
 						for otherID, otherLevelPercentage in pairs(classConditionalGroup.classIds) do
@@ -115,6 +115,8 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 								break
 							end
 						end
+					else
+						classConditionalGroup.classIds.delete = true
 					end
 
 					self:renderMutator(parent, mutator)
@@ -133,8 +135,21 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 				if TableUtils:CountElements(classConditionalGroup.classIds) == 1 then
 					levelPercentageInput.Disabled = true
 				else
-					levelPercentageInput.OnActivate = function()
-						errorText.Visible = false
+					levelPercentageInput.OnChange = function()
+						local total = levelPercentageInput.Value[1]
+						for _, childRow in pairs(groupTable.Children) do
+							local input = childRow.Children[2].Children[1]
+							if input.UserData and input.UserData ~= classId then
+								---@cast input ExtuiInputInt
+								total = total + input.Value[1]
+							end
+						end
+
+						if total ~= 100 then
+							errorText.Visible = true
+						else
+							errorText.Visible = false
+						end
 					end
 
 					levelPercentageInput.OnDeactivate = function()
