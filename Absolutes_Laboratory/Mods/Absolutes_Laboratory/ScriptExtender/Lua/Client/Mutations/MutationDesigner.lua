@@ -123,65 +123,78 @@ end
 ---@param parent ExtuiTreeParent
 ---@param existingSelector SelectorQuery
 function MutationDesigner:RenderSelectors(parent, existingSelector)
-	local selectorQueryTable = parent:AddTable("selectorQuery", 2)
-	selectorQueryTable:AddColumn("", "WidthFixed")
-	selectorQueryTable:AddColumn("", "WidthStretch")
-	selectorQueryTable.Borders = true
+	local selectorQueryTable = Styler:TwoColumnTable(parent, "selectorQuery")
+	selectorQueryTable.ColumnDefs[1].Width = 20
+	selectorQueryTable.Resizable = false
+	selectorQueryTable.Borders = false
+	selectorQueryTable.BordersV = false
+	selectorQueryTable.BordersH = true
 
 	for i, selectorEntry in TableUtils:OrderedPairs(existingSelector) do
 		local row = selectorQueryTable:AddRow()
 
-		local entrySwapperCell = row:AddCell()
+		if type(selectorEntry) ~= "string" or not existingSelector[i + 1] then
+			local delete = Styler:ImageButton(row:AddCell():AddImageButton("delete", "ico_red_x", { 16, 16 }))
+			delete.OnClick = function()
+				local nonproxyCopy = {}
+				-- Pairs returns the non-proxy version of the configuration structure, but ipairs don't, so we do this nonsense to not
+				-- insert the proxy tables into the non-proxy backend
+				for n, v in pairs(existingSelector) do
+					nonproxyCopy[n] = v
+				end
+				table.remove(nonproxyCopy, i)
+				if type(nonproxyCopy[1]) == "string" then
+					table.remove(nonproxyCopy, 1)
+				end
+
+				for x in ipairs(existingSelector) do
+					existingSelector[x] = nil
+					existingSelector[x] = nonproxyCopy[x]
+				end
+				existingSelector[#existingSelector] = nil
+
+				Helpers:KillChildren(parent)
+				self:RenderSelectors(parent, existingSelector)
+			end
+		else
+			row:AddCell()
+		end
+
 		local entryCell = row:AddCell()
+		if type(selectorEntry) == "string" then
+			local sliderToPreventTextOffset = entryCell:AddSliderInt("", 0, 0, 0)
+			sliderToPreventTextOffset:SetStyle("Alpha", 0)
+			sliderToPreventTextOffset.ItemWidth = 0
 
-		local choiceCombo = entrySwapperCell:AddCombo("")
-		choiceCombo.Options = { "Selector", (i > 1 and type(existingSelector[i - 1]) ~= "string") and "And/Or" or nil }
-		choiceCombo.SelectedIndex = type(selectorEntry) == "string" and 1 or 0
+			local andText = entryCell:AddButton("AND")
+			andText.Disabled = true
+			andText:SetColor("Button", { 0, 0, 0, 0 })
+			andText.SameLine = true
 
-		choiceCombo.OnChange = function()
-			existingSelector[i] = nil
-			if choiceCombo.SelectedIndex == 1 then
-				existingSelector[i] = "AND"
+			local andOrSlider = entryCell:AddSliderInt("", selectorEntry == "AND" and 0 or 1, 0, 1)
+			andOrSlider:SetColor("Text", { 1, 1, 1, 0 })
+			andOrSlider.SameLine = true
+			andOrSlider.ItemWidth = 80 * Styler:ScaleFactor()
+
+			local orText = entryCell:AddButton("OR")
+			orText.Disabled = true
+			orText:SetColor("Button", { 0.38, 0.26, 0.21, 0.78 })
+			orText.SameLine = true
+
+			if existingSelector[i] == "AND" then
+				andText:SetColor("Button", { 0.38, 0.26, 0.21, 0.78 })
+				orText:SetColor("Button", { 0, 0, 0, 0 })
 			else
-				existingSelector[i] = TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.selector)
+				andText:SetColor("Button", { 0, 0, 0, 0 })
+				orText:SetColor("Button", { 0.38, 0.26, 0.21, 0.78 })
 			end
-			Helpers:KillChildren(parent)
-			self:RenderSelectors(parent, existingSelector)
-		end
+			andOrSlider.OnDeactivate = function()
+				existingSelector[i] = existingSelector[i] == "AND" and "OR" or "AND"
+				local newValue = existingSelector[i] == "AND" and 0 or 1
+				andOrSlider.Value = { newValue, newValue, newValue, newValue }
 
-		local deleteButton = entrySwapperCell:AddButton("Delete")
-		deleteButton.SameLine = true
-		deleteButton.OnClick = function()
-			local nonproxyCopy = {}
-			-- Pairs returns the non-proxy version of the configuration structure, but ipairs don't, so we do this nonsense to not
-			-- insert the proxy tabls into the non-proxy backend
-			for n, v in pairs(existingSelector) do
-				nonproxyCopy[n] = v
-			end
-			table.remove(nonproxyCopy, i)
-			if type(nonproxyCopy[1]) == "string" then
-				table.remove(nonproxyCopy, 1)
-			end
-
-			for x in ipairs(existingSelector) do
-				existingSelector[x] = nil
-				existingSelector[x] = nonproxyCopy[x]
-			end
-			existingSelector[#existingSelector] = nil
-
-			Helpers:KillChildren(parent)
-			self:RenderSelectors(parent, existingSelector)
-		end
-
-		if choiceCombo.SelectedIndex == 1 then
-			local grouperCombo = entryCell:AddCombo("")
-			grouperCombo.Options = { "AND", "OR" }
-			grouperCombo.SelectedIndex = selectorEntry == "AND" and 0 or 1
-			grouperCombo.WidthFitPreview = true
-
-			grouperCombo.OnChange = function()
-				existingSelector[i] = nil
-				existingSelector[i] = grouperCombo.Options[grouperCombo.SelectedIndex + 1]
+				Helpers:KillChildren(parent)
+				self:RenderSelectors(parent, existingSelector)
 			end
 		else
 			---@cast selectorEntry Selector
@@ -227,7 +240,7 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 		local addNewEntryButton = ele:AddButton("Add New Entry")
 		addNewEntryButton.OnClick = function()
 			table.insert(existingSelector,
-				(#existingSelector <= 1 or type(existingSelector[#existingSelector]) == "string") and
+				(#existingSelector == 0 or type(existingSelector[#existingSelector]) == "string") and
 				TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.selector) or "AND")
 			Helpers:KillChildren(parent)
 			self:RenderSelectors(parent, existingSelector)

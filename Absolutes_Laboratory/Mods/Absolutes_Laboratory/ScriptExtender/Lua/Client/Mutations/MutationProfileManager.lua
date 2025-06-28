@@ -388,7 +388,7 @@ function MutationProfileManager:BuildFolderManager()
 
 					Styler:MiddleAlignedColumnLayout(self.mutationDesigner, function(ele)
 						ele:AddText(folder.name .. "/" .. mutation.name).Font = "Big"
-					end)
+					end).SameLine = true
 					MutationDesigner:RenderMutationManager(self.mutationDesigner, mutation)
 				end
 			end
@@ -531,7 +531,7 @@ function MutationProfileManager:BuildModFolders()
 
 							local modInfo = Ext.Mod.GetMod(modId).Info
 							Styler:CheapTextAlign("(" .. modInfo.Name .. ")", ele)
-						end)
+						end).SameLine = true
 						MutationDesigner:RenderMutationManager(self.mutationDesigner, mutation)
 					end
 				end
