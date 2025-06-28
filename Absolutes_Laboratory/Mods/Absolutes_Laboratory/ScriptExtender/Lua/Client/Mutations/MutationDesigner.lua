@@ -156,16 +156,50 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 			self:RenderSelectors(parent, existingSelector)
 		end
 
+		local entryCell = row:AddCell()
+
 		if andOrEntry then
-			local andOrButton = sideCell:AddButton(andOrEntry)
-			andOrButton.SameLine = true
-			andOrButton.OnClick = function()
+			local sliderToPreventTextOffset = entryCell:AddSliderInt("", 0, 0, 0)
+			sliderToPreventTextOffset:SetStyle("Alpha", 0)
+			sliderToPreventTextOffset.ItemWidth = 0
+
+			local andText = entryCell:AddButton("AND")
+			andText.Disabled = true
+			andText:SetColor("Button", { 0, 0, 0, 0 })
+			andText.SameLine = true
+
+			local andOrSlider = entryCell:AddSliderInt("", andOrEntry == "AND" and 0 or 1, 0, 1)
+			andOrSlider:SetColor("Text", { 1, 1, 1, 0 })
+			andOrSlider.SameLine = true
+			andOrSlider.ItemWidth = 80 * Styler:ScaleFactor()
+
+			local orText = entryCell:AddButton("OR")
+			orText.Disabled = true
+			orText:SetColor("Button", { 0.38, 0.26, 0.21, 0.78 })
+			orText.SameLine = true
+
+			if existingSelector[i] == "AND" then
+				andText:SetColor("Button", { 0.38, 0.26, 0.21, 0.78 })
+				orText:SetColor("Button", { 0, 0, 0, 0 })
+			else
+				andText:SetColor("Button", { 0, 0, 0, 0 })
+				orText:SetColor("Button", { 0.38, 0.26, 0.21, 0.78 })
+			end
+			andOrSlider.OnDeactivate = function()
 				existingSelector[i] = existingSelector[i] == "AND" and "OR" or "AND"
-				andOrButton.Label = existingSelector[i]
+				local newValue = existingSelector[i] == "AND" and 0 or 1
+				andOrSlider.Value = { newValue, newValue, newValue, newValue }
+
+				if existingSelector[i] == "AND" then
+					andText:SetColor("Button", { 0.38, 0.26, 0.21, 0.78 })
+					orText:SetColor("Button", { 0, 0, 0, 0 })
+				else
+					andText:SetColor("Button", { 0, 0, 0, 0 })
+					orText:SetColor("Button", { 0.38, 0.26, 0.21, 0.78 })
+				end
 			end
 		end
 
-		local entryCell = row:AddCell()
 		---@cast selectorEntry Selector
 
 		local inclusiveBox = entryCell:AddCheckbox("Inclusive")
