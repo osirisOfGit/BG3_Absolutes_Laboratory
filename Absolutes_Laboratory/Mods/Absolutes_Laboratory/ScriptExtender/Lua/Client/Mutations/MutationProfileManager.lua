@@ -466,13 +466,24 @@ function MutationProfileManager:BuildModFolders()
 	if MutationModProxy.ModProxy.folders() > 0 then
 		Helpers:KillChildren(self.modFolderGroup)
 
+		---@type {[string]: {[Guid]: string}}
+		local modFolders = {}
+
 		for modId, modCache in pairs(MutationModProxy.ModProxy.folders) do
 			---@cast modCache LocalModCache
 
 			local modInfo = Ext.Mod.GetMod(modId).Info
-			self.modFolderGroup:AddSeparatorText(modInfo.Name)
+			if next(modCache.folders) then
+				modFolders[modInfo.Name] = modCache.folders
+			end
+		end
 
-			for folderId in TableUtils:OrderedPairs(modCache.folders, function(_, folderName)
+		local modPopup = self.modFolderGroup:AddPopup("modPopup")
+
+		for modName, folders in TableUtils:OrderedPairs(modFolders) do
+			self.modFolderGroup:AddSeparatorText(modName)
+
+			for folderId in TableUtils:OrderedPairs(folders, function(_, folderName)
 				return folderName
 			end) do
 				local folder = MutationModProxy.ModProxy.folders[folderId]
@@ -516,23 +527,81 @@ function MutationProfileManager:BuildModFolders()
 					end
 
 					mutationSelectable.OnClick = function()
-						Helpers:KillChildren(self.mutationDesigner)
+						if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
+							modPopup:Open()
 
-						if activeMutationView then
-							if activeMutationView.Handle then
-								-- https://github.com/Norbyte/bg3se/blob/f8b982125c6c1997ceab2d65cfaa3c1a04908ea6/BG3Extender/Extender/Client/IMGUI/IMGUI.cpp#L1901C34-L1901C60
-								activeMutationView:SetColor("Button", { 0.46, 0.40, 0.29, 0.5 })
+							---@type ExtuiMenu
+							local copyMenu = modPopup:AddMenu("Copy Mutation To Folder")
+
+							local mut = TableUtils:DeeplyCopyTable(mutation)
+							mut.modId = nil
+
+							for _, userFolder in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.folders, function(_, userFolder)
+								return userFolder.name
+							end) do
+								copyMenu:AddSelectable(userFolder.name).OnClick = function()
+									if TableUtils:IndexOf(userFolder.mutations, function(value)
+											return value.name == mut.name
+										end) then
+										mut.name = mut.name .. " (COPY)"
+									end
+
+									userFolder.mutations[FormBuilder:generateGUID()] = mut
+									self:BuildFolderManager()
+								end
 							end
-							activeMutationView = nil
+
+							copyMenu:AddSelectable("Use Mod's Folder Name").OnClick = function()
+								local folderCopy = {
+									name = TableUtils:IndexOf(ConfigurationStructure.config.mutations.folders, function(value)
+											return value.name == folder.name
+										end)
+										and (folder.name .. " (COPY)")
+										or folder.name,
+									description = folder.description,
+									mutations = { [FormBuilder:generateGUID()] = mut }
+								} --[[@as MutationFolder]]
+
+								ConfigurationStructure.config.mutations.folders[FormBuilder:generateGUID()] = folderCopy
+								self:BuildFolderManager()
+							end
+
+							modPopup:AddSelectable("Copy Whole Folder").OnClick = function()
+								local folderCopy = {
+									name = TableUtils:IndexOf(ConfigurationStructure.config.mutations.folders, function(value)
+											return value.name == folder.name
+										end)
+										and (folder.name .. " (COPY)")
+										or folder.name,
+									description = folder.description,
+									mutations = TableUtils:DeeplyCopyTable(folder.mutations)
+								} --[[@as MutationFolder]]
+
+								for _, mutation in pairs(folderCopy.mutations) do
+									mutation.modId = nil
+								end
+
+								ConfigurationStructure.config.mutations.folders[FormBuilder:generateGUID()] = folderCopy
+								self:BuildFolderManager()
+							end
+						else
+							Helpers:KillChildren(self.mutationDesigner)
+
+							if activeMutationView then
+								if activeMutationView.Handle then
+									-- https://github.com/Norbyte/bg3se/blob/f8b982125c6c1997ceab2d65cfaa3c1a04908ea6/BG3Extender/Extender/Client/IMGUI/IMGUI.cpp#L1901C34-L1901C60
+									activeMutationView:SetColor("Button", { 0.46, 0.40, 0.29, 0.5 })
+								end
+								activeMutationView = nil
+							end
+
+							Styler:MiddleAlignedColumnLayout(self.mutationDesigner, function(ele)
+								Styler:CheapTextAlign(folder.name .. "/" .. mutation.name, ele, "Big")
+
+								Styler:CheapTextAlign("(" .. modName .. ")", ele)
+							end).SameLine = true
+							MutationDesigner:RenderMutationManager(self.mutationDesigner, mutation)
 						end
-
-						Styler:MiddleAlignedColumnLayout(self.mutationDesigner, function(ele)
-							Styler:CheapTextAlign(folder.name .. "/" .. mutation.name, ele, "Big")
-
-							local modInfo = Ext.Mod.GetMod(modId).Info
-							Styler:CheapTextAlign("(" .. modInfo.Name .. ")", ele)
-						end).SameLine = true
-						MutationDesigner:RenderMutationManager(self.mutationDesigner, mutation)
 					end
 				end
 			end
