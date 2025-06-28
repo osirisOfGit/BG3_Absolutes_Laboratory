@@ -159,10 +159,6 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 		local entryCell = row:AddCell()
 
 		if andOrEntry then
-			local sliderToPreventTextOffset = entryCell:AddSliderInt("", 0, 0, 0)
-			sliderToPreventTextOffset:SetStyle("Alpha", 0)
-			sliderToPreventTextOffset.ItemWidth = 0
-
 			local andText = entryCell:AddButton("AND")
 			andText.Disabled = true
 			andText:SetColor("Button", { 0, 0, 0, 0 })
@@ -186,12 +182,15 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 				orText:SetColor("Button", { 0.38, 0.26, 0.21, 0.78 })
 			end
 
-			andOrSlider.OnActivate = function ()
+			andOrSlider.OnActivate = function()
+				-- Prevents the user from keeping hold of the grab, triggering the Deactivate instantly
+				-- Slider Grab POS won't update if changed during an OnClick or OnActivate event
 				andOrSlider.Disabled = true
 			end
+
 			andOrSlider.OnDeactivate = function()
 				andOrSlider.Disabled = false
-				
+
 				existingSelector[i] = existingSelector[i] == "AND" and "OR" or "AND"
 				local newValue = existingSelector[i] == "AND" and 0 or 1
 				andOrSlider.Value = { newValue, newValue, newValue, newValue }
