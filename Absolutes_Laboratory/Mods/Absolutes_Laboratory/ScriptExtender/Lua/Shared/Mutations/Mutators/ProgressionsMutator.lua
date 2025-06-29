@@ -257,3 +257,24 @@ Progressions are evaluated independently from one another to allow for progressi
 		self:renderMutator(parent, mutator)
 	end
 end
+
+function ProgressionsMutator:undoMutator(entity, entityVar)
+	entity.ProgressionContainer.Progressions = {}
+	for _, classDef in pairs(entityVar.originalValues[self.name]) do
+		---@cast classDef ClassInfo
+		entity.Classes.Classes[#entity.Classes.Classes + 1] = {
+			ClassUUID = classDef.ClassUUID,
+			SubClassUUID = classDef.SubClassUUID,
+			Level = classDef.Level
+		}
+	end
+	entity:Replicate("Classes")
+
+	if Logger:IsLogLevelEnabled(Logger.PrintTypes.TRACE) then
+		Logger:BasicTrace("Reverted to %s", Ext.Json.Stringify(entityVar.originalValues[self.name]))
+	end
+end
+
+function ProgressionsMutator:applyMutator(entity, entityVar)
+
+end

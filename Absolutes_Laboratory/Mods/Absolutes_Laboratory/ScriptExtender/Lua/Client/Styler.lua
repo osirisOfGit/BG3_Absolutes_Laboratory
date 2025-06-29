@@ -209,10 +209,6 @@ function Styler:HyperlinkRenderable(renderable, item, modifier, modifierOnHover,
 
 	---@type ExtuiTooltip
 	local tooltip = renderable:Tooltip()
-	tooltip.HorizontalScrollbar = true
-	tooltip.AlwaysAutoResize = false
-	tooltip:SetSizeConstraints(nil, { 1600 * self:ScaleFactor(), 800 * self:ScaleFactor() })
-	tooltip:SetStyle("WindowMinSize", 800 * self:ScaleFactor(), 400 * self:ScaleFactor())
 
 	---@type ExtuiWindow?
 	local window
@@ -259,8 +255,8 @@ function Styler:HyperlinkRenderable(renderable, item, modifier, modifierOnHover,
 		if not modifier or Ext.ClientInput.GetInputManager().PressedModifiers == modifier then
 			window = Ext.IMGUI.NewWindow(item)
 			window.HorizontalScrollbar = true
-			window:SetSize({0, 0}, "FirstUseEver")
 			window:SetStyle("WindowMinSize", 100 * self:ScaleFactor(), 100 * self:ScaleFactor())
+			window:SetSize({0, 0}, "FirstUseEver")
 			window.Closeable = true
 
 			window.OnClose = function()

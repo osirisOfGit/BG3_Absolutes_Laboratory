@@ -310,21 +310,19 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 end
 
 function ClassesAndSubclassesMutator:undoMutator(entity, entityVar)
-	if entityVar.originalValues[self.name] then
-		entity.Classes.Classes = {}
-		for _, classDef in pairs(entityVar.originalValues[self.name]) do
-			---@cast classDef ClassInfo
-			entity.Classes.Classes[#entity.Classes.Classes + 1] = {
-				ClassUUID = classDef.ClassUUID,
-				SubClassUUID = classDef.SubClassUUID,
-				Level = classDef.Level
-			}
-		end
-		entity:Replicate("Classes")
+	entity.Classes.Classes = {}
+	for _, classDef in pairs(entityVar.originalValues[self.name]) do
+		---@cast classDef ClassInfo
+		entity.Classes.Classes[#entity.Classes.Classes + 1] = {
+			ClassUUID = classDef.ClassUUID,
+			SubClassUUID = classDef.SubClassUUID,
+			Level = classDef.Level
+		}
+	end
+	entity:Replicate("Classes")
 
-		if Logger:IsLogLevelEnabled(Logger.PrintTypes.TRACE) then
-			Logger:BasicTrace("Reverted to %s", Ext.Json.Stringify(entityVar.originalValues[self.name]))
-		end
+	if Logger:IsLogLevelEnabled(Logger.PrintTypes.TRACE) then
+		Logger:BasicTrace("Reverted to %s", Ext.Json.Stringify(entityVar.originalValues[self.name]))
 	end
 end
 
@@ -403,7 +401,7 @@ function ClassesAndSubclassesMutator:applyMutator(entity, entityVar)
 					classLevelsLeft = classLevelsLeft - desiredClassLevel
 				end
 			end
-			
+
 			classesLeft = classesLeft - 1
 			if classLevelsLeft == 0 then
 				break
