@@ -258,23 +258,152 @@ Progressions are evaluated independently from one another to allow for progressi
 	end
 end
 
-function ProgressionsMutator:undoMutator(entity, entityVar)
-	entity.ProgressionContainer.Progressions = {}
-	for _, classDef in pairs(entityVar.originalValues[self.name]) do
-		---@cast classDef ClassInfo
-		entity.Classes.Classes[#entity.Classes.Classes + 1] = {
-			ClassUUID = classDef.ClassUUID,
-			SubClassUUID = classDef.SubClassUUID,
-			Level = classDef.Level
-		}
+if Ext.IsServer() then
+	function ProgressionsMutator:undoMutator(entity, entityVar)
+		for _, list in ipairs(entity.ProgressionContainer.Progressions) do
+			for _, progEntity in ipairs(list) do
+				Ext.System.ServerProgression.DestroyedProgressions[progEntity] = true
+			end
+		end
+
+		entity.ProgressionContainer.Progressions = {}
+
+		for _, progressionEntity in pairs(Ext.Entity.GetAllEntitiesWithComponent("ProgressionMeta")) do
+			for i, progressionDefList in ipairs(entityVar.originalValues[self.name]) do
+				for x, progressionDef in ipairs(progressionDefList) do
+					---@cast progressionDef ProgressionMetaComponent
+					if progressionEntity.ProgressionMeta.Owner == entity and progressionEntity.ProgressionMeta.Progression == progressionDef.Progression then
+						entity.ProgressionContainer.Progressions[i] = entity.ProgressionContainer.Progressions[i] or {}
+						entity.ProgressionContainer.Progressions[i][x] = progressionEntity
+						goto continue
+					end
+				end
+			end
+			::continue::
+		end
+		entity:Replicate("ProgressionContainer")
+		Ext.System.ServerProgression.ProgressionUpdates[entity] = 1
+
+		if Logger:IsLogLevelEnabled(Logger.PrintTypes.TRACE) then
+			Logger:BasicTrace("Reverted to %s", Ext.Json.Stringify(entityVar.originalValues[self.name]))
+		end
 	end
-	entity:Replicate("Classes")
 
-	if Logger:IsLogLevelEnabled(Logger.PrintTypes.TRACE) then
-		Logger:BasicTrace("Reverted to %s", Ext.Json.Stringify(entityVar.originalValues[self.name]))
+	---@type {[Guid]: Guid[]}
+	local progressionTableMappings = {}
+
+	local function buildProgressionIndex()
+		if not next(progressionTableMappings) then
+			for _, progressionId in pairs(Ext.StaticData.GetAll("Progression")) do
+				---@type ResourceProgression
+				local progression = Ext.StaticData.Get(progressionId, "Progression")
+
+				if progression and progression.ResourceUUID then
+					progressionTableMappings[progression.TableUUID] = progressionTableMappings[progression.TableUUID] or {}
+
+					table.insert(progressionTableMappings[progression.TableUUID], progression.ResourceUUID)
+				end
+			end
+
+			for _, progressions in pairs(progressionTableMappings) do
+				table.sort(progressions, function(a, b)
+					return Ext.StaticData.Get(a, "Progression").Level < Ext.StaticData.Get(b, "Progression").Level
+				end)
+			end
+		end
 	end
-end
 
-function ProgressionsMutator:applyMutator(entity, entityVar)
+	function ProgressionsMutator:applyMutator(entity, entityVar)
+		local progressionMutators = entityVar.appliedMutators[self.name]
+		if not progressionMutators[1] then
+			progressionMutators = { progressionMutators }
+		end
+		---@cast progressionMutators ProgressionsMutator[]
 
+		---@type ProgressionConditionalGroup[]
+		local chosenProgressionGroups = {}
+
+		for _, progressionMutator in ipairs(progressionMutators) do
+			for _, progressionConditonal in ipairs(progressionMutator.values) do
+				if progressionConditonal.progressionTableIds and next(progressionConditonal.progressionTableIds) then
+					if progressionConditonal.numberOfSpellLists and progressionConditonal.numberOfSpellLists > 0 then
+						if progressionConditonal.spellListDependencies and next(progressionConditonal.spellListDependencies) then
+							local numberMatched = 0
+							if entityVar.appliedMutators[SpellListMutator.name] and entityVar.appliedMutators[SpellListMutator.name].appliedLists then
+								for _, appliedSpellListId in pairs(entityVar.appliedMutators[SpellListMutator.name].appliedLists) do
+									if TableUtils:IndexOf(progressionConditonal.spellListDependencies, appliedSpellListId) then
+										numberMatched = numberMatched + 1
+									end
+								end
+							end
+
+							if numberMatched < progressionConditonal.numberOfSpellLists then
+								Logger:BasicDebug("Skipping a progression group because the number of matched spell lists, %s, is less than the defined minimum %s",
+									numberMatched,
+									progressionConditonal.numberOfSpellLists)
+
+								goto continue
+							end
+						else
+							Logger:BasicWarning("Skipping a Progressions Mutator spellList check because no spellLists were added to it despite specifying a number: %s",
+								Ext.Json.Stringify(progressionConditonal))
+						end
+					end
+					table.insert(chosenProgressionGroups, progressionConditonal)
+					::continue::
+				end
+			end
+		end
+
+		if next(chosenProgressionGroups) then
+			buildProgressionIndex()
+
+			Logger:BasicDebug("%s potential progression groups were identified - randomly choosing one", #chosenProgressionGroups)
+			---@type ProgressionConditionalGroup
+			local progressionGroup = chosenProgressionGroups[math.random(#chosenProgressionGroups)]
+
+			entityVar.originalValues[self.name] = {}
+			for i, list in ipairs(entity.ProgressionContainer.Progressions) do
+				entityVar.originalValues[self.name][i] = {}
+				for x, progEntity in ipairs(list) do
+					entityVar.originalValues[self.name][i][x] = Ext.Types.Serialize(progEntity.ProgressionMeta)
+					entityVar.originalValues[self.name][i][x].Owner = nil
+				end
+			end
+
+			entity.ProgressionContainer.Progressions = {}
+
+			for progressionTableId, levelPercentage in pairs(progressionGroup.progressionTableIds) do
+				local desiredLevel = math.max(1, math.ceil(entity.AvailableLevel.Level * (levelPercentage / 100)))
+				local lastLevel = 0
+				for _, progressionId in ipairs(progressionTableMappings[progressionTableId]) do
+					---@type ResourceProgression
+					local progression = Ext.StaticData.Get(progressionId, "Progression")
+
+					if progression.Level <= desiredLevel and progression.Level > lastLevel then
+						lastLevel = progression.Level
+						local prog = Ext.Entity.Create()
+						entity.ProgressionContainer.Progressions[#entity.ProgressionContainer.Progressions + 1] = { prog }
+
+						prog:CreateComponent("ServerReplicationDependency")
+						prog.ServerReplicationDependency.Dependency = entity
+
+						prog:CreateComponent("ProgressionMeta")
+
+						prog.ProgressionMeta.ClassLevel = (progression.ProgressionType == "Class" or progression.ProgressionType == "SubClass") and progression.Level or 0
+						prog.ProgressionMeta.Level = progression.Level
+						prog.ProgressionMeta.Owner = entity
+						prog.ProgressionMeta.Progression = progressionId
+						prog.ProgressionMeta.Source = "00000000-0000-0000-0000-000000000000"
+						prog.ProgressionMeta.SpellSourceType = "Progression"
+
+						prog:Replicate("ProgressionMeta")
+
+						Logger:BasicDebug("Assigned progression %s at level %s", progressionId, progression.Level)
+					end
+				end
+			end
+			entity:Replicate("ProgressionContainer")
+		end
+	end
 end

@@ -15,11 +15,12 @@ function MutationProfileExecutor:ExecuteProfile()
 		Logger:BasicInfo("Recorder is currently running - skipping Mutations")
 		return
 	end
+
 	local activeProfile = MutationConfigurationProxy.profiles[Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile]
 
 	if activeProfile and next(activeProfile.mutationRules) then
 		local time = Ext.Timer:MonotonicTime()
-		
+
 		local counter = 0
 		---@type {[Guid] : {[Guid]: SelectorPredicate}}
 		local cachedSelectors = {}
