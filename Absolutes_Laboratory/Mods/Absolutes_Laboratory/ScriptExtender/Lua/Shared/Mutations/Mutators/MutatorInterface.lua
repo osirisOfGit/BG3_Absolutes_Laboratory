@@ -120,4 +120,5 @@ end
 
 Ext.Require("Shared/Mutations/Mutators/HealthMutator.lua")
 Ext.Require("Shared/Mutations/Mutators/ClassesAndSubclassesMutator.lua")
+Ext.Require("Shared/Mutations/Mutators/ProgressionsMutator.lua")
 Ext.Require("Shared/Mutations/Mutators/SpellList/SpellListMutator.lua")

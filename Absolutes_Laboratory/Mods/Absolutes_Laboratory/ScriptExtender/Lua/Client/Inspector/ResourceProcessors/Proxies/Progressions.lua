@@ -1,3 +1,4 @@
+---@class ProgressionProxy : ResourceProxy
 ProgressionProxy = ResourceProxy:new()
 
 ProgressionProxy.fieldsToParse = {
@@ -67,42 +68,57 @@ ResourceProxy:RegisterResourceProxy("Progressions", ProgressionProxy)
 ResourceProxy:RegisterResourceProxy("Progression", ProgressionProxy)
 ResourceProxy:RegisterResourceProxy("resource::Progression", ProgressionProxy)
 
-local progressionTableMappings = {}
-local function buildProgressionTable()
-	for _, progressionId in pairs(Ext.StaticData.GetAll("Progression")) do
-		---@type ResourceProgression
-		local progression = Ext.StaticData.Get(progressionId, "Progression")
+---@type {[Guid]: (Guid[]|Guid)}
+ProgressionProxy.progressionTableMappings = {}
 
-		if progression and progression.ResourceUUID then
-			progressionTableMappings[progression.ResourceUUID] = progression.TableUUID
-			progressionTableMappings[progression.TableUUID] = progressionTableMappings[progression.TableUUID] or {}
+---@type {[Guid]: string}
+ProgressionProxy.translationMap = {}
 
-			table.insert(progressionTableMappings[progression.TableUUID], progression.ResourceUUID)
+function ProgressionProxy:buildProgressionIndex()
+	if not next(self.progressionTableMappings) then
+		for _, progressionId in pairs(Ext.StaticData.GetAll("Progression")) do
+			---@type ResourceProgression
+			local progression = Ext.StaticData.Get(progressionId, "Progression")
+
+			if progression and progression.ResourceUUID then
+				ProgressionProxy.progressionTableMappings[progression.ResourceUUID] = progression.TableUUID
+				ProgressionProxy.progressionTableMappings[progression.TableUUID] = ProgressionProxy.progressionTableMappings[progression.TableUUID] or {}
+
+				table.insert(ProgressionProxy.progressionTableMappings[progression.TableUUID], progression.ResourceUUID)
+
+				if not self.translationMap[progression.TableUUID] then
+					self.translationMap[progression.TableUUID] = progression.Name
+				end
+			end
+		end
+
+		for _, progressions in pairs(self.progressionTableMappings) do
+			if type(progressions) == "table" then
+				table.sort(progressions, function(a, b)
+					return Ext.StaticData.Get(a, "Progression").Level < Ext.StaticData.Get(b, "Progression").Level
+				end)
+			end
 		end
 	end
 end
 
 ---@param progressionTableId string
-function ProgressionProxy:RenderDisplayableValue(parent, progressionTableId, statType)
-	if not next(progressionTableMappings) then
-		buildProgressionTable()
-	end
+function ProgressionProxy:RenderDisplayableValue(parent, progressionTableId)
+	self:buildProgressionIndex()
 
 	if progressionTableId and progressionTableId ~= "00000000-0000-0000-0000-000000000000" then
 		---@type ResourceProgression
 		local progression = Ext.StaticData.Get(progressionTableId, "Progression")
 
 		if not progression then
-			local progressions = progressionTableMappings[progressionTableId]
+			local progressions = self.progressionTableMappings[progressionTableId]
 
 			if progressions then
-				local header = parent:AddCollapsingHeader("Progressions")
-				header:SetColor("Header", { 1, 1, 1, 0 })
+				-- local header = parent:AddCollapsingHeader("Progressions")
+				-- header:SetColor("Header", { 1, 1, 1, 0 })
 
-				local table = Styler:TwoColumnTable(header, "progressions")
-				for _, progressionID in TableUtils:OrderedPairs(progressions, function(key)
-					return Ext.StaticData.Get(progressions[key], "Progression").Level or key
-				end) do
+				local table = Styler:TwoColumnTable(parent, "progressions")
+				for _, progressionID in ipairs(progressions) do
 					if progressionID ~= "00000000-0000-0000-0000-000000000000" then
 						---@type ResourceProgression
 						local progression = Ext.StaticData.Get(progressionID, "Progression")

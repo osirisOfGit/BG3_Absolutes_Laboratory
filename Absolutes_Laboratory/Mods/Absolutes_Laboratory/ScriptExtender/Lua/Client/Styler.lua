@@ -209,6 +209,10 @@ function Styler:HyperlinkRenderable(renderable, item, modifier, modifierOnHover,
 
 	---@type ExtuiTooltip
 	local tooltip = renderable:Tooltip()
+	tooltip.HorizontalScrollbar = true
+	tooltip.AlwaysAutoResize = false
+	tooltip:SetSizeConstraints(nil, { 1600 * self:ScaleFactor(), 800 * self:ScaleFactor() })
+	tooltip:SetStyle("WindowMinSize", 800 * self:ScaleFactor(), 400 * self:ScaleFactor())
 
 	---@type ExtuiWindow?
 	local window
@@ -245,7 +249,7 @@ function Styler:HyperlinkRenderable(renderable, item, modifier, modifierOnHover,
 		if killTimer then
 			Ext.Timer.Cancel(killTimer)
 		end
-		killTimer = Ext.Timer.WaitFor(100, function ()
+		killTimer = Ext.Timer.WaitFor(100, function()
 			Helpers:KillChildren(tooltip)
 			killTimer = nil
 		end)
@@ -254,8 +258,9 @@ function Styler:HyperlinkRenderable(renderable, item, modifier, modifierOnHover,
 	return function()
 		if not modifier or Ext.ClientInput.GetInputManager().PressedModifiers == modifier then
 			window = Ext.IMGUI.NewWindow(item)
+			window.HorizontalScrollbar = true
+			window:SetStyle("WindowMinSize", 800 * self:ScaleFactor(), 400 * self:ScaleFactor())
 			window.Closeable = true
-			window.AlwaysAutoResize = true
 
 			window.OnClose = function()
 				window:Destroy()
