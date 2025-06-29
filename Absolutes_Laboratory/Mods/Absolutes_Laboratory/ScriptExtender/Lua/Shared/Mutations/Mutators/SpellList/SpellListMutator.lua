@@ -109,12 +109,16 @@ function SpellListMutator:renderMutator(parent, mutator)
 					spellListSep:SetStyle("SeparatorTextAlign", 0.1)
 					spellListSep:Tooltip():AddText("\t Specifying multiple spell lists means one will be randomly chosen to be assigned to an entity - it will not add all of them")
 
-					for sL, spellList in TableUtils:OrderedPairs(leveledSpellPool.spellLists, function(_, value)
+					for sL, spellListId in TableUtils:OrderedPairs(leveledSpellPool.spellLists, function(_, value)
 						return configuredSpellLists[value] and configuredSpellLists[value].name
 					end) do
-						spellList = configuredSpellLists[spellList]
+						local spellList = configuredSpellLists[spellListId]
 						if spellList then
-							local text = cell:AddText(spellList.name)
+							local text = cell:AddTextLink(spellList.name .. (spellList.modId and string.format(" (%s)", Ext.Mod.GetMod(spellList.modId).Info.Name) or ""))
+							text.OnClick = function()
+								SpellListDesigner:buildSpellDesignerWindow(spellListId)
+							end
+
 							if spellList.description ~= "" then
 								text:Tooltip():AddText(spellList.description)
 							end
@@ -134,6 +138,7 @@ function SpellListMutator:renderMutator(parent, mutator)
 						end) do
 							---@type ExtuiSelectable
 							local select = popup:AddSelectable(spellList.name, "DontClosePopups")
+							select.IDContext = id
 							select.Selected = TableUtils:IndexOf(leveledSpellPool.spellLists, id) ~= nil
 							select.OnClick = function()
 								local index = TableUtils:IndexOf(leveledSpellPool.spellLists, id)
