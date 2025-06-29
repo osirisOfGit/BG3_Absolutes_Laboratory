@@ -32,16 +32,27 @@ ClassDescriptionProxy.fieldsToParse = {
 ResourceProxy:RegisterResourceProxy("resource::ClassDescription", ClassDescriptionProxy)
 ResourceProxy:RegisterResourceProxy("ClassUUID", ClassDescriptionProxy)
 ResourceProxy:RegisterResourceProxy("SubClassUUID", ClassDescriptionProxy)
+ResourceProxy:RegisterResourceProxy("SubClasses", ClassDescriptionProxy)
 
 function ClassDescriptionProxy:RenderDisplayableValue(parent, resourceValue)
-	---@type ResourceClassDescription
-	local class = Ext.StaticData.Get(resourceValue, "ClassDescription")
+	local function render(classId)
+		---@type ResourceClassDescription
+		local class = Ext.StaticData.Get(classId, "ClassDescription")
 
-	if class then
-		Styler:HyperlinkText(parent, class.DisplayName:Get() or class.Name, function(parent)
-			ResourceManager:RenderDisplayWindow(class, parent)
-		end)
+		if class then
+			Styler:HyperlinkText(parent, class.DisplayName:Get() or class.Name, function(parent)
+				ResourceManager:RenderDisplayWindow(class, parent)
+			end)
+		else
+			parent:AddText(classId .. " - UNKNOWN CLASS")
+		end
+	end
+
+	if type(resourceValue) == "table" then
+		for _, classId in ipairs(resourceValue) do
+			render(classId)
+		end
 	else
-		parent:AddText(resourceValue .. " - UNKNOWN CLASS")
+		render(resourceValue)
 	end
 end

@@ -17,3 +17,5 @@ ActionResourceProxy.fieldsToParse = {
 
 
 ResourceProxy:RegisterResourceProxy("resource::ActionResource", ActionResourceProxy)
+
+

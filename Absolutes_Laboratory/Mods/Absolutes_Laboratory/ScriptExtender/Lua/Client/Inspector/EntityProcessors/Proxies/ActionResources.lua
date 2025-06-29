@@ -12,6 +12,7 @@ ActionResourcesProxy.fieldsToParse = {
 	"field_A8",
 }
 
+EntityProxy:RegisterResourceProxy("ActionResource", ActionResourcesProxy)
 EntityProxy:RegisterResourceProxy("ActionResources", ActionResourcesProxy)
 EntityProxy:RegisterResourceProxy("PreferredCastingResource", ActionResourcesProxy)
 EntityProxy:RegisterResourceProxy("ResourceActionResource", ActionResourcesProxy)

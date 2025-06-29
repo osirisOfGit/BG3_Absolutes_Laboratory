@@ -165,25 +165,35 @@ SpellProxy.fieldsToParse = {
 }
 
 ResourceProxy:RegisterResourceProxy("Spell", SpellProxy)
+ResourceProxy:RegisterResourceProxy("Spells", SpellProxy)
 ResourceProxy:RegisterResourceProxy("SpellData", SpellProxy)
 ResourceProxy:RegisterResourceProxy("Prototype", SpellProxy)
 ResourceProxy:RegisterResourceProxy("OriginatorPrototype", SpellProxy)
 
 ---@param resourceValue string
 function SpellProxy:RenderDisplayableValue(parent, resourceValue)
-	if type(resourceValue) == "table" then
-		resourceValue = next(resourceValue)
-	end
-	if resourceValue then
+	local function render(spellName)
 		---@type SpellData
-		local spell = Ext.Stats.Get(resourceValue)
+		local spell = Ext.Stats.Get(spellName)
 
 		if spell then
-			Styler:HyperlinkText(parent, resourceValue, function(parent)
+			Styler:HyperlinkText(parent, spellName, function(parent)
 				ResourceManager:RenderDisplayWindow(spell, parent)
 			end)
 		else
-			parent:AddText(resourceValue)
+			parent:AddText(spellName)
 		end
+	end
+
+	if type(resourceValue) == "table" then
+		if not resourceValue[1] then
+			render(next(resourceValue))
+		else
+			for _, spellName in ipairs(resourceValue) do
+				render(spellName)
+			end
+		end
+	else
+		render(resourceValue)
 	end
 end

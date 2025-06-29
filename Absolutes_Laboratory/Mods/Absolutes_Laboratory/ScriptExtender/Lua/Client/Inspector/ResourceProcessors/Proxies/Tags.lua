@@ -23,8 +23,8 @@ function TagsProxy:RenderDisplayableValue(parent, tags, statType)
 
 		if tag then
 			local hasKids = #parent.Children > 0
-			local tagText = Styler:HyperlinkText(parent, tag.DisplayName:Get() or tag.Name, function (parent)
-				self:RenderDisplayWindow(tag, parent)
+			local tagText = Styler:HyperlinkText(parent, tag.DisplayName:Get() or tag.Name, function(parent)
+				ResourceManager:RenderDisplayWindow(tag, parent)
 			end)
 			tagText.SameLine = hasKids;
 

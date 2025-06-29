@@ -259,7 +259,8 @@ function Styler:HyperlinkRenderable(renderable, item, modifier, modifierOnHover,
 		if not modifier or Ext.ClientInput.GetInputManager().PressedModifiers == modifier then
 			window = Ext.IMGUI.NewWindow(item)
 			window.HorizontalScrollbar = true
-			window:SetStyle("WindowMinSize", 800 * self:ScaleFactor(), 400 * self:ScaleFactor())
+			window:SetSize({0, 0}, "FirstUseEver")
+			window:SetStyle("WindowMinSize", 100 * self:ScaleFactor(), 100 * self:ScaleFactor())
 			window.Closeable = true
 
 			window.OnClose = function()
