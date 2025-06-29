@@ -1,9 +1,0 @@
-"filename", "language", "Lua", "comment", "blank", "total"
-"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Client\Inspector\ResourceProcessors\Proxies\ClassDescription.lua", "Lua", 12, 1, 2, 15
-"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Client\Mutations\MutationDesigner.lua", "Lua", 4, 0, 0, 4
-"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Server\Mutations\ProfileExecutor.lua", "Lua", -1, 0, 2, 1
-"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\MutationConfigurationProxy.lua", "Lua", 16, 1, 4, 21
-"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Mutators\ClassesAndSubclassesMutator.lua", "Lua", 325, 24, 69, 418
-"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Mutators\MutatorInterface.lua", "Lua", 8, 0, 1, 9
-"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Mutators\SpellList\SpellListMutator.lua", "Lua", 7, 0, 3, 10
-"Total", "-", 371, 26, 81, 478
