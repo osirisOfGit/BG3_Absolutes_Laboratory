@@ -4,6 +4,10 @@ function ClassesAndSubclassesMutator:priority()
 	return SpellListMutator:priority() + 1
 end
 
+function ClassesAndSubclassesMutator:canBeAdditive()
+	return true
+end
+
 ---@class ClassesConditionalGroup
 ---@field classIds {[Guid] : number}?
 ---@field spellListDependencies Guid[]?
@@ -233,7 +237,11 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 
 		local conditionalCell = classRow:AddCell()
 
-		conditionalCell:AddText("Must have been assigned ")
+		local inputToPreventOffset = conditionalCell:AddInputInt("")
+		inputToPreventOffset:SetStyle("Alpha", 0)
+		inputToPreventOffset.ItemWidth = 0
+
+		conditionalCell:AddText("Must have been assigned ").SameLine = true
 		local spellListNumberInput = conditionalCell:AddInputInt("", classConditionalGroup.numberOfSpellLists or 0)
 		spellListNumberInput.ItemWidth = 40
 		spellListNumberInput.SameLine = true
@@ -298,5 +306,112 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 	parent:AddButton("Add Class Group").OnClick = function()
 		table.insert(mutator.values, {})
 		self:renderMutator(parent, mutator)
+	end
+end
+
+function ClassesAndSubclassesMutator:undoMutator(entity, entityVar)
+	if entityVar.originalValues[self.name] then
+		entity.Classes.Classes = {}
+		for _, classDef in pairs(entityVar.originalValues[self.name]) do
+			---@cast classDef ClassInfo
+			entity.Classes.Classes[#entity.Classes.Classes + 1] = {
+				ClassUUID = classDef.ClassUUID,
+				SubClassUUID = classDef.SubClassUUID,
+				Level = classDef.Level
+			}
+		end
+		entity:Replicate("Classes")
+
+		if Logger:IsLogLevelEnabled(Logger.PrintTypes.TRACE) then
+			Logger:BasicTrace("Reverted to %s", Ext.Json.Stringify(entityVar.originalValues[self.name]))
+		end
+	end
+end
+
+function ClassesAndSubclassesMutator:applyMutator(entity, entityVar)
+	local classesMutators = entityVar.appliedMutators[self.name]
+	if not classesMutators[1] then
+		classesMutators = { classesMutators }
+	end
+	---@cast classesMutators ClassesAndSubclassesMutator[]
+
+	---@type ClassesConditionalGroup[]
+	local chosenClassGroups = {}
+
+	for _, classesMutator in ipairs(classesMutators) do
+		for _, classConditonal in ipairs(classesMutator.values) do
+			if classConditonal.numberOfSpellLists and classConditonal.numberOfSpellLists > 0 then
+				if classConditonal.spellListDependencies and next(classConditonal.spellListDependencies) then
+					local numberMatched = 0
+					if entityVar.appliedMutators[SpellListMutator.name] and entityVar.appliedMutators[SpellListMutator.name].appliedLists then
+						for _, appliedSpellListId in pairs(entityVar.appliedMutators[SpellListMutator.name].appliedLists) do
+							if TableUtils:IndexOf(classConditonal.spellListDependencies, appliedSpellListId) then
+								numberMatched = numberMatched + 1
+							end
+						end
+					end
+
+					if numberMatched < classConditonal.numberOfSpellLists then
+						Logger:BasicDebug("Skipping a class group because the number of matched spell lists, %s, is less than the defined minimum %s",
+							numberMatched,
+							classConditonal.numberOfSpellLists)
+
+						goto continue
+					end
+				else
+					Logger:BasicWarning("Skipping a Classes and Subclasses mutator spellList check because no spellLists were added to it despite specifying a number: %s",
+						Ext.Json.Stringify(classConditonal))
+				end
+			end
+			table.insert(chosenClassGroups, classConditonal)
+			::continue::
+		end
+	end
+
+	if next(chosenClassGroups) then
+		Logger:BasicDebug("%s potential class groups were identified - randomly choosing one", #chosenClassGroups)
+		---@type ClassesConditionalGroup
+		local classGroup = chosenClassGroups[math.random(#chosenClassGroups)]
+		entityVar.originalValues[self.name] = Ext.Types.Serialize(entity.Classes.Classes)
+
+		entity.Classes.Classes = {}
+
+		local classesLeft = TableUtils:CountElements(classGroup.classIds)
+		local classLevelsLeft = entity.AvailableLevel.Level
+		for classId, levelPercentage in pairs(classGroup.classIds) do
+			---@type ResourceClassDescription
+			local class = Ext.StaticData.Get(classId, "ClassDescription")
+			local hasParentClass = Ext.StaticData.Get(class.ParentGuid, "ClassDescription") ~= nil
+
+			if classesLeft == 1 then
+				entity.Classes.Classes[#entity.Classes.Classes + 1] = {
+					ClassUUID = hasParentClass and class.ParentGuid or classId,
+					Level = classLevelsLeft,
+					SubClassUUID = hasParentClass and classId or nil
+				}
+				Logger:BasicDebug("Added class %s at level %s", class.DisplayName:Get() or class.Name, classLevelsLeft)
+			else
+				local desiredClassLevel = math.ceil(entity.AvailableLevel.Level * (levelPercentage / 100))
+				if desiredClassLevel > 0 then
+					entity.Classes.Classes[#entity.Classes.Classes + 1] = {
+						ClassUUID = hasParentClass and class.ParentGuid or classId,
+						Level = desiredClassLevel,
+						SubClassUUID = hasParentClass and classId or nil
+					}
+
+					Logger:BasicDebug("Added class %s at level %s", class.DisplayName:Get() or class.Name, desiredClassLevel)
+					classLevelsLeft = classLevelsLeft - desiredClassLevel
+				end
+			end
+			
+			classesLeft = classesLeft - 1
+			if classLevelsLeft == 0 then
+				break
+			end
+		end
+
+		entity:Replicate("Classes")
+	else
+		Logger:BasicDebug("No class groups were chosen - finishing early")
 	end
 end

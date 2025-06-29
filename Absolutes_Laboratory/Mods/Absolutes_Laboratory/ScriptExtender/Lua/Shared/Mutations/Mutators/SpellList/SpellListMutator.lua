@@ -1160,13 +1160,13 @@ if Ext.IsServer() then
 		end
 	end
 
-	function SpellListMutator:applyMutator(entity, mutator)
+	function SpellListMutator:applyMutator(entity, entityVar)
 		---@type EsvSpellSpellSystem
 		local spellSystem = Ext.System.ServerSpell
 
 		SpellListDesigner:buildProgressionIndex()
 
-		local spellListMutators = mutator.appliedMutators[self.name]
+		local spellListMutators = entityVar.appliedMutators[self.name]
 		if not spellListMutators[1] then
 			spellListMutators = { spellListMutators }
 		end
@@ -1241,14 +1241,14 @@ if Ext.IsServer() then
 		end
 
 		if spellMutatorGroup then
-			mutator.originalValues[self.name] = mutator.originalValues[self.name] or {
+			entityVar.originalValues[self.name] = entityVar.originalValues[self.name] or {
 				addedSpells = {},
 				castedSpells = {},
 				removedSpells = {}
 			} --[[@as SpellListOriginalValues]]
 
 			---@type SpellListOriginalValues
-			local origValues = mutator.originalValues[self.name]
+			local origValues = entityVar.originalValues[self.name]
 
 			if spellMutatorGroup.removeSpells then
 				spellSystem.RemoveSpell = spellSystem.RemoveSpell or {}
@@ -1424,10 +1424,12 @@ if Ext.IsServer() then
 					end
 				end
 			end
+
+			entityVar.appliedMutators[self.name].appliedLists = appliedLists
 		else
-			mutator.appliedMutators[self.name] = nil
-			mutator.originalValues[self.name] = nil
-			mutator.appliedMutatorsPath[self.name] = nil
+			entityVar.appliedMutators[self.name] = nil
+			entityVar.originalValues[self.name] = nil
+			entityVar.appliedMutatorsPath[self.name] = nil
 		end
 	end
 end

@@ -2,6 +2,12 @@ Ext.Require("Shared/Mutations/External/MutationModProxy.lua")
 
 local mutationsConfig = ConfigurationStructure.config.mutations
 
+if Ext.IsServer() then
+	Ext.RegisterNetListener(ModuleUUID .. "_UpdateConfiguration", function(channel, payload, user)
+		mutationsConfig = ConfigurationStructure.config.mutations._real
+	end)
+end
+
 ---@type MutationsConfig
 ---@diagnostic disable-next-line: missing-fields
 MutationConfigurationProxy = {

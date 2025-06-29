@@ -15,12 +15,12 @@ function MutationProfileExecutor:ExecuteProfile()
 		Logger:BasicInfo("Recorder is currently running - skipping Mutations")
 		return
 	end
-	local config = MutationConfigurationProxy
-	local activeProfile = config.profiles[Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile]
+	local activeProfile = MutationConfigurationProxy.profiles[Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile]
 
 	if activeProfile and next(activeProfile.mutationRules) then
-		local counter = 0
 		local time = Ext.Timer:MonotonicTime()
+		
+		local counter = 0
 		---@type {[Guid] : {[Guid]: SelectorPredicate}}
 		local cachedSelectors = {}
 		for _, entity in pairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
@@ -36,8 +36,9 @@ function MutationProfileExecutor:ExecuteProfile()
 					originalValues = {}
 				}
 
-				for i, mProfileRule in ipairs(activeProfile.mutationRules) do
-					local mutation = config.folders[mProfileRule.mutationFolderId].mutations[mProfileRule.mutationId]
+				for i, mProfileRule in TableUtils:OrderedPairs(activeProfile.mutationRules) do
+					local mutation = MutationConfigurationProxy.folders[mProfileRule.mutationFolderId].mutations[mProfileRule.mutationId]
+
 					if not cachedSelectors[mProfileRule.mutationFolderId] then
 						cachedSelectors[mProfileRule.mutationFolderId] = {}
 					end
@@ -45,7 +46,7 @@ function MutationProfileExecutor:ExecuteProfile()
 						cachedSelectors[mProfileRule.mutationFolderId][mProfileRule.mutationId] = SelectorInterface:createComposedPredicate(mutation.selectors)
 					end
 
-					if cachedSelectors[mProfileRule.mutationFolderId][mProfileRule.mutationId] and cachedSelectors[mProfileRule.mutationFolderId][mProfileRule.mutationId]:Test(entity) then
+					if cachedSelectors[mProfileRule.mutationFolderId][mProfileRule.mutationId]:Test(entity) then
 						for _, mutator in pairs(mutation.mutators) do
 							if entityVar.appliedMutators[mutator.targetProperty]
 								and mProfileRule.additive
