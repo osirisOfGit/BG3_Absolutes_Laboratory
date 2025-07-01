@@ -312,7 +312,6 @@ if Ext.IsServer() then
 			end
 		end
 	end
-
 	function ProgressionsMutator:applyMutator(entity, entityVar)
 		local progressionMutators = entityVar.appliedMutators[self.name]
 		if not progressionMutators[1] then

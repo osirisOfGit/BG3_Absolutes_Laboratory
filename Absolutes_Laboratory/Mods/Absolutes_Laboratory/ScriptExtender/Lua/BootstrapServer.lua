@@ -4,6 +4,7 @@ Ext.Require("Shared/Utils/_Logger.lua")
 Logger:ClearLogFile()
 
 Ext.Require("Shared/Utils/_TableUtils.lua")
+Ext.Require("Shared/Utils/ECSPrinter.lua")
 
 Ext.Require("Shared/Channels.lua")
 Ext.Require("Shared/EntityRecorder.lua")

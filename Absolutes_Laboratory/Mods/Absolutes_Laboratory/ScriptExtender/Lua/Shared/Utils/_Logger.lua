@@ -1,4 +1,8 @@
+---@class Logger
 Logger = {}
+
+Logger.fileName = "log.txt"
+Logger.logBuffer = {}
 -- Largely stolen from Auto_Sell_Loot - https://www.nexusmods.com/baldursgate3/mods/2435 Thx m8 (｡･∀･)ﾉﾞ
 
 Logger.PrintTypes = {
@@ -27,8 +31,22 @@ local TEXT_COLORS = {
     white = 37,
 }
 
+---@return Logger
+function Logger:new(fileName)
+    ---@type Logger
+    local instance = {}
+
+    setmetatable(instance, self)
+    self.__index = self
+
+    instance.fileName = fileName or self.fileName
+    instance.logBuffer = {}
+
+    return instance
+end
+
 local function GetTimestamp()
-    local time = Ext.Utils.MonotonicTime()
+    local time = Ext.Timer.MonotonicTime()
     local milliseconds = time % 1000
     local seconds = math.floor(time / 1000) % 60
     local minutes = math.floor((time / 1000) / 60) % 60
@@ -36,7 +54,6 @@ local function GetTimestamp()
     return string.format("[%02d:%02d:%02d.%03d]",
         hours, minutes, seconds, milliseconds)
 end
-
 
 local function ConcatPrefix(prefix, message)
     local paddedPrefix = prefix .. string.rep(" ", 25 - #prefix) .. " : "
@@ -81,69 +98,66 @@ end
 --- Function to print text with custom colors, message type, custom prefix, rainbowText, and prefix length
 function Logger:BasicPrint(content, messageType, textColor, customPrefix, rainbowText, prefixLength)
     prefixLength = prefixLength or 15
-    messageType = messageType or Logger.PrintTypes.INFO
+    messageType = messageType or self.PrintTypes.INFO
     local textColorCode = textColor or TEXT_COLORS.cyan -- Default to cyan
 
     customPrefix = customPrefix or ModUtils:GetModInfo().Name
     local padding = string.rep(" ", prefixLength - #customPrefix)
-    local message = ConcatOutput(ConcatPrefix(customPrefix .. padding .. "  [" .. Logger.PrintTypes[messageType] .. "]" .. " (" .. (Ext.IsClient() and "C" or "S") .. ")", content))
+    local message = ConcatOutput(ConcatPrefix(customPrefix .. padding .. "  [" .. self.PrintTypes[messageType] .. "]" .. " (" .. (Ext.IsClient() and "C" or "S") .. ")", content))
 
-    Logger:LogMessage(ConcatOutput(ConcatPrefix(customPrefix .. "  [" .. Logger.PrintTypes[messageType] .. "]" .. " (" .. (Ext.IsClient() and "C" or "S") .. ")", content)))
-    if messageType <= Logger.PrintTypes.INFO then
+    self:LogMessage(ConcatOutput(ConcatPrefix("  [" .. self.PrintTypes[messageType] .. "]" .. " (" .. (Ext.IsClient() and "C" or "S") .. ")", content)))
+    if messageType <= self.PrintTypes.INFO then
         local coloredMessage = rainbowText and GetRainbowText(message) or
             string.format("\x1b[%dm%s\x1b[0m", textColorCode, message)
-        if messageType == Logger.PrintTypes.ERROR then
-            Ext.Utils.PrintError(coloredMessage)
-        elseif messageType == Logger.PrintTypes.WARNING then
-            Ext.Utils.PrintWarning(coloredMessage)
+        if messageType == self.PrintTypes.ERROR then
+            Ext.Log.PrintError(coloredMessage)
+        elseif messageType == self.PrintTypes.WARNING then
+            Ext.Log.PrintWarning(coloredMessage)
         else
-            Ext.Utils.Print(coloredMessage)
+            Ext.Log.Print(coloredMessage)
         end
     end
 end
 
 function Logger:BasicError(content, ...)
-    if Logger:IsLogLevelEnabled(Logger.PrintTypes.ERROR) then
-        Logger:BasicPrint(string.format(content, ...), Logger.PrintTypes.ERROR, TEXT_COLORS.red)
+    if self:IsLogLevelEnabled(self.PrintTypes.ERROR) then
+        self:BasicPrint(string.format(content, ...), self.PrintTypes.ERROR, TEXT_COLORS.red)
     end
 end
 
 function Logger:BasicWarning(content, ...)
-    if Logger:IsLogLevelEnabled(Logger.PrintTypes.WARNING) then
-        Logger:BasicPrint(string.format(content, ...), Logger.PrintTypes.WARNING, TEXT_COLORS.yellow)
+    if self:IsLogLevelEnabled(self.PrintTypes.WARNING) then
+        self:BasicPrint(string.format(content, ...), self.PrintTypes.WARNING, TEXT_COLORS.yellow)
     end
 end
 
 function Logger:BasicDebug(content, ...)
-    if Logger:IsLogLevelEnabled(Logger.PrintTypes.DEBUG) then
-        Logger:BasicPrint(string.format(content, ...), Logger.PrintTypes.DEBUG)
+    if self:IsLogLevelEnabled(self.PrintTypes.DEBUG) then
+        self:BasicPrint(string.format(content, ...), self.PrintTypes.DEBUG)
     end
 end
 
 function Logger:BasicTrace(content, ...)
-    if Logger:IsLogLevelEnabled(Logger.PrintTypes.TRACE) then
-        Logger:BasicPrint(string.format(content, ...), Logger.PrintTypes.TRACE)
+    if self:IsLogLevelEnabled(self.PrintTypes.TRACE) then
+        self:BasicPrint(string.format(content, ...), self.PrintTypes.TRACE)
     end
 end
 
 function Logger:BasicInfo(content, ...)
-    if Logger:IsLogLevelEnabled(Logger.PrintTypes.INFO) then
-        Logger:BasicPrint(string.format(content, ...), Logger.PrintTypes.INFO)
+    if self:IsLogLevelEnabled(self.PrintTypes.INFO) then
+        self:BasicPrint(string.format(content, ...), self.PrintTypes.INFO)
     end
 end
 
-local logPath = 'log.txt'
--- Buffer for log messages
-local logBuffer = {}
 local bufferLimit = 20 -- Adjust buffer size as needed
 
 --- Flushes the buffer to the log file
 function Logger:FlushLogBuffer()
-    if #logBuffer == 0 then return end
-    local fileContent = FileUtils:LoadFile(logPath) or ""
-    local logMessages = table.concat(logBuffer, "\n")
-    Ext.IO.SaveFile(FileUtils:BuildAbsoluteFileTargetPath(logPath), fileContent .. logMessages .. "\n")
-    logBuffer = {}
+    if #self.logBuffer == 0 then return end
+    local fileContent = FileUtils:LoadFile(self.fileName) or ""
+    local logMessages = table.concat(self.logBuffer, "\n")
+    Ext.IO.SaveFile(FileUtils:BuildAbsoluteFileTargetPath(self.fileName), fileContent .. logMessages .. "\n")
+    self.logBuffer = {}
 end
 
 local timer
@@ -151,18 +165,18 @@ local timer
 --- Saves the log to the log.txt using a buffer
 function Logger:LogMessage(message)
     local logMessage = GetTimestamp() .. " " .. message
-    table.insert(logBuffer, logMessage)
+    table.insert(self.logBuffer, logMessage)
 
     if timer then
         Ext.Timer.Cancel(timer)
         timer = nil
     end
 
-    if #logBuffer >= bufferLimit then
-        Logger:FlushLogBuffer()
+    if #self.logBuffer >= bufferLimit then
+        self:FlushLogBuffer()
     else
         timer = Ext.Timer.WaitFor(500, function()
-            Logger:FlushLogBuffer()
+            self:FlushLogBuffer()
             timer = nil
         end)
     end
@@ -170,12 +184,12 @@ end
 
 --- Optionally, flush buffer on shutdown or at key moments
 function Logger:Flush()
-    Logger:FlushLogBuffer()
+    self:FlushLogBuffer()
 end
 
 --- Wipes the log file
 function Logger:ClearLogFile()
-    if FileUtils:LoadFile(logPath) then
-        Ext.IO.SaveFile(FileUtils:BuildAbsoluteFileTargetPath(logPath), "")
+    if FileUtils:LoadFile(self.fileName) then
+        Ext.IO.SaveFile(FileUtils:BuildAbsoluteFileTargetPath(self.fileName), "")
     end
 end
