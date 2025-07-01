@@ -1,0 +1,259 @@
+LevelMutator = MutatorInterface:new("Character Level")
+
+function LevelMutator:priority()
+	return 5
+end
+
+function LevelMutator:handleDependencies()
+	-- NOOP
+end
+
+---@class LevelRandomModifier
+---@field offsetBase number?
+---@field minimumBelow number?
+---@field maximumAbove number?
+
+---@class LevelModifier
+---@field base LevelRandomModifier?
+---@field xpReward {[string]: LevelRandomModifier}?
+
+---@class LevelMutator : Mutator
+---@field values number
+---@field modifiers LevelModifier
+
+---@param mutator LevelMutator
+function LevelMutator:renderMutator(parent, mutator)
+	mutator.values = mutator.values or 0
+
+	Helpers:KillChildren(parent)
+
+	parent:AddText("Entity should be ")
+
+	local baseInput = parent:AddInputInt("", mutator.values)
+	baseInput.SameLine = true
+	baseInput.ItemWidth = 40
+
+	local text = parent:AddText(" level(s) above the highest-leveled player ( ? )")
+	text.SameLine = true
+	text:Tooltip():AddText("\t Value can be negative to set the entity below the player level - 0 will set the entity to the player's level")
+
+	baseInput.OnChange = function()
+		mutator.values = baseInput.Value[1]
+	end
+
+	mutator.modifiers = mutator.modifiers or {}
+
+	self:renderModifiers(parent:AddGroup("Modifiers"), mutator.modifiers)
+end
+
+---@param modifiers LevelModifier
+function LevelMutator:renderModifiers(parent, modifiers)
+	Helpers:KillChildren(parent)
+
+	parent:AddText("Level can be randomly set to: ( ? )"):Tooltip():AddText(
+		"\t If both of the below are set to 0, affected entities will just have the value defined above used - otherwise, that value will be randomly +/- by the defined amounts")
+
+	local baseMinInput = parent:AddInputInt("below base", modifiers.base and modifiers.base.minimumBelow or 0)
+	baseMinInput.ItemWidth = 40
+	baseMinInput.OnChange = function()
+		if baseMinInput.Value[1] < 0 then
+			baseMinInput.Value = { 0, 0, 0, 0 }
+		end
+		if baseMinInput.Value[1] == 0 and modifiers.base then
+			modifiers.base.minimumBelow = nil
+			if not modifiers.base.minimumBelow and not modifiers.base.maximumAbove then
+				modifiers.base.delete = true
+			end
+		else
+			modifiers.base = modifiers.base or {}
+			modifiers.base.minimumBelow = baseMinInput.Value[1]
+		end
+	end
+
+	local baseMaxInput = parent:AddInputInt("above base", modifiers.base and modifiers.base.maximumAbove or 0)
+	baseMaxInput.ItemWidth = 40
+	baseMaxInput.OnChange = function()
+		if baseMaxInput.Value[1] < 0 then
+			baseMaxInput.Value = { 0, 0, 0, 0 }
+		end
+		if baseMaxInput.Value[1] == 0 and modifiers.base then
+			modifiers.base.maximumAbove = nil
+			if not modifiers.base.minimumBelow and not modifiers.base.maximumAbove then
+				modifiers.base.delete = true
+			end
+		else
+			modifiers.base = modifiers.base or {}
+			modifiers.base.maximumAbove = baseMaxInput.Value[1]
+		end
+	end
+
+	local xpRewardHeader = parent:AddCollapsingHeader("By XPReward")
+
+	local xpLevelTable = xpRewardHeader:AddTable("xpRewardModifierCustomizer", 4)
+	local xpHeaders = xpLevelTable:AddRow()
+	xpHeaders.Headers = true
+	xpHeaders:AddCell():AddText("XPReward ( ? )"):Tooltip():AddText([[
+	Set the XPReward Categories at which the modifier(s) change - for example, setting the base offset to 4 for Elites when the overall base is 2
+means all Pack/Combatant NPCs will be 2 levels above the highest-leveled party member and 6 levels above for elites and above
+Setting the min/max offset will offset the overall min/max in the same way
+]])
+	xpHeaders:AddCell():AddText("Base Offset ( ? )"):Tooltip():AddText("\t Offsets the base value set above - use a negative value to reduce it")
+	xpHeaders:AddCell():AddText("Min Offset For Random")
+	xpHeaders:AddCell():AddText("Max Offset For Random")
+
+	for _, xpReward in ipairs(Ext.StaticData.GetAll("ExperienceReward")) do
+		---@type ResourceExperienceRewards
+		local xpRewardResource = Ext.StaticData.Get(xpReward, "ExperienceReward")
+		if xpRewardResource.LevelSource > 0 then
+			local row = xpLevelTable:AddRow()
+			local levelCell = row:AddCell()
+
+			Styler:HyperlinkText(levelCell, xpRewardResource.Name, function(parent)
+				ResourceManager:RenderDisplayWindow(xpRewardResource, parent)
+			end)
+
+			local modInput = row:AddCell():AddInputInt("##base" .. xpReward, modifiers.xpReward and modifiers.xpReward[xpReward] and modifiers.xpReward[xpReward].offsetBase)
+			modInput.ItemWidth = 40
+			modInput.ParseEmptyRefVal = true
+			modInput.DisplayEmptyRefVal = true
+			modInput.OnChange = function()
+				modifiers.xpReward = modifiers.xpReward or {}
+				modifiers.xpReward[xpReward] = modifiers.xpReward[xpReward] or {}
+				modifiers.xpReward[xpReward].offsetBase = modInput.Value[1] ~= 0 and modInput.Value[1] or nil
+				if not modifiers.xpReward[xpReward]() then
+					modifiers.xpReward[xpReward].delete = true
+					if not modifiers.xpReward() then
+						modifiers.xpReward.delete = true
+					end
+				end
+			end
+
+			local modMinInput = row:AddCell():AddInputInt("##min" .. xpReward, modifiers.xpReward and modifiers.xpReward[xpReward] and modifiers.xpReward[xpReward].minimumBelow)
+			modMinInput.ItemWidth = 40
+			modMinInput.ParseEmptyRefVal = true
+			modMinInput.DisplayEmptyRefVal = true
+
+			modMinInput.OnDeactivate = function()
+				modifiers.xpReward = modifiers.xpReward or {}
+				modifiers.xpReward[xpReward] = modifiers.xpReward[xpReward] or {}
+				modifiers.xpReward[xpReward].minimumBelow = modMinInput.Value[1] ~= 0 and modMinInput.Value[1] or nil
+				if not modifiers.xpReward[xpReward]() then
+					modifiers.xpReward[xpReward].delete = true
+					if not modifiers.xpReward() then
+						modifiers.xpReward.delete = true
+					end
+				end
+			end
+
+			local modMaxInput = row:AddCell():AddInputInt("##max" .. xpReward, modifiers.xpReward and modifiers.xpReward[xpReward] and modifiers.xpReward[xpReward].maximumAbove)
+			modMaxInput.ItemWidth = 40
+			modMaxInput.ParseEmptyRefVal = true
+			modMaxInput.DisplayEmptyRefVal = true
+
+			modMaxInput.OnDeactivate = function()
+				modifiers.xpReward = modifiers.xpReward or {}
+				modifiers.xpReward[xpReward] = modifiers.xpReward[xpReward] or {}
+
+				modifiers.xpReward[xpReward].maximumAbove = modMaxInput.Value[1] ~= 0 and modMaxInput.Value[1] or nil
+				if not modifiers.xpReward[xpReward]() then
+					modifiers.xpReward[xpReward].delete = true
+					if not modifiers.xpReward() then
+						modifiers.xpReward.delete = true
+					end
+				end
+			end
+		end
+	end
+end
+
+function LevelMutator:undoMutator(entity, entityVar)
+	Logger:BasicDebug("Reset to %s", entityVar.originalValues[self.name])
+	entity.AvailableLevel.Level = entityVar.originalValues[self.name]
+	entity:Replicate("AvailableLevel")
+	entity.EocLevel.Level = entity.AvailableLevel.Level
+	entity:Replicate("EocLevel")
+end
+
+local xpRewardList = {}
+
+---@param mutatorModifier {[string]: LevelRandomModifier}
+---@param xpRewardId string
+---@return LevelRandomModifier?
+local function calculateXPRewardLevelModifier(mutatorModifier, xpRewardId)
+	if not next(xpRewardList) then
+		for _, xpReward in ipairs(Ext.StaticData.GetAll("ExperienceReward")) do
+			---@type ResourceExperienceRewards
+			local xpRewardResource = Ext.StaticData.Get(xpReward, "ExperienceReward")
+			if xpRewardResource.LevelSource > 0 then
+				table.insert(xpRewardList, xpReward)
+			end
+		end
+	end
+
+	local xMod = mutatorModifier[xpRewardId]
+	if not xMod and TableUtils:IndexOf(xpRewardList, xpRewardId) then
+		for i = TableUtils:IndexOf(xpRewardList, xpRewardId) - 1, 0, -1 do
+			xMod = mutatorModifier[xpRewardList[i]]
+			if xMod then
+				break
+			end
+		end
+	end
+
+	return xMod
+end
+
+function LevelMutator:applyMutator(entity, entityVar)
+	entityVar.originalValues[self.name] = entity.AvailableLevel.Level
+
+	---@type LevelMutator
+	local mutator = entityVar.appliedMutators[self.name]
+
+	---@type Character
+	local charStat = Ext.Stats.Get(entity.Data.StatsId)
+
+	local baseLevel = mutator.values
+	local minBelow = mutator.modifiers.base and mutator.modifiers.base.minimumBelow or 0
+	local maxAbove = mutator.modifiers.base and mutator.modifiers.base.maximumAbove or 0
+
+	if charStat.XPReward and mutator.modifiers.xpReward then
+		---@type LevelRandomModifier?
+		local xPRewardMod
+		xPRewardMod = calculateXPRewardLevelModifier(mutator.modifiers.xpReward, charStat.XPReward)
+		if xPRewardMod then
+			baseLevel = baseLevel + (xPRewardMod.offsetBase or 0)
+			minBelow = baseLevel + (xPRewardMod.minimumBelow or 0)
+			maxAbove = baseLevel + (xPRewardMod.maximumAbove or 0)
+		end
+		if Logger:IsLogLevelEnabled(Logger.PrintTypes.DEBUG) then
+			Logger:BasicDebug("XPReward is %s, resulting modifier is %s", charStat.XPReward, xPRewardMod and Ext.Json.Stringify(xPRewardMod) or "[Appropriate Modifier Not Found]")
+		end
+	end
+
+	local useMin
+	if minBelow ~= 0 and maxAbove ~= 0 then
+		useMin = math.random(0, 1) == 0
+	elseif minBelow ~= 0 then
+		useMin = true
+	elseif maxAbove ~= 0 then
+		useMin = false
+	end
+
+	if useMin ~= nil then
+		if useMin then
+			Logger:BasicDebug("Subtracting from the base value %s by a random value between 0 and %s", baseLevel, minBelow)
+			baseLevel = baseLevel - (math.random(0, minBelow))
+		else
+			Logger:BasicDebug("Adding to the base value %s by a random value between 0 and %s", baseLevel, maxAbove)
+			baseLevel = baseLevel + (math.random(0, maxAbove))
+		end
+	end
+
+	baseLevel = math.abs(baseLevel) < entity.AvailableLevel.Level and baseLevel or ((entity.AvailableLevel.Level - 1) * (baseLevel < 0 and -1 or 1))
+
+	entity.AvailableLevel.Level = entity.AvailableLevel.Level + baseLevel
+	entity:Replicate("AvailableLevel")
+	entity.EocLevel.Level = entity.AvailableLevel.Level
+	entity:Replicate("EocLevel")
+	Logger:BasicDebug("Changed level from %s to %s", entityVar.originalValues[self.name], entity.AvailableLevel.Level)
+end

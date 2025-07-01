@@ -284,6 +284,7 @@ function MutationDesigner:RenderMutators(parent, mutators)
 		local mutatorCell = row:AddCell()
 
 		local mutatorCombo = mutatorCell:AddCombo("")
+		mutatorCombo.Font = "Large"
 		mutatorCombo.WidthFitPreview = true
 		local opts = {}
 		local selectedIndex = -1
@@ -307,11 +308,15 @@ function MutationDesigner:RenderMutators(parent, mutators)
 			mutator.modifiers = {}
 			mutator.values = nil
 			MutatorInterface.registeredMutators[mutator.targetProperty]:renderMutator(mutatorGroup, mutator)
+			Helpers:KillChildren(parent)
+			self:RenderMutators(parent, mutators)
 		end
 
 		if mutator.targetProperty and mutator.targetProperty ~= "" then
 			MutatorInterface.registeredMutators[mutator.targetProperty]:renderMutator(mutatorGroup, mutator)
 		end
+
+		mutatorCell:AddNewLine()
 	end
 
 	Styler:MiddleAlignedColumnLayout(parent, function(ele)

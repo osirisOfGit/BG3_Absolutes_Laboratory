@@ -53,7 +53,6 @@ CharacterStatProxy.fieldsToParse = {
 	"XPReward",
 }
 
-
 ResourceProxy:RegisterResourceProxy("Character", CharacterStatProxy)
 
 function CharacterStatProxy:RenderDisplayableValue(parent, statString)

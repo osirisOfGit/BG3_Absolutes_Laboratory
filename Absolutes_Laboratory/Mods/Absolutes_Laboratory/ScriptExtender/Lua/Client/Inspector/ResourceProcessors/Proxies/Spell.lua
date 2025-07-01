@@ -190,7 +190,13 @@ function SpellProxy:RenderDisplayableValue(parent, resourceValue)
 			render(next(resourceValue))
 		else
 			for _, spellName in ipairs(resourceValue) do
-				render(spellName)
+				if type(spellName) == "table" then
+					for _, spellNameReal in ipairs(spellName) do
+						render(spellNameReal)
+					end
+				else
+					render(spellName)
+				end
 			end
 		end
 	else

@@ -4,7 +4,7 @@ Ext.Require("Shared/Mutations/Mutators/SpellList/SpellListDesigner.lua")
 SpellListMutator = MutatorInterface:new("SpellList")
 
 function SpellListMutator:priority()
-	return 10
+	return LevelMutator:priority() + 1
 end
 
 ---@class SpellListAbilityScoreCondition

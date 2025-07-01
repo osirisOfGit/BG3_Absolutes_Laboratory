@@ -262,7 +262,7 @@ if Ext.IsServer() then
 	function ProgressionsMutator:undoMutator(entity, entityVar)
 		for _, list in ipairs(entity.ProgressionContainer.Progressions) do
 			for _, progEntity in ipairs(list) do
-				Ext.System.ServerProgression.DestroyedProgressions[progEntity] = true
+				Ext.Entity.Destroy(progEntity)
 			end
 		end
 
@@ -282,7 +282,7 @@ if Ext.IsServer() then
 			::continue::
 		end
 		entity:Replicate("ProgressionContainer")
-		Ext.System.ServerProgression.ProgressionUpdates[entity] = 1
+		-- Ext.System.ServerProgression.ProgressionUpdates[entity] = 1
 
 		if Logger:IsLogLevelEnabled(Logger.PrintTypes.TRACE) then
 			Logger:BasicTrace("Reverted to %s", Ext.Json.Stringify(entityVar.originalValues[self.name]))

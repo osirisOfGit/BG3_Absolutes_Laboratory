@@ -151,7 +151,7 @@ Setting to 0 will just use base, empty will use the last non-empty value in the 
 	end
 	--#endregion
 
-	--#region Character Level
+	--#region XPReward
 	---@type HealthClassLevelModifier
 	local xpRewardLevelModifier = modifiers["XPReward"] or {
 		value = 0,
@@ -394,7 +394,7 @@ function HealthMutator:undoMutator(entity, entityVar)
 
 	entity:Replicate("Health")
 
-	Logger:BasicTrace("Undid Health Mutator, reverting max health of %s to %s (current health: %s)",
+	Logger:BasicDebug("Reverting max health of %s to %s (current health: %s)",
 		entity.ServerCharacter.Template.Name .. "_" .. entity.Uuid.EntityUuid,
 		originalMaxHp,
 		entity.Health.MaxHp,
