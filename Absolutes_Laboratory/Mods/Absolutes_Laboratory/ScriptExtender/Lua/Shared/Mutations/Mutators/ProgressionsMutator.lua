@@ -313,6 +313,14 @@ if Ext.IsServer() then
 		end
 	end
 	function ProgressionsMutator:applyMutator(entity, entityVar)
+		if Printer.TickHandler and (not next(Printer.TargetedEntities) or TableUtils:IndexOf(Printer.TargetedEntities, entity.Uuid.EntityUuid)) then
+			---@param entity EntityHandle
+			---@diagnostic disable-next-line: param-type-mismatch
+			Printer:RegisterEntitySubscription(Ext.Entity.OnChange("ProgressionContainer", function(entity)
+				ECSLogger:BasicDebug("[#%s]: %s - %s", Printer.FrameNo, Printer:GetEntityName(entity), entity.ProgressionContainer)
+			end, entity))
+		end
+
 		local progressionMutators = entityVar.appliedMutators[self.name]
 		if not progressionMutators[1] then
 			progressionMutators = { progressionMutators }
@@ -382,7 +390,6 @@ if Ext.IsServer() then
 					if progression.Level <= desiredLevel and progression.Level > lastLevel then
 						lastLevel = progression.Level
 						local prog = Ext.Entity.Create()
-						entity.ProgressionContainer.Progressions[#entity.ProgressionContainer.Progressions + 1] = { prog }
 
 						prog:CreateComponent("ServerReplicationDependency")
 						prog.ServerReplicationDependency.Dependency = entity
@@ -398,19 +405,13 @@ if Ext.IsServer() then
 
 						prog:Replicate("ProgressionMeta")
 
+						-- Don't do this - assigning the owner or replication dependency (don't know which) automatically does this for us - otherwise we get it twice
+						-- entity.ProgressionContainer.Progressions[#entity.ProgressionContainer.Progressions + 1] = { prog }
 						Logger:BasicDebug("Assigned progression %s at level %s", progressionId, progression.Level)
 					end
 				end
 			end
 			entity:Replicate("ProgressionContainer")
-
-			if Printer.TickHandler and (not next(Printer.TargetedEntities) or TableUtils:IndexOf(Printer.TargetedEntities, entity.Uuid.EntityUuid)) then
-				---@param entity EntityHandle
-				---@diagnostic disable-next-line: param-type-mismatch
-				Printer:RegisterEntitySubscription(Ext.Entity.OnChange("ProgressionContainer", function(entity)
-					ECSLogger:BasicDebug("[#%s]: %s - %s", Printer.FrameNo, Printer:GetEntityName(entity), entity.ProgressionContainer)
-				end, entity))
-			end
 		end
 	end
 end
