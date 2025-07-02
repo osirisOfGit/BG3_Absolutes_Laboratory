@@ -200,41 +200,40 @@ end
 
 function ChangePrinter:Start(frameLimit, ...)
 	local targetedEntities = { ... }
-	table.move(targetedEntities, 1, #targetedEntities, #self.TargetedEntities, self.TargetedEntities)
-	self.FrameLimit = frameLimit
-	Ext.Entity.EnableTracing(true)
-	self.TickHandler = Ext.Events.Tick:Subscribe(function() self:OnTick() end)
-	Ext.Timer.WaitFor(10000, function()
-		self:Stop()
-	end)
-	ECSLogger:BasicInfo("Started Tracing")
-	-- for sysName in pairs(Ext.System) do
-	-- 	---@diagnostic disable-next-line: param-type-mismatch
-	-- 	table.insert(self.SystemHandlers, Ext.Entity.OnSystemUpdate(sysName, function()
-	-- 		-- if not next(self.TargetedEntities) then
-	-- 		Logger:BasicDebug(Ext.Json.Stringify(Ext.System[sysName]))
-	-- 		-- else
-	-- 		-- 	for systemFunName, fun in pairs(Ext.System[sysName]) do
-	-- 		-- 		local serialized = Ext.Types.Serialize(fun)
-	-- 		-- 		if type(serialized) == "table" then
-
-	-- 		-- 		end
-	-- 		-- 	end
-	-- 		-- end
-	-- 	end))
-	-- end
+	table.move(targetedEntities, 1, #targetedEntities, #self.TargetedEntities + 1, self.TargetedEntities)
+	if not self.TickHandler then
+		self.FrameLimit = frameLimit
+		Ext.Entity.EnableTracing(true)
+		self.TickHandler = Ext.Events.Tick:Subscribe(function() self:OnTick() end)
+		self.Timer = Ext.Timer.WaitFor(10000, function()
+			self:Stop()
+		end)
+		ECSLogger:BasicInfo("Started Tracing")
+	end
 end
 
 function ChangePrinter:Stop()
+	if self.Timer then
+		Ext.Timer.Cancel(self.Timer)
+	end
 	Ext.Entity.EnableTracing(false)
 	Ext.Entity.ClearTrace()
 	Ext.Events.Tick:Unsubscribe(self.TickHandler)
 	self.TargetedEntities = {}
 	self.TickHandler = nil
 	ECSLogger:BasicInfo("Finished Tracing")
-	-- for _, handle in pairs(self.SystemHandlers) do
-	-- 	Ext.Entity.Unsubscribe(handle)
-	-- end
+	for _, handle in pairs(self.SystemHandlers) do
+		Ext.Entity.Unsubscribe(handle)
+	end
+end
+
+function ChangePrinter:TraceSystems()
+	---@diagnostic disable-next-line: param-type-mismatch
+	table.insert(self.SystemHandlers, Ext.Entity.OnSystemUpdate("ServerProgression", function()
+		for entity in pairs(Ext.System.ServerProgression.DestroyedProgressions) do
+			Logger:BasicDebug("[%s] %s : [ServerProgression System]: Destroy", self.FrameNo, self:GetEntityName(entity))
+		end
+	end))
 end
 
 ---@param entity EntityHandle
@@ -335,7 +334,7 @@ end
 function ChangePrinter:OnTick()
 	local trace = Ext.Entity.GetTrace()
 	for entity, changes in pairs(trace.Entities) do
-		if (not next(self.TargetedEntities) or (entity.Uuid and TableUtils:IndexOf(self.TargetedEntities, entity.Uuid.EntityUuid))) and self:EntityHasPrintableChanges(entity, changes) then
+		if ((not next(self.TargetedEntities) or not entity.Uuid) or (entity.Uuid and TableUtils:IndexOf(self.TargetedEntities, entity.Uuid.EntityUuid))) and self:EntityHasPrintableChanges(entity, changes) then
 			if self.PrintChanges then
 				local msg = "[#" .. self.FrameNo .. "] " .. self:GetEntityNameDecorated(entity) .. ": "
 				if changes.Create then msg = msg .. " Created" end

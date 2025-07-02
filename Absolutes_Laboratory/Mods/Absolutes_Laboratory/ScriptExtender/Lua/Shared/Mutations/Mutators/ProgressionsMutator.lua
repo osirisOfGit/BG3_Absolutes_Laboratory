@@ -260,11 +260,11 @@ end
 
 if Ext.IsServer() then
 	function ProgressionsMutator:undoMutator(entity, entityVar)
-		for _, list in ipairs(entity.ProgressionContainer.Progressions) do
-			for _, progEntity in ipairs(list) do
-				Ext.Entity.Destroy(progEntity)
-			end
-		end
+		-- for _, list in ipairs(entity.ProgressionContainer.Progressions) do
+		-- 	for _, progEntity in ipairs(list) do
+		-- 		Ext.System.ServerProgression.DestroyedProgressions[progEntity] = true
+		-- 	end
+		-- end
 
 		entity.ProgressionContainer.Progressions = {}
 

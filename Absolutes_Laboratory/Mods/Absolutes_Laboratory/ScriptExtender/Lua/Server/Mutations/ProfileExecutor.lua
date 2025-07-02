@@ -70,6 +70,7 @@ function MutationProfileExecutor:ExecuteProfile()
 				end
 
 				if next(entityVar.appliedMutators) then
+					-- Printer:Start(nil, entity.Uuid.EntityUuid)
 					counter = counter + 1
 					entityVar = TableUtils:DeeplyCopyTable(entityVar)
 					MutatorInterface:applyMutator(entity, entityVar)
