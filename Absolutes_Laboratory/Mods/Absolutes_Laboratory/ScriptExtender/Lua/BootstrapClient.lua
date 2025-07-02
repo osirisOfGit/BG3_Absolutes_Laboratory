@@ -4,10 +4,6 @@ Ext.Require("Shared/EntityRecorder.lua")
 Ext.Require("Shared/Channels.lua")
 Ext.Require("Utilities/Networking/Channels.lua")
 
-Ext.Events.StatsLoaded:Subscribe(function()
-	Logger:ClearLogFile()
-end)
-
 Ext.Require("Client/RandomHelpers.lua")
 Ext.Require("Client/SpellBrowser.lua")
 Ext.Require("Shared/Configurations/_ConfigurationStructure.lua")
