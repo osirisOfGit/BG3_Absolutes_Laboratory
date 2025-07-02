@@ -1,8 +1,10 @@
 CustomEntitySerializer = {}
 
----@param parentKey string
+--- Recursivelly serializes the provided table, serializing table/userdata components and either converting sub-entities into their handles if available or serializing them if not
 ---@param response table
+---@param parentKey string
 ---@param entityHistory Guid[]
+---@return table serializedEntity
 function CustomEntitySerializer:recursiveSerialization(response, parentKey, entityHistory)
 	local success, error = xpcall(function(...)
 		if response then
