@@ -1,9 +1,10 @@
+-- Largely stolen from Auto_Sell_Loot - https://www.nexusmods.com/baldursgate3/mods/2435 Thx m8 (｡･∀･)ﾉﾞ
+
 ---@class Logger
 Logger = {}
 
 Logger.fileName = "log.txt"
 Logger.logBuffer = {}
--- Largely stolen from Auto_Sell_Loot - https://www.nexusmods.com/baldursgate3/mods/2435 Thx m8 (｡･∀･)ﾉﾞ
 
 Logger.PrintTypes = {
     TRACE = 5,
@@ -160,24 +161,24 @@ function Logger:FlushLogBuffer()
     self.logBuffer = {}
 end
 
-local timer
+Logger.timer = nil
 
 --- Saves the log to the log.txt using a buffer
 function Logger:LogMessage(message)
     local logMessage = GetTimestamp() .. " " .. message
     table.insert(self.logBuffer, logMessage)
 
-    if timer then
-        Ext.Timer.Cancel(timer)
-        timer = nil
+    if self.timer then
+        Ext.Timer.Cancel(self.timer)
+        self.timer = nil
     end
 
     if #self.logBuffer >= bufferLimit then
         self:FlushLogBuffer()
     else
-        timer = Ext.Timer.WaitFor(500, function()
+        self.timer = Ext.Timer.WaitFor(500, function()
             self:FlushLogBuffer()
-            timer = nil
+            self.timer = nil
         end)
     end
 end
