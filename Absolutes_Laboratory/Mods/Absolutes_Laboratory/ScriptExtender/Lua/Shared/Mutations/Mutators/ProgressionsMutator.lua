@@ -260,11 +260,11 @@ end
 
 if Ext.IsServer() then
 	function ProgressionsMutator:undoMutator(entity, entityVar)
-		-- for _, list in ipairs(entity.ProgressionContainer.Progressions) do
-		-- 	for _, progEntity in ipairs(list) do
-		-- 		Ext.System.ServerProgression.DestroyedProgressions[progEntity] = true
-		-- 	end
-		-- end
+		for _, list in ipairs(entity.ProgressionContainer.Progressions) do
+			for _, progEntity in ipairs(list) do
+				Ext.System.ServerProgression.DestroyedProgressions[progEntity] = true
+			end
+		end
 
 		entity.ProgressionContainer.Progressions = {}
 
@@ -403,6 +403,21 @@ if Ext.IsServer() then
 				end
 			end
 			entity:Replicate("ProgressionContainer")
+
+			if Printer.TickHandler and (not next(Printer.TargetedEntities) or TableUtils:IndexOf(Printer.TargetedEntities, entity.Uuid.EntityUuid)) then
+				_D(entity.ProgressionContainer)
+				---@param entity EntityHandle
+				local handle = Ext.Entity.OnChange("ProgressionContainer", function(entity)
+					ECSLogger:BasicDebug("[#%s]: %s - %s", Printer.FrameNo, Printer:GetEntityName(entity), Ext.Json.Stringify(entity.ProgressionContainer, {
+						IterateUserdata = true,
+						StringifyInternalTypes = true
+					}))
+				end, entity)
+
+				Ext.Timer.WaitFor(10000, function()
+					Ext.Entity.Unsubscribe(handle)
+				end)
+			end
 		end
 	end
 end
