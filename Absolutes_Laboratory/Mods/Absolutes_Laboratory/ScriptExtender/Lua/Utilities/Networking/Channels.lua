@@ -1,3 +1,5 @@
+-- Credit: LaughingLeader
+
 ---@class ExtenderNetChannel
 ---@field Module string
 ---@field Channel string
