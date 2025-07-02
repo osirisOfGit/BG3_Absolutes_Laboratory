@@ -226,7 +226,7 @@ function LevelMutator:applyMutator(entity, entityVar)
 			maxAbove = baseLevel + (xPRewardMod.maximumAbove or 0)
 		end
 		if Logger:IsLogLevelEnabled(Logger.PrintTypes.DEBUG) then
-			Logger:BasicDebug("XPReward is %s, resulting modifier is %s", charStat.XPReward, xPRewardMod and Ext.Json.Stringify(xPRewardMod) or "[Appropriate Modifier Not Found]")
+			Logger:BasicDebug("XPReward is %s, resulting modifier is %s", charStat.XPReward, xPRewardMod or "[Appropriate Modifier Not Found]")
 		end
 	end
 

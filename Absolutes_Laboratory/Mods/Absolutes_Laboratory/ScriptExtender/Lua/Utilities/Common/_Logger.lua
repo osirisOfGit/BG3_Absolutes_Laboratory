@@ -1,3 +1,5 @@
+Ext.Require("Utilities/Advanced/_CustomEntitySerializer.lua")
+
 -- Largely stolen from Auto_Sell_Loot - https://www.nexusmods.com/baldursgate3/mods/2435 Thx m8 (｡･∀･)ﾉﾞ
 
 ---@class Logger
@@ -102,11 +104,11 @@ function Logger:BasicPrint(content, messageType, textColor, customPrefix, rainbo
     messageType = messageType or self.PrintTypes.INFO
     local textColorCode = textColor or TEXT_COLORS.cyan -- Default to cyan
 
-    customPrefix = customPrefix or ModUtils:GetModInfo().Name
+    customPrefix = customPrefix or Ext.Mod.GetMod(ModuleUUID).Info.Name
     local padding = string.rep(" ", prefixLength - #customPrefix)
     local message = ConcatOutput(ConcatPrefix(customPrefix .. padding .. "  [" .. self.PrintTypes[messageType] .. "]" .. " (" .. (Ext.IsClient() and "C" or "S") .. ")", content))
 
-    self:LogMessage(ConcatOutput(ConcatPrefix("  [" .. self.PrintTypes[messageType] .. "]" .. " (" .. (Ext.IsClient() and "C" or "S") .. ")", content)))
+    self:LogMessage(ConcatOutput("[" .. self.PrintTypes[messageType] .. "]" .. " (" .. (Ext.IsClient() and "C" or "S") .. ")", content))
     if messageType <= self.PrintTypes.INFO then
         local coloredMessage = rainbowText and GetRainbowText(message) or
             string.format("\x1b[%dm%s\x1b[0m", textColorCode, message)
@@ -120,33 +122,57 @@ function Logger:BasicPrint(content, messageType, textColor, customPrefix, rainbo
     end
 end
 
+local function stringifyTableArgs(...)
+    local args = { ... }
+    for i, val in ipairs(args) do
+        if type(val) == "userdata" then
+            if Ext.Types.GetObjectType(val) == "Entity" then
+                val = val:GetAllComponents()
+            else
+                val = { val }
+            end
+            val = CustomEntitySerializer:recursiveSerialization(val, nil, {})
+        end
+
+        if type(val) == "table" then
+            args[i] = Ext.Json.Stringify(val, {
+                AvoidRecursion = true,
+                IterateUserdata = true,
+                StringifyInternalTypes = true
+            })
+        end
+    end
+
+    return table.unpack(args)
+end
+
 function Logger:BasicError(content, ...)
     if self:IsLogLevelEnabled(self.PrintTypes.ERROR) then
-        self:BasicPrint(string.format(content, ...), self.PrintTypes.ERROR, TEXT_COLORS.red)
+        self:BasicPrint(string.format(content, stringifyTableArgs(...)), self.PrintTypes.ERROR, TEXT_COLORS.red)
     end
 end
 
 function Logger:BasicWarning(content, ...)
     if self:IsLogLevelEnabled(self.PrintTypes.WARNING) then
-        self:BasicPrint(string.format(content, ...), self.PrintTypes.WARNING, TEXT_COLORS.yellow)
+        self:BasicPrint(string.format(content, stringifyTableArgs(...)), self.PrintTypes.WARNING, TEXT_COLORS.yellow)
     end
 end
 
 function Logger:BasicDebug(content, ...)
     if self:IsLogLevelEnabled(self.PrintTypes.DEBUG) then
-        self:BasicPrint(string.format(content, ...), self.PrintTypes.DEBUG)
+        self:BasicPrint(string.format(content, stringifyTableArgs(...)), self.PrintTypes.DEBUG)
     end
 end
 
 function Logger:BasicTrace(content, ...)
     if self:IsLogLevelEnabled(self.PrintTypes.TRACE) then
-        self:BasicPrint(string.format(content, ...), self.PrintTypes.TRACE)
+        self:BasicPrint(string.format(content, stringifyTableArgs(...)), self.PrintTypes.TRACE)
     end
 end
 
 function Logger:BasicInfo(content, ...)
     if self:IsLogLevelEnabled(self.PrintTypes.INFO) then
-        self:BasicPrint(string.format(content, ...), self.PrintTypes.INFO)
+        self:BasicPrint(string.format(content, stringifyTableArgs(...)), self.PrintTypes.INFO)
     end
 end
 
@@ -194,3 +220,5 @@ function Logger:ClearLogFile()
         Ext.IO.SaveFile(FileUtils:BuildAbsoluteFileTargetPath(self.fileName), "")
     end
 end
+
+Logger:ClearLogFile()

@@ -345,7 +345,7 @@ if Ext.IsServer() then
 							end
 						else
 							Logger:BasicWarning("Skipping a Progressions Mutator spellList check because no spellLists were added to it despite specifying a number: %s",
-								Ext.Json.Stringify(progressionConditonal))
+								progressionConditonal)
 						end
 					end
 					table.insert(chosenProgressionGroups, progressionConditonal)
@@ -405,18 +405,11 @@ if Ext.IsServer() then
 			entity:Replicate("ProgressionContainer")
 
 			if Printer.TickHandler and (not next(Printer.TargetedEntities) or TableUtils:IndexOf(Printer.TargetedEntities, entity.Uuid.EntityUuid)) then
-				_D(entity.ProgressionContainer)
 				---@param entity EntityHandle
-				local handle = Ext.Entity.OnChange("ProgressionContainer", function(entity)
-					ECSLogger:BasicDebug("[#%s]: %s - %s", Printer.FrameNo, Printer:GetEntityName(entity), Ext.Json.Stringify(entity.ProgressionContainer, {
-						IterateUserdata = true,
-						StringifyInternalTypes = true
-					}))
-				end, entity)
-
-				Ext.Timer.WaitFor(10000, function()
-					Ext.Entity.Unsubscribe(handle)
-				end)
+				---@diagnostic disable-next-line: param-type-mismatch
+				Printer:RegisterEntitySubscription(Ext.Entity.OnChange("ProgressionContainer", function(entity)
+					ECSLogger:BasicDebug("[#%s]: %s - %s", Printer.FrameNo, Printer:GetEntityName(entity), entity.ProgressionContainer)
+				end, entity))
 			end
 		end
 	end

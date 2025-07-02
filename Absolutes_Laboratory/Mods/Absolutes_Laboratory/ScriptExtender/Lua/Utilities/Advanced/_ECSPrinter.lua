@@ -2,7 +2,7 @@
 
 --- @class ChangePrinter
 --- @field TargetedEntities EntityHandle[]
---- @field SystemHandlers number[]
+--- @field EntityHandlers number[]
 --- @field FrameLimit number?
 --- @field ChangeCounts number[]
 --- @field TrackChangeCounts boolean
@@ -172,7 +172,7 @@ function ChangePrinter:New()
 	---@type ChangePrinter
 	local o = {
 		TargetedEntities = {},
-		SystemHandlers = {},
+		EntityHandlers = {},
 		FrameNo = 1,
 		PrintChanges = true,
 		TrackChangeCounts = true,
@@ -222,18 +222,16 @@ function ChangePrinter:Stop()
 	self.TargetedEntities = {}
 	self.TickHandler = nil
 	ECSLogger:BasicInfo("Finished Tracing")
-	for _, handle in pairs(self.SystemHandlers) do
+	for _, handle in pairs(self.EntityHandlers) do
 		Ext.Entity.Unsubscribe(handle)
 	end
 end
 
-function ChangePrinter:TraceSystems()
-	---@diagnostic disable-next-line: param-type-mismatch
-	table.insert(self.SystemHandlers, Ext.Entity.OnSystemUpdate("ServerProgression", function()
-		for entity in pairs(Ext.System.ServerProgression.DestroyedProgressions) do
-			Logger:BasicDebug("[%s] %s : [ServerProgression System]: Destroy", self.FrameNo, self:GetEntityName(entity))
-		end
-	end))
+---@param subscriptionHandle number returned by the Ext.Entity subscribe call - will be automatically unsubscribed when Tracing ends
+function ChangePrinter:RegisterEntitySubscription(subscriptionHandle)
+	if self.TickHandler then
+		table.insert(self.EntityHandlers, subscriptionHandle)
+	end
 end
 
 ---@param entity EntityHandle
