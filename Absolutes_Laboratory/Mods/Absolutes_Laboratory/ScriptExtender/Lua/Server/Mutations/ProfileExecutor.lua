@@ -8,6 +8,16 @@ Ext.Vars.RegisterModVariable(ModuleUUID, "ActiveMutationProfile", {
 	SyncOnWrite = true
 })
 
+Ext.Vars.RegisterModVariable(ModuleUUID, "HasDisabledProfiles", {
+	Server = true,
+	Client = true,
+	WriteableOnServer = true,
+	WriteableOnClient = true,
+	SyncToClient = true,
+	SyncToServer = true,
+	SyncOnWrite = true
+})
+
 MutationProfileExecutor = {}
 
 function MutationProfileExecutor:ExecuteProfile(rerunTransient)
@@ -17,6 +27,15 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient)
 	end
 
 	local activeProfile = MutationConfigurationProxy.profiles[Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile]
+
+	if not activeProfile and not Ext.Vars.GetModVariables(ModuleUUID).HasDisabledProfiles then
+		local defaultProfile = ConfigurationStructure.config.mutations.settings.defaultProfile
+		if defaultProfile then
+			Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = defaultProfile
+			activeProfile = MutationConfigurationProxy.profiles[defaultProfile]
+			Logger:BasicInfo("Default Profile %s activated", activeProfile.name)
+		end
+	end
 
 	if activeProfile and next(activeProfile.mutationRules) then
 		local time = Ext.Timer:MonotonicTime()

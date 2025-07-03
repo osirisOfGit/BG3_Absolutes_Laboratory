@@ -3,6 +3,7 @@ ConfigurationStructure.config.mutations = {}
 
 ---@class MutationSettings
 ConfigurationStructure.config.mutations.settings = {
+	defaultProfile = nil,
 	---@class SpellBrowserSettings
 	spellBrowser = {
 		onlyIcons = true,
@@ -100,7 +101,6 @@ ConfigurationStructure.config.mutations.folders = {}
 ConfigurationStructure.DynamicClassDefinitions.profile = {
 	name = "",
 	description = "",
-	defaultActive = false,
 	---@type MutationProfileRule[]
 	mutationRules = {},
 	---@type Guid?
