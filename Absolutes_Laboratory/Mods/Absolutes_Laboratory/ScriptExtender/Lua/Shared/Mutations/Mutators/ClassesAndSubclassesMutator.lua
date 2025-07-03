@@ -1,7 +1,7 @@
 ClassesAndSubclassesMutator = MutatorInterface:new("Classes And Subclasses")
 
 function ClassesAndSubclassesMutator:priority()
-	return SpellListMutator:priority() + 1
+	return self:recordPriority(SpellListMutator:priority() + 1)
 end
 
 function ClassesAndSubclassesMutator:canBeAdditive()

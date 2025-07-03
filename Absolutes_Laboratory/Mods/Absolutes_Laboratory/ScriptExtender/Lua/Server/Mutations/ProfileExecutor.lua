@@ -10,7 +10,7 @@ Ext.Vars.RegisterModVariable(ModuleUUID, "ActiveMutationProfile", {
 
 MutationProfileExecutor = {}
 
-function MutationProfileExecutor:ExecuteProfile()
+function MutationProfileExecutor:ExecuteProfile(rerunTransient)
 	if next(FileUtils:LoadTableFile(EntityRecorder.trackerFilename)) then
 		Logger:BasicInfo("Recorder is currently running - skipping Mutations")
 		return
@@ -66,7 +66,7 @@ function MutationProfileExecutor:ExecuteProfile()
 				end
 
 				if entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] then
-					MutatorInterface:undoMutator(entity, entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME], entityVar)
+					MutatorInterface:undoMutator(entity, entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME], entityVar, rerunTransient)
 				end
 
 				if next(entityVar.appliedMutators) then
@@ -77,7 +77,7 @@ function MutationProfileExecutor:ExecuteProfile()
 				entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = next(entityVar.appliedMutators) and entityVar or nil
 			else
 				if entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] then
-					MutatorInterface:undoMutator(entity, entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME])
+					MutatorInterface:undoMutator(entity, entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME], rerunTransient)
 				end
 			end
 		end

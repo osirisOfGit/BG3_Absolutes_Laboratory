@@ -1,7 +1,7 @@
 LevelMutator = MutatorInterface:new("Character Level")
 
 function LevelMutator:priority()
-	return 5
+	return self:recordPriority(5)
 end
 
 function LevelMutator:handleDependencies()
@@ -205,6 +205,8 @@ local function calculateXPRewardLevelModifier(mutatorModifier, xpRewardId)
 	return xMod
 end
 
+local levelUpSubscription
+
 function LevelMutator:applyMutator(entity, entityVar)
 	entityVar.originalValues[self.name] = entity.AvailableLevel.Level
 
@@ -232,6 +234,8 @@ function LevelMutator:applyMutator(entity, entityVar)
 		end
 	end
 
+	Logger:BasicDebug("Base level above the player level is %s (post XPReward calculation)", baseLevel)
+
 	local useMin
 	if minBelow ~= 0 and maxAbove ~= 0 then
 		useMin = math.random(0, 1) == 0
@@ -243,17 +247,39 @@ function LevelMutator:applyMutator(entity, entityVar)
 
 	if useMin ~= nil then
 		if useMin then
-			Logger:BasicDebug("Subtracting from the base value %s by a random value between 0 and %s", baseLevel, minBelow)
+			Logger:BasicDebug("Subtracting a random value between 0 and %s from the base value %s", minBelow, baseLevel)
 			baseLevel = baseLevel - (math.random(0, minBelow))
 		else
-			Logger:BasicDebug("Adding to the base value %s by a random value between 0 and %s", baseLevel, maxAbove)
+			Logger:BasicDebug("Adding a random value between 0 and %s to the base value %s", maxAbove, baseLevel)
 			baseLevel = baseLevel + (math.random(0, maxAbove))
 		end
 	end
 
-	baseLevel = math.abs(baseLevel) < entity.AvailableLevel.Level and baseLevel or ((entity.AvailableLevel.Level - 1) * (baseLevel < 0 and -1 or 1))
+	local highestPlayerLevel = 1
+	for _, playerTable in pairs(Osi.DB_Players:Get(nil)) do
+		local player = playerTable[1]
 
-	entity.AvailableLevel.Level = entity.AvailableLevel.Level + baseLevel
+		---@type EntityHandle
+		local playerEntity = Ext.Entity.Get(player)
+
+		if playerEntity.AvailableLevel.Level > highestPlayerLevel then
+			highestPlayerLevel = playerEntity.AvailableLevel.Level
+		end
+	end
+
+	Logger:BasicDebug("Highest player level is %s", highestPlayerLevel)
+
+	if not levelUpSubscription then
+		---@diagnostic disable-next-line: param-type-mismatch
+		levelUpSubscription = Ext.Entity.OnChange("AvailableLevel", function()
+			Logger:BasicInfo("A levelup mutator is registered and a player just gained enough XP to level up - rerunning mutations")
+			MutationProfileExecutor:ExecuteProfile(true)
+		end, Ext.Entity.Get(Osi.GetHostCharacter()))
+	end
+
+	baseLevel = math.abs(baseLevel) < highestPlayerLevel and baseLevel or ((highestPlayerLevel - 1) * (baseLevel < 0 and -1 or 1))
+
+	entity.AvailableLevel.Level = highestPlayerLevel + baseLevel
 	entity.EocLevel.Level = entity.AvailableLevel.Level
 	Logger:BasicDebug("Changed level from %s to %s", entityVar.originalValues[self.name], entity.AvailableLevel.Level)
 end

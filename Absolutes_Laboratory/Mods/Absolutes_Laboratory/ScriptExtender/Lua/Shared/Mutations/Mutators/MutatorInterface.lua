@@ -43,8 +43,29 @@ function MutatorInterface:canBeAdditive()
 	return false
 end
 
+local prioritySet = {}
+function MutatorInterface:recordPriority(priority)
+	if not prioritySet[self.name] then
+		local function findNextPriority(priorityIndex)
+			if not prioritySet[priorityIndex] then
+				prioritySet[priorityIndex] = self.name
+				prioritySet[self.name] = priorityIndex
+				return priorityIndex
+			elseif prioritySet[priorityIndex] == self.name then
+				return priorityIndex
+			else
+				return findNextPriority(priorityIndex + 1)
+			end
+		end
+
+		return findNextPriority(priority)
+	else
+		return prioritySet[self.name]
+	end
+end
+
 function MutatorInterface:priority()
-	return 9999
+	return self:recordPriority(999)
 end
 
 ---@param export MutationsConfig
@@ -89,7 +110,8 @@ end
 ---@param entity EntityHandle
 ---@param entityVar MutatorEntityVar var already on the entity, before application logic is run
 ---@param primedEntityVar MutatorEntityVar? changes that are queued up to be applied
-function MutatorInterface:undoMutator(entity, entityVar, primedEntityVar)
+---@param reprocessTransient boolean? will be true if the profile is re-executed in a single session, i.e. when the player level ups while a level mutator is in play
+function MutatorInterface:undoMutator(entity, entityVar, primedEntityVar, reprocessTransient)
 	if entityVar then
 		local time = Ext.Timer:MonotonicTime()
 
@@ -102,12 +124,12 @@ function MutatorInterface:undoMutator(entity, entityVar, primedEntityVar)
 		end) do
 			local mut = self.registeredMutators[mutatorName]
 
-			if not mut:Transient() then
+			if not mut:Transient() or reprocessTransient then
 				local mTime = Ext.Timer:MonotonicTime()
 				Logger:BasicDebug("==== Starting mutator %s ====", mutatorName)
 
 				local success, error = xpcall(function(...)
-					self.registeredMutators[mutatorName]:undoMutator(entity, entityVar, primedEntityVar)
+					self.registeredMutators[mutatorName]:undoMutator(entity, entityVar, primedEntityVar, reprocessTransient)
 				end, debug.traceback)
 
 				if not success then
