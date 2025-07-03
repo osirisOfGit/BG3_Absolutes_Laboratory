@@ -8,6 +8,10 @@ function ClassesAndSubclassesMutator:canBeAdditive()
 	return true
 end
 
+function ClassesAndSubclassesMutator:Transient()
+	return true
+end
+
 ---@class ClassesConditionalGroup
 ---@field classIds {[Guid] : number}?
 ---@field spellListDependencies Guid[]?

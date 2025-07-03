@@ -8,6 +8,10 @@ function LevelMutator:handleDependencies()
 	-- NOOP
 end
 
+function LevelMutator:Transient()
+	return false -- Dunno how, but it's not /shrug
+end
+
 ---@class LevelRandomModifier
 ---@field offsetBase number?
 ---@field minimumBelow number?
@@ -169,9 +173,7 @@ end
 function LevelMutator:undoMutator(entity, entityVar)
 	Logger:BasicDebug("Reset to %s", entityVar.originalValues[self.name])
 	entity.AvailableLevel.Level = entityVar.originalValues[self.name]
-	entity:Replicate("AvailableLevel")
 	entity.EocLevel.Level = entity.AvailableLevel.Level
-	entity:Replicate("EocLevel")
 end
 
 local xpRewardList = {}
@@ -252,8 +254,11 @@ function LevelMutator:applyMutator(entity, entityVar)
 	baseLevel = math.abs(baseLevel) < entity.AvailableLevel.Level and baseLevel or ((entity.AvailableLevel.Level - 1) * (baseLevel < 0 and -1 or 1))
 
 	entity.AvailableLevel.Level = entity.AvailableLevel.Level + baseLevel
-	entity:Replicate("AvailableLevel")
 	entity.EocLevel.Level = entity.AvailableLevel.Level
-	entity:Replicate("EocLevel")
 	Logger:BasicDebug("Changed level from %s to %s", entityVar.originalValues[self.name], entity.AvailableLevel.Level)
+end
+
+function LevelMutator:FinalizeMutator(entity)
+	entity:Replicate("AvailableLevel")
+	entity:Replicate("EocLevel")
 end

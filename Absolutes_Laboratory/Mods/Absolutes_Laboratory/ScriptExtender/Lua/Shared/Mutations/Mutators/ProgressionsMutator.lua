@@ -259,33 +259,17 @@ Progressions are evaluated independently from one another to allow for progressi
 end
 
 if Ext.IsServer() then
-	function ProgressionsMutator:undoMutator(entity, entityVar)
-		for _, list in ipairs(entity.ProgressionContainer.Progressions) do
-			for _, progEntity in ipairs(list) do
-				Ext.System.ServerProgression.DestroyedProgressions[progEntity] = true
+	function ProgressionsMutator:undoMutator(entity, entityVar, primedEntityVar)
+		for _, progEntity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ProgressionMeta")) do
+			if progEntity.ProgressionMeta.Owner == entity then
+				Logger:BasicDebug("Destroyed progression %s", progEntity.ProgressionMeta.Progression)
+				Ext.Entity.Destroy(progEntity)
 			end
 		end
 
-		entity.ProgressionContainer.Progressions = {}
-
-		for _, progressionEntity in pairs(Ext.Entity.GetAllEntitiesWithComponent("ProgressionMeta")) do
-			for i, progressionDefList in ipairs(entityVar.originalValues[self.name]) do
-				for x, progressionDef in ipairs(progressionDefList) do
-					---@cast progressionDef ProgressionMetaComponent
-					if progressionEntity.ProgressionMeta.Owner == entity and progressionEntity.ProgressionMeta.Progression == progressionDef.Progression then
-						entity.ProgressionContainer.Progressions[i] = entity.ProgressionContainer.Progressions[i] or {}
-						entity.ProgressionContainer.Progressions[i][x] = progressionEntity
-						goto continue
-					end
-				end
-			end
-			::continue::
-		end
-		entity:Replicate("ProgressionContainer")
-		-- Ext.System.ServerProgression.ProgressionUpdates[entity] = 1
-
-		if Logger:IsLogLevelEnabled(Logger.PrintTypes.TRACE) then
-			Logger:BasicTrace("Reverted to %s", Ext.Json.Stringify(entityVar.originalValues[self.name]))
+		if not primedEntityVar or not primedEntityVar.appliedMutators[self.name] then
+			-- This will resync the original assigned progression from the character stat, from the level you specify up to the character level
+			Ext.System.ServerProgression.ProgressionUpdates[entity] = 1
 		end
 	end
 
@@ -375,6 +359,9 @@ if Ext.IsServer() then
 				for x, progEntity in ipairs(list) do
 					entityVar.originalValues[self.name][i][x] = Ext.Types.Serialize(progEntity.ProgressionMeta)
 					entityVar.originalValues[self.name][i][x].Owner = nil
+
+					Logger:BasicDebug("Destroyed original progression %s", progEntity.ProgressionMeta.Progression)
+					Ext.Entity.Destroy(progEntity)
 				end
 			end
 
@@ -411,7 +398,11 @@ if Ext.IsServer() then
 					end
 				end
 			end
-			entity:Replicate("ProgressionContainer")
 		end
+	end
+
+	function ProgressionsMutator:FinalizeMutator(entity)
+		-- Recomputes the boosts (i.e. action resources) specified in the progressions
+		Ext.System.ServerBoost.ProgressionUpdates[entity] = true
 	end
 end

@@ -26,10 +26,6 @@ function MutationProfileExecutor:ExecuteProfile()
 		local cachedSelectors = {}
 
 		for _, entity in pairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-			if entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] then
-				MutatorInterface:undoMutator(entity, entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME])
-			end
-
 			if (Osi.IsDead(entity.Uuid.EntityUuid) == 0 or not entity.DeadByDefault) and not entity.PartyMember then
 				---@type MutatorEntityVar
 				local entityVar = {
@@ -69,14 +65,20 @@ function MutationProfileExecutor:ExecuteProfile()
 					end
 				end
 
+				if entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] then
+					MutatorInterface:undoMutator(entity, entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME], entityVar)
+				end
+
 				if next(entityVar.appliedMutators) then
-					-- Printer:Start(nil, entity.Uuid.EntityUuid)
 					counter = counter + 1
-					entityVar = TableUtils:DeeplyCopyTable(entityVar)
 					MutatorInterface:applyMutator(entity, entityVar)
 				end
 
 				entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = next(entityVar.appliedMutators) and entityVar or nil
+			else
+				if entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] then
+					MutatorInterface:undoMutator(entity, entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME])
+				end
 			end
 		end
 		Logger:BasicInfo("======= Mutated %s Entities in %dms under Profile %s =======",

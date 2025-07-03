@@ -1,5 +1,13 @@
 HealthMutator = MutatorInterface:new("Health")
 
+function HealthMutator:priority()
+	return LevelMutator:priority() + 1
+end
+
+function HealthMutator:Transient()
+	return true
+end
+
 ---@alias HealthModifierKeys "CharacterLevel"|"GameLevel"|"XPReward"
 
 ---@class HealthMutator : Mutator

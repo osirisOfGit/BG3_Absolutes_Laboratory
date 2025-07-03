@@ -7,6 +7,7 @@ Logger = {}
 
 Logger.fileName = "log.txt"
 Logger.logBuffer = {}
+Logger.timer = nil
 
 Logger.PrintTypes = {
     TRACE = 5,
@@ -186,8 +187,6 @@ function Logger:FlushLogBuffer()
     Ext.IO.SaveFile(FileUtils:BuildAbsoluteFileTargetPath(self.fileName), fileContent .. logMessages .. "\n")
     self.logBuffer = {}
 end
-
-Logger.timer = nil
 
 --- Saves the log to the log.txt using a buffer
 function Logger:LogMessage(message)
