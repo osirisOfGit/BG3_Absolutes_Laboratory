@@ -620,22 +620,22 @@ function MutationProfileManager:BuildModFolders()
 	end
 end
 
-Ext.ModEvents.BG3MCM["MCM_Mod_Subtab_Activated"]:Subscribe(function(payload)
-	if not payload or payload.modUUID ~= ModuleUUID then
+local triedOnce
+function MutationProfileManager:BuildProfileManager()
+	if not activeProfileId and not triedOnce then
+		triedOnce = true
+		-- MCM seems to initialize the tab before the ModVars are loaded, so need to do a deferred load
+		Ext.Timer.WaitFor(1000, function()
+			activeProfileId = Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile
+			if not MutationConfigurationProxy.profiles[activeProfileId] then
+				Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = nil
+				activeProfileId = nil
+			end
+			self:BuildFolderManager()
+		end)
 		return
 	end
 
-	if payload.tabName == "Mutations" and not activeProfileId then
-		activeProfileId = Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile
-		if not MutationConfigurationProxy.profiles[activeProfileId] then
-			Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = nil
-			activeProfileId = nil
-		end
-		MutationProfileManager:BuildProfileManager()
-	end
-end)
-
-function MutationProfileManager:BuildProfileManager()
 	local lastMutation = activeMutationView and activeMutationView.Label
 	activeMutationView = nil
 	local profiles = ConfigurationStructure.config.mutations.profiles
@@ -675,25 +675,27 @@ function MutationProfileManager:BuildProfileManager()
 	profileCombo.SelectedIndex = sIndex - 1
 	profileCombo.OnChange = function()
 		local selectedName = profileCombo.Options[profileCombo.SelectedIndex + 1]
-		local isModProfile = selectedName:sub(#selectedName - 2) == "(M)"
-
-		activeProfileId = TableUtils:IndexOf(combinedProfiles, function(value)
-			if isModProfile then
-				if value.modId then
-					return value.name == selectedName:sub(1, #selectedName - 3)
-				else
-					return false
-				end
-			elseif not value.modId then
-				return value.name == selectedName
-			end
-			return false
-		end)
 
 		if selectedName == "Disabled" then
+			activeProfileId = nil
 			Ext.Vars.GetModVariables(ModuleUUID).HasDisabledProfiles = true
 			Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = nil
 		else
+			local isModProfile = selectedName:sub(#selectedName - 2) == "(M)"
+
+			activeProfileId = TableUtils:IndexOf(combinedProfiles, function(value)
+				if isModProfile then
+					if value.modId then
+						return value.name == selectedName:sub(1, #selectedName - 3)
+					else
+						return false
+					end
+				elseif not value.modId then
+					return value.name == selectedName
+				end
+				return false
+			end)
+
 			Ext.Vars.GetModVariables(ModuleUUID).HasDisabledProfiles = false
 			Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = activeProfileId
 		end
