@@ -9,7 +9,7 @@ SpellListDesigner.selectedSpells = {
 	linkedSpells = false
 }
 
----@type {[string]: SpellName[][]}
+---@type {[string]: EntryName[][]}
 SpellListDesigner.progressions = {}
 
 SpellListDesigner.progressionTranslation = {}
@@ -131,7 +131,7 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 		colorSettings.UserData = "keep"
 		colorSettings:AddText("Click A Color To Change It, Hover for Tooltips"):SetStyle("Alpha", 0.6)
 
-		for subListName, colour in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.settings.spellLists.subListColours, function(key)
+		for subListName, colour in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.settings.customLists.subListColours, function(key)
 			return self.subListIndex[key].name
 		end) do
 			self.subListIndex[subListName].colour = Styler:ConvertRGBAToIMGUI(colour._real)
@@ -247,7 +247,7 @@ function SpellListDesigner:buildSpellDesignerWindow(activeList)
 		self.formWindow:SetFocus()
 
 		FormBuilder:CreateForm(self.formWindow, function(formResults)
-			local spellList = TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.leveledSpellList)
+			local spellList = TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customLeveledList)
 
 			spellList.name = formResults.Name
 			spellList.description = formResults.Description
@@ -334,7 +334,7 @@ function SpellListDesigner:addModSpellLists(parent, activeList)
 	end
 end
 
----@param spellList SpellList
+---@param spellList CustomList
 function SpellListDesigner:buildSpellListDesigner(spellList)
 	Helpers:KillChildren(self.designer)
 	local headerTitle = Styler:CheapTextAlign(spellList.name, self.designer)
@@ -387,11 +387,11 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 
 	local popup = self.designer:AddPopup("SpellActionPopup")
 
-	---@type SpellName[][]
+	---@type EntryName[][]
 	local spellCacheForProgressions = {}
 
 	---@param parentGroup ExtuiGroup
-	---@param subLists SpellSubLists
+	---@param subLists CustomSubList
 	---@param level number
 	---@param progressionTableId string?
 	local function buildSpellListFromSubList(parentGroup, subLists, level, progressionTableId)
@@ -416,7 +416,7 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 				end
 			end
 
-			---@cast subList SpellName[]
+			---@cast subList EntryName[]
 			for _, spellName in TableUtils:OrderedPairs(subList, function(key)
 				return subList[key]
 			end) do
@@ -526,7 +526,7 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 											end
 
 											for _, handle in pairs(handles) do
-												---@type SpellSubLists
+												---@type CustomSubList
 												local subList = spellList.levels[handle.level][handle.progressionTableId and "linkedProgressions" or "selectedSpells"]
 												if handle.progressionTableId then
 													subList = subList[handle.progressionTableId]
@@ -569,7 +569,7 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 										end
 
 										for _, handle in pairs(handles) do
-											---@type SpellSubLists
+											---@type CustomSubList
 											local subList = spellList.levels[handle.level].selectedSpells
 
 											local index = TableUtils:IndexOf(subList[handle.subListName], handle.spellName)
@@ -650,7 +650,7 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 		end
 
 		---@class SpellHandle
-		---@field spellName SpellName
+		---@field spellName EntryName
 		---@field subListName string?
 		---@field level number?
 		---@field progressionTableId Guid?
@@ -716,7 +716,7 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 	end
 end
 
----@param spellList SpellList
+---@param spellList CustomList
 function SpellListDesigner:buildProgressionBrowser(spellList)
 	self:buildProgressionIndex()
 	Helpers:KillChildren(self.progressionBrowser)
@@ -762,7 +762,7 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 									spellList.levels[level] = spellList.levels[level] or {}
 									local subLevelList = spellList.levels[level]
 									subLevelList.selectedSpells = subLevelList.selectedSpells or
-										TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.spellSubLists)
+										TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
 
 									local leveledSubList = subLevelList.selectedSpells
 									leveledSubList.randomized = leveledSubList.randomized or {}
@@ -797,7 +797,7 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 										spellList.levels[level] = spellList.levels[level] or {}
 										spellList.levels[level].linkedProgressions = spellList.levels[level].linkedProgressions or {}
 										spellList.levels[level].linkedProgressions[tableUUID] =
-											TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.spellSubLists)
+											TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
 									end
 									linkButton.Label = "Unlink"
 								end
@@ -898,7 +898,7 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 	searchBox.OnActivate = searchBox.OnChange
 end
 
----@param spellList SpellList
+---@param spellList CustomList
 function SpellListDesigner:buildSpellBrowser(spellList)
 	Helpers:KillChildren(self.spellBrowser)
 
@@ -920,7 +920,7 @@ function SpellListDesigner:buildSpellBrowser(spellList)
 
 						if not self:CheckIfSpellIsInSpellListLevel(subLevelList, spellName, level) then
 							subLevelList.selectedSpells = subLevelList.selectedSpells or
-								TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.spellSubLists)
+								TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
 
 							local leveledSubList = subLevelList.selectedSpells
 							leveledSubList.randomized = leveledSubList.randomized or {}
@@ -999,7 +999,7 @@ end
 ---@param ignoreProgressions boolean?
 ---@return boolean
 function SpellListDesigner:CheckIfSpellIsInSpellListLevel(leveledSubList, spellName, level, ignoreProgressions)
-	---@param value SpellSubLists
+	---@param value CustomSubList
 	---@return boolean?
 	local predicate = function(value)
 		for _, subList in pairs(value) do

@@ -1,11 +1,11 @@
 SpellBrowser = {}
 
 ---@param parent ExtuiWindowBase
----@param supplementaryResultProcessor fun(parent: ExtuiTreeParent, results: SpellName[])?
+---@param supplementaryResultProcessor fun(parent: ExtuiTreeParent, results: EntryName[])?
 ---@param wrapFunc fun(pos: number): boolean?
----@param shouldTint fun(spellName: SpellName): boolean?
----@param customizer fun(spellImage: ExtuiImageButton, spellName: SpellName)?
----@param onClickCallback fun(spellImage: ExtuiImageButton, spellName: SpellName)
+---@param shouldTint fun(spellName: EntryName): boolean?
+---@param customizer fun(spellImage: ExtuiImageButton, spellName: EntryName)?
+---@param onClickCallback fun(spellImage: ExtuiImageButton, spellName: EntryName)
 function SpellBrowser:Render(parent, supplementaryResultProcessor, wrapFunc, shouldTint, customizer, onClickCallback)
 	local settings = ConfigurationStructure.config.mutations.settings.spellBrowser
 

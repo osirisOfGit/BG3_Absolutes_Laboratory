@@ -18,12 +18,12 @@ end
 ---@class LeveledSpellPool
 ---@field anchorLevel number
 ---@field spellLists Guid[]
----@field spells SpellSubLists?
+---@field spells CustomSubList?
 
 ---@class SpellMutatorGroup
 ---@field leveledSpellPool LeveledSpellPool[]?
 ---@field criteria SpellListCriteriaEntry?
----@field removeSpells {[number]: SpellSourceType|SpellName}
+---@field removeSpells {[number]: SpellSourceType|EntryName}
 ---@field randomizedSpellPoolSize number[]
 
 ---@class SpellListMutator : Mutator
@@ -240,7 +240,7 @@ end
 ---@param poolIndex number
 function SpellListMutator:buildSpellSelectorSection(parent, mutatorGroup, poolIndex)
 	if not next(SpellListDesigner.subListIndex.guaranteed.colour) then
-		for subListName, colour in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.settings.spellLists.subListColours, function(key)
+		for subListName, colour in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.settings.customLists.subListColours, function(key)
 			return SpellListDesigner.subListIndex[key].name
 		end) do
 			SpellListDesigner.subListIndex[subListName].colour = Styler:ConvertRGBAToIMGUI(colour._real)
@@ -260,7 +260,7 @@ function SpellListMutator:buildSpellSelectorSection(parent, mutatorGroup, poolIn
 
 		if mutatorGroup.leveledSpellPool[poolIndex].spells then
 			local counter = 0
-			---@type SpellSubLists
+			---@type CustomSubList
 			local spellSubLists = mutatorGroup.leveledSpellPool[poolIndex].spells
 			for spellList, spellPool in TableUtils:OrderedPairs(spellSubLists) do
 				for index, spellName in TableUtils:OrderedPairs(spellPool, function(_, value)
@@ -369,7 +369,7 @@ function SpellListMutator:buildSpellSelectorSection(parent, mutatorGroup, poolIn
 				if not subList then
 					pool.spells = pool.spells or {
 						guaranteed = {}
-					} --[[@as SpellSubLists]]
+					} --[[@as CustomSubList]]
 
 					pool.spells.guaranteed = pool.spells.guaranteed or {}
 
@@ -852,7 +852,7 @@ function SpellListMutator:handleDependencies(export, mutator, removeMissingDepen
 					for l, spellListId in pairs(leveledSpellPool.spellLists) do
 						local spellListModId = MutationConfigurationProxy.spellLists[spellListId].modId
 						if not spellListModId then
-							--- @type SpellList
+							--- @type CustomList
 							local spellListDef = removeMissingDependencies == true
 								and export.spellLists[spellListId]
 								or TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.spellLists[spellListId]._real)
@@ -1024,8 +1024,8 @@ if Ext.IsServer() then
 
 	---@class SpellListOriginalValues
 	---@field removedSpells SpellSpellMeta[]
-	---@field addedSpells SpellName[]
-	---@field castedSpells SpellName[]
+	---@field addedSpells EntryName[]
+	---@field castedSpells EntryName[]
 
 	function SpellListMutator:undoMutator(entity, mutator)
 		entity.Vars[SPELL_MUTATOR_ON_COMBAT_START] = nil
@@ -1111,7 +1111,7 @@ if Ext.IsServer() then
 		end
 	end
 
-	---@param subLists SpellSubLists
+	---@param subLists CustomSubList
 	---@param entity EntityHandle
 	---@param addSpells {[EntityHandle]: SpellSpellMeta[]}
 	function SpellListMutator:processSubLists(subLists, entity, addSpells, castedSpells)
@@ -1339,7 +1339,7 @@ if Ext.IsServer() then
 
 							for i = startingSpellListLevel, cLevel do
 								local leveledLists = spellList.levels[i]
-								---@type SpellName[]
+								---@type EntryName[]
 								local randomPool = {}
 								if leveledLists then
 									if leveledLists.linkedProgressions then
