@@ -140,7 +140,7 @@ ConfigurationStructure.DynamicClassDefinitions.customSubList = {
 
 ---@class LeveledSubList
 ---@field linkedProgressions {[Guid]: CustomSubList}?
----@field selectedSpells CustomSubList
+---@field manuallySelectedEntries CustomSubList
 
 ---@class CustomList
 ConfigurationStructure.DynamicClassDefinitions.customLeveledList = {

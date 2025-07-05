@@ -906,8 +906,8 @@ function SpellListMutator:handleDependencies(export, mutator, removeMissingDepen
 										end
 									end
 
-									if levelSubList.selectedSpells then
-										for _, spells in pairs(levelSubList.selectedSpells) do
+									if levelSubList.manuallySelectedEntries then
+										for _, spells in pairs(levelSubList.manuallySelectedEntries) do
 											for i, spell in pairs(spells) do
 												if not buildSpellDep(spell, spellListDef) then
 													spells[i] = nil
@@ -1359,11 +1359,11 @@ if Ext.IsServer() then
 										end
 									end
 
-									if leveledLists.selectedSpells then
-										self:processSubLists(leveledLists.selectedSpells, entity, addSpells, origValues.castedSpells)
+									if leveledLists.manuallySelectedEntries then
+										self:processSubLists(leveledLists.manuallySelectedEntries, entity, addSpells, origValues.castedSpells)
 
-										if leveledLists.selectedSpells.randomized then
-											for _, spellName in pairs(leveledLists.selectedSpells.randomized) do
+										if leveledLists.manuallySelectedEntries.randomized then
+											for _, spellName in pairs(leveledLists.manuallySelectedEntries.randomized) do
 												if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
 														return value.Id.OriginatorPrototype == spellName
 													end)

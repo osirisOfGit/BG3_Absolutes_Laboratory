@@ -1,7 +1,7 @@
 SpellListDesigner = {}
 
 SpellListDesigner.selectedSpells = {
-	---@type SpellHandle[]
+	---@type EntryHandle[]
 	spells = {},
 	---@type ExtuiImageButton[]
 	handles = {},
@@ -376,8 +376,8 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 	deleteAllButton.Disabled = spellList.modId ~= nil
 	deleteAllButton.OnClick = function()
 		for _, leveledSubList in TableUtils:OrderedPairs(spellList.levels) do
-			if leveledSubList.selectedSpells then
-				leveledSubList.selectedSpells.delete = true
+			if leveledSubList.manuallySelectedEntries then
+				leveledSubList.manuallySelectedEntries.delete = true
 			end
 		end
 		self:buildSpellListDesigner(spellList)
@@ -431,11 +431,11 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 					spellImage.SameLine = #parentGroup.Children > 0 and ((#parentGroup.Children - 1) % math.floor((self.designer.LastSize[1]) / 63) ~= 0)
 					spellImage:SetColor("Button", self.subListIndex[subListName].colour)
 					spellImage.UserData = {
-						spellName = spellName,
+						entryName = spellName,
 						subListName = subListName,
 						level = level,
 						progressionTableId = progressionTableId
-					} --[[@as SpellHandle]]
+					} --[[@as EntryHandle]]
 
 
 					if not spellList.modId and not progressionTableId then
@@ -448,7 +448,7 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 							if self.selectedSpells.context == "Main" and #self.selectedSpells.spells > 0 then
 								preview:AddText("Moving:")
 								for _, spellName in pairs(self.selectedSpells.spells) do
-									preview:AddText(spellName.spellName)
+									preview:AddText(spellName.entryName)
 								end
 							else
 								preview:AddText("Moving " .. spellName)
@@ -497,7 +497,7 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 							elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Alt" then
 								if self.selectedSpells.context == "Main" then
 									local index = TableUtils:IndexOf(self.selectedSpells.spells, function(value)
-										return value.spellName == spellName
+										return value.entryName == spellName
 									end)
 									if index then
 										table.remove(self.selectedSpells.spells, index)
@@ -512,14 +512,14 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 								for subListCategory, index in TableUtils:OrderedPairs(self.subListIndex) do
 									if subListCategory ~= subListName and (subListCategory ~= "blackListed" or progressionTableId) then
 										popup:AddSelectable("Set As " .. index.name .. "##" .. level).OnClick = function()
-											---@type SpellHandle[]
+											---@type EntryHandle[]
 											local handles = {}
 											if self.selectedSpells.context == "Main" and #self.selectedSpells.spells > 0 then
 												handles = self.selectedSpells.spells
 											end
 
 											if not TableUtils:IndexOf(handles, function(value)
-													return value.spellName == spellName
+													return value.entryName == spellName
 												end)
 											then
 												table.insert(handles, spellImage.UserData)
@@ -534,10 +534,10 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 
 												if subListCategory ~= "randomized" or not progressionTableId then
 													subList[subListCategory] = subList[subListCategory] or {}
-													table.insert(subList[subListCategory], handle.spellName)
+													table.insert(subList[subListCategory], handle.entryName)
 												end
 												if handle.subListName then
-													local index = TableUtils:IndexOf(subList[handle.subListName], handle.spellName)
+													local index = TableUtils:IndexOf(subList[handle.subListName], handle.entryName)
 													if index then
 														subList[handle.subListName][index] = nil
 														if not subList[handle.subListName]() then
@@ -555,14 +555,14 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 
 								if not progressionTableId then
 									popup:AddSelectable("Remove").OnClick = function()
-										---@type SpellHandle[]
+										---@type EntryHandle[]
 										local handles = {}
 										if self.selectedSpells.context == "Main" and #self.selectedSpells.spells > 0 then
 											handles = self.selectedSpells.spells
 										end
 
 										if not TableUtils:IndexOf(handles, function(value)
-												return value.spellName == spellName
+												return value.entryName == spellName
 											end)
 										then
 											table.insert(handles, spellImage.UserData)
@@ -570,9 +570,9 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 
 										for _, handle in pairs(handles) do
 											---@type CustomSubList
-											local subList = spellList.levels[handle.level].selectedSpells
+											local subList = spellList.levels[handle.level].manuallySelectedEntries
 
-											local index = TableUtils:IndexOf(subList[handle.subListName], handle.spellName)
+											local index = TableUtils:IndexOf(subList[handle.subListName], handle.entryName)
 											if index then
 												subList[handle.subListName][index] = nil
 												if not subList[handle.subListName]() then
@@ -630,8 +630,8 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 		spellGroup.SameLine = true
 
 		if spellList.levels and spellList.levels[level] then
-			if spellList.levels[level].selectedSpells then
-				buildSpellListFromSubList(spellGroup, spellList.levels[level].selectedSpells, level)
+			if spellList.levels[level].manuallySelectedEntries then
+				buildSpellListFromSubList(spellGroup, spellList.levels[level].manuallySelectedEntries, level)
 			end
 
 			if spellList.levels[level].linkedProgressions and next(spellList.levels[level].linkedProgressions) then
@@ -649,22 +649,16 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 			end
 		end
 
-		---@class SpellHandle
-		---@field spellName EntryName
-		---@field subListName string?
-		---@field level number?
-		---@field progressionTableId Guid?
-
 		---@param group ExtuiGroup
 		---@param spellItem ExtuiImage|ExtuiImageButton
 		listGroup.OnDragDrop = function(group, spellItem)
-			---@type SpellHandle[]
+			---@type EntryHandle[]
 			local spellHandles = {}
 			if #self.selectedSpells.spells > 0 then
 				spellHandles = self.selectedSpells.spells
 
 				local index = TableUtils:IndexOf(self.selectedSpells.spells, function(value)
-					return value.spellName == spellItem.UserData.spellName
+					return value.entryName == spellItem.UserData.spellName
 				end)
 				if not index then
 					table.insert(spellHandles, spellItem.UserData)
@@ -689,18 +683,18 @@ function SpellListDesigner:buildSpellListDesigner(spellList)
 					level = level
 				}]]
 			spellList.levels[group.UserData] = spellList.levels[group.UserData] or {}
-			spellList.levels[group.UserData].selectedSpells = spellList.levels[group.UserData].selectedSpells or {}
+			spellList.levels[group.UserData].manuallySelectedEntries = spellList.levels[group.UserData].manuallySelectedEntries or {}
 
 			for _, spellHandle in pairs(spellHandles) do
-				if not self:CheckIfSpellIsInSpellListLevel(spellList.levels[group.UserData], spellHandle.spellName, group.UserData) then
-					spellList.levels[group.UserData].selectedSpells[spellHandle.subListName or "randomized"] =
-						spellList.levels[group.UserData].selectedSpells[spellHandle.subListName or "randomized"] or {}
+				if not self:CheckIfSpellIsInSpellListLevel(spellList.levels[group.UserData], spellHandle.entryName, group.UserData) then
+					spellList.levels[group.UserData].manuallySelectedEntries[spellHandle.subListName or "randomized"] =
+						spellList.levels[group.UserData].manuallySelectedEntries[spellHandle.subListName or "randomized"] or {}
 
-					table.insert(spellList.levels[group.UserData].selectedSpells[spellHandle.subListName or "randomized"], spellHandle.spellName)
+					table.insert(spellList.levels[group.UserData].manuallySelectedEntries[spellHandle.subListName or "randomized"], spellHandle.entryName)
 
 					if spellHandle.subListName then
-						local index = TableUtils:IndexOf(spellList.levels[spellHandle.level].selectedSpells[spellHandle.subListName], spellHandle.spellName)
-						spellList.levels[spellHandle.level].selectedSpells[spellHandle.subListName][index] = nil
+						local index = TableUtils:IndexOf(spellList.levels[spellHandle.level].manuallySelectedEntries[spellHandle.subListName], spellHandle.entryName)
+						spellList.levels[spellHandle.level].manuallySelectedEntries[spellHandle.subListName][index] = nil
 					end
 				end
 			end
@@ -761,10 +755,10 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 								end) do
 									spellList.levels[level] = spellList.levels[level] or {}
 									local subLevelList = spellList.levels[level]
-									subLevelList.selectedSpells = subLevelList.selectedSpells or
+									subLevelList.manuallySelectedEntries = subLevelList.manuallySelectedEntries or
 										TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
 
-									local leveledSubList = subLevelList.selectedSpells
+									local leveledSubList = subLevelList.manuallySelectedEntries
 									leveledSubList.randomized = leveledSubList.randomized or {}
 
 									for _, spell in pairs(spells) do
@@ -823,8 +817,8 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 								spellImage.CanDrag = true
 								spellImage.DragDropType = "SpellReorder"
 								spellImage.UserData = {
-									spellName = spellName
-								} --[[@as SpellHandle]]
+									entryName = spellName
+								} --[[@as EntryHandle]]
 
 								for l = 1, 30 do
 									if spellList.levels and spellList.levels[l] and self:CheckIfSpellIsInSpellListLevel(spellList.levels[l], spellName, l) then
@@ -839,7 +833,7 @@ function SpellListDesigner:buildProgressionBrowser(spellList)
 									if self.selectedSpells.context == "Browser" and #self.selectedSpells.spells > 0 then
 										preview:AddText("Moving:")
 										for _, spellName in pairs(self.selectedSpells.spells) do
-											preview:AddText(spellName.spellName)
+											preview:AddText(spellName.entryName)
 										end
 									else
 										preview:AddText("Moving " .. spellName)
@@ -919,10 +913,10 @@ function SpellListDesigner:buildSpellBrowser(spellList)
 						local subLevelList = spellList.levels[level]
 
 						if not self:CheckIfSpellIsInSpellListLevel(subLevelList, spellName, level) then
-							subLevelList.selectedSpells = subLevelList.selectedSpells or
+							subLevelList.manuallySelectedEntries = subLevelList.manuallySelectedEntries or
 								TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
 
-							local leveledSubList = subLevelList.selectedSpells
+							local leveledSubList = subLevelList.manuallySelectedEntries
 							leveledSubList.randomized = leveledSubList.randomized or {}
 
 							table.insert(leveledSubList.randomized, spellName)
@@ -947,15 +941,15 @@ function SpellListDesigner:buildSpellBrowser(spellList)
 			spellImage.CanDrag = true
 			spellImage.DragDropType = "SpellReorder"
 			spellImage.UserData = {
-				spellName = spellName
-			} --[[@as SpellHandle]]
+				entryName = spellName
+			} --[[@as EntryHandle]]
 
 			---@param preview ExtuiTreeParent
 			spellImage.OnDragStart = function(_, preview)
 				if self.selectedSpells.context == "Browser" and #self.selectedSpells.spells > 0 then
 					preview:AddText("Moving:")
 					for _, spellName in pairs(self.selectedSpells.spells) do
-						preview:AddText(spellName.spellName)
+						preview:AddText(spellName.entryName)
 					end
 				else
 					preview:AddText("Moving " .. spellName)
@@ -1009,7 +1003,7 @@ function SpellListDesigner:CheckIfSpellIsInSpellListLevel(leveledSubList, spellN
 		end
 	end
 
-	if leveledSubList.selectedSpells and TableUtils:IndexOf({ leveledSubList.selectedSpells }, predicate) then
+	if leveledSubList.manuallySelectedEntries and TableUtils:IndexOf({ leveledSubList.manuallySelectedEntries }, predicate) then
 		return true
 	elseif leveledSubList.linkedProgressions then
 		if TableUtils:IndexOf(leveledSubList.linkedProgressions, predicate) then
