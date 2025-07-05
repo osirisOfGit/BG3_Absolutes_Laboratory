@@ -439,12 +439,14 @@ function ListDesignerBaseClass:buildSpellListFromSubList(parentGroup, subLists, 
 			---@type SpellData|PassiveData|StatusData
 			local entryData = Ext.Stats.Get(entryName)
 			if entryData then
-				local entryImageButton = parentGroup:AddImageButton(entryName .. "##" .. level, entryData.Icon, { 48, 48 })
+				local entryImageButton = parentGroup:AddImageButton(entryName .. "##" .. level, entryData.Icon, { 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
 				if entryImageButton.Image.Icon == "" then
 					entryImageButton:Destroy()
-					entryImageButton = parentGroup:AddImageButton(entryName .. "##" .. level, "Item_Unknown", { 48, 48 })
+					entryImageButton = parentGroup:AddImageButton(entryName .. "##" .. level, "Item_Unknown", { 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
 				end
-				entryImageButton.SameLine = #parentGroup.Children > 0 and ((#parentGroup.Children - 1) % math.floor((self.designerSection.LastSize[1]) / 63) ~= 0)
+				entryImageButton.SameLine = #parentGroup.Children > 0
+					and ((#parentGroup.Children - 1) % math.floor((self.designerSection.LastSize[1]) / (63 * Styler:ScaleFactor())) ~= 0)
+
 				entryImageButton:SetColor("Button", self.subListIndex[subListName].colour)
 				entryImageButton.UserData = {
 					entryName = entryName,
