@@ -12,8 +12,10 @@ ListDesignerBaseClass = {
 	listSection = nil,
 	---@type ExtuiChildWindow
 	designerSection = nil,
-	---@type ExtuiChildWindow
-	browserSection = nil,
+	---@type ExtuiTabBar
+	browserTabParent = nil,
+	---@type {[string]: ExtuiChildWindow}
+	browserTabs = {},
 	---@type ExtuiPopup	
 	popup = nil,
 
@@ -23,8 +25,6 @@ ListDesignerBaseClass = {
 	iterateProgressionEntriesFunc = nil,
 	-- Intentionally not cloning the below in :new so all lists share the progression index
 	hasIndexedRelevantProgressions = false,
-	---@type ExtuiChildWindow?
-	progressionBrowserTab = nil,
 	--- ProgressionName:  Level:    ListName  entryNames
 	---@type {[string]: {[integer]: {[string]: string[]}}}
 	progressions = {},
@@ -40,12 +40,13 @@ ListDesignerBaseClass = {
 	---@type CustomList?
 	activeList = nil,
 
-	--- For Drag/Drop tracking
+	--- For Multiselect Drag/Drop tracking
 	selectedEntries = {
 		---@type EntryHandle[]
 		entries = {},
 		---@type ExtuiImageButton[]
 		handles = {},
+		---@type "Main"|"Browser"
 		context = "Main",
 		linkedEntries = false
 	},
@@ -74,6 +75,7 @@ function ListDesignerBaseClass:new(name, configKey, progressionLinkedNodes, iter
 	instance.name = name
 	instance.iterateProgressionEntriesFunc = iterateProgressionEntriesFunc
 	instance.configKey = configKey
+	instance.browserTabs = {}
 	instance.progressionLinkedNodes = progressionLinkedNodes
 	instance.entryCacheForProgressions = {}
 	instance.selectedEntries = {
@@ -107,11 +109,16 @@ function ListDesignerBaseClass:launch(activeListId)
 
 		self.listSection = row:AddCell():AddChildWindow("List")
 		self.designerSection = row:AddCell():AddChildWindow("Designer")
-		self.browserSection = row:AddCell():AddChildWindow("Browser")
+		self.browserTabParent = row:AddCell():AddTabBar("Browsers")
+
+		if self.progressionLinkedNodes then
+			self.browserTabs["Progressions"] = self.browserTabParent:AddTabItem("Progressions"):AddChildWindow("Progression Browser")
+			self.browserTabs["Progressions"].NoSavedSettings = true
+		end
 
 		self.popup = self.mainWindow:AddPopup(self.name .. "popup")
-		self.popup:SetColor("PopupBg", {0, 0, 0, 1})
-		self.popup:SetColor("Border", {1, 0, 0, 0.5})
+		self.popup:SetColor("PopupBg", { 0, 0, 0, 1 })
+		self.popup:SetColor("Border", { 1, 0, 0, 0.5 })
 
 		local colorSettings = self.designerSection:AddGroup("colorSetting")
 		colorSettings.UserData = "keep"
@@ -300,7 +307,7 @@ function ListDesignerBaseClass:buildModLists(activeListID)
 						self.activeListHandle = spellListSelect
 						self.activeList = list
 
-						self.browserSection.Visible = false
+						self.browserTabParent.Visible = false
 						self:buildBrowser()
 						self:buildDesigner()
 					end
@@ -364,17 +371,17 @@ function ListDesignerBaseClass:buildDesigner()
 			listGroup.DragDropType = "EntryReorder"
 		end
 
-		local spellGroup = listGroup:AddGroup("entries")
-		spellGroup.SameLine = true
+		local entryGroup = listGroup:AddGroup("entries")
+		entryGroup.SameLine = true
 
 		if self.activeList.levels and self.activeList.levels[level] then
 			if self.activeList.levels[level].manuallySelectedEntries then
-				self:buildEntryListFromSubList(spellGroup, self.activeList.levels[level].manuallySelectedEntries, level)
+				self:buildEntryListFromSubList(entryGroup, self.activeList.levels[level].manuallySelectedEntries, level)
 			end
 
 			if self.activeList.levels[level].linkedProgressions and next(self.activeList.levels[level].linkedProgressions) then
-				local sep = spellGroup:AddSeparatorText("Linked Progressions")
-				local progGroup = spellGroup:AddGroup("linkedProg")
+				local sep = entryGroup:AddSeparatorText("Linked Progressions")
+				local progGroup = entryGroup:AddGroup("linkedProg")
 
 				for progressionTableId, subLists in TableUtils:OrderedPairs(self.activeList.levels[level].linkedProgressions) do
 					self:buildEntryListFromSubList(progGroup, subLists, level, progressionTableId)
@@ -411,9 +418,10 @@ function ListDesignerBaseClass:buildDesigner()
 				if self.selectedEntries.context ~= "Main" then
 					for _, handle in pairs(self.selectedEntries.handles) do
 						handle:SetColor("Button", { 1, 1, 1, 0 })
+						handle.Tint = { 1, 1, 1, 0.2 }
 					end
 				end
-
+				
 				self.selectedEntries.handles = {}
 				self.selectedEntries.entries = {}
 			else
@@ -440,8 +448,8 @@ function ListDesignerBaseClass:buildDesigner()
 			self:buildDesigner()
 		end
 
-		if #spellGroup.Children == 0 then
-			spellGroup:AddDummy(56, 56)
+		if #entryGroup.Children == 0 then
+			entryGroup:AddDummy(56, 56)
 		end
 
 		listGroup:AddNewLine()
@@ -676,27 +684,19 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 end
 
 function ListDesignerBaseClass:buildBrowser()
-	if self.progressionLinkedNodes then
-		if not self.progressionBrowserTab then
-			local tabBar = self.browserSection:AddTabBar("Tabs")
-			self.progressionBrowserTab = tabBar:AddTabItem("Progressions"):AddChildWindow("Progression Browser")
-			self.progressionBrowserTab.NoSavedSettings = true
-		end
-
-		self:buildProgressionBrowser()
-	end
+	self:buildProgressionBrowser()
 end
 
 function ListDesignerBaseClass:buildProgressionBrowser()
-	if self.progressionBrowserTab then
-		Helpers:KillChildren(self.progressionBrowserTab)
+	if self.browserTabs["Progressions"] then
+		Helpers:KillChildren(self.browserTabs["Progressions"])
 
-		local searchBox = self.progressionBrowserTab:AddInputText("")
+		local searchBox = self.browserTabs["Progressions"]:AddInputText("")
 		searchBox.Hint = "Search Progressions"
 
-		local resultsGroup = self.progressionBrowserTab:AddGroup("Results")
+		local resultsGroup = self.browserTabs["Progressions"]:AddGroup("Results")
 
-		local levelView = self.progressionBrowserTab:AddGroup("Levels")
+		local levelView = self.browserTabs["Progressions"]:AddGroup("Levels")
 
 		local timer
 		searchBox.OnChange = function()
@@ -793,7 +793,7 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 									local tooltipFunction = Styler:HyperlinkRenderable(entryImageButton, entryName, "Shift", false, entryName, function(parent)
 										ResourceManager:RenderDisplayWindow(entryData, parent)
 									end)
-									entryImageButton.SameLine = (i - 1) % (math.floor(self.progressionBrowserTab.LastSize[1] / 64)) ~= 0
+									entryImageButton.SameLine = (i - 1) % (math.floor(self.browserTabs["Progressions"].LastSize[1] / 64)) ~= 0
 									entryImageButton.CanDrag = true
 									entryImageButton.DragDropType = "EntryReorder"
 									entryImageButton.UserData = {

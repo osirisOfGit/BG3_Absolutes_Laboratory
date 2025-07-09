@@ -14,97 +14,136 @@ SpellListDesigner = ListDesignerBaseClass:new("Spell List",
 		end
 	end)
 
--- ---@param spellList CustomList
--- function SpellListDesigner:buildSpellBrowser(spellList)
--- 	Helpers:KillChildren(self.spellBrowser)
+function SpellListDesigner:buildBrowser()
+	if not SpellListDesigner.browserTabs["Spells"] then
+		self.browserTabs["Spells"] = self.browserTabParent:AddTabItem("Spells"):AddChildWindow("Spell Browser")
+		self.browserTabs["Spells"].NoSavedSettings = true
+	end
+	Helpers:KillChildren(self.browserTabs["Spells"])
 
--- 	SpellBrowser:Render(self.spellBrowser,
--- 		function(parent, results)
--- 			Styler:MiddleAlignedColumnLayout(parent, function(ele)
--- 				parent.Size = { 0, 0 }
+	self:buildProgressionBrowser()
 
--- 				local copyAllButton = ele:AddButton("Copy All")
+	SpellBrowser:Render(self.browserTabs["Spells"],
+		function(parent, results)
+			Styler:MiddleAlignedColumnLayout(parent, function(ele)
+				parent.Size = { 0, 0 }
 
--- 				copyAllButton.OnClick = function()
--- 					for _, spellName in ipairs(results) do
--- 						---@type SpellData
--- 						local spell = Ext.Stats.Get(spellName)
+				local copyAllButton = ele:AddButton("Copy All")
 
--- 						local level = (spell.Level ~= "" and spell.Level > 0) and spell.Level or 1
--- 						spellList.levels[level] = spellList.levels[level] or {}
--- 						local subLevelList = spellList.levels[level]
+				copyAllButton.OnClick = function()
+					for _, spellName in ipairs(results) do
+						---@type SpellData
+						local spell = Ext.Stats.Get(spellName)
 
--- 						if not self:CheckIfSpellIsInSpellListLevel(subLevelList, spellName, level) then
--- 							subLevelList.manuallySelectedEntries = subLevelList.manuallySelectedEntries or
--- 								TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
+						local level = (spell.Level ~= "" and spell.Level > 0) and spell.Level or 1
+						self.activeList.levels[level] = self.activeList.levels[level] or {}
+						local subLevelList = self.activeList.levels[level]
 
--- 							local leveledSubList = subLevelList.manuallySelectedEntries
--- 							leveledSubList.randomized = leveledSubList.randomized or {}
+						if not self:CheckIfEntryIsInListLevel(subLevelList, spellName, level) then
+							subLevelList.manuallySelectedEntries = subLevelList.manuallySelectedEntries or
+								TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
 
--- 							table.insert(leveledSubList.randomized, spellName)
--- 						end
--- 					end
+							local leveledSubList = subLevelList.manuallySelectedEntries
+							leveledSubList.randomized = leveledSubList.randomized or {}
 
--- 					self:buildSpellListDesigner(spellList)
--- 				end
--- 			end)
--- 		end,
--- 		function(pos)
--- 			return pos % (math.floor(self.spellBrowser.LastSize[1] / 58 * Styler:ScaleFactor())) ~= 0
--- 		end,
--- 		function(spellName)
--- 			for l = 1, 30 do
--- 				if spellList.levels and spellList.levels[l] and self:CheckIfSpellIsInSpellListLevel(spellList.levels[l], spellName, l) then
--- 					return true
--- 				end
--- 			end
--- 		end,
--- 		function(spellImage, spellName)
--- 			spellImage.CanDrag = true
--- 			spellImage.DragDropType = "SpellReorder"
--- 			spellImage.UserData = {
--- 				entryName = spellName
--- 			} --[[@as EntryHandle]]
+							table.insert(leveledSubList.randomized, spellName)
+						end
+					end
 
--- 			---@param preview ExtuiTreeParent
--- 			spellImage.OnDragStart = function(_, preview)
--- 				if self.selectedSpells.context == "Browser" and #self.selectedSpells.spells > 0 then
--- 					preview:AddText("Moving:")
--- 					for _, spellName in pairs(self.selectedSpells.spells) do
--- 						preview:AddText(spellName.entryName)
--- 					end
--- 				else
--- 					preview:AddText("Moving " .. spellName)
--- 				end
--- 			end
--- 		end,
--- 		function(spellImage, spellName)
--- 			if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
--- 				if self.selectedSpells.context ~= "Browser" then
--- 					self.selectedSpells.context = "Browser"
--- 					self.selectedSpells.spells = {}
--- 					for _, handle in pairs(self.selectedSpells.handles) do
--- 						if handle.UserData.subListName then
--- 							handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
--- 						else
--- 							handle:SetColor("Button", { 1, 1, 1, 0 })
--- 						end
--- 					end
--- 					self.selectedSpells.handles = {}
--- 				end
--- 				table.insert(self.selectedSpells.spells, spellImage.UserData)
--- 				table.insert(self.selectedSpells.handles, spellImage)
--- 				spellImage:SetColor("Button", { 0, 1, 0, .8 })
--- 			elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Alt" then
--- 				if self.selectedSpells.context == "Browser" then
--- 					local index = TableUtils:IndexOf(self.selectedSpells.spells, spellName)
--- 					if index then
--- 						table.remove(self.selectedSpells.spells, index)
--- 						table.remove(self.selectedSpells.handles, index)
+					self:buildDesigner()
+				end
+			end)
+		end,
+		function(pos)
+			return pos % (math.floor(self.browserTabs["Spells"].LastSize[1] / 58 * Styler:ScaleFactor())) ~= 0
+		end,
+		function(spellName)
+			for l = 1, 30 do
+				if self.activeList.levels and self.activeList.levels[l] and self:CheckIfEntryIsInListLevel(self.activeList.levels[l], spellName, l) then
+					return true
+				end
+			end
+		end,
+		function(spellImage, spellName)
+			spellImage.CanDrag = true
+			spellImage.DragDropType = "EntryReorder"
+			spellImage.UserData = {
+				entryName = spellName
+			} --[[@as EntryHandle]]
 
--- 						spellImage:SetColor("Button", { 1, 1, 1, 0 })
--- 					end
--- 				end
--- 			end
--- 		end)
--- end
+			---@param preview ExtuiTreeParent
+			spellImage.OnDragStart = function(_, preview)
+				if self.selectedEntries.context ~= "Browser" then
+					self.selectedEntries.context = "Browser"
+					self.selectedEntries.entries = {}
+					for _, handle in pairs(self.selectedEntries.handles) do
+						if handle.UserData.subListName then
+							handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
+						else
+							handle:SetColor("Button", { 1, 1, 1, 0 })
+						end
+					end
+					self.selectedEntries.handles = {}
+				else
+					local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+						return value.entryName == spellImage.UserData.spellName
+					end)
+					if not index then
+						table.insert(self.selectedEntries.entries, spellImage.UserData)
+						table.insert(self.selectedEntries.handles, spellImage)
+					end
+				end
+
+				if #self.selectedEntries.entries > 0 then
+					preview:AddText("Moving:")
+					for _, entryHandle in pairs(self.selectedEntries.entries) do
+						preview:AddText(entryHandle.entryName)
+					end
+				else
+					preview:AddText("Moving " .. spellName)
+				end
+			end
+		end,
+		function(spellImage, spellName)
+			if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
+				if self.selectedEntries.context ~= "Browser" then
+					self.selectedEntries.context = "Browser"
+					self.selectedEntries.entries = {}
+					for _, handle in pairs(self.selectedEntries.handles) do
+						if handle.UserData.subListName then
+							handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
+						else
+							handle:SetColor("Button", { 1, 1, 1, 0 })
+						end
+					end
+					self.selectedEntries.handles = {}
+				else
+					local index = TableUtils:IndexOf(self.selectedEntries.entries, function (value)
+						return value.entryName == spellName
+					end)
+					if not index then
+						table.insert(self.selectedEntries.entries, spellImage.UserData)
+						table.insert(self.selectedEntries.handles, spellImage)
+						spellImage:SetColor("Button", { 0, 1, 0, .8 })
+					else
+						table.remove(self.selectedEntries.entries, index)
+						table.remove(self.selectedEntries.handles, index)
+						
+						spellImage:SetColor("Button", { 1, 1, 1, 0 })
+					end
+				end
+			elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Alt" then
+				if self.selectedEntries.context == "Browser" then
+					local index = TableUtils:IndexOf(self.selectedEntries.entries, function (value)
+						return value.entryName == spellName
+					end)
+					if index then
+						table.remove(self.selectedEntries.entries, index)
+						table.remove(self.selectedEntries.handles, index)
+						
+						spellImage:SetColor("Button", { 1, 1, 1, 0 })
+					end
+				end
+			end
+		end)
+end

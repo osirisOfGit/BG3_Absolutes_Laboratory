@@ -205,7 +205,9 @@ end
 ---@return fun():boolean?
 function Styler:HyperlinkRenderable(renderable, item, modifier, modifierOnHover, altTooltip, callback)
 	-- Used in MutationDesigner to ensure hover events fire for links when viewing mod-added mutations
-	renderable.UserData = "EnableForMods"
+	if not renderable.UserData then
+		renderable.UserData = "EnableForMods"
+	end
 
 	---@type ExtuiTooltip
 	local tooltip = renderable:Tooltip()
@@ -256,7 +258,7 @@ function Styler:HyperlinkRenderable(renderable, item, modifier, modifierOnHover,
 			window = Ext.IMGUI.NewWindow(item)
 			window.HorizontalScrollbar = true
 			window:SetStyle("WindowMinSize", 100 * self:ScaleFactor(), 100 * self:ScaleFactor())
-			window:SetSize({0, 0}, "FirstUseEver")
+			window:SetSize({ 0, 0 }, "FirstUseEver")
 			window.Closeable = true
 
 			window.OnClose = function()
