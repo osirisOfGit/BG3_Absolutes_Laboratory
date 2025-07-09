@@ -429,6 +429,7 @@ function ListDesignerBaseClass:buildDesigner()
 				entryHandles = { entryElement.UserData }
 			end
 
+			self.activeList.levels = self.activeList.levels or {}
 			self.activeList.levels[group.UserData] = self.activeList.levels[group.UserData] or {}
 			self.activeList.levels[group.UserData].manuallySelectedEntries = self.activeList.levels[group.UserData].manuallySelectedEntries or {}
 
@@ -490,7 +491,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 			---@type SpellData|PassiveData|StatusData
 			local entryData = Ext.Stats.Get(entryName)
 			if entryData then
-				local entryImageButton = parentGroup:AddImageButton(entryName .. "##" .. level, entryData.Icon, { 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
+				local entryImageButton = parentGroup:AddImageButton(entryName .. "##" .. level, entryData.Icon ~= "" and entryData.Icon or "Item_Unknown", { 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
 				if entryImageButton.Image.Icon == "" then
 					entryImageButton:Destroy()
 					entryImageButton = parentGroup:AddImageButton(entryName .. "##" .. level, "Item_Unknown", { 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
@@ -790,7 +791,7 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 									---@type SpellData|PassiveData|StatusData
 									local entryData = Ext.Stats.Get(entryName)
 
-									local entryImageButton = spellCell:AddImageButton(entryName .. i, entryData.Icon, { 48, 48 })
+									local entryImageButton = spellCell:AddImageButton(entryName .. i, entryData.Icon ~= "" and entryData.Icon or "Item_Unknown", { 48, 48 })
 									local tooltipFunction = Styler:HyperlinkRenderable(entryImageButton, entryName, "Shift", false, entryName, function(parent)
 										ResourceManager:RenderDisplayWindow(entryData, parent)
 									end)
@@ -895,7 +896,10 @@ function ListDesignerBaseClass:buildProgressionIndex()
 		---@return boolean?
 		local function hasRelevantNodes(progression)
 			for _, node in pairs(self.progressionLinkedNodes) do
-				if progression[node] and next(Ext.Types.Serialize(progression[node])) then
+				if progression[node]
+					and ((type(progression[node]) == "string" and progression[node] ~= "")
+						or (type(progression[node]) == "userdata" and next(Ext.Types.Serialize(progression[node]))))
+				then
 					return true
 				end
 			end
@@ -916,7 +920,17 @@ function ListDesignerBaseClass:buildProgressionIndex()
 
 				local nodesToIterate = {}
 				for _, node in pairs(self.progressionLinkedNodes) do
-					table.insert(nodesToIterate, progression[node])
+					if type(progression[node]) == "table" or type(progression[node]) == "userdata" then
+						table.insert(nodesToIterate, progression[node])
+					else
+						local splitTable = {}
+						for _, val in string.gmatch(progression[node], "([^;]+)") do
+							table.insert(splitTable, val)
+						end
+						if next(splitTable) then
+							table.insert(nodesToIterate, splitTable)
+						end
+					end
 				end
 
 				for _, meta in TableUtils:CombinedPairs(table.unpack(nodesToIterate)) do

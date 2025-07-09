@@ -1,30 +1,36 @@
 Ext.Require("Client/Mutations/ListDesignerBaseClass.lua")
 
----@class SpellListDesigner : ListDesignerBaseClass
-SpellListDesigner = ListDesignerBaseClass:new("Spell List",
-	"spellLists",
-	{ "SelectSpells", "AddSpells" },
-	---@param spellMeta ResourceProgressionSpell|ResourceProgressionAddedSpell
-	function(spellMeta, addToListFunc)
-		---@type ResourceSpellList
-		local progSpellList = Ext.StaticData.Get(spellMeta.SpellUUID, "SpellList")
+---@class PassiveListDesigner : ListDesignerBaseClass
+PassiveListDesigner = ListDesignerBaseClass:new("Passive List",
+	"passiveLists",
+	{ "PassivePrototypesAdded", "PassivePrototypesRemoved", "PassivesAdded", "PassivesRemoved" },
+	---@param passiveMeta ResourceProgressionPassive|StatsPassivePrototype
+	function(passiveMeta, addToListFunc)
+		if type(passiveMeta) == "string" then
+			addToListFunc(passiveMeta)
+		elseif Ext.Types.GetObjectType(passiveMeta) == "resource::ProgressionPassive" then
+			---@type ResourcePassiveList
+			local progSpellList = Ext.StaticData.Get(passiveMeta.UUID, "PassiveList")
 
-		for _, spellName in pairs(progSpellList.Spells) do
-			addToListFunc(spellName)
+			for _, spellName in pairs(progSpellList.Passives) do
+				addToListFunc(spellName)
+			end
+		else
+			addToListFunc(passiveMeta.Name)
 		end
 	end)
 
-function SpellListDesigner:buildBrowser()
-	if not SpellListDesigner.browserTabs["Spells"] then
-		self.browserTabs["Spells"] = self.browserTabParent:AddTabItem("Spells"):AddChildWindow("Spell Browser")
-		self.browserTabs["Spells"].NoSavedSettings = true
+function PassiveListDesigner:buildBrowser()
+	if not SpellListDesigner.browserTabs["Passives"] then
+		self.browserTabs["Passives"] = self.browserTabParent:AddTabItem("Passives"):AddChildWindow("Spell Browser")
+		self.browserTabs["Passives"].NoSavedSettings = true
 	end
-	Helpers:KillChildren(self.browserTabs["Spells"])
+	Helpers:KillChildren(self.browserTabs["Passives"])
 
 	self:buildProgressionBrowser()
 
-	StatBrowser:Render("SpellData",
-	self.browserTabs["Spells"],
+	StatBrowser:Render("PassiveData",
+		self.browserTabs["Passives"],
 		function(parent, results)
 			Styler:MiddleAlignedColumnLayout(parent, function(ele)
 				parent.Size = { 0, 0 }
@@ -32,22 +38,22 @@ function SpellListDesigner:buildBrowser()
 				local copyAllButton = ele:AddButton("Copy All")
 
 				copyAllButton.OnClick = function()
-					for _, spellName in ipairs(results) do
+					for _, passiveName in ipairs(results) do
 						---@type SpellData
-						local spell = Ext.Stats.Get(spellName)
+						local spell = Ext.Stats.Get(passiveName)
 
 						local level = (spell.Level ~= "" and spell.Level > 0) and spell.Level or 1
 						self.activeList.levels[level] = self.activeList.levels[level] or {}
 						local subLevelList = self.activeList.levels[level]
 
-						if not self:CheckIfEntryIsInListLevel(subLevelList, spellName, level) then
+						if not self:CheckIfEntryIsInListLevel(subLevelList, passiveName, level) then
 							subLevelList.manuallySelectedEntries = subLevelList.manuallySelectedEntries or
 								TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
 
 							local leveledSubList = subLevelList.manuallySelectedEntries
 							leveledSubList.randomized = leveledSubList.randomized or {}
 
-							table.insert(leveledSubList.randomized, spellName)
+							table.insert(leveledSubList.randomized, passiveName)
 						end
 					end
 
@@ -56,24 +62,24 @@ function SpellListDesigner:buildBrowser()
 			end)
 		end,
 		function(pos)
-			return pos % (math.floor(self.browserTabs["Spells"].LastSize[1] / (58 * Styler:ScaleFactor()))) ~= 0
+			return pos % (math.floor(self.browserTabs["Passives"].LastSize[1] / (58 * Styler:ScaleFactor()))) ~= 0
 		end,
-		function(spellName)
+		function(passiveName)
 			for l = 1, 30 do
-				if self.activeList.levels and self.activeList.levels[l] and self:CheckIfEntryIsInListLevel(self.activeList.levels[l], spellName, l) then
+				if self.activeList.levels and self.activeList.levels[l] and self:CheckIfEntryIsInListLevel(self.activeList.levels[l], passiveName, l) then
 					return true
 				end
 			end
 		end,
-		function(spellImage, spellName)
-			spellImage.CanDrag = true
-			spellImage.DragDropType = "EntryReorder"
-			spellImage.UserData = {
-				entryName = spellName
+		function(passiveImage, passiveName)
+			passiveImage.CanDrag = true
+			passiveImage.DragDropType = "EntryReorder"
+			passiveImage.UserData = {
+				entryName = passiveName
 			} --[[@as EntryHandle]]
 
 			---@param preview ExtuiTreeParent
-			spellImage.OnDragStart = function(_, preview)
+			passiveImage.OnDragStart = function(_, preview)
 				if self.selectedEntries.context ~= "Browser" then
 					self.selectedEntries.context = "Browser"
 					self.selectedEntries.entries = {}
@@ -88,11 +94,11 @@ function SpellListDesigner:buildBrowser()
 					self.selectedEntries.handles = {}
 				else
 					local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-						return value.entryName == spellImage.UserData.spellName
+						return value.entryName == passiveImage.UserData.spellName
 					end)
 					if not index then
-						table.insert(self.selectedEntries.entries, spellImage.UserData)
-						table.insert(self.selectedEntries.handles, spellImage)
+						table.insert(self.selectedEntries.entries, passiveImage.UserData)
+						table.insert(self.selectedEntries.handles, passiveImage)
 					end
 				end
 
@@ -102,11 +108,11 @@ function SpellListDesigner:buildBrowser()
 						preview:AddText(entryHandle.entryName)
 					end
 				else
-					preview:AddText("Moving " .. spellName)
+					preview:AddText("Moving " .. passiveName)
 				end
 			end
 		end,
-		function(spellImage, spellName)
+		function(passiveImage, passiveName)
 			if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
 				if self.selectedEntries.context ~= "Browser" then
 					self.selectedEntries.context = "Browser"
@@ -121,19 +127,19 @@ function SpellListDesigner:buildBrowser()
 					self.selectedEntries.handles = {}
 				else
 					local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-						return value.entryName == spellName
+						return value.entryName == passiveName
 					end)
 					if not index then
-						table.insert(self.selectedEntries.entries, spellImage.UserData)
-						table.insert(self.selectedEntries.handles, spellImage)
-						spellImage:SetColor("Button", { 0, 1, 0, .8 })
-						spellImage:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+						table.insert(self.selectedEntries.entries, passiveImage.UserData)
+						table.insert(self.selectedEntries.handles, passiveImage)
+						passiveImage:SetColor("Button", { 0, 1, 0, .8 })
+						passiveImage:SetColor("ButtonHovered", { 0, 1, 0, .8 })
 					else
 						table.remove(self.selectedEntries.entries, index)
 						table.remove(self.selectedEntries.handles, index)
 
-						spellImage:SetColor("Button", { 1, 1, 1, 0 })
-						spellImage:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+						passiveImage:SetColor("Button", { 1, 1, 1, 0 })
+						passiveImage:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
 					end
 				end
 			end

@@ -4,8 +4,8 @@ ConfigurationStructure.config.mutations = {}
 ---@class MutationSettings
 ConfigurationStructure.config.mutations.settings = {
 	defaultProfile = nil,
-	---@class SpellBrowserSettings
-	spellBrowser = {
+	---@class StatBrowserSettings
+	statBrowser = {
 		onlyIcons = true,
 		sort = {
 			---@type "displayName"|"spellName"
@@ -150,6 +150,8 @@ ConfigurationStructure.DynamicClassDefinitions.customLeveledList = {
 	modId = nil,
 	---@type LeveledSubList[]?
 	levels = nil,
+	---@type Guid[]?
+	spellListDependencies = nil,
 	---@type ModDependencies
 	modDependencies = nil
 }

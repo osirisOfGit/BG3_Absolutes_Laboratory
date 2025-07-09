@@ -9,7 +9,7 @@ ConfigurationStructure:InitializeConfig()
 Ext.Require("Shared/EntityRecorder.lua")
 Ext.Require("Shared/Channels.lua")
 Ext.Require("Client/RandomHelpers.lua")
-Ext.Require("Client/SpellBrowser.lua")
+Ext.Require("Client/StatBrowser.lua")
 Ext.Require("Client/Styler.lua")
 Ext.Require("Client/Inspector/CharacterInspector.lua")
 

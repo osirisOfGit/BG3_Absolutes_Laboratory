@@ -75,7 +75,7 @@ function SpellListMutator:renderMutator(parent, mutator)
 				end) do
 					local cell = leveledTable:AddRow():AddCell()
 
-					local delete = Styler:ImageButton(cell:AddImageButton("delete" .. mutator.targetProperty, "ico_red_x", { 16, 16 }))
+					local delete = Styler:ImageButton(cell:AddImageButton("delete" .. mutator.targetProperty, "ico_red_x", Styler:ScaleFactor({ 16, 16 })))
 					delete.OnClick = function()
 						for x = i, TableUtils:CountElements(spellMutatorGroup.leveledSpellPool) do
 							spellMutatorGroup.leveledSpellPool[x].delete = true
@@ -341,7 +341,8 @@ function SpellListMutator:buildSpellSelectorSection(parent, mutatorGroup, poolIn
 
 		Helpers:KillChildren(popup)
 
-		SpellBrowser:Render(popup,
+		StatBrowser:Render("SpellData",
+		popup,
 			nil,
 			function(pos)
 				return pos % 7 ~= 0
@@ -760,7 +761,8 @@ SpellSet are specified in the template under the same name, SpellSet2 are added 
 
 		popup:AddSeparatorText("Search Spells")
 
-		SpellBrowser:Render(popup,
+		StatBrowser:Render("SpellData",
+		popup,
 			nil,
 			function(pos)
 				return pos % 8 ~= 0
