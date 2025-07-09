@@ -558,20 +558,20 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 								self.selectedEntries.linkedSpells = false
 							end
 
-							table.insert(self.selectedEntries.entries, entryImageButton.UserData)
-							table.insert(self.selectedEntries.handles, entryImageButton)
-							entryImageButton:SetColor("Button", { 0, 1, 0, .8 })
-						elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Alt" then
-							if self.selectedEntries.context == "Main" then
-								local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-									return value.entryName == entryName
-								end)
-								if index then
-									table.remove(self.selectedEntries.entries, index)
-									table.remove(self.selectedEntries.handles, index)
+							local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+								return value.entryName == entryName
+							end)
+							if not index then
+								table.insert(self.selectedEntries.entries, entryImageButton.UserData)
+								table.insert(self.selectedEntries.handles, entryImageButton)
+								entryImageButton:SetColor("Button", { 0, 1, 0, .8 })
+								entryImageButton:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+							else
+								table.remove(self.selectedEntries.entries, index)
+								table.remove(self.selectedEntries.handles, index)
 
-									entryImageButton:SetColor("Button", self.subListIndex[entryImageButton.UserData.subListName].colour)
-								end
+								entryImageButton:SetColor("Button", { 1, 1, 1, 0 })
+								entryImageButton:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
 							end
 						else
 							Helpers:KillChildren(self.popup)
@@ -810,7 +810,29 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 
 									---@param preview ExtuiTreeParent
 									entryImageButton.OnDragStart = function(_, preview)
-										if self.selectedEntries.context == "Browser" and #self.selectedEntries.entries > 0 then
+										if self.selectedEntries.context ~= "Browser" then
+											self.selectedEntries.context = "Browser"
+											self.selectedEntries.entries = {}
+											for _, handle in pairs(self.selectedEntries.handles) do
+												if handle.UserData.subListName then
+													handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
+												else
+													handle:SetColor("Button", { 1, 1, 1, 0 })
+												end
+												handle:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+											end
+											self.selectedEntries.handles = {}
+										else
+											local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+												return value.entryName == entryName
+											end)
+											if not index then
+												table.insert(self.selectedEntries.entries, entryImageButton.UserData)
+												table.insert(self.selectedEntries.handles, entryImageButton)
+											end
+										end
+
+										if #self.selectedEntries.entries > 0 then
 											preview:AddText("Moving:")
 											for _, spellName in pairs(self.selectedEntries.entries) do
 												preview:AddText(spellName.entryName)
@@ -849,17 +871,6 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 
 														entryImageButton:SetColor("Button", { 1, 1, 1, 0 })
 														entryImageButton:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
-													end
-												end
-											elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Alt" then
-												if self.selectedEntries.context == "Browser" then
-													local index = TableUtils:IndexOf(self.selectedEntries.entries, entryName)
-													if index then
-														table.remove(self.selectedEntries.entries, index)
-														table.remove(self.selectedEntries.handles, index)
-
-														entryImageButton:SetColor("Button", { 1, 1, 1, 0 })
-														entryImageButton:SetColor("ButtonHovered", { 0, 1, 0, .8 })
 													end
 												end
 											end
