@@ -276,7 +276,7 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 				spellListLink.IDContext = spellListId
 				spellListLink.SameLine = true
 				spellListLink.OnClick = function()
-					SpellListDesigner:buildSpellDesignerWindow(spellListId)
+					SpellListDesigner:launch(spellListId)
 				end
 			end
 		end

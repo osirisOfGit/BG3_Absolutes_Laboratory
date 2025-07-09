@@ -221,7 +221,7 @@ Progressions are evaluated independently from one another to allow for progressi
 				spellListLink.IDContext = spellListId
 				spellListLink.SameLine = true
 				spellListLink.OnClick = function()
-					SpellListDesigner:buildSpellDesignerWindow(spellListId)
+					SpellListDesigner:launch(spellListId)
 				end
 			end
 		end

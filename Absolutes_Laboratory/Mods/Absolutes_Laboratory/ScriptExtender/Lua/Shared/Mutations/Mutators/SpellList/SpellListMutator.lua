@@ -38,7 +38,7 @@ function SpellListMutator:renderMutator(parent, mutator)
 	local spellListDesignerButton = parent:AddButton("Open SpellList Designer")
 	spellListDesignerButton.UserData = "EnableForMods"
 	spellListDesignerButton.OnClick = function()
-		SpellListDesigner:buildSpellDesignerWindow()
+		SpellListDesigner:launch()
 	end
 
 	local displayTable = parent:AddTable("SpellList", 2)
