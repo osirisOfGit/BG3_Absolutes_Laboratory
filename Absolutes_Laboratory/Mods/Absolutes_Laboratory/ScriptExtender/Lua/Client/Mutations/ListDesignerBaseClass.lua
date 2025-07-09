@@ -469,16 +469,23 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 	for subListName, subList in TableUtils:OrderedPairs(subLists, function(key)
 		return self.subListIndex[key].name
 	end) do
-		if subListName == "randomized" and progressionTableId and self.progressions[self.progressionTranslations[progressionTableId]][level][self.name] then
-			-- So additions to linked progressions don't get stored to the config
-			subList = {}
+		if subListName == "randomized"
+			and progressionTableId
+		then
+			local progressionEntry = self.progressions[self.progressionTranslations[progressionTableId]]
+			if progressionEntry
+				and progressionEntry[level]
+				and progressionEntry[level][self.name] then
+				-- So additions to linked progressions don't get stored to the config
+				subList = {}
 
-			for _, entryName in pairs(self.progressions[self.progressionTranslations[progressionTableId]][level][self.name]) do
-				if not self:CheckIfEntryIsInListLevel(self.activeList.levels[level], entryName, level, true) then
-					if not TableUtils:IndexOf(self.entryCacheForProgressions[level], entryName) then
-						table.insert(subList, entryName)
-						self.entryCacheForProgressions[level] = self.entryCacheForProgressions[level] or {}
-						table.insert(self.entryCacheForProgressions[level], entryName)
+				for _, entryName in pairs(progressionEntry[level][self.name]) do
+					if not self:CheckIfEntryIsInListLevel(self.activeList.levels[level], entryName, level, true) then
+						if not TableUtils:IndexOf(self.entryCacheForProgressions[level], entryName) then
+							table.insert(subList, entryName)
+							self.entryCacheForProgressions[level] = self.entryCacheForProgressions[level] or {}
+							table.insert(self.entryCacheForProgressions[level], entryName)
+						end
 					end
 				end
 			end
@@ -491,7 +498,8 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 			---@type SpellData|PassiveData|StatusData
 			local entryData = Ext.Stats.Get(entryName)
 			if entryData then
-				local entryImageButton = parentGroup:AddImageButton(entryName .. "##" .. level, entryData.Icon ~= "" and entryData.Icon or "Item_Unknown", { 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
+				local entryImageButton = parentGroup:AddImageButton(entryName .. "##" .. level, entryData.Icon ~= "" and entryData.Icon or "Item_Unknown",
+					{ 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
 				if entryImageButton.Image.Icon == "" then
 					entryImageButton:Destroy()
 					entryImageButton = parentGroup:AddImageButton(entryName .. "##" .. level, "Item_Unknown", { 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
@@ -686,7 +694,126 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 end
 
 function ListDesignerBaseClass:buildBrowser()
-	self:buildProgressionBrowser()
+end
+
+function ListDesignerBaseClass:buildStatBrowser(statType)
+	Helpers:KillChildren(self.browserTabs[statType])
+
+	StatBrowser:Render(statType,
+		self.browserTabs[statType],
+		function(parent, results)
+			Styler:MiddleAlignedColumnLayout(parent, function(ele)
+				parent.Size = { 0, 0 }
+
+				local copyAllButton = ele:AddButton("Copy All")
+
+				copyAllButton.OnClick = function()
+					for _, statName in ipairs(results) do
+						---@type SpellData|PassiveData|StatusData
+						local stat = Ext.Stats.Get(statName)
+
+						local level = (stat.ModifierList == "SpellData" and stat.Level ~= "" and stat.Level > 0) and stat.Level or 1
+						self.activeList.levels[level] = self.activeList.levels[level] or {}
+						local subLevelList = self.activeList.levels[level]
+
+						if not self:CheckIfEntryIsInListLevel(subLevelList, statName, level) then
+							subLevelList.manuallySelectedEntries = subLevelList.manuallySelectedEntries or
+								TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
+
+							local leveledSubList = subLevelList.manuallySelectedEntries
+							leveledSubList.randomized = leveledSubList.randomized or {}
+
+							table.insert(leveledSubList.randomized, statName)
+						end
+					end
+
+					self:buildDesigner()
+				end
+			end)
+		end,
+		function(pos)
+			return pos % (math.floor(self.browserTabs[statType].LastSize[1] / (58 * Styler:ScaleFactor()))) ~= 0
+		end,
+		function(statName)
+			for l = 1, 30 do
+				if self.activeList.levels and self.activeList.levels[l] and self:CheckIfEntryIsInListLevel(self.activeList.levels[l], statName, l) then
+					return true
+				end
+			end
+		end,
+		function(statImage, statName)
+			statImage.CanDrag = true
+			statImage.DragDropType = "EntryReorder"
+			statImage.UserData = {
+				entryName = statName
+			} --[[@as EntryHandle]]
+
+			---@param preview ExtuiTreeParent
+			statImage.OnDragStart = function(_, preview)
+				if self.selectedEntries.context ~= "Browser" then
+					self.selectedEntries.context = "Browser"
+					self.selectedEntries.entries = {}
+					for _, handle in pairs(self.selectedEntries.handles) do
+						if handle.UserData.subListName then
+							handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
+						else
+							handle:SetColor("Button", { 1, 1, 1, 0 })
+						end
+						handle:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+					end
+					self.selectedEntries.handles = {}
+				else
+					local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+						return value.entryName == statImage.UserData.spellName
+					end)
+					if not index then
+						table.insert(self.selectedEntries.entries, statImage.UserData)
+						table.insert(self.selectedEntries.handles, statImage)
+					end
+				end
+
+				if #self.selectedEntries.entries > 0 then
+					preview:AddText("Moving:")
+					for _, entryHandle in pairs(self.selectedEntries.entries) do
+						preview:AddText(entryHandle.entryName)
+					end
+				else
+					preview:AddText("Moving " .. statName)
+				end
+			end
+		end,
+		function(statImage, statName)
+			if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
+				if self.selectedEntries.context ~= "Browser" then
+					self.selectedEntries.context = "Browser"
+					self.selectedEntries.entries = {}
+					for _, handle in pairs(self.selectedEntries.handles) do
+						if handle.UserData.subListName then
+							handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
+						else
+							handle:SetColor("Button", { 1, 1, 1, 0 })
+						end
+					end
+					self.selectedEntries.handles = {}
+				else
+					local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+						return value.entryName == statName
+					end)
+					if not index then
+						table.insert(self.selectedEntries.entries, statImage.UserData)
+						table.insert(self.selectedEntries.handles, statImage)
+						statImage:SetColor("Button", { 0, 1, 0, .8 })
+						statImage:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+					else
+						table.remove(self.selectedEntries.entries, index)
+						table.remove(self.selectedEntries.handles, index)
+
+						statImage:SetColor("Button", { 1, 1, 1, 0 })
+						statImage:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+					end
+				end
+			end
+		end)
 end
 
 function ListDesignerBaseClass:buildProgressionBrowser()
@@ -759,7 +886,7 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 								linkButton.OnClick = function()
 									if hasProgression then
 										for _, subList in TableUtils:OrderedPairs(self.activeList.levels) do
-											if subList.linkedProgressions[tableUUID] then
+											if subList.linkedProgressions and subList.linkedProgressions[tableUUID] then
 												subList.linkedProgressions[tableUUID].delete = true
 											end
 										end
@@ -783,95 +910,97 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 							for level, lists in TableUtils:OrderedPairs(indexedProgLevelLists, function(key)
 								return tonumber(key)
 							end) do
-								local row = progTable:AddRow()
-								row:AddCell():AddText(tostring(level))
+								if lists[self.name] then
+									local row = progTable:AddRow()
+									row:AddCell():AddText(tostring(level))
 
-								local spellCell = row:AddCell()
-								for i, entryName in ipairs(lists[self.name] or {}) do
-									---@type SpellData|PassiveData|StatusData
-									local entryData = Ext.Stats.Get(entryName)
+									local spellCell = row:AddCell()
+									for i, entryName in ipairs(lists[self.name] or {}) do
+										---@type SpellData|PassiveData|StatusData
+										local entryData = Ext.Stats.Get(entryName)
 
-									local entryImageButton = spellCell:AddImageButton(entryName .. i, entryData.Icon ~= "" and entryData.Icon or "Item_Unknown", { 48, 48 })
-									local tooltipFunction = Styler:HyperlinkRenderable(entryImageButton, entryName, "Shift", false, entryName, function(parent)
-										ResourceManager:RenderDisplayWindow(entryData, parent)
-									end)
-									entryImageButton.SameLine = (i - 1) % (math.floor(self.browserTabs["Progressions"].LastSize[1] / 64)) ~= 0
-									entryImageButton.CanDrag = true
-									entryImageButton.DragDropType = "EntryReorder"
-									entryImageButton.UserData = {
-										entryName = entryName
-									} --[[@as EntryHandle]]
+										local entryImageButton = spellCell:AddImageButton(entryName .. i, entryData.Icon ~= "" and entryData.Icon or "Item_Unknown", { 48, 48 })
+										local tooltipFunction = Styler:HyperlinkRenderable(entryImageButton, entryName, "Shift", false, entryName, function(parent)
+											ResourceManager:RenderDisplayWindow(entryData, parent)
+										end)
+										entryImageButton.SameLine = (i - 1) % (math.floor(self.browserTabs["Progressions"].LastSize[1] / 64)) ~= 0
+										entryImageButton.CanDrag = true
+										entryImageButton.DragDropType = "EntryReorder"
+										entryImageButton.UserData = {
+											entryName = entryName
+										} --[[@as EntryHandle]]
 
-									for l = 1, 30 do
-										if self.activeList.levels and self.activeList.levels[l] and self:CheckIfEntryIsInListLevel(self.activeList.levels[l], entryName, l) then
-											entryImageButton.Tint = { 1, 1, 1, 0.2 }
-											break
-										end
-									end
-
-									---@param preview ExtuiTreeParent
-									entryImageButton.OnDragStart = function(_, preview)
-										if self.selectedEntries.context ~= "Browser" then
-											self.selectedEntries.context = "Browser"
-											self.selectedEntries.entries = {}
-											for _, handle in pairs(self.selectedEntries.handles) do
-												if handle.UserData.subListName then
-													handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
-												else
-													handle:SetColor("Button", { 1, 1, 1, 0 })
-												end
-												handle:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
-											end
-											self.selectedEntries.handles = {}
-										else
-											local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-												return value.entryName == entryName
-											end)
-											if not index then
-												table.insert(self.selectedEntries.entries, entryImageButton.UserData)
-												table.insert(self.selectedEntries.handles, entryImageButton)
+										for l = 1, 30 do
+											if self.activeList.levels and self.activeList.levels[l] and self:CheckIfEntryIsInListLevel(self.activeList.levels[l], entryName, l) then
+												entryImageButton.Tint = { 1, 1, 1, 0.2 }
+												break
 											end
 										end
 
-										if #self.selectedEntries.entries > 0 then
-											preview:AddText("Moving:")
-											for _, spellName in pairs(self.selectedEntries.entries) do
-												preview:AddText(spellName.entryName)
-											end
-										else
-											preview:AddText("Moving " .. entryName)
-										end
-									end
-
-									entryImageButton.OnClick = function()
-										if not tooltipFunction() then
-											if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
-												if self.selectedEntries.context ~= "Browser" then
-													self.selectedEntries.context = "Browser"
-													self.selectedEntries.entries = {}
-													for _, handle in pairs(self.selectedEntries.handles) do
-														if handle.UserData.subListName then
-															handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
-														else
-															handle:SetColor("Button", { 1, 1, 1, 0 })
-														end
-													end
-													self.selectedEntries.handles = {}
-												else
-													local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-														return value.entryName == entryName
-													end)
-													if not index then
-														table.insert(self.selectedEntries.entries, entryImageButton.UserData)
-														table.insert(self.selectedEntries.handles, entryImageButton)
-														entryImageButton:SetColor("Button", { 0, 1, 0, .8 })
-														entryImageButton:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+										---@param preview ExtuiTreeParent
+										entryImageButton.OnDragStart = function(_, preview)
+											if self.selectedEntries.context ~= "Browser" then
+												self.selectedEntries.context = "Browser"
+												self.selectedEntries.entries = {}
+												for _, handle in pairs(self.selectedEntries.handles) do
+													if handle.UserData.subListName then
+														handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
 													else
-														table.remove(self.selectedEntries.entries, index)
-														table.remove(self.selectedEntries.handles, index)
+														handle:SetColor("Button", { 1, 1, 1, 0 })
+													end
+													handle:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+												end
+												self.selectedEntries.handles = {}
+											else
+												local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+													return value.entryName == entryName
+												end)
+												if not index then
+													table.insert(self.selectedEntries.entries, entryImageButton.UserData)
+													table.insert(self.selectedEntries.handles, entryImageButton)
+												end
+											end
 
-														entryImageButton:SetColor("Button", { 1, 1, 1, 0 })
-														entryImageButton:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+											if #self.selectedEntries.entries > 0 then
+												preview:AddText("Moving:")
+												for _, spellName in pairs(self.selectedEntries.entries) do
+													preview:AddText(spellName.entryName)
+												end
+											else
+												preview:AddText("Moving " .. entryName)
+											end
+										end
+
+										entryImageButton.OnClick = function()
+											if not tooltipFunction() then
+												if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
+													if self.selectedEntries.context ~= "Browser" then
+														self.selectedEntries.context = "Browser"
+														self.selectedEntries.entries = {}
+														for _, handle in pairs(self.selectedEntries.handles) do
+															if handle.UserData.subListName then
+																handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
+															else
+																handle:SetColor("Button", { 1, 1, 1, 0 })
+															end
+														end
+														self.selectedEntries.handles = {}
+													else
+														local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+															return value.entryName == entryName
+														end)
+														if not index then
+															table.insert(self.selectedEntries.entries, entryImageButton.UserData)
+															table.insert(self.selectedEntries.handles, entryImageButton)
+															entryImageButton:SetColor("Button", { 0, 1, 0, .8 })
+															entryImageButton:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+														else
+															table.remove(self.selectedEntries.entries, index)
+															table.remove(self.selectedEntries.handles, index)
+
+															entryImageButton:SetColor("Button", { 1, 1, 1, 0 })
+															entryImageButton:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+														end
 													end
 												end
 											end

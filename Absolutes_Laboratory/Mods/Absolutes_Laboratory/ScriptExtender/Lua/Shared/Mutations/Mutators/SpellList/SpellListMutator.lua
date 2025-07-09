@@ -116,7 +116,7 @@ function SpellListMutator:renderMutator(parent, mutator)
 						if spellList then
 							local text = cell:AddTextLink(spellList.name .. (spellList.modId and string.format(" (%s)", Ext.Mod.GetMod(spellList.modId).Info.Name) or ""))
 							text.OnClick = function()
-								SpellListDesigner:buildSpellDesignerWindow(spellListId)
+								SpellListDesigner:launch(spellListId)
 							end
 
 							if spellList.description ~= "" then
