@@ -418,10 +418,11 @@ function ListDesignerBaseClass:buildDesigner()
 				if self.selectedEntries.context ~= "Main" then
 					for _, handle in pairs(self.selectedEntries.handles) do
 						handle:SetColor("Button", { 1, 1, 1, 0 })
+						handle:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
 						handle.Tint = { 1, 1, 1, 0.2 }
 					end
 				end
-				
+
 				self.selectedEntries.handles = {}
 				self.selectedEntries.entries = {}
 			else
@@ -833,10 +834,23 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 														end
 													end
 													self.selectedEntries.handles = {}
+												else
+													local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+														return value.entryName == entryName
+													end)
+													if not index then
+														table.insert(self.selectedEntries.entries, entryImageButton.UserData)
+														table.insert(self.selectedEntries.handles, entryImageButton)
+														entryImageButton:SetColor("Button", { 0, 1, 0, .8 })
+														entryImageButton:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+													else
+														table.remove(self.selectedEntries.entries, index)
+														table.remove(self.selectedEntries.handles, index)
+
+														entryImageButton:SetColor("Button", { 1, 1, 1, 0 })
+														entryImageButton:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+													end
 												end
-												table.insert(self.selectedEntries.entries, entryImageButton.UserData)
-												table.insert(self.selectedEntries.handles, entryImageButton)
-												entryImageButton:SetColor("Button", { 0, 1, 0, .8 })
 											elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Alt" then
 												if self.selectedEntries.context == "Browser" then
 													local index = TableUtils:IndexOf(self.selectedEntries.entries, entryName)
@@ -845,6 +859,7 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 														table.remove(self.selectedEntries.handles, index)
 
 														entryImageButton:SetColor("Button", { 1, 1, 1, 0 })
+														entryImageButton:SetColor("ButtonHovered", { 0, 1, 0, .8 })
 													end
 												end
 											end

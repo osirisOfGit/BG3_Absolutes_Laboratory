@@ -118,30 +118,33 @@ function SpellListDesigner:buildBrowser()
 					end
 					self.selectedEntries.handles = {}
 				else
-					local index = TableUtils:IndexOf(self.selectedEntries.entries, function (value)
+					local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
 						return value.entryName == spellName
 					end)
 					if not index then
 						table.insert(self.selectedEntries.entries, spellImage.UserData)
 						table.insert(self.selectedEntries.handles, spellImage)
 						spellImage:SetColor("Button", { 0, 1, 0, .8 })
+						spellImage:SetColor("ButtonHovered", { 0, 1, 0, .8 })
 					else
 						table.remove(self.selectedEntries.entries, index)
 						table.remove(self.selectedEntries.handles, index)
-						
+
 						spellImage:SetColor("Button", { 1, 1, 1, 0 })
+						spellImage:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
 					end
 				end
 			elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Alt" then
 				if self.selectedEntries.context == "Browser" then
-					local index = TableUtils:IndexOf(self.selectedEntries.entries, function (value)
+					local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
 						return value.entryName == spellName
 					end)
 					if index then
 						table.remove(self.selectedEntries.entries, index)
 						table.remove(self.selectedEntries.handles, index)
-						
+
 						spellImage:SetColor("Button", { 1, 1, 1, 0 })
+						spellImage:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
 					end
 				end
 			end
