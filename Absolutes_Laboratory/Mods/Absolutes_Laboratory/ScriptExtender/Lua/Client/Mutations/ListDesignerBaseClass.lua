@@ -110,6 +110,8 @@ function ListDesignerBaseClass:launch(activeListId)
 		self.browserSection = row:AddCell():AddChildWindow("Browser")
 
 		self.popup = self.mainWindow:AddPopup(self.name .. "popup")
+		self.popup:SetColor("PopupBg", {0, 0, 0, 1})
+		self.popup:SetColor("Border", {1, 0, 0, 0.5})
 
 		local colorSettings = self.designerSection:AddGroup("colorSetting")
 		colorSettings.UserData = "keep"
@@ -171,7 +173,7 @@ function ListDesignerBaseClass:buildLists(activeListId)
 		listSelectable.OnRightClick = function()
 			Helpers:KillChildren(self.popup)
 			self.popup:Open()
-			self.popup:AddSelectable("Edit").OnClick = function()
+			self.popup:AddSelectable("Edit", "DontClosePopups").OnClick = function()
 				FormBuilder:CreateForm(self.popup, function(formResults)
 					list.name = formResults.Name
 					list.description = formResults.Description
