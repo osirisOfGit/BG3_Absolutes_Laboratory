@@ -583,7 +583,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 
 										for _, handle in pairs(handles) do
 											---@type CustomSubList
-											local subList = self.activeList.levels[handle.level][handle.progressionTableId and "linkedProgressions" or "selectedEntries"]
+											local subList = self.activeList.levels[handle.level][handle.progressionTableId and "linkedProgressions" or "manuallySelectedEntries"]
 											if handle.progressionTableId then
 												subList = subList[handle.progressionTableId]
 											end
