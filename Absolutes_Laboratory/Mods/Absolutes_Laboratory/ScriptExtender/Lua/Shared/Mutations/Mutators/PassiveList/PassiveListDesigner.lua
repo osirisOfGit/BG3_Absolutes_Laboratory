@@ -56,7 +56,7 @@ function PassiveListDesigner:customizeDesigner()
 					buildTable()
 				end
 
-				local link = cell:AddTextLink(spellList.name)
+				local link = cell:AddTextLink(spellList.name .. (spellList.modId and string.format(" (from %s)", Ext.Mod.GetMod(spellList.modId).Info.Name) or ""))
 				link.Font = "Small"
 				link.SameLine = true
 				link.OnClick = function()
