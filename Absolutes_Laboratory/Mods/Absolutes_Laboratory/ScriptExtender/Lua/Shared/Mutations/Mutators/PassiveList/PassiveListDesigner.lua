@@ -22,7 +22,7 @@ PassiveListDesigner = ListDesignerBaseClass:new("Passive List",
 	end)
 
 function PassiveListDesigner:buildBrowser()
-	if not SpellListDesigner.browserTabs["PassiveData"] then
+	if not self.browserTabs["PassiveData"] then
 		self.browserTabs["PassiveData"] = self.browserTabParent:AddTabItem("Passives"):AddChildWindow("Passive Browser")
 		self.browserTabs["PassiveData"].NoSavedSettings = true
 	end
