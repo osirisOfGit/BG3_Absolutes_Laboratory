@@ -3,6 +3,7 @@ Ext.Require("Client/Mutations/ListDesignerBaseClass.lua")
 ---@class PassiveListDesigner : ListDesignerBaseClass
 PassiveListDesigner = ListDesignerBaseClass:new("Passive List",
 	"passiveLists",
+	{ "startOfCombatOnly", "onLoadOnly" },
 	{ "PassivePrototypesAdded", "PassivePrototypesRemoved", "PassivesAdded", "PassivesRemoved" },
 	---@param passiveMeta ResourceProgressionPassive|StatsPassivePrototype
 	function(passiveMeta, addToListFunc)

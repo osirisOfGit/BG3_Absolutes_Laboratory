@@ -64,10 +64,11 @@ ListDesignerBaseClass = {
 
 ---@param name string
 ---@param configKey string
+---@param subListTypesToExclude ("guaranteed"|"randomized"|"startOfCombatOnly"|"onLoadOnly"|"blackListed")[]?
 ---@param progressionLinkedNodes string[]?
 ---@param iterateProgressionEntriesFunc fun(resource: any, addToListFunc: fun(name: string))?
 ---@return ListDesignerBaseClass
-function ListDesignerBaseClass:new(name, configKey, progressionLinkedNodes, iterateProgressionEntriesFunc)
+function ListDesignerBaseClass:new(name, configKey, subListTypesToExclude, progressionLinkedNodes, iterateProgressionEntriesFunc)
 	local instance = {}
 
 	setmetatable(instance, self)
@@ -85,6 +86,12 @@ function ListDesignerBaseClass:new(name, configKey, progressionLinkedNodes, iter
 		linkedEntries = false
 	}
 	instance.subListIndex = TableUtils:DeeplyCopyTable(ListDesignerBaseClass.subListIndex)
+
+	if subListTypesToExclude then
+		for _, subListType in pairs(subListTypesToExclude) do
+			instance.subListIndex[subListType] = nil
+		end
+	end
 
 	return instance
 end
@@ -125,8 +132,12 @@ function ListDesignerBaseClass:launch(activeListId)
 		colorSettings:AddText("Click A Color To Change It, Hover for Tooltips"):SetStyle("Alpha", 0.6)
 
 		for subListName, colour in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.settings.customLists.subListColours, function(key)
-			return self.subListIndex[key].name
-		end) do
+				return self.subListIndex[key].name
+			end,
+			function(key, value)
+				return self.subListIndex[key] ~= nil
+			end)
+		do
 			self.subListIndex[subListName].colour = Styler:ConvertRGBAToIMGUI(colour._real)
 			local colorEditer = colorSettings:AddColorEdit(
 				self.subListIndex[subListName].name,

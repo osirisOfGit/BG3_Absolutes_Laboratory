@@ -3,6 +3,7 @@ Ext.Require("Client/Mutations/ListDesignerBaseClass.lua")
 ---@class SpellListDesigner : ListDesignerBaseClass
 SpellListDesigner = ListDesignerBaseClass:new("Spell List",
 	"spellLists",
+	nil,
 	{ "SelectSpells", "AddSpells" },
 	---@param spellMeta ResourceProgressionSpell|ResourceProgressionAddedSpell
 	function(spellMeta, addToListFunc)
@@ -24,7 +25,7 @@ function SpellListDesigner:buildBrowser()
 	self:buildProgressionBrowser()
 
 	StatBrowser:Render("SpellData",
-	self.browserTabs["Spells"],
+		self.browserTabs["Spells"],
 		function(parent, results)
 			Styler:MiddleAlignedColumnLayout(parent, function(ele)
 				parent.Size = { 0, 0 }

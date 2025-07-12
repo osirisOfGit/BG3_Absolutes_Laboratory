@@ -4,7 +4,7 @@ TableUtils = {}
 
 ---@generic K
 ---@param tarTable table<K, number>? will be created if it doesn't exist
----@param key K 
+---@param key K
 ---@param amount number
 ---@return table<K, number> table optionally created if one was not provided, with the amount specified added to the key (or just assigned to the key, if missing)
 function TableUtils:AddItemToTable_AddingToExistingAmount(tarTable, key, amount)
@@ -109,11 +109,14 @@ end
 ---@generic V
 ---@param t table<K,V>
 ---@param keyTransformFunc (fun(key: K, value: V):any)?
+---@param filter (fun(key: K, value: V):boolean)?
 ---@return fun(table: table<K, V>, index?: K):K,V
-function TableUtils:OrderedPairs(t, keyTransformFunc)
+function TableUtils:OrderedPairs(t, keyTransformFunc, filter)
 	local keys = {}
 	for k in pairs(t) do
-		table.insert(keys, k)
+		if not filter or filter(k, t[k]) then
+			table.insert(keys, k)
+		end
 	end
 	table.sort(keys, function(a, b)
 		local keyA = keyTransformFunc and keyTransformFunc(a, t[a]) or a
