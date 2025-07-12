@@ -322,6 +322,8 @@ function ListDesignerBaseClass:buildModLists(activeListID)
 	end
 end
 
+function ListDesignerBaseClass:customizeDesigner() end
+
 function ListDesignerBaseClass:buildDesigner()
 	if self.progressionLinkedNodes then
 		self:buildProgressionIndex()
@@ -348,6 +350,8 @@ function ListDesignerBaseClass:buildDesigner()
 		end)
 		return
 	end
+
+	self:customizeDesigner()
 
 	local deleteAllButton = self.designerSection:AddButton("Delete All Non-Linked Entries")
 	deleteAllButton.Disabled = self.activeList.modId ~= nil

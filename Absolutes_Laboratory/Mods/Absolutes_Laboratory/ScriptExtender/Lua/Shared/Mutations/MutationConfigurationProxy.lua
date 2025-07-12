@@ -26,6 +26,7 @@ MutationConfigurationProxy = {
 			return mutationsConfig.spellLists[k] or MutationModProxy.ModProxy.spellLists[k]
 		end,
 		__pairs = function(t)
+			---@type {[Guid]: CustomList}
 			local spellLists = TableUtils:DeeplyCopyTable(mutationsConfig.spellLists._real)
 
 			for _, modCache in pairs(MutationModProxy.ModProxy.spellLists) do
@@ -38,7 +39,9 @@ MutationConfigurationProxy = {
 				end
 			end
 
-			return pairs(spellLists)
+			return TableUtils:OrderedPairs(spellLists, function(key, value)
+				return (value.modId or "_") .. value.name
+			end)
 		end
 	}),
 	passiveLists = setmetatable({}, {
@@ -46,7 +49,8 @@ MutationConfigurationProxy = {
 			return mutationsConfig.passiveLists[k] or MutationModProxy.ModProxy.passiveLists[k]
 		end,
 		__pairs = function(t)
-			local spellLists = TableUtils:DeeplyCopyTable(mutationsConfig.passiveLists._real)
+			---@type {[Guid]: CustomList}
+			local passiveLists = TableUtils:DeeplyCopyTable(mutationsConfig.passiveLists._real)
 
 			for _, modCache in pairs(MutationModProxy.ModProxy.passiveLists) do
 				---@cast modCache LocalModCache
@@ -58,7 +62,9 @@ MutationConfigurationProxy = {
 				end
 			end
 
-			return pairs(spellLists)
+			return TableUtils:OrderedPairs(passiveLists, function(key, value)
+				return (value.modId or "_") .. value.name
+			end)
 		end
 	}),
 }
