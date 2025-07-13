@@ -14,7 +14,7 @@ end
 ---@class PassivePool
 ---@field passiveLists Guid[]
 ---@field passives string[]?
----@field removePassives string[]
+---@field randomizedPassivePoolSize number[]
 
 ---@class PassiveMutator : Mutator
 ---@field values PassivePool
@@ -32,7 +32,13 @@ function PassiveListMutator:renderMutator(parent, mutator)
 		PassiveListDesigner:launch()
 	end
 
-	local listSep = parent:AddSeparatorText("Passive Lists ( ? )")
+	local sectionTable = parent:AddTable("Sections", 2)
+	sectionTable.BordersOuter = true
+	local sectionsRow = sectionTable:AddRow()
+	local mutatorSection = sectionsRow:AddCell()
+	local modifierSection = sectionsRow:AddCell()
+
+	local listSep = mutatorSection:AddSeparatorText("Passive Lists ( ? )")
 	listSep:SetStyle("SeparatorTextAlign", 0.1, 0.5)
 	listSep:Tooltip():AddText(
 		"\t If multiple lists are specified and are eligible to be assigned to the entity (according to their Spell List dependencies, or lack thereof), one will be randomly chosen")
@@ -44,23 +50,23 @@ function PassiveListMutator:renderMutator(parent, mutator)
 		end) do
 			local list = MutationConfigurationProxy.passiveLists[passiveListId]
 
-			local delete = Styler:ImageButton(parent:AddImageButton("delete" .. list.name, "ico_red_x", { 16, 16 }))
+			local delete = Styler:ImageButton(mutatorSection:AddImageButton("delete" .. list.name, "ico_red_x", { 16, 16 }))
 			delete.OnClick = function()
 				for x = l, TableUtils:CountElements(mutator.values.passiveLists) do
 					mutator.values.passiveLists[x] = nil
 					mutator.values.passiveLists[x] = TableUtils:DeeplyCopyTable(mutator.values.passiveLists._real[x + 1])
 				end
-				self:renderMutator(parent, mutator)
+				self:renderMutator(mutatorSection, mutator)
 			end
 
-			local link = parent:AddTextLink(list.name .. (list.modId and string.format(" (from %s)", Ext.Mod.GetMod(list.modId).Info.Name) or ""))
+			local link = mutatorSection:AddTextLink(list.name .. (list.modId and string.format(" (from %s)", Ext.Mod.GetMod(list.modId).Info.Name) or ""))
 			link.SameLine = true
 			link.OnClick = function()
 				PassiveListDesigner:launch(passiveListId)
 			end
 
 			if list.spellListDependencies and list.spellListDependencies() then
-				local sep = parent:AddCollapsingHeader("Spell List Dependencies ( ? )")
+				local sep = mutatorSection:AddCollapsingHeader("Spell List Dependencies ( ? )")
 				sep.Font = "Small"
 				sep:Tooltip():AddText([[
 	These lists are automatically added from the defined dependencies in the Passive List Designer - an entity must have been assigned at least one of these to be assigned this list,
@@ -75,7 +81,7 @@ and this list will use the sum of the assigned spell list levels to determine wh
 			end
 		end
 	end
-	parent:AddButton("Add Passive List").OnClick = function()
+	mutatorSection:AddButton("Add Passive List").OnClick = function()
 		Helpers:KillChildren(popup)
 		popup:Open()
 
@@ -89,11 +95,11 @@ and this list will use the sum of the assigned spell list levels to determine wh
 		end
 	end
 
-	local looseSep = parent:AddSeparatorText("Loose Passives ( ? )")
+	local looseSep = mutatorSection:AddSeparatorText("Loose Passives ( ? )")
 	looseSep:SetStyle("SeparatorTextAlign", 0.1, 0.5)
 	looseSep:Tooltip():AddText("\t Passives added here are guaranteed to be added to the entity no matter what")
 
-	local passiveGroup = parent:AddGroup("passives")
+	local passiveGroup = mutatorSection:AddGroup("passives")
 	local function buildPassives()
 		Helpers:KillChildren(passiveGroup)
 		if mutator.values.passives and mutator.values.passives() then
@@ -116,7 +122,7 @@ and this list will use the sum of the assigned spell list levels to determine wh
 	end
 	buildPassives()
 
-	parent:AddButton("Add Passive").OnClick = function()
+	mutatorSection:AddButton("Add Passive").OnClick = function()
 		popup:Open()
 
 		Helpers:KillChildren(popup)
@@ -148,5 +154,90 @@ and this list will use the sum of the assigned spell list levels to determine wh
 				end
 				buildPassives()
 			end)
+	end
+
+	self:renderRandomizedAmountSettings(modifierSection, mutator.values)
+end
+
+---@param parent ExtuiTreeParent
+---@param passivePool PassivePool
+function PassiveListMutator:renderRandomizedAmountSettings(parent, passivePool)
+	Helpers:KillChildren(parent)
+
+	local popup = parent:AddPopup("Randomized")
+
+	--#region Randomized Spell Pool Size
+	parent:AddSeparatorText("Amount of Random Passives to Give Per Level")
+
+	passivePool.randomizedPassivePoolSize = passivePool.randomizedPassivePoolSize or {}
+	local randomizedPassivePoolSize = passivePool.randomizedPassivePoolSize
+	if getmetatable(randomizedPassivePoolSize) and getmetatable(randomizedPassivePoolSize).__call and not randomizedPassivePoolSize() then
+		randomizedPassivePoolSize[1] = 1
+	end
+
+	local randoSpellsTable = parent:AddTable("RandomSpellNumbers", 3)
+	randoSpellsTable:AddColumn("", "WidthFixed")
+
+	local headers = randoSpellsTable:AddRow()
+	headers.Headers = true
+	headers:AddCell()
+	headers:AddCell():AddText("Level ( ? )"):Tooltip():AddText([[
+	Levels do not need to be consecutive - for example, you can set level 1 to give 3 random passives, and level 5 to give 1 random passive.
+This will cause Lab to give the entity 3 random passives from the selected Passive List every level for levels 1-4, and 1 random passive every level from level 5 onwards]])
+
+	headers:AddCell():AddText("# Of Passives ( ? )"):Tooltip():AddText([[
+	This represents the amount of Random passives to give the entity from the appropriate level in the Passive List, if the passive list has passives for the appropriate level]])
+
+	local enableDelete = false
+	for level, numSpells in TableUtils:OrderedPairs(randomizedPassivePoolSize) do
+		local row = randoSpellsTable:AddRow()
+		if not enableDelete then
+			row:AddCell()
+			enableDelete = true
+		else
+			local delete = Styler:ImageButton(row:AddCell():AddImageButton("delete" .. level, "ico_red_x", { 16, 16 }))
+			delete.OnClick = function()
+				randomizedPassivePoolSize[level] = nil
+				row:Destroy()
+			end
+		end
+
+		---@param input ExtuiInputInt
+		row:AddCell():AddInputInt("", level).OnDeactivate = function(input)
+			if not randomizedPassivePoolSize[input.Value[1]] then
+				randomizedPassivePoolSize[input.Value[1]] = numSpells
+				randomizedPassivePoolSize[level] = nil
+				self:renderRandomizedAmountSettings(parent, passivePool)
+			else
+				input.Value = { level, level, level, level }
+			end
+		end
+
+		---@param input ExtuiInputInt
+		row:AddCell():AddInputInt("", numSpells).OnDeactivate = function(input)
+			randomizedPassivePoolSize[level] = input.Value[1]
+		end
+	end
+
+	parent:AddButton("+").OnClick = function()
+		Helpers:KillChildren(popup)
+		popup:Open()
+
+		local add = popup:AddButton("Add Level")
+		local input = popup:AddInputInt("", randomizedPassivePoolSize() + 1)
+		input.SameLine = true
+
+		local errorText = popup:AddText("Choose a level that isn't already specified")
+		errorText:SetColor("Text", Styler:ConvertRGBAToIMGUI({ 255, 100, 100, 0.7 }))
+		errorText.Visible = false
+
+		add.OnClick = function()
+			if randomizedPassivePoolSize[input.Value[1]] then
+				errorText.Visible = true
+			else
+				randomizedPassivePoolSize[input.Value[1]] = 2
+				self:renderRandomizedAmountSettings(parent, passivePool)
+			end
+		end
 	end
 end
