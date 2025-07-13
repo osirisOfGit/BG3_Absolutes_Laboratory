@@ -16,10 +16,10 @@ end
 ---@field passives string[]?
 ---@field randomizedPassivePoolSize number[]
 
----@class PassiveMutator : Mutator
+---@class PassiveListMutator : Mutator
 ---@field values PassivePool
 
----@param mutator PassiveMutator
+---@param mutator PassiveListMutator
 function PassiveListMutator:renderMutator(parent, mutator)
 	mutator.values = mutator.values or {}
 	Helpers:KillChildren(parent)
@@ -239,5 +239,55 @@ This will cause Lab to give the entity 3 random passives from the selected Passi
 				self:renderRandomizedAmountSettings(parent, passivePool)
 			end
 		end
+	end
+end
+
+---@param mutator PassiveListMutator
+function PassiveListMutator:handleDependencies(export, mutator, removeMissingDependencies)
+	SpellListDesigner:buildProgressionIndex()
+
+	---@param passiveName string
+	---@param container table?
+	---@return boolean?
+	local function buildPassiveDependency(passiveName, container)
+		---@type PassiveData?
+		local passive = Ext.Stats.Get(passiveName)
+		if passive then
+			if not removeMissingDependencies then
+				container = container or mutator
+				container.modDependencies = container.modDependencies or {}
+				if not container.modDependencies[passive.OriginalModId] then
+					local name, author, version = Helpers:BuildModFields(passive.OriginalModId)
+					if author == "Larian" then
+						return
+					end
+
+					container.modDependencies[passive.OriginalModId] = {
+						modName = name,
+						modAuthor = author,
+						modVersion = version,
+						modId = passive.OriginalModId,
+						packagedItems = {}
+					}
+				end
+				container.modDependencies[passive.OriginalModId].packagedItems[passiveName] = Ext.Loca.GetTranslatedString(passive.DisplayName, passiveName)
+			end
+			return true
+		else
+			return false
+		end
+	end
+
+	if mutator.values.passives then
+		for i, passive in pairs(mutator.values.passives) do
+			if not buildPassiveDependency(passive) then
+				mutator.values.passives[i] = nil
+			end
+		end
+		TableUtils:ReindexNumericTable(mutator.values.passives)
+	end
+
+	if mutator.values.passiveLists then
+		PassiveListDesigner:HandleDependences(export, mutator, mutator.values.passiveLists, removeMissingDependencies)
 	end
 end

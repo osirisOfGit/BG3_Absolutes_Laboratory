@@ -825,8 +825,6 @@ function SpellListMutator:handleDependencies(export, mutator, removeMissingDepen
 		end
 	end
 
-	local progressionSources = Ext.StaticData.GetSources("Progression")
-
 	for _, spellGroup in pairs(mutator.values) do
 		if spellGroup.removeSpells then
 			for i, spellToRemove in pairs(spellGroup.removeSpells) do
@@ -851,92 +849,7 @@ function SpellListMutator:handleDependencies(export, mutator, removeMissingDepen
 				end
 
 				if leveledSpellPool.spellLists then
-					for l, spellListId in pairs(leveledSpellPool.spellLists) do
-						local spellListModId = MutationConfigurationProxy.spellLists[spellListId].modId
-						if not spellListModId then
-							--- @type CustomList
-							local spellListDef = removeMissingDependencies == true
-								and export.spellLists[spellListId]
-								or TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.spellLists[spellListId]._real)
-
-							spellListId = spellListId .. "Exported"
-							leveledSpellPool.spellLists[l] = spellListId
-
-							if spellListDef.levels then
-								for level, levelSubList in pairs(spellListDef.levels) do
-									if levelSubList.linkedProgressions then
-										for progressionTableId, sublists in pairs(levelSubList.linkedProgressions) do
-											for _, spells in pairs(sublists) do
-												for i, spell in pairs(spells) do
-													if not buildSpellDep(spell) then
-														spells[i] = nil
-													end
-												end
-												TableUtils:ReindexNumericTable(spells)
-											end
-
-											local progressionId = SpellListDesigner.progressionTableToProgression[progressionTableId][level]
-											if progressionId then
-												---@type ResourceProgression
-												local progression = Ext.StaticData.Get(progressionId, "Progression")
-												if not progression then
-													levelSubList.linkedProgressions[progressionId] = nil
-												elseif not removeMissingDependencies then
-													local progressionSource = TableUtils:IndexOf(progressionSources, function(value)
-														return TableUtils:IndexOf(value, progressionId) ~= nil
-													end)
-													if progressionSource then
-														spellListDef.modDependencies = spellListDef.modDependencies or {}
-														if not spellListDef.modDependencies[progressionSource] then
-															local name, author, version = Helpers:BuildModFields(progressionSource)
-															if author == "Larian" then
-																goto continue
-															end
-															spellListDef.modDependencies[progressionSource] = {
-																modName = name,
-																modAuthor = author,
-																modVersion = version,
-																modId = progressionSource,
-																packagedItems = {}
-															}
-														end
-														spellListDef.modDependencies[progressionSource].packagedItems[progressionId] = progression.Name
-													end
-													::continue::
-												end
-											end
-										end
-									end
-
-									if levelSubList.manuallySelectedEntries then
-										for _, spells in pairs(levelSubList.manuallySelectedEntries) do
-											for i, spell in pairs(spells) do
-												if not buildSpellDep(spell, spellListDef) then
-													spells[i] = nil
-												end
-											end
-											TableUtils:ReindexNumericTable(spells)
-										end
-									end
-								end
-							end
-
-							export.spellLists = export.spellLists or {}
-							if not export.spellLists[spellListId] then
-								export.spellLists[spellListId] = spellListDef
-							end
-						else
-							local name, author, version = Helpers:BuildModFields(spellListModId)
-							mutator.modDependencies = mutator.modDependencies or {}
-							mutator.modDependencies[spellListModId] = {
-								modAuthor = author,
-								modName = name,
-								modVersion = version,
-								modId = spellListModId,
-								packagedItems = nil
-							}
-						end
-					end
+					SpellListDesigner:HandleDependences(export, mutator, leveledSpellPool.spellLists, removeMissingDependencies)
 				end
 			end
 		end
