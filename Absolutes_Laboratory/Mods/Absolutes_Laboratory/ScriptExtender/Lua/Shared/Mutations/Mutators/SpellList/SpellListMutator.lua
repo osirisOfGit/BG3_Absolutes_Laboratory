@@ -1111,9 +1111,8 @@ if Ext.IsServer() then
 							if (condition.comparator == "gte" and score < condition.value)
 								or (condition.comparator == "lte" and score > condition.value)
 							then
-								Logger:BasicDebug("Skipped Group %s on %s due to %s being %s than %s (was %s)",
+								Logger:BasicDebug("Skipped Group %s due to %s being %s than %s (was %s)",
 									g,
-									entity.Uuid.EntityUuid,
 									ability,
 									condition.comparator == "gte" and "less than" or "greater than",
 									condition.value,
@@ -1133,7 +1132,7 @@ if Ext.IsServer() then
 								end
 							end
 						end
-						Logger:BasicDebug("Skipped Group %s on %s due to not being one of the right classes", g, entity.Uuid.EntityUuid)
+						Logger:BasicDebug("Skipped Group %s due to entity not being one of the right classes", g)
 						spellListMutators[g] = nil
 						goto next_group
 
@@ -1261,8 +1260,8 @@ if Ext.IsServer() then
 										for progressionId, subLists in pairs(leveledLists.linkedProgressions) do
 											self:processSubLists(subLists, entity, addSpells, origValues.castedSpells)
 
-											if SpellListDesigner.progressionTranslation[progressionId] then
-												local progressionTable = SpellListDesigner.progressions[SpellListDesigner.progressionTranslation[progressionId]]
+											if SpellListDesigner.progressionTranslations[progressionId] then
+												local progressionTable = SpellListDesigner.progressions[SpellListDesigner.progressionTranslations[progressionId]]
 												if progressionTable and progressionTable[i] then
 													for _, spellName in pairs(progressionTable[i]) do
 														if not TableUtils:IndexOf(subLists.blackListed, spellName) then
