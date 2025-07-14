@@ -291,3 +291,16 @@ function PassiveListMutator:handleDependencies(export, mutator, removeMissingDep
 		PassiveListDesigner:HandleDependences(export, mutator, mutator.values.passiveLists, removeMissingDependencies)
 	end
 end
+
+function PassiveListMutator:undoMutator(entity, mutator, primedEntityVar, reprocessTransient)
+	for _, passiveId in pairs(mutator.originalValues[self.name]) do
+		if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 1 then
+			Logger:BasicDebug("Removing passive %s as it was given by Lab", passiveId)
+			Osi.RemovePassive(entity.Uuid.EntityUuid, passiveId)
+		end
+	end
+end
+
+function PassiveListMutator:applyMutator(entity, mutatorVar)
+	
+end
