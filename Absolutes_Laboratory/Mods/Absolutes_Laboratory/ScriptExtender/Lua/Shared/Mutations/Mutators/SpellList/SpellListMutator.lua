@@ -342,7 +342,7 @@ function SpellListMutator:buildSpellSelectorSection(parent, mutatorGroup, poolIn
 		Helpers:KillChildren(popup)
 
 		StatBrowser:Render("SpellData",
-		popup,
+			popup,
 			nil,
 			function(pos)
 				return pos % 7 ~= 0
@@ -762,7 +762,7 @@ SpellSet are specified in the template under the same name, SpellSet2 are added 
 		popup:AddSeparatorText("Search Spells")
 
 		StatBrowser:Render("SpellData",
-		popup,
+			popup,
 			nil,
 			function(pos)
 				return pos % 8 ~= 0
@@ -1244,7 +1244,7 @@ if Ext.IsServer() then
 								maxAppliedLevel = 0
 							end
 							appliedLists[nextAnchor] = spellListId
-							
+
 							local cLevel = nextAnchor - maxAppliedLevel
 							trueAppliedLists[spellListId] = (trueAppliedLists[spellListId] or 0) + math.max(1, (cLevel - startingSpellListLevel))
 
