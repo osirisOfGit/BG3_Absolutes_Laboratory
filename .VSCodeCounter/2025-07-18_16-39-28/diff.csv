@@ -1,0 +1,21 @@
+"filename", "language", "Lua", "comment", "blank", "total"
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Client\Mutations\ListDesignerBaseClass.lua", "Lua", 1028, 86, 156, 1270
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Client\Mutations\MutationProfileManager.lua", "Lua", 22, 0, 5, 27
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Client\SpellBrowser.lua", "Lua", -139, -11, -27, -177
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Client\StatBrowser.lua", "Lua", 142, 12, 27, 181
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Client\Styler.lua", "Lua", 8, 2, 0, 10
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Server\Mutations\ProfileExecutor.lua", "Lua", 18, 0, 2, 20
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Configurations\MutationsConfig.lua", "Lua", 2, 2, 1, 5
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\External\MutationModProxy.lua", "Lua", 19, 1, 2, 22
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\MutationConfigurationProxy.lua", "Lua", 20, 3, 3, 26
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Mutators\MutatorInterface.lua", "Lua", 1, 0, 0, 1
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Mutators\PassiveList\PassiveListDesigner.lua", "Lua", 72, 3, 13, 88
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Mutators\PassiveList\PassiveListMutator.lua", "Lua", 421, 28, 67, 516
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Mutators\SpellList\SpellListDesigner.lua", "Lua", -702, -56, -129, -887
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Mutators\SpellList\SpellListMutator.lua", "Lua", -76, 0, -5, -81
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Utilities\Common\_TableUtils.lua", "Lua", 2, 1, 0, 3
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Utilities\IDEHelpers\Ext.Osiris.RegisterListener.lua", "Lua", 2, 637, 5, 644
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Utilities\IDEHelpers\ExtIdeHelpers.lua", "Lua", 10327, 16586, 5387, 32300
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Utilities\IDEHelpers\Osi.Events.lua", "Lua", 316, 816, 317, 1449
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Utilities\IDEHelpers\Osi.lua", "Lua", 983, 2797, 1007, 4787
+"Total", "-", 12466, 20907, 6831, 40204
