@@ -352,6 +352,17 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 						end
 					end
 				end
+				if leveledLists.manuallySelectedEntries.guaranteed and next(leveledLists.manuallySelectedEntries.guaranteed) then
+					for _, passiveId in pairs(leveledLists.manuallySelectedEntries.guaranteed) do
+						if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
+							Logger:BasicDebug("Adding guaranteed passive %s", passiveId)
+							Osi.AddPassive(entity.Uuid.EntityUuid, passiveId)
+							table.insert(appliedPassives, passiveId)
+						else
+							Logger:BasicDebug("Guaranteed passive %s is already present", passiveId)
+						end
+					end
+				end
 			end
 		end
 
@@ -469,6 +480,7 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 				count = count + 1
 				if count == chosenIndex then
 					local passiveList = MutationConfigurationProxy.passiveLists[passiveListId]
+					passiveList = passiveList.__real or passiveList
 
 					Logger:BasicDebug("%s passive lists without dependencies are in the pool - randomly chose %s",
 						TableUtils:CountElements(passiveListsPool),
@@ -482,6 +494,7 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 		else
 			for passiveListId, numRandomPassivesPerLevel in pairs(passiveListsPool) do
 				local passiveList = MutationConfigurationProxy.passiveLists[passiveListId]
+				passiveList = passiveList.__real or passiveList
 
 				local levelToUse = 0
 				for _, spellListDependency in pairs(passiveList.spellListDependencies) do

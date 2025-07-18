@@ -924,98 +924,98 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 							local progTable = Styler:TwoColumnTable(levelView, progressionName)
 							for level, lists in TableUtils:OrderedPairs(indexedProgLevelLists, function(key)
 								return tonumber(key)
+							end, function(key, value)
+								return value[self.name] ~= nil
 							end) do
-								if lists[self.name] then
-									local row = progTable:AddRow()
-									row:AddCell():AddText(tostring(level))
+								local row = progTable:AddRow()
+								row:AddCell():AddText(tostring(level))
 
-									local spellCell = row:AddCell()
-									for i, entryName in ipairs(lists[self.name] or {}) do
-										---@type SpellData|PassiveData|StatusData
-										local entryData = Ext.Stats.Get(entryName)
+								local spellCell = row:AddCell()
+								for i, entryName in ipairs(lists[self.name] or {}) do
+									---@type SpellData|PassiveData|StatusData
+									local entryData = Ext.Stats.Get(entryName)
 
-										local entryImageButton = spellCell:AddImageButton(entryName .. i, entryData.Icon ~= "" and entryData.Icon or "Item_Unknown", { 48, 48 })
-										local tooltipFunction = Styler:HyperlinkRenderable(entryImageButton, entryName, "Shift", false, entryName, function(parent)
-											ResourceManager:RenderDisplayWindow(entryData, parent)
-										end)
-										entryImageButton.SameLine = (i - 1) % (math.floor(self.browserTabs["Progressions"].LastSize[1] / 64)) ~= 0
-										entryImageButton.CanDrag = true
-										entryImageButton.DragDropType = "EntryReorder"
-										entryImageButton.UserData = {
-											entryName = entryName
-										} --[[@as EntryHandle]]
+									local entryImageButton = spellCell:AddImageButton(entryName .. i, entryData.Icon ~= "" and entryData.Icon or "Item_Unknown", { 48, 48 })
+									local tooltipFunction = Styler:HyperlinkRenderable(entryImageButton, entryName, "Shift", false, entryName, function(parent)
+										ResourceManager:RenderDisplayWindow(entryData, parent)
+									end)
+									entryImageButton.SameLine = (i - 1) % (math.floor(self.browserTabs["Progressions"].LastSize[1] / 64)) ~= 0
+									entryImageButton.CanDrag = true
+									entryImageButton.DragDropType = "EntryReorder"
+									entryImageButton.UserData = {
+										entryName = entryName
+									} --[[@as EntryHandle]]
 
-										for l = 1, 30 do
-											if self.activeList.levels and self.activeList.levels[l] and self:CheckIfEntryIsInListLevel(self.activeList.levels[l], entryName, l) then
-												entryImageButton.Tint = { 1, 1, 1, 0.2 }
-												break
+									for l = 1, 30 do
+										if self.activeList.levels and self.activeList.levels[l] and self:CheckIfEntryIsInListLevel(self.activeList.levels[l], entryName, l) then
+											entryImageButton.Tint = { 1, 1, 1, 0.2 }
+											break
+										end
+									end
+
+									---@param preview ExtuiTreeParent
+									entryImageButton.OnDragStart = function(_, preview)
+										if self.selectedEntries.context ~= "Browser" then
+											self.selectedEntries.context = "Browser"
+											self.selectedEntries.entries = {}
+											for _, handle in pairs(self.selectedEntries.handles) do
+												if handle.UserData.subListName then
+													handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
+												else
+													handle:SetColor("Button", { 1, 1, 1, 0 })
+												end
+												handle:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+											end
+											self.selectedEntries.handles = {}
+										else
+											local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+												return value.entryName == entryName
+											end)
+											if not index then
+												table.insert(self.selectedEntries.entries, entryImageButton.UserData)
+												table.insert(self.selectedEntries.handles, entryImageButton)
 											end
 										end
 
-										---@param preview ExtuiTreeParent
-										entryImageButton.OnDragStart = function(_, preview)
-											if self.selectedEntries.context ~= "Browser" then
-												self.selectedEntries.context = "Browser"
-												self.selectedEntries.entries = {}
-												for _, handle in pairs(self.selectedEntries.handles) do
-													if handle.UserData.subListName then
-														handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
-													else
-														handle:SetColor("Button", { 1, 1, 1, 0 })
-													end
-													handle:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
-												end
-												self.selectedEntries.handles = {}
-											else
-												local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-													return value.entryName == entryName
-												end)
-												if not index then
-													table.insert(self.selectedEntries.entries, entryImageButton.UserData)
-													table.insert(self.selectedEntries.handles, entryImageButton)
-												end
+										if #self.selectedEntries.entries > 0 then
+											preview:AddText("Moving:")
+											for _, spellName in pairs(self.selectedEntries.entries) do
+												preview:AddText(spellName.entryName)
 											end
-
-											if #self.selectedEntries.entries > 0 then
-												preview:AddText("Moving:")
-												for _, spellName in pairs(self.selectedEntries.entries) do
-													preview:AddText(spellName.entryName)
-												end
-											else
-												preview:AddText("Moving " .. entryName)
-											end
+										else
+											preview:AddText("Moving " .. entryName)
 										end
+									end
 
-										entryImageButton.OnClick = function()
-											if not tooltipFunction() then
-												if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
-													if self.selectedEntries.context ~= "Browser" then
-														self.selectedEntries.context = "Browser"
-														self.selectedEntries.entries = {}
-														for _, handle in pairs(self.selectedEntries.handles) do
-															if handle.UserData.subListName then
-																handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
-															else
-																handle:SetColor("Button", { 1, 1, 1, 0 })
-															end
-														end
-														self.selectedEntries.handles = {}
-													else
-														local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-															return value.entryName == entryName
-														end)
-														if not index then
-															table.insert(self.selectedEntries.entries, entryImageButton.UserData)
-															table.insert(self.selectedEntries.handles, entryImageButton)
-															entryImageButton:SetColor("Button", { 0, 1, 0, .8 })
-															entryImageButton:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+									entryImageButton.OnClick = function()
+										if not tooltipFunction() then
+											if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
+												if self.selectedEntries.context ~= "Browser" then
+													self.selectedEntries.context = "Browser"
+													self.selectedEntries.entries = {}
+													for _, handle in pairs(self.selectedEntries.handles) do
+														if handle.UserData.subListName then
+															handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
 														else
-															table.remove(self.selectedEntries.entries, index)
-															table.remove(self.selectedEntries.handles, index)
-
-															entryImageButton:SetColor("Button", { 1, 1, 1, 0 })
-															entryImageButton:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+															handle:SetColor("Button", { 1, 1, 1, 0 })
 														end
+													end
+													self.selectedEntries.handles = {}
+												else
+													local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+														return value.entryName == entryName
+													end)
+													if not index then
+														table.insert(self.selectedEntries.entries, entryImageButton.UserData)
+														table.insert(self.selectedEntries.handles, entryImageButton)
+														entryImageButton:SetColor("Button", { 0, 1, 0, .8 })
+														entryImageButton:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+													else
+														table.remove(self.selectedEntries.entries, index)
+														table.remove(self.selectedEntries.handles, index)
+
+														entryImageButton:SetColor("Button", { 1, 1, 1, 0 })
+														entryImageButton:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
 													end
 												end
 											end
@@ -1170,7 +1170,9 @@ function ListDesignerBaseClass:HandleDependences(export, mutator, lists, removeM
 						packagedItems = {}
 					}
 				end
-				container.modDependencies[stat.OriginalModId].packagedItems[statName] = Ext.Loca.GetTranslatedString(stat.DisplayName, statName)
+				local name = Ext.Loca.GetTranslatedString(stat.DisplayName, statName)
+				name = name == "" and statName or name
+				container.modDependencies[stat.OriginalModId].packagedItems[statName] = name
 			end
 			return true
 		else
@@ -1179,7 +1181,8 @@ function ListDesignerBaseClass:HandleDependences(export, mutator, lists, removeM
 	end
 
 	for l, listId in pairs(lists) do
-		local listModId = MutationConfigurationProxy[self.configKey][listId].modId
+		local list = MutationConfigurationProxy[self.configKey][listId]
+		local listModId = list.modId
 		if not listModId then
 			--- @type CustomList
 			local listDef = removeMissingDependencies == true
@@ -1194,7 +1197,7 @@ function ListDesignerBaseClass:HandleDependences(export, mutator, lists, removeM
 						for progressionTableId, sublists in pairs(levelSubList.linkedProgressions) do
 							for _, entries in pairs(sublists) do
 								for i, entry in pairs(entries) do
-									if not buildStatDependency(entry) then
+									if not buildStatDependency(entry, listDef) then
 										entries[i] = nil
 									end
 								end

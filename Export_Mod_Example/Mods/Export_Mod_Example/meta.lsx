@@ -6,13 +6,6 @@
       <children>
         <node id="Dependencies">
           <children>
-            <node id="ModuleShortDesc">
-              <attribute id="Folder" type="LSWString" value="ManyMoreMonsters" />
-              <attribute id="MD5" type="LSString" value="" />
-              <attribute id="Name" type="FixedString" value="Many More Monsters" />
-              <attribute id="UUID" type="FixedString" value="1b215646-6200-451a-9c4a-b21406f69edd" />
-              <attribute id="Version64" type="int64" value="108649349600247812" />
-            </node>
           </children>
         </node>
         <node id="ModuleInfo">

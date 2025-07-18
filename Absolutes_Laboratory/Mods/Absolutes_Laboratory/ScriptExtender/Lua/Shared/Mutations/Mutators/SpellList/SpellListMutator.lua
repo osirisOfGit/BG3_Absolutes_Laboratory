@@ -1047,7 +1047,7 @@ if Ext.IsServer() then
 							PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
 							SpellCastingAbility = entity.Stats.SpellCastingAbility
 						}
-						Logger:BasicDebug("Added spell %s", spellName)
+						Logger:BasicDebug("Added guaranteed spell %s", spellName)
 					end
 				elseif subListName == "startOfCombatOnly" then
 					if Osi.IsInCombat(entity.Uuid.EntityUuid) == 1 then
