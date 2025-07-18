@@ -301,6 +301,100 @@ function PassiveListMutator:undoMutator(entity, mutator, primedEntityVar, reproc
 	end
 end
 
-function PassiveListMutator:applyMutator(entity, mutatorVar)
-	
+function PassiveListMutator:applyMutator(entity, entityVar)
+	PassiveListDesigner:buildProgressionIndex()
+
+	local passiveListMutators = entityVar.appliedMutators[self.name]
+	if not passiveListMutators[1] then
+		passiveListMutators = { passiveListMutators }
+	end
+	---@cast passiveListMutators PassiveListMutator[]
+
+	local usingListsWithSpellListDeps = false
+	-- PassiveListId : randomizedPassivePoolSize
+	---@type {[Guid]: number[]}
+	local passiveListsPool = {}
+
+	---@type string[]
+	local loosePassivesToApply = {}
+	for _, passiveListMutator in pairs(passiveListMutators) do
+		if passiveListMutator.values.passives then
+			for _, passive in pairs(passiveListMutator.values.passives) do
+				table.insert(loosePassivesToApply, passive)
+			end
+		end
+
+		if passiveListMutator.values.passiveLists then
+			for _, passiveListId in pairs(passiveListMutator.values.passiveLists) do
+				local passiveList = MutationConfigurationProxy.passiveLists[passiveListId]
+				if passiveList then
+					if passiveList.spellListDependencies then
+						for _, spellListDependency in ipairs(passiveList.spellListDependencies) do
+							if TableUtils:IndexOf(entityVar.appliedMutators[SpellListMutator.name].appliedLists, spellListDependency) then
+								if not usingListsWithSpellListDeps then
+									passiveListsPool = {}
+									usingListsWithSpellListDeps = true
+								end
+
+								passiveListsPool[passiveListId] = passiveListMutator.values.randomizedPassivePoolSize
+								Logger:BasicDebug(
+									"List %s was added to the pool due to having Spell List Dependency %s being present (removing all passive lists that don't have dependencies from the pool)",
+									passiveList.name,
+									spellListDependency)
+								break
+							end
+						end
+					elseif not usingListsWithSpellListDeps then
+						passiveListsPool[passiveListId] = passiveListMutator.values.randomizedPassivePoolSize
+						Logger:BasicDebug("List %s was added to the random pool due to having no Spell List Dependencies", passiveList.name)
+					end
+				end
+			end
+		end
+	end
+
+	if next(loosePassivesToApply) then
+		for _, passiveId in pairs(loosePassivesToApply) do
+			if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
+				Logger:BasicDebug("Adding loose passive %s", passiveId)
+				Osi.AddPassive(entity.Uuid.EntityUuid, passiveId)
+			else
+				Logger:BasicDebug("Loose passive %s is already present", passiveId)
+			end
+		end
+	end
+
+	if next(passiveListsPool) then
+		if not usingListsWithSpellListDeps then
+			local chosenIndex = math.random(TableUtils:CountElements(passiveListsPool))
+			local count = 0
+			for passiveListId, numRandomPassivesPerLevel in pairs(passiveListsPool) do
+				count = count + 1
+				if count == chosenIndex then
+					local passiveList = MutationConfigurationProxy.passiveLists[passiveListId]
+
+					Logger:BasicDebug("%s passive lists without dependencies are in the pool - randomly chose %s",
+						TableUtils:CountElements(passiveListsPool),
+						passiveList.name .. (passiveList.modId and (" from mod " .. Ext.Mod.GetMod(passiveList.modId).Info.Name) or ""))
+
+					local levelToUse = entity.EocLevel.Level
+					break
+				end
+			end
+		else
+			for passiveListId, numRandomPassivesPerLevel in pairs(passiveListsPool) do
+				local passiveList = MutationConfigurationProxy.passiveLists[passiveListId]
+
+				local levelToUse = 0
+				for _, spellListDependency in pairs(passiveList.spellListDependencies) do
+					local appliedSpellListLevel = TableUtils:IndexOf(entityVar.appliedMutators[SpellListMutator.name].appliedLists, spellListDependency)
+					if appliedSpellListLevel then
+						levelToUse = levelToUse + appliedSpellListLevel
+					end
+				end
+
+				-- for 
+			end
+		end
+	end
 end

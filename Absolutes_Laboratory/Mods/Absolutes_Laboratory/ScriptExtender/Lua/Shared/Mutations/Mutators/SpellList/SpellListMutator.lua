@@ -1201,8 +1201,12 @@ if Ext.IsServer() then
 				end
 			end
 
-			---@type Guid[]
+			--- {maxLevelOfAssignedSpellList : spellListId}
+			---@alias AppliedSpellLists Guid[]
+			---@type AppliedSpellLists
 			local appliedLists = {}
+
+			local trueAppliedLists = {}
 
 			for lSP, leveledSpellPool in ipairs(spellMutatorGroup.leveledSpellPool) do
 				if entity.AvailableLevel and entity.AvailableLevel.Level >= leveledSpellPool.anchorLevel then
@@ -1224,7 +1228,7 @@ if Ext.IsServer() then
 
 						if spellListId and MutationConfigurationProxy.spellLists[spellListId] then
 							local nextAnchor = math.min((spellMutatorGroup.leveledSpellPool[lSP + 1] and spellMutatorGroup.leveledSpellPool[lSP + 1].anchorLevel - 1) or 30,
-								entity.AvailableLevel.Level)
+								entity.EocLevel.Level)
 
 							local maxAppliedLevel = 0
 							for level in pairs(appliedLists) do
@@ -1235,13 +1239,14 @@ if Ext.IsServer() then
 							local startingSpellListLevel = (TableUtils:IndexOf(appliedLists, spellListId) or 1)
 
 							if TableUtils:IndexOf(appliedLists, spellListId) then
-								startingSpellListLevel = startingSpellListLevel + 1
 								appliedLists[startingSpellListLevel] = nil
+								startingSpellListLevel = startingSpellListLevel + 1
 								maxAppliedLevel = 0
 							end
 							appliedLists[nextAnchor] = spellListId
-
-							local cLevel = nextAnchor == maxAppliedLevel + 1 and nextAnchor or nextAnchor - maxAppliedLevel
+							
+							local cLevel = nextAnchor - maxAppliedLevel
+							trueAppliedLists[spellListId] = (trueAppliedLists[spellListId] or 0) + math.max(1, (cLevel - startingSpellListLevel))
 
 							local spellList = MutationConfigurationProxy.spellLists[spellListId]
 							Logger:BasicDebug("Selected spellList %s (%s) for anchor level %s, using levels %s-%s",
@@ -1342,7 +1347,7 @@ if Ext.IsServer() then
 				end
 			end
 
-			entityVar.appliedMutators[self.name].appliedLists = appliedLists
+			entityVar.appliedMutators[self.name].appliedLists = trueAppliedLists
 		else
 			entityVar.appliedMutators[self.name] = nil
 			entityVar.originalValues[self.name] = nil

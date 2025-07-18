@@ -277,7 +277,7 @@ function LevelMutator:applyMutator(entity, entityVar)
 		end, Ext.Entity.Get(Osi.GetHostCharacter()))
 	end
 
-	baseLevel = math.abs(baseLevel) < highestPlayerLevel and baseLevel or ((highestPlayerLevel - 1) * (baseLevel < 0 and -1 or 1))
+	baseLevel = (Ext.Math.Sign(baseLevel) == -1 and baseLevel < highestPlayerLevel) and highestPlayerLevel or baseLevel
 
 	entity.AvailableLevel.Level = highestPlayerLevel + baseLevel
 	entity.EocLevel.Level = entity.AvailableLevel.Level

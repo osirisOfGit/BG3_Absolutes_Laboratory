@@ -344,7 +344,7 @@ function ClassesAndSubclassesMutator:applyMutator(entity, entityVar)
 				if classConditonal.spellListDependencies and next(classConditonal.spellListDependencies) then
 					local numberMatched = 0
 					if entityVar.appliedMutators[SpellListMutator.name] and entityVar.appliedMutators[SpellListMutator.name].appliedLists then
-						for _, appliedSpellListId in pairs(entityVar.appliedMutators[SpellListMutator.name].appliedLists) do
+						for appliedSpellListId in pairs(entityVar.appliedMutators[SpellListMutator.name].appliedLists) do
 							if TableUtils:IndexOf(classConditonal.spellListDependencies, appliedSpellListId) then
 								numberMatched = numberMatched + 1
 							end
