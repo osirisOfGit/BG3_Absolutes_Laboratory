@@ -1267,8 +1267,8 @@ if Ext.IsServer() then
 
 											if SpellListDesigner.progressionTranslations[progressionId] then
 												local progressionTable = SpellListDesigner.progressions[SpellListDesigner.progressionTranslations[progressionId]]
-												if progressionTable and progressionTable[i] then
-													for _, spellName in pairs(progressionTable[i]) do
+												if progressionTable and progressionTable[i] and progressionTable[i][SpellListDesigner.name] then
+													for _, spellName in pairs(progressionTable[i][SpellListDesigner.name]) do
 														if not TableUtils:IndexOf(subLists.blackListed, spellName) then
 															table.insert(randomPool, spellName)
 														end

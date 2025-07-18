@@ -301,6 +301,99 @@ function PassiveListMutator:undoMutator(entity, mutator, primedEntityVar, reproc
 	end
 end
 
+---@param entity EntityHandle
+---@param levelToUse integer
+---@param passiveList CustomList
+---@param numRandomPassivesPerLevel number[]
+---@param appliedPassives string[]
+local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassivesPerLevel, appliedPassives)
+	Logger:BasicDebug("Applying levels 1 to %s of list %s", levelToUse,
+		passiveList.name .. (passiveList.modId and (" from mod " .. Ext.Mod.GetMod(passiveList.modId).Info.Name) or ""))
+
+	for level = 1, levelToUse do
+		local leveledLists = passiveList.levels[level]
+		---@type EntryName[]
+		local randomPool = {}
+		if leveledLists then
+			if leveledLists.linkedProgressions then
+				for progressionId, subLists in pairs(leveledLists.linkedProgressions) do
+					if subLists.guaranteed and next(subLists.guaranteed) then
+						for _, passiveId in pairs(subLists.guaranteed) do
+							if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
+								Logger:BasicDebug("Adding guaranteed passive %s from progression %s", passiveId, progressionId)
+								Osi.AddPassive(entity.Uuid.EntityUuid, passiveId)
+								table.insert(appliedPassives, passiveId)
+							else
+								Logger:BasicDebug("Guaranteed passive %s from progression %s is already present", passiveId, progressionId)
+							end
+						end
+					end
+
+					if PassiveListDesigner.progressionTranslations[progressionId] then
+						local progressionTable = PassiveListDesigner.progressions[PassiveListDesigner.progressionTranslations[progressionId]]
+						if progressionTable and progressionTable[level] and progressionTable[level][PassiveListDesigner.name] then
+							for _, passiveId in pairs(progressionTable[level][PassiveListDesigner.name]) do
+								if not TableUtils:IndexOf(subLists.blackListed, passiveId) then
+									table.insert(randomPool, passiveId)
+								end
+							end
+						end
+					end
+				end
+			end
+
+			if leveledLists.manuallySelectedEntries then
+				if leveledLists.manuallySelectedEntries.randomized then
+					for _, passiveId in pairs(leveledLists.manuallySelectedEntries.randomized) do
+						if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
+							table.insert(randomPool, passiveId)
+						else
+							Logger:BasicDebug("%s is already present, not adding to the random pool", passiveId)
+						end
+					end
+				end
+			end
+		end
+
+		local numRandomPassivesToPick = 0
+		if numRandomPassivesPerLevel[level] then
+			numRandomPassivesToPick = numRandomPassivesPerLevel[level]
+		else
+			local maxLevel = nil
+			for definedLevel, _ in pairs(numRandomPassivesPerLevel) do
+				if definedLevel < level and (not maxLevel or definedLevel > maxLevel) then
+					maxLevel = definedLevel
+				end
+			end
+			if maxLevel then
+				numRandomPassivesToPick = numRandomPassivesPerLevel[maxLevel]
+			end
+		end
+
+		if numRandomPassivesToPick > 0 then
+			Logger:BasicDebug("Giving %s random passives out of %s from level %s", numRandomPassivesToPick, #randomPool, level)
+			local passivesToGive = {}
+			if #randomPool <= numRandomPassivesToPick then
+				passivesToGive = randomPool
+			else
+				for _ = 1, numRandomPassivesToPick do
+					local num = math.random(#randomPool)
+					table.insert(passivesToGive, randomPool[num])
+					table.remove(randomPool, num)
+				end
+			end
+
+			for _, passiveId in pairs(passivesToGive) do
+				Osi.AddPassive(entity.Uuid.EntityUuid, passiveId)
+				table.insert(appliedPassives, passiveId)
+				Logger:BasicDebug("Added passive %s", passiveId)
+			end
+		else
+			Logger:BasicDebug("Skipping level %s for random passive assignment due to configured size being 0", level)
+		end
+	end
+end
+
 function PassiveListMutator:applyMutator(entity, entityVar)
 	PassiveListDesigner:buildProgressionIndex()
 
@@ -309,6 +402,8 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 		passiveListMutators = { passiveListMutators }
 	end
 	---@cast passiveListMutators PassiveListMutator[]
+
+	local appliedPassives = {}
 
 	local usingListsWithSpellListDeps = false
 	-- PassiveListId : randomizedPassivePoolSize
@@ -327,10 +422,11 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 		if passiveListMutator.values.passiveLists then
 			for _, passiveListId in pairs(passiveListMutator.values.passiveLists) do
 				local passiveList = MutationConfigurationProxy.passiveLists[passiveListId]
+				passiveList = passiveList.__real or passiveList
 				if passiveList then
-					if passiveList.spellListDependencies then
+					if passiveList.spellListDependencies and next(passiveList.spellListDependencies) then
 						for _, spellListDependency in ipairs(passiveList.spellListDependencies) do
-							if TableUtils:IndexOf(entityVar.appliedMutators[SpellListMutator.name].appliedLists, spellListDependency) then
+							if entityVar.appliedMutators[SpellListMutator.name].appliedLists[spellListDependency] then
 								if not usingListsWithSpellListDeps then
 									passiveListsPool = {}
 									usingListsWithSpellListDeps = true
@@ -358,6 +454,7 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 			if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
 				Logger:BasicDebug("Adding loose passive %s", passiveId)
 				Osi.AddPassive(entity.Uuid.EntityUuid, passiveId)
+				table.insert(appliedPassives, passiveId)
 			else
 				Logger:BasicDebug("Loose passive %s is already present", passiveId)
 			end
@@ -378,6 +475,7 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 						passiveList.name .. (passiveList.modId and (" from mod " .. Ext.Mod.GetMod(passiveList.modId).Info.Name) or ""))
 
 					local levelToUse = entity.EocLevel.Level
+					applyPassiveLists(entity, levelToUse, passiveList, numRandomPassivesPerLevel, appliedPassives)
 					break
 				end
 			end
@@ -387,14 +485,18 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 
 				local levelToUse = 0
 				for _, spellListDependency in pairs(passiveList.spellListDependencies) do
-					local appliedSpellListLevel = TableUtils:IndexOf(entityVar.appliedMutators[SpellListMutator.name].appliedLists, spellListDependency)
+					local appliedSpellListLevel = entityVar.appliedMutators[SpellListMutator.name].appliedLists[spellListDependency]
 					if appliedSpellListLevel then
 						levelToUse = levelToUse + appliedSpellListLevel
 					end
 				end
 
-				-- for 
+				applyPassiveLists(entity, levelToUse, passiveList, numRandomPassivesPerLevel, appliedPassives)
 			end
 		end
+	end
+
+	if next(appliedPassives) then
+		entityVar.originalValues[self.name] = appliedPassives
 	end
 end
