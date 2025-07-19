@@ -29,7 +29,7 @@ end
 
 function SpellListDesigner:customizeDesigner()
 	self.designerSection:AddText("Primary Abilities ( ? )"):Tooltip():AddText([[
-Any Abilities Mutators that run will check the entity for assigned Spell Lists - if it finds them, it will decide which Abilities get the highest scores (in addition to +2 and +1 base additions)
+	Any Abilities Mutators that run will check the entity for assigned Spell Lists - if it finds them, it will decide which Abilities get the highest scores (in addition to +2 and +1 base additions)
 based on this list, if specified - if multiple Spell Lists are assigned, it will average out the priorities based on how many levels of each list were assigned]])
 	local abilityGroup = self.designerSection:AddGroup("AbilityGroup")
 	abilityGroup.Font = "Small"

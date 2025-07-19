@@ -141,4 +141,48 @@ will inspect the current Entity stats and use that to infer priority. Specifying
 		end
 	end
 	build()
+
+	mutator.modifiers = mutator.modifiers or {}
+	self:renderModifiers(parent:AddGroup("Modifiers"), mutator.modifiers)
+end
+
+---@param modifiers AbilitiesMutatorModifiers
+function AbilitiesMutator:renderModifiers(parent, modifiers)
+	Helpers:KillChildren(parent)
+
+	local sep = parent:AddSeparatorText("Min/Max Scores ( ? )")
+	sep:SetStyle("SeparatorTextAlign", 0.05, 0.5)
+	sep:Tooltip():AddText([[
+	Setting the below will keep any "rolled" score within the specified boundaries (before adding +2 and +1 to the primary/secondary abilities)
+Empty values will remove that boundary]])
+
+	parent:AddText("Minimum Score Value")
+	local minInput = parent:AddInputInt("", modifiers.minimumScoreValue)
+	minInput.SameLine = true
+	minInput.ItemWidth = 80
+	minInput.DisplayEmptyRefVal = true
+	minInput.ParseEmptyRefVal = true
+	minInput.OnChange = function()
+		if minInput.Value[1] <= 0 or (modifiers.maximumScoreValue and minInput.Value[1] > modifiers.maximumScoreValue) then
+			minInput.Value = { 0, 0, 0, 0 }
+			modifiers.minimumScoreValue = nil
+		else
+			modifiers.minimumScoreValue = minInput.Value[1]
+		end
+	end
+
+	parent:AddText("Maximum Score Value")
+	local maxInput = parent:AddInputInt("", modifiers.maximumScoreValue)
+	maxInput.SameLine = true
+	maxInput.DisplayEmptyRefVal = true
+	maxInput.ParseEmptyRefVal = true
+	maxInput.ItemWidth = 80
+	maxInput.OnChange = function()
+		if maxInput.Value[1] <= 0 or (modifiers.minimumScoreValue and maxInput.Value[1] < modifiers.minimumScoreValue) then
+			maxInput.Value = { 0, 0, 0, 0 }
+			modifiers.maximumScoreValue = nil
+		else
+			modifiers.maximumScoreValue = maxInput.Value[1]
+		end
+	end
 end
