@@ -7,6 +7,7 @@ MutationModProxy.Filename = "AbsolutesLaboratory_ProfilesAndMutations"
 ---@field folders {[Guid] : string}
 ---@field spellLists {[Guid] : string}
 ---@field passiveLists {[Guid] : string}
+---@field statusLists {[Guid] : string}
 
 ---@type {[Guid] : LocalModCache}
 local modList = {}
@@ -48,9 +49,16 @@ local function setModProxyFields(tbl, key, target)
 		end
 
 		if mutationConfig.passiveLists then
-			for spellListId, spellList in pairs(mutationConfig.passiveLists) do
-				spellList.modId = modId
-				rawset(MutationModProxy.ModProxy.passiveLists, spellListId, spellList)
+			for passiveListId, passiveList in pairs(mutationConfig.passiveLists) do
+				passiveList.modId = modId
+				rawset(MutationModProxy.ModProxy.passiveLists, passiveListId, passiveList)
+			end
+		end
+
+		if mutationConfig.statusLists then
+			for statusListId, statusList in pairs(mutationConfig.statusLists) do
+				statusList.modId = modId
+				rawset(MutationModProxy.ModProxy.statusLists, statusListId, statusList)
 			end
 		end
 
@@ -100,6 +108,19 @@ MutationModProxy.ModProxy = {
 		__mode = "k",
 		__index = function(t, k)
 			return setModProxyFields(t, k, "passiveLists")
+		end,
+		__call = function(t)
+			MutationModProxy:ImportMutationsFromMods()
+			return TableUtils:CountElements(modList)
+		end,
+		__pairs = function(t)
+			return pairs(modList)
+		end
+	}),
+	statusLists = setmetatable({}, {
+		__mode = "k",
+		__index = function(t, k)
+			return setModProxyFields(t, k, "statusLists")
 		end,
 		__call = function(t)
 			MutationModProxy:ImportMutationsFromMods()

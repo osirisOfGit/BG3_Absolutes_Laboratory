@@ -244,8 +244,6 @@ end
 
 ---@param mutator PassiveListMutator
 function PassiveListMutator:handleDependencies(export, mutator, removeMissingDependencies)
-	SpellListDesigner:buildProgressionIndex()
-
 	---@param passiveName string
 	---@param container table?
 	---@return boolean?

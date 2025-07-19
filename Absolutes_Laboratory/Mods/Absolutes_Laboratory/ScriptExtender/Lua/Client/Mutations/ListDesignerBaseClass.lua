@@ -170,6 +170,8 @@ end
 
 ---@param activeListId Guid?
 function ListDesignerBaseClass:buildLists(activeListId)
+	ConfigurationStructure.config.mutations[self.configKey] = ConfigurationStructure.config.mutations[self.configKey] or {}
+
 	---@type {[Guid]: CustomList}
 	local listConfig = ConfigurationStructure.config.mutations[self.configKey]
 
@@ -1159,7 +1161,7 @@ function ListDesignerBaseClass:HandleDependences(export, mutator, lists, removeM
 				if not container.modDependencies[stat.OriginalModId] then
 					local name, author, version = Helpers:BuildModFields(stat.OriginalModId)
 					if author == "Larian" then
-						return
+						return true
 					end
 
 					container.modDependencies[stat.OriginalModId] = {
@@ -1238,13 +1240,13 @@ function ListDesignerBaseClass:HandleDependences(export, mutator, lists, removeM
 					end
 
 					if levelSubList.manuallySelectedEntries then
-						for _, spells in pairs(levelSubList.manuallySelectedEntries) do
-							for i, spell in pairs(spells) do
-								if not buildStatDependency(spell, listDef) then
-									spells[i] = nil
+						for _, entries in pairs(levelSubList.manuallySelectedEntries) do
+							for i, entry in pairs(entries) do
+								if not buildStatDependency(entry, listDef) then
+									entries[i] = nil
 								end
 							end
-							TableUtils:ReindexNumericTable(spells)
+							TableUtils:ReindexNumericTable(entries)
 						end
 					end
 				end

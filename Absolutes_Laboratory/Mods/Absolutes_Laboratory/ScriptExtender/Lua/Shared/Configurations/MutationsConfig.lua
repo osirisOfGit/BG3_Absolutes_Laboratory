@@ -172,4 +172,7 @@ ConfigurationStructure.config.mutations.spellLists = {}
 ---@type {[Guid]: CustomList}
 ConfigurationStructure.config.mutations.passiveLists = {}
 
+---@type {[Guid]: CustomList}
+ConfigurationStructure.config.mutations.statusLists = {}
+
 --#endregion

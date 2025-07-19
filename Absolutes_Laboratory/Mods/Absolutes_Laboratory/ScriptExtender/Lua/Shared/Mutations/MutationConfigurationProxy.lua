@@ -67,4 +67,27 @@ MutationConfigurationProxy = {
 			end)
 		end
 	}),
+	statusLists = setmetatable({}, {
+		__index = function(t, k)
+			return mutationsConfig.statusLists[k] or MutationModProxy.ModProxy.statusLists[k]
+		end,
+		__pairs = function(t)
+			---@type {[Guid]: CustomList}
+			local statusLists = TableUtils:DeeplyCopyTable(mutationsConfig.statusLists._real)
+
+			for _, modCache in pairs(MutationModProxy.ModProxy.statusLists) do
+				---@cast modCache LocalModCache
+
+				if modCache.statusLists and next(modCache.statusLists) then
+					for statusListId in pairs(modCache.statusLists) do
+						statusLists[statusListId] = MutationModProxy.ModProxy.statusLists[statusListId]
+					end
+				end
+			end
+
+			return TableUtils:OrderedPairs(statusLists, function(key, value)
+				return (value.modId or "_") .. value.name
+			end)
+		end
+	}),
 }

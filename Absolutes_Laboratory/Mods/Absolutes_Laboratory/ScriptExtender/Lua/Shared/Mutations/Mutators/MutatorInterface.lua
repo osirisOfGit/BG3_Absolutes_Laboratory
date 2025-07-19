@@ -166,6 +166,7 @@ function MutatorInterface:FinalizeMutator(entity) end
 Ext.Require("Shared/Mutations/Mutators/LevelMutator.lua")
 Ext.Require("Shared/Mutations/Mutators/SpellList/SpellListMutator.lua")
 Ext.Require("Shared/Mutations/Mutators/PassiveList/PassiveListMutator.lua")
+Ext.Require("Shared/Mutations/Mutators/StatusList/StatusListMutator.lua")
 Ext.Require("Shared/Mutations/Mutators/ClassesAndSubclassesMutator.lua")
 Ext.Require("Shared/Mutations/Mutators/HealthMutator.lua")
 Ext.Require("Shared/Mutations/Mutators/ProgressionsMutator.lua")
