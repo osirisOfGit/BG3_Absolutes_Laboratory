@@ -24,8 +24,6 @@ function ProgressionsMutator:renderMutator(parent, mutator)
 
 	Helpers:KillChildren(parent)
 
-	Helpers:KillChildren(parent)
-
 	local popup = parent:AddPopup("")
 
 	local classTable = Styler:TwoColumnTable(parent)

@@ -1,6 +1,7 @@
 Ext.Require("Client/Mutations/ListDesignerBaseClass.lua")
 
 ---@class SpellListDesigner : ListDesignerBaseClass
+---@field activeList SpellList
 SpellListDesigner = ListDesignerBaseClass:new("Spell List",
 	"spellLists",
 	nil,
@@ -15,128 +16,70 @@ SpellListDesigner = ListDesignerBaseClass:new("Spell List",
 		end
 	end)
 
+
 function SpellListDesigner:buildBrowser()
-	if not self.browserTabs["Spells"] then
-		self.browserTabs["Spells"] = self.browserTabParent:AddTabItem("Spells"):AddChildWindow("Spell Browser")
-		self.browserTabs["Spells"].NoSavedSettings = true
+	if not self.browserTabs["SpellData"] then
+		self.browserTabs["SpellData"] = self.browserTabParent:AddTabItem("Spells"):AddChildWindow("Spell Browser")
+		self.browserTabs["SpellData"].NoSavedSettings = true
 	end
-	Helpers:KillChildren(self.browserTabs["Spells"])
 
 	self:buildProgressionBrowser()
+	self:buildStatBrowser("SpellData")
+end
 
-	StatBrowser:Render("SpellData",
-		self.browserTabs["Spells"],
-		function(parent, results)
-			Styler:MiddleAlignedColumnLayout(parent, function(ele)
-				parent.Size = { 0, 0 }
+function SpellListDesigner:customizeDesigner()
+	self.designerSection:AddText("Primary Abilities ( ? )"):Tooltip():AddText([[
+Any Abilities Mutators that run will check the entity for assigned Spell Lists - if it finds them, it will decide which Abilities get the highest scores (in addition to +2 and +1 base additions)
+based on this list, if specified - if multiple Spell Lists are assigned, it will average out the priorities based on how many levels of each list were assigned]])
+	local abilityGroup = self.designerSection:AddGroup("AbilityGroup")
+	abilityGroup.Font = "Small"
 
-				local copyAllButton = ele:AddButton("Copy All")
+	local function build()
+		Helpers:KillChildren(abilityGroup)
 
-				copyAllButton.OnClick = function()
-					for _, spellName in ipairs(results) do
-						---@type SpellData
-						local spell = Ext.Stats.Get(spellName)
+		local function buildAbilityOptions(abilityCategory)
+			local opts = {}
+			for i = 0, 6 do
+				local ability = tostring(Ext.Enums.AbilityId[i])
+				local index = TableUtils:IndexOf(self.activeList.abilityPriorities, ability)
 
-						local level = (spell.Level ~= "" and spell.Level > 0) and spell.Level or 1
-						self.activeList.levels[level] = self.activeList.levels[level] or {}
-						local subLevelList = self.activeList.levels[level]
-
-						if not self:CheckIfEntryIsInListLevel(subLevelList, spellName, level) then
-							subLevelList.manuallySelectedEntries = subLevelList.manuallySelectedEntries or
-								TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
-
-							local leveledSubList = subLevelList.manuallySelectedEntries
-							leveledSubList.randomized = leveledSubList.randomized or {}
-
-							table.insert(leveledSubList.randomized, spellName)
-						end
-					end
-
-					self:buildDesigner()
-				end
-			end)
-		end,
-		function(pos)
-			return pos % (math.floor(self.browserTabs["Spells"].LastSize[1] / (58 * Styler:ScaleFactor()))) ~= 0
-		end,
-		function(spellName)
-			for l = 1, 30 do
-				if self.activeList.levels and self.activeList.levels[l] and self:CheckIfEntryIsInListLevel(self.activeList.levels[l], spellName, l) then
-					return true
+				if not index or index == abilityCategory then
+					table.insert(opts, ability)
 				end
 			end
-		end,
-		function(spellImage, spellName)
-			spellImage.CanDrag = true
-			spellImage.DragDropType = "EntryReorder"
-			spellImage.UserData = {
-				entryName = spellName
-			} --[[@as EntryHandle]]
 
-			---@param preview ExtuiTreeParent
-			spellImage.OnDragStart = function(_, preview)
-				if self.selectedEntries.context ~= "Browser" then
-					self.selectedEntries.context = "Browser"
-					self.selectedEntries.entries = {}
-					for _, handle in pairs(self.selectedEntries.handles) do
-						if handle.UserData.subListName then
-							handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
-						else
-							handle:SetColor("Button", { 1, 1, 1, 0 })
-						end
-						handle:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
-					end
-					self.selectedEntries.handles = {}
-				else
-					local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-						return value.entryName == spellImage.UserData.spellName
-					end)
-					if not index then
-						table.insert(self.selectedEntries.entries, spellImage.UserData)
-						table.insert(self.selectedEntries.handles, spellImage)
-					end
-				end
+			return opts, (self.activeList.abilityPriorities and TableUtils:IndexOf(opts, self.activeList.abilityPriorities[abilityCategory]) or 0) - 1
+		end
 
-				if #self.selectedEntries.entries > 0 then
-					preview:AddText("Moving:")
-					for _, entryHandle in pairs(self.selectedEntries.entries) do
-						preview:AddText(entryHandle.entryName)
+		local abilityTable = abilityGroup:AddTable("", 2)
+		abilityTable.SizingFixedFit = true
+
+		for _, prop in ipairs({ "Primary", "Secondary", "Tertiary" }) do
+			local row = abilityTable:AddRow()
+			local abilityCategory = prop:lower() .. "Stat"
+			row:AddCell():AddText(prop .. ": ")
+
+			local input = row:AddCell():AddCombo("##" .. prop)
+			input.WidthFitPreview = true
+			input.SameLine = true
+			input.Options, input.SelectedIndex  = buildAbilityOptions(abilityCategory)
+
+			input.OnChange = function ()
+				local chosenAbility = input.Options[input.SelectedIndex + 1]
+				if chosenAbility == "None" then
+					if self.activeList.abilityPriorities and self.activeList.abilityPriorities[abilityCategory] then
+						self.activeList.abilityPriorities[abilityCategory] = nil
+						build()
 					end
 				else
-					preview:AddText("Moving " .. spellName)
+					self.activeList.abilityPriorities = self.activeList.abilityPriorities or {}
+					self.activeList.abilityPriorities[abilityCategory] = chosenAbility
+					build()
 				end
 			end
-		end,
-		function(spellImage, spellName)
-			if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
-				if self.selectedEntries.context ~= "Browser" then
-					self.selectedEntries.context = "Browser"
-					self.selectedEntries.entries = {}
-					for _, handle in pairs(self.selectedEntries.handles) do
-						if handle.UserData.subListName then
-							handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
-						else
-							handle:SetColor("Button", { 1, 1, 1, 0 })
-						end
-					end
-					self.selectedEntries.handles = {}
-				else
-					local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-						return value.entryName == spellName
-					end)
-					if not index then
-						table.insert(self.selectedEntries.entries, spellImage.UserData)
-						table.insert(self.selectedEntries.handles, spellImage)
-						spellImage:SetColor("Button", { 0, 1, 0, .8 })
-						spellImage:SetColor("ButtonHovered", { 0, 1, 0, .8 })
-					else
-						table.remove(self.selectedEntries.entries, index)
-						table.remove(self.selectedEntries.handles, index)
+		end
+	end
+	build()
 
-						spellImage:SetColor("Button", { 1, 1, 1, 0 })
-						spellImage:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
-					end
-				end
-			end
-		end)
+	self.designerSection:AddNewLine()
 end
