@@ -166,6 +166,9 @@ function TableUtils:ReindexNumericTable(tbl)
 	local values = {}
 	for k, value in pairs(tbl) do
 		table.insert(values, value)
+		if type(tbl[k]) == "table" then
+			tbl[k].delete = true
+		end
 		tbl[k] = nil
 	end
 	-- Reinsert values with sequential numeric keys

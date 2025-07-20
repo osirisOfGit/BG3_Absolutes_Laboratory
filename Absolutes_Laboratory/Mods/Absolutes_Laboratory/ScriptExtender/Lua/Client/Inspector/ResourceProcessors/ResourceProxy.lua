@@ -64,7 +64,8 @@ local function buildDisplayTable(resource, propertiesToRender, statDisplayTable)
 
 				return next(value) and value or nil
 			elseif type(value) == "number" then
-				return value > 0 and value
+				return value
+				-- return value > 0 and value
 			else
 				return tostring(value) ~= "" and tostring(value)
 			end
@@ -243,7 +244,7 @@ function ResourceProxy:RenderDisplayWindow(resource, parent)
 				if serializedResource.FileName then
 					local fileName = serializedResource.FileName:gsub("^.*[\\/]Mods[\\/]", ""):gsub("^.*[\\/]Public[\\/]", "")
 					fileName = fileName ~= "" and fileName or serializedResource.FileName
-					
+
 					parentCell:AddText(string.format("%s | File: %s", serializedResource.Name, fileName)).Font = "Large"
 				else
 					if serializedResource.Name or serializedResource.Category then
@@ -284,12 +285,10 @@ function ResourceManager:RenderDisplayableValue(parent, resourceValue, resourceT
 		if proxyRegistry[resourceType] then
 			proxyRegistry[resourceType]:RenderDisplayableValue(parent, resourceValue, resourceType)
 		elseif resourceValue then
-			if (type(resourceValue) == "string" and resourceValue ~= "" and resourceValue ~= "00000000-0000-0000-0000-000000000000")
-				or (type(resourceValue) == "number" and resourceValue > 0)
-			then
-				Styler:SelectableText(parent, tostring(resourceType), tostring(resourceValue)).SameLine = sameLine or false
-			elseif type(resourceValue) == "table" then
+			if type(resourceValue) == "table" then
 				Styler:SimpleRecursiveTwoColumnTable(parent, resourceValue, resourceType)
+			elseif resourceValue ~= "" and resourceValue ~= "00000000-0000-0000-0000-000000000000" then
+				Styler:SelectableText(parent, tostring(resourceType), tostring(resourceValue)).SameLine = sameLine or false
 			end
 		end
 	end, debug.traceback)

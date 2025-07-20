@@ -126,7 +126,8 @@ function Styler:SimpleRecursiveTwoColumnTable(parent, resource, resourceType)
 			if #valueCell.Children == 0 then
 				row:Destroy()
 			end
-		elseif (value ~= "" and value ~= "00000000-0000-0000-0000-000000000000") and (not tonumber(value) or tonumber(value) > 0) then
+			-- and (not tonumber(value) or tonumber(value) > 0)
+		elseif (value ~= "" and value ~= "00000000-0000-0000-0000-000000000000") then
 			row:AddCell():AddText(key)
 			local displayCell = row:AddCell()
 			EntityManager:RenderDisplayableValue(displayCell, value, key)
@@ -231,7 +232,7 @@ function Styler:HyperlinkRenderable(renderable, item, modifier, modifierOnHover,
 			return
 		end
 		if not modifier or not modifierOnHover or Ext.ClientInput.GetInputManager().PressedModifiers == modifier then
-			Ext.Timer.WaitFor(modifierOnHover and 0 or 400, function()
+			Ext.Timer.WaitFor(modifierOnHover and 0 or 500, function()
 				if not window then
 					Helpers:KillChildren(tooltip)
 					tooltip.Visible = true
