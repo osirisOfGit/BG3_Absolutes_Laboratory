@@ -187,6 +187,15 @@ Empty values/0 will remove that boundary]])
 	end
 end
 
+function AbilitiesMutator:Transient()
+	return true
+end
+
+function AbilitiesMutator:undoMutator(entity, entityVar, primedEntityVar, reprocessTransient)
+		Logger:BasicDebug("Removed boost %s", entityVar.originalValues[self.name])
+		Osi.RemoveBoosts(entity.Uuid.EntityUuid, entityVar.originalValues[self.name], 1, "Lab", "")
+end
+
 function AbilitiesMutator:applyMutator(entity, entityVar)
 	---@type number[]
 	local rolledScores = {}
@@ -322,26 +331,26 @@ function AbilitiesMutator:applyMutator(entity, entityVar)
 		end
 	end
 
-	Logger:BasicDebug("Final ability score priorities: %s",
-		abilities)
+	Logger:BasicDebug("Final ability score priorities: %s", abilities)
 
-	entityVar.originalValues[self.name] = Ext.Types.Serialize(entity.BaseStats.BaseAbilities)
+	local boostString = ""
+	local template = "Ability(%s,%d);"
 
-	local entityBaseAbilities = Ext.Types.Serialize(entity.BaseStats.BaseAbilities)
-	entityBaseAbilities[tonumber(Ext.Enums.AbilityId[abilities.primaryStat].Value) + 1] = rolledScores[1] + 2
-	entityBaseAbilities[tonumber(Ext.Enums.AbilityId[abilities.secondaryStat].Value) + 1] = rolledScores[2] + 1
-	entityBaseAbilities[tonumber(Ext.Enums.AbilityId[abilities.tertiaryStat].Value) + 1] = rolledScores[3]
-	entityBaseAbilities[tonumber(Ext.Enums.AbilityId[abilities.fourth].Value) + 1] = rolledScores[4]
-	entityBaseAbilities[tonumber(Ext.Enums.AbilityId[abilities.fifth].Value) + 1] = rolledScores[5]
-	entityBaseAbilities[tonumber(Ext.Enums.AbilityId[abilities.sixth].Value) + 1] = rolledScores[6]
+	local categories = { "primaryStat", "secondaryStat", "tertiaryStat", "fourth", "fifth", "sixth" }
+	local bonuses = { 2, 1, 0, 0, 0, 0 }
 
-	entity.BaseStats.BaseAbilities = entityBaseAbilities
+	for i, category in ipairs(categories) do
+		local abilityId = abilities[category]
+		if abilityId then
+			boostString = boostString ..
+				string.format(template, abilityId, (rolledScores[i] - entity.BaseStats.BaseAbilities[Ext.Enums.AbilityId[abilityId].Value + 1]) + bonuses[i])
+		end
+	end
 
-	Logger:BasicDebug("Entity Abilities updated\nFrom:%s\nTo:%s",
-		entityVar.originalValues[self.name],
-		entityBaseAbilities)
-end
+	entityVar.originalValues[self.name] = boostString
+	Osi.AddBoosts(entity.Uuid.EntityUuid, boostString, "Lab", "")
 
-function AbilitiesMutator:FinalizeMutator(entity)
-	entity:Replicate("BaseStats")
+	Logger:BasicDebug("Entity Abilities updated using Boosts: %s\nFrom Base: %s",
+		boostString,
+		entity.BaseStats.BaseAbilities)
 end

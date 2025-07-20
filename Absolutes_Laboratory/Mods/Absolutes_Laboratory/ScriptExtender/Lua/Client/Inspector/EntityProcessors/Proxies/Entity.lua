@@ -43,6 +43,7 @@ EntityHandleProxy.fieldsToParse = {
 	"ServerBaseStats",
 	"ServerBoostBase",
 	"ServerBoostTag",
+	"ServerCharacter",
 	"ServerCanStartCombat",
 	"ServerDelayDeathCause",
 	"ServerPassiveBase",

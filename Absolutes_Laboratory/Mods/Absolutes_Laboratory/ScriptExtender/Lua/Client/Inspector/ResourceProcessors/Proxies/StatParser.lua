@@ -15,8 +15,12 @@ function StatRouterProxy:RenderDisplayableValue(parent, resourceValue)
 			end
 		end
 		if type(resourceValue) == "table" then
-			for _, stat in ipairs(resourceValue) do
-				render(stat)
+			if resourceValue.Abilities then
+				Styler:SimpleRecursiveTwoColumnTable(parent, resourceValue)
+			else
+				for _, stat in ipairs(resourceValue) do
+					render(stat)
+				end
 			end
 		else
 			render(resourceValue)

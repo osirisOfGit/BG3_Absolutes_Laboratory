@@ -128,6 +128,10 @@ Ext.RegisterConsoleCommand("Lab_TraceEntities", function(cmd, ...)
 	MutationProfileExecutor:ExecuteProfile()
 end)
 
+Ext.RegisterConsoleCommand("Lab_TestTransient", function(cmd, ...)
+	MutationProfileExecutor:ExecuteProfile(true)
+end)
+
 Ext.Osiris.RegisterListener("LevelGameplayReady", 2, "after", function(levelName, isEditorMode)
 	if levelName == "SYS_CC_I" then return end
 
