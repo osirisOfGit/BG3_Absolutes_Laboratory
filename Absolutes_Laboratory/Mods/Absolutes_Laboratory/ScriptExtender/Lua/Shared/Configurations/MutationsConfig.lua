@@ -170,6 +170,9 @@ ConfigurationStructure.config.mutations.settings.customLists = {
 ---@field primaryStat AbilityId
 ---@field secondaryStat AbilityId
 ---@field tertiaryStat AbilityId
+---@field fourth AbilityId
+---@field fifth AbilityId
+---@field sixth AbilityId
 
 ---@class SpellList : CustomList
 ---@field abilityPriorities AbilityPriorities

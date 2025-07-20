@@ -154,7 +154,7 @@ function AbilitiesMutator:renderModifiers(parent, modifiers)
 	sep:SetStyle("SeparatorTextAlign", 0.05, 0.5)
 	sep:Tooltip():AddText([[
 	Setting the below will keep any "rolled" score within the specified boundaries (before adding +2 and +1 to the primary/secondary abilities)
-Empty values will remove that boundary]])
+Empty values/0 will remove that boundary]])
 
 	parent:AddText("Minimum Score Value")
 	local minInput = parent:AddInputInt("", modifiers.minimumScoreValue)
@@ -185,4 +185,163 @@ Empty values will remove that boundary]])
 			modifiers.maximumScoreValue = maxInput.Value[1]
 		end
 	end
+end
+
+function AbilitiesMutator:applyMutator(entity, entityVar)
+	---@type number[]
+	local rolledScores = {}
+
+	---@type AbilitiesMutator
+	local mutator = entityVar.appliedMutators[self.name]
+
+	for _ = 1, 6 do
+		---@type number[]
+		local rolls = {}
+
+		for _ = 1, mutator.values.dieSettings.numberOfDice do
+			rolls[#rolls + 1] = Ext.Math.Random(mutator.values.dieSettings.diceSides)
+		end
+		table.sort(rolls, function(a, b)
+			return a > b
+		end)
+
+		Logger:BasicTrace("Rolls before removing lowest + enforcing boundaries are: %s", rolls)
+
+		local sum = 0
+		for d = 1, (#rolls - mutator.values.dieSettings.numberOfLowestToRemove) do
+			sum = sum + rolls[d]
+		end
+
+		if mutator.modifiers.minimumScoreValue and sum < mutator.modifiers.minimumScoreValue then
+			sum = mutator.modifiers.minimumScoreValue
+		elseif mutator.modifiers.maximumScoreValue and sum > mutator.modifiers.maximumScoreValue then
+			sum = mutator.modifiers.maximumScoreValue
+		end
+
+		table.insert(rolledScores, sum)
+	end
+
+	table.sort(rolledScores, function(a, b)
+		return a > b
+	end)
+	Logger:BasicDebug("Rolled values before assignment: %s", rolledScores)
+
+	---@type AbilityPriorities
+	local abilities = {}
+
+	if mutator.values.overriddenAbilityPriorities then
+		local override = mutator.values.overriddenAbilityPriorities
+		abilities = TableUtils:DeeplyCopyTable(override)
+
+		Logger:BasicDebug("Overridden Ability Priorities are: %s", override)
+	end
+
+	if not primary or not secondary or not tertiary then
+		if entityVar.appliedMutators[SpellListMutator.name] and entityVar.appliedMutators[SpellListMutator.name].appliedLists then
+			---@type {[Guid]: number}
+			local appliedSpellLists = entityVar.appliedMutators[SpellListMutator.name].appliedLists
+
+			local lastSpellListId = nil
+
+			for spellListId, levelsAssigned in TableUtils:OrderedPairs(appliedSpellLists, function(_, levelsAssigned)
+				-- Sorting descending?
+				return levelsAssigned * -1
+			end) do
+				local spellList = MutationConfigurationProxy.spellLists[spellListId]
+				spellList = spellList.__real or spellList
+
+				if spellList.abilityPriorities then
+					if not lastSpellListId then
+						lastSpellListId = spellListId
+						for category, ability in pairs(spellList.abilityPriorities) do
+							if abilities[category] and not TableUtils:IndexOf(abilities, ability) then
+								abilities[category] = ability
+							end
+						end
+						Logger:BasicDebug("List %s is the highest leveled list assigned (at %s) - using it as the base", spellList.name, levelsAssigned)
+					else
+						local lastAssignedListId = lastSpellListId
+						for category, ability in pairs(spellList.abilityPriorities) do
+							if not abilities[category] and not TableUtils:IndexOf(abilities, ability) then
+								Logger:BasicDebug("Assigned ability priority %s to %s due to %s having it set when the previous list did not",
+									category,
+									ability,
+									spellList.name)
+								lastSpellListId = spellListId
+								abilities[category] = ability
+							end
+						end
+						if (appliedSpellLists[spellListId] / appliedSpellLists[lastAssignedListId]) >= .6 then
+							Logger:BasicDebug("Spell list %s is %s%% of list %s's level - averaging out score priority",
+								spellList.name,
+								(appliedSpellLists[spellListId] / appliedSpellLists[lastAssignedListId]) * 100,
+								MutationConfigurationProxy.spellLists[lastAssignedListId].name)
+
+							if not TableUtils:IndexOf(abilities, spellList.abilityPriorities.primaryStat) then
+								abilities.tertiaryStat = spellList.abilityPriorities.primaryStat
+								Logger:BasicDebug("Assigned %s to the tertiary ability as it's %s's primary ability",
+									abilities.tertiaryStat,
+									spellList.name)
+							elseif abilities.tertiaryStat == spellList.abilityPriorities.primaryStat then
+								abilities.tertiaryStat = abilities.secondaryStat
+								abilities.secondaryStat = spellList.abilityPriorities.primaryStat
+
+								Logger:BasicDebug("Swapped %s from the tertiary to the secondary ability as it's %s's primary ability",
+									abilities.secondaryStat,
+									spellList.name)
+							end
+							-- We found the next closest to the highest spell list, good enough to not play swap-a-rama for super low list levels
+							break
+						end
+					end
+				end
+			end
+
+			Logger:BasicDebug("Ability priorities after being determined by spell lists: %s", abilities)
+		end
+	end
+
+	for abilityIndex in TableUtils:OrderedPairs(entity.BaseStats.BaseAbilities, function(key, value)
+		return value * -1
+	end) do
+		local ability = tostring(Ext.Enums.AbilityId[abilityIndex - 1])
+		if not TableUtils:IndexOf(abilities, ability) then
+			if not abilities.primaryStat then
+				abilities.primaryStat = ability
+			elseif not abilities.secondaryStat then
+				abilities.secondaryStat = ability
+			elseif not abilities.tertiaryStat then
+				abilities.tertiaryStat = ability
+			elseif not abilities.fourth then
+				abilities.fourth = ability
+			elseif not abilities.fifth then
+				abilities.fifth = ability
+			elseif not abilities.sixth then
+				abilities.sixth = ability
+			end
+		end
+	end
+
+	Logger:BasicDebug("Final ability score priorities: %s",
+		abilities)
+
+	entityVar.originalValues[self.name] = Ext.Types.Serialize(entity.BaseStats.BaseAbilities)
+
+	local entityBaseAbilities = Ext.Types.Serialize(entity.BaseStats.BaseAbilities)
+	entityBaseAbilities[tonumber(Ext.Enums.AbilityId[abilities.primaryStat].Value) + 1] = rolledScores[1] + 2
+	entityBaseAbilities[tonumber(Ext.Enums.AbilityId[abilities.secondaryStat].Value) + 1] = rolledScores[2] + 1
+	entityBaseAbilities[tonumber(Ext.Enums.AbilityId[abilities.tertiaryStat].Value) + 1] = rolledScores[3]
+	entityBaseAbilities[tonumber(Ext.Enums.AbilityId[abilities.fourth].Value) + 1] = rolledScores[4]
+	entityBaseAbilities[tonumber(Ext.Enums.AbilityId[abilities.fifth].Value) + 1] = rolledScores[5]
+	entityBaseAbilities[tonumber(Ext.Enums.AbilityId[abilities.sixth].Value) + 1] = rolledScores[6]
+
+	entity.BaseStats.BaseAbilities = entityBaseAbilities
+
+	Logger:BasicDebug("Entity Abilities updated\nFrom:%s\nTo:%s",
+		entityVar.originalValues[self.name],
+		entityBaseAbilities)
+end
+
+function AbilitiesMutator:FinalizeMutator(entity)
+	entity:Replicate("BaseStats")
 end
