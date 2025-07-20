@@ -46,7 +46,7 @@
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\External\MutationModProxy.lua", "Lua", 150, 0, 13, 21, 184
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\MutationConfigurationProxy.lua", "Lua", 73, 0, 8, 13, 94
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Mutators\AbilitiesMutator.lua", "Lua", 280, 0, 22, 55, 357
-"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Mutators\ClassesAndSubclassesMutator.lua", "Lua", 363, 0, 26, 72, 461
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Mutators\ClassesAndSubclassesMutator.lua", "Lua", 427, 0, 31, 84, 542
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Mutators\HealthMutator.lua", "Lua", 301, 0, 36, 83, 420
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Mutators\LevelMutator.lua", "Lua", 217, 0, 23, 51, 291
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Mutators\MutatorInterface.lua", "Lua", 120, 0, 25, 29, 174
@@ -79,4 +79,4 @@
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Utilities\IDEHelpers\Osi.lua", "Lua", 983, 0, 2797, 1007, 4787
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Utilities\Networking\Channels.lua", "Lua", 6, 0, 19, 7, 32
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Utilities\README.md", "Markdown", 0, 18, 0, 13, 31
-"Total", "-", 23415, 18, 21958, 8858, 54249
+"Total", "-", 23479, 18, 21963, 8870, 54330

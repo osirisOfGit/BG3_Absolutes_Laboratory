@@ -1,10 +1,10 @@
 # Details
 
-Date : 2025-07-19 21:59:53
+Date : 2025-07-20 11:10:39
 
 Directory d:\\Mods\\BG3 Modder MultiTool\\Absolutes_Laboratory\\Absolutes_Laboratory\\Mods\\Absolutes_Laboratory\\ScriptExtender\\Lua
 
-Total : 80 files,  23433 codes, 21958 comments, 8858 blanks, all 54249 lines
+Total : 80 files,  23497 codes, 21963 comments, 8870 blanks, all 54330 lines
 
 [Summary](results.md) / Details / [Diff Summary](diff.md) / [Diff Details](diff-details.md)
 
@@ -58,7 +58,7 @@ Total : 80 files,  23433 codes, 21958 comments, 8858 blanks, all 54249 lines
 | [Absolutes\_Laboratory/Absolutes\_Laboratory/Mods/Absolutes\_Laboratory/ScriptExtender/Lua/Shared/Mutations/External/MutationModProxy.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/External/MutationModProxy.lua) | Lua | 150 | 13 | 21 | 184 |
 | [Absolutes\_Laboratory/Absolutes\_Laboratory/Mods/Absolutes\_Laboratory/ScriptExtender/Lua/Shared/Mutations/MutationConfigurationProxy.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/MutationConfigurationProxy.lua) | Lua | 73 | 8 | 13 | 94 |
 | [Absolutes\_Laboratory/Absolutes\_Laboratory/Mods/Absolutes\_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/AbilitiesMutator.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/AbilitiesMutator.lua) | Lua | 280 | 22 | 55 | 357 |
-| [Absolutes\_Laboratory/Absolutes\_Laboratory/Mods/Absolutes\_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/ClassesAndSubclassesMutator.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/ClassesAndSubclassesMutator.lua) | Lua | 363 | 26 | 72 | 461 |
+| [Absolutes\_Laboratory/Absolutes\_Laboratory/Mods/Absolutes\_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/ClassesAndSubclassesMutator.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/ClassesAndSubclassesMutator.lua) | Lua | 427 | 31 | 84 | 542 |
 | [Absolutes\_Laboratory/Absolutes\_Laboratory/Mods/Absolutes\_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/HealthMutator.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/HealthMutator.lua) | Lua | 301 | 36 | 83 | 420 |
 | [Absolutes\_Laboratory/Absolutes\_Laboratory/Mods/Absolutes\_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/LevelMutator.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/LevelMutator.lua) | Lua | 217 | 23 | 51 | 291 |
 | [Absolutes\_Laboratory/Absolutes\_Laboratory/Mods/Absolutes\_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/MutatorInterface.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/MutatorInterface.lua) | Lua | 120 | 25 | 29 | 174 |
