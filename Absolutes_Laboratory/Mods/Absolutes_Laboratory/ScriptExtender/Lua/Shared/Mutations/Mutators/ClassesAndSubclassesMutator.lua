@@ -401,7 +401,7 @@ end
 
 function ClassesAndSubclassesMutator:undoMutator(entity, entityVar)
 	entity.Classes.Classes = {}
-	for _, classDef in pairs(entityVar.originalValues[self.name]) do
+	for _, classDef in pairs(entityVar.originalValues[self.name].classes) do
 		---@cast classDef ClassInfo
 		entity.Classes.Classes[#entity.Classes.Classes + 1] = {
 			ClassUUID = classDef.ClassUUID,
@@ -409,9 +409,23 @@ function ClassesAndSubclassesMutator:undoMutator(entity, entityVar)
 			Level = classDef.Level
 		}
 	end
-	entity:Replicate("Classes")
 
-	Logger:BasicTrace("Reverted to %s", entityVar.originalValues[self.name])
+	Logger:BasicDebug("Reverted classes to %s", entityVar.originalValues[self.name].classes)
+
+	if entityVar.originalValues[self.name].spellCastingAbility then
+		Logger:BasicDebug("Reverted spellCastingAbility to %s", entityVar.originalValues[self.name].spellCastingAbility)
+		entity.Stats.SpellCastingAbility = entityVar.originalValues[self.name].spellCastingAbility
+	end
+	
+	if entityVar.originalValues[self.name].rangedAttackAbility then
+		Logger:BasicDebug("Reverted rangedAttackAbility to %s", entityVar.originalValues[self.name].rangedAttackAbility)
+		entity.Stats.RangedAttackAbility = entityVar.originalValues[self.name].rangedAttackAbility
+	end
+
+	if entityVar.originalValues[self.name].unarmedAttackAbility then
+		Logger:BasicDebug("Reverted unarmedAttackAbility to %s", entityVar.originalValues[self.name].unarmedAttackAbility)
+		entity.Stats.UnarmedAttackAbility = entityVar.originalValues[self.name].unarmedAttackAbility
+	end
 end
 
 function ClassesAndSubclassesMutator:applyMutator(entity, entityVar)
@@ -459,7 +473,9 @@ function ClassesAndSubclassesMutator:applyMutator(entity, entityVar)
 		---@type ClassesConditionalGroup
 		local classGroup = chosenClassGroups[math.random(#chosenClassGroups)]
 		if classGroup.classIds then
-			entityVar.originalValues[self.name] = Ext.Types.Serialize(entity.Classes.Classes)
+			entityVar.originalValues[self.name] = {
+				classes = Ext.Types.Serialize(entity.Classes.Classes)
+			}
 
 			entity.Classes.Classes = {}
 
@@ -499,14 +515,17 @@ function ClassesAndSubclassesMutator:applyMutator(entity, entityVar)
 
 			if classGroup.statAbilityOverrides then
 				if classGroup.statAbilityOverrides.spellCastingAbility and entity.Stats.SpellCastingAbility ~= classGroup.statAbilityOverrides.spellCastingAbility then
+					entityVar.originalValues[self.name].spellCastingAbility = entity.Stats.SpellCastingAbility
 					entity.Stats.SpellCastingAbility = classGroup.statAbilityOverrides.spellCastingAbility
 				end
 
 				if classGroup.statAbilityOverrides.rangedAttackAbility and entity.Stats.RangedAttackAbility ~= classGroup.statAbilityOverrides.rangedAttackAbility then
+					entityVar.originalValues[self.name].rangedAttackAbility = entity.Stats.RangedAttackAbility
 					entity.Stats.RangedAttackAbility = classGroup.statAbilityOverrides.rangedAttackAbility
 				end
 
 				if classGroup.statAbilityOverrides.unarmedAttackAbility and entity.Stats.UnarmedAttackAbility ~= classGroup.statAbilityOverrides.unarmedAttackAbility then
+					entityVar.originalValues[self.name].unarmedAttackAbility = entity.Stats.UnarmedAttackAbility
 					entity.Stats.UnarmedAttackAbility = classGroup.statAbilityOverrides.unarmedAttackAbility
 				end
 			end
