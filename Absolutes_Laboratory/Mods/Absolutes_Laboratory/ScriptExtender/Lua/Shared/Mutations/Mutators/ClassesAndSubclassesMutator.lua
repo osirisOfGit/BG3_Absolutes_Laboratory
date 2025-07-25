@@ -1,3 +1,4 @@
+---@class ClassesAndSubclassesMutatorClass : MutatorInterface
 ClassesAndSubclassesMutator = MutatorInterface:new("Classes And Subclasses")
 
 function ClassesAndSubclassesMutator:priority()
@@ -28,37 +29,37 @@ end
 
 
 ---@type {[Guid] : Guid[]}
-local classesAndSubclasses = {}
+ClassesAndSubclassesMutator.classesAndSubclasses = {}
 
 ---@type {[Guid]: string}
-local translationMap = {}
+ClassesAndSubclassesMutator.translationMap = {}
 
-local function initClassIndex()
-	if not next(classesAndSubclasses) then
+function ClassesAndSubclassesMutator:initClassIndex()
+	if not next(self.classesAndSubclasses) then
 		for _, classId in pairs(Ext.StaticData.GetAll("ClassDescription")) do
 			---@type ResourceClassDescription
 			local class = Ext.StaticData.Get(classId, "ClassDescription")
 
 			if class.ParentGuid and class.ParentGuid ~= "00000000-0000-0000-0000-000000000000" and class.ParentGuid ~= "" then
-				if not classesAndSubclasses[class.ParentGuid] then
-					classesAndSubclasses[class.ParentGuid] = {}
+				if not self.classesAndSubclasses[class.ParentGuid] then
+					self.classesAndSubclasses[class.ParentGuid] = {}
 				end
 
-				table.insert(classesAndSubclasses[class.ParentGuid], classId)
-			elseif not classesAndSubclasses[classId] then
-				classesAndSubclasses[classId] = {}
+				table.insert(self.classesAndSubclasses[class.ParentGuid], classId)
+			elseif not self.classesAndSubclasses[classId] then
+				self.classesAndSubclasses[classId] = {}
 			end
 
 			local name = class.DisplayName:Get() or class.Name
 
-			translationMap[classId] = name
+			self.translationMap[classId] = name
 		end
 	end
 end
 
 ---@param mutator ClassesAndSubclassesMutator
 function ClassesAndSubclassesMutator:renderMutator(parent, mutator)
-	initClassIndex()
+	self:initClassIndex()
 	mutator.values = mutator.values or {}
 
 	Helpers:KillChildren(parent)
@@ -111,12 +112,12 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 			end) do
 				local groupRow = groupTable:AddRow()
 
-				local name = translationMap[classId]
+				local name = self.translationMap[classId]
 				---@type ResourceClassDescription
 				local class = Ext.StaticData.Get(classId, "ClassDescription")
 
-				if translationMap[class.ParentGuid] then
-					name = translationMap[class.ParentGuid] .. " - " .. name
+				if self.translationMap[class.ParentGuid] then
+					name = self.translationMap[class.ParentGuid] .. " - " .. name
 				end
 
 				local classCell = groupRow:AddCell()
@@ -208,15 +209,15 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 			Helpers:KillChildren(popup)
 			popup:Open()
 
-			for classId, subclasses in TableUtils:OrderedPairs(classesAndSubclasses, function(key, value)
-				return translationMap[key]
+			for classId, subclasses in TableUtils:OrderedPairs(self.classesAndSubclasses, function(key, value)
+				return self.translationMap[key]
 			end) do
 				if next(subclasses) then
 					---@type ExtuiMenu
-					local menu = popup:AddMenu(translationMap[classId])
+					local menu = popup:AddMenu(self.translationMap[classId])
 					menu.Disabled = (classConditionalGroup.classIds and classConditionalGroup.classIds[classId]) ~= nil
 
-					menu:AddSelectable(translationMap[classId]).OnClick = function()
+					menu:AddSelectable(self.translationMap[classId]).OnClick = function()
 						classConditionalGroup.classIds = classConditionalGroup.classIds or {}
 						classConditionalGroup.classIds[classId] = TableUtils:CountElements(classConditionalGroup.classIds) == 0 and 100 or 0
 
@@ -224,13 +225,13 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 					end
 
 					for _, subclassId in TableUtils:OrderedPairs(subclasses, function(key, value)
-						return translationMap[value]
+						return self.translationMap[value]
 					end) do
 						if not menu.Disabled then
 							menu.Disabled = (classConditionalGroup.classIds and classConditionalGroup.classIds[subclassId]) ~= nil
 						end
 
-						menu:AddSelectable(translationMap[subclassId]).OnClick = function()
+						menu:AddSelectable(self.translationMap[subclassId]).OnClick = function()
 							classConditionalGroup.classIds = classConditionalGroup.classIds or {}
 							classConditionalGroup.classIds[subclassId] = TableUtils:CountElements(classConditionalGroup.classIds) == 0 and 100 or 0
 

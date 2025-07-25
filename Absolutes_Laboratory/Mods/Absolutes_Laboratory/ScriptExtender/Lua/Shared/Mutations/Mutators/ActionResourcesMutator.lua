@@ -34,16 +34,18 @@ function ActionResourcesMutator:renderMutator(parent, mutator)
 
 	local popup = parent:AddPopup("")
 
-	parent:AddSeparatorText("General")
+	parent:AddSeparatorText("General (All Entities)").Font = "Large"
 	local generalGroupTable = parent:AddTable("general", 7)
 	generalGroupTable:AddColumn("", "WidthFixed")
 	generalGroupTable:AddColumn("", "WidthFixed")
 	generalGroupTable.SizingStretchSame = true
 
-	local function buildGeneral()
-		Helpers:KillChildren(generalGroupTable)
+	---@param parentTable ExtuiTable
+	---@param config ActionResourceConfig[]
+	local function buildGeneral(parentTable, config)
+		Helpers:KillChildren(parentTable)
 
-		local headerRow = generalGroupTable:AddRow()
+		local headerRow = parentTable:AddRow()
 		headerRow.Headers = true
 		headerRow:AddCell()
 		headerRow:AddCell():AddText("Resource")
@@ -57,15 +59,15 @@ function ActionResourcesMutator:renderMutator(parent, mutator)
 Decimal values will result in the nearest whole number, prioritizing rounding down.
 i.e if Base is 5 and this is 2, the next value given will be 3 - if this is 0.3, it will be 5, then 4, 4, 3, 3, etc]])
 
-		for i, actionResourceConfig in TableUtils:OrderedPairs(mutator.values.general or {}) do
-			local row = generalGroupTable:AddRow()
+		for i, actionResourceConfig in TableUtils:OrderedPairs(config or {}) do
+			local row = parentTable:AddRow()
 
 			local deleteConfig = Styler:ImageButton(row:AddCell():AddImageButton("delete" .. actionResourceConfig.resourceId, "ico_red_x", { 16, 16 }))
 			deleteConfig.OnClick = function()
-				mutator.values.general[i].delete = true
-				TableUtils:ReindexNumericTable(mutator.values.general)
+				config[i].delete = true
+				TableUtils:ReindexNumericTable(config)
 
-				buildGeneral()
+				buildGeneral(parentTable, config)
 			end
 
 			---@type ResourceActionResource
@@ -76,12 +78,12 @@ i.e if Base is 5 and this is 2, the next value given will be 3 - if this is 0.3,
 
 			for _, inputType in ipairs({ "resourceLevel", "amount", "initialEntityOrClassLevel", "everyXLevels" }) do
 				local input = row:AddCell():AddInputInt("", actionResourceConfig[inputType])
+				input.ItemWidth = 80
 				if inputType == "amount" and (resource.MaxValue > 0) then
 					input:Tooltip():AddText(string.format("\t Max Value is %s", resource.MaxValue))
 				end
 
 				if inputType ~= "resourceLevel" or resource.MaxLevel > 0 then
-					input.ItemWidth = 80
 					if inputType == "everyXLevels" then
 						input.ParseEmptyRefVal = true
 						input.DisplayEmptyRefVal = true
@@ -102,7 +104,7 @@ i.e if Base is 5 and this is 2, the next value given will be 3 - if this is 0.3,
 						end
 
 						if inputType == "everyXLevels" then
-							buildGeneral() -- Otherwise it unfocuses every field and that's just annoying
+							buildGeneral(parentTable, config) -- Otherwise it unfocuses every field and that's just annoying
 						end
 					end
 				else
@@ -127,17 +129,20 @@ i.e if Base is 5 and this is 2, the next value given will be 3 - if this is 0.3,
 			end
 		end
 	end
-	buildGeneral()
-	parent:AddButton("Add General Resource Rule").OnClick = function()
+	buildGeneral(generalGroupTable, mutator.values.general)
+
+	---@param config ActionResourceConfig[]
+	---@param onSelectFunc fun()
+	local function resourcePopup(config, onSelectFunc)
 		Helpers:KillChildren(popup)
-		popup:Open()
 		local popWin = popup:AddChildWindow("")
+		popup:Open()
 		for _, actionResourceId in TableUtils:OrderedPairs(Ext.StaticData.GetAll("ActionResource"), function(key, value)
 			return Ext.StaticData.Get(value, "ActionResource").Name
 		end, function(key, value)
 			return not Ext.StaticData.Get(value, "ActionResource").IsHidden
 		end) do
-			local existingIndex = TableUtils:IndexOf(mutator.values.general, function(value)
+			local existingIndex = TableUtils:IndexOf(config, function(value)
 				return value.resourceId == actionResourceId
 			end)
 
@@ -154,16 +159,15 @@ i.e if Base is 5 and this is 2, the next value given will be 3 - if this is 0.3,
 			select.OnClick = function()
 				-- Value is flipped by the time this fires
 				if not select.Selected then
-					mutator.values.general[TableUtils:IndexOf(mutator.values.general, function(value)
+					config[TableUtils:IndexOf(config, function(value)
 						return value.resourceId == actionResourceId
 					end)].delete = true
 
-					TableUtils:ReindexNumericTable(mutator.values.general)
+					TableUtils:ReindexNumericTable(config)
 
-					buildGeneral()
+					onSelectFunc()
 				else
-					mutator.values.general = mutator.values.general or {}
-					table.insert(mutator.values.general, {
+					table.insert(config, {
 						resourceId = actionResourceId,
 						resourceLevel = actionResource.MaxLevel,
 						amount = actionResource.MaxValue,
@@ -174,8 +178,128 @@ i.e if Base is 5 and this is 2, the next value given will be 3 - if this is 0.3,
 						select.Selected = false
 					end
 				end
-				buildGeneral()
+				onSelectFunc()
 			end
 		end
 	end
+
+	parent:AddButton("Add General Resource Rule").OnClick = function()
+		mutator.values.general = mutator.values.general or {}
+		resourcePopup(mutator.values.general, function() buildGeneral(generalGroupTable, mutator.values.general) end)
+	end
+
+	local classSep = parent:AddSeparatorText("Class-Specific")
+	classSep.Font = "Large"
+	classSep:Tooltip():AddText("\t Resources defined here will override their General counterparts above if applicable")
+
+	local classParentTable = parent:AddTable("classParent", 1)
+	classParentTable.BordersInnerH = true
+
+	ClassesAndSubclassesMutator:initClassIndex()
+
+	local function buildClasses()
+		Helpers:KillChildren(classParentTable)
+
+		for i, classDependentActionResources in TableUtils:OrderedPairs(mutator.values.classDependent) do
+			local cell = classParentTable:AddRow():AddCell()
+			cell:AddText("Group " .. i).Font = "Large"
+
+			for c, classId in TableUtils:OrderedPairs(classDependentActionResources.requiresClasses or {}) do
+				local name = ClassesAndSubclassesMutator.translationMap[classId]
+				---@type ResourceClassDescription
+				local class = Ext.StaticData.Get(classId, "ClassDescription")
+
+				if ClassesAndSubclassesMutator.translationMap[class.ParentGuid] then
+					name = ClassesAndSubclassesMutator.translationMap[class.ParentGuid] .. " - " .. name
+				end
+
+				local classGroup = cell:AddGroup(classId)
+				classGroup.SameLine = (c - 1) % 3 ~= 0
+
+				local deleteClass = Styler:ImageButton(classGroup:AddImageButton("delete" .. classId, "ico_red_x", { 16, 16 }))
+				deleteClass.OnClick = function()
+					classDependentActionResources.requiresClasses[i] = nil
+					TableUtils:ReindexNumericTable(classDependentActionResources.requiresClasses)
+					buildClasses()
+				end
+
+				Styler:HyperlinkText(classGroup, name, function(parent)
+					ResourceManager:RenderDisplayWindow(Ext.StaticData.Get(classId, "ClassDescription"), parent)
+				end).SameLine = true
+			end
+			local classButton = cell:AddButton("Add New (Sub)Class")
+			classButton.Font = "Small"
+			classButton.OnClick = function()
+				Helpers:KillChildren(popup)
+				popup:Open()
+
+				for classId, subclasses in TableUtils:OrderedPairs(ClassesAndSubclassesMutator.classesAndSubclasses, function(key, value)
+					return ClassesAndSubclassesMutator.translationMap[key]
+				end) do
+					if next(subclasses) then
+						---@type ExtuiMenu
+						local menu = popup:AddMenu(ClassesAndSubclassesMutator.translationMap[classId])
+						menu.Disabled = TableUtils:IndexOf(classDependentActionResources.requiresClasses, classId) ~= nil
+
+						menu:AddSelectable(ClassesAndSubclassesMutator.translationMap[classId]).OnClick = function()
+							classDependentActionResources.requiresClasses = classDependentActionResources.requiresClasses or {}
+							table.insert(classDependentActionResources.requiresClasses, classId)
+
+							buildClasses()
+						end
+
+						for _, subclassId in TableUtils:OrderedPairs(subclasses, function(key, value)
+							return ClassesAndSubclassesMutator.translationMap[value]
+						end) do
+							---@type ExtuiSelectable
+							local select = menu:AddSelectable(ClassesAndSubclassesMutator.translationMap[subclassId])
+							select.Selected = TableUtils:IndexOf(classDependentActionResources.requiresClasses, subclassId) ~= nil
+
+							select.OnClick = function()
+								if not select.Selected then
+									classDependentActionResources.requiresClasses[TableUtils:IndexOf(classDependentActionResources.requiresClasses, subclassId)] = nil
+									TableUtils:ReindexNumericTable(classDependentActionResources.requiresClasses)
+								else
+									classDependentActionResources.requiresClasses = classDependentActionResources.requiresClasses or {}
+									table.insert(classDependentActionResources.requiresClasses, subclassId)
+								end
+
+								buildClasses()
+							end
+						end
+
+						if menu.Disabled then
+							menu:SetStyle("Alpha", 0.5)
+						end
+					end
+				end
+			end
+
+			local classGroupTable = cell:AddTable("classGroup" .. i, 7)
+			classGroupTable:AddColumn("", "WidthFixed")
+			classGroupTable:AddColumn("", "WidthFixed")
+			classGroupTable.SizingStretchSame = true
+			buildGeneral(classGroupTable, classDependentActionResources.actionResources)
+			cell:AddButton("Add Resource Rule").OnClick = function()
+				classDependentActionResources.actionResources = classDependentActionResources.actionResources or {}
+				resourcePopup(classDependentActionResources.actionResources, function() buildClasses() end)
+			end
+		end
+	end
+
+	buildClasses()
+
+	parent:AddButton("Add Class(es) Group").OnClick = function()
+		mutator.values.classDependent = mutator.values.classDependent or {}
+		table.insert(mutator.values.classDependent, {})
+		buildClasses()
+	end
+end
+
+function ActionResourcesMutator:applyMutator(entity, entityVar)
+
+end
+
+function ActionResourcesMutator:undoMutator(entity, entityVar, primedEntityVar, reprocessTransient)
+
 end

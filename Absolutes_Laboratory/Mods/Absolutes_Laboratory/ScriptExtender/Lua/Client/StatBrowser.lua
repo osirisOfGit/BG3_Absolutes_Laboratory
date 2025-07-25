@@ -136,6 +136,10 @@ You can shift-click on images to pop out their tooltip into a new window, but th
 						statImage.SameLine = settings.onlyIcons and wrapFunc and wrapFunc(i - 1) or false
 						rowCounter = rowCounter + (statImage.SameLine and 0 or 1)
 
+						if spell.ModifierList == "SpellData" and spell.AIFlags == "CanNotUse" then
+							statImage:SetColor("Border", { 1, 0, 0, 0.6 })
+						end
+
 						if shouldTint(statName) then
 							statImage.Tint = { 1, 1, 1, 0.2 }
 						end
