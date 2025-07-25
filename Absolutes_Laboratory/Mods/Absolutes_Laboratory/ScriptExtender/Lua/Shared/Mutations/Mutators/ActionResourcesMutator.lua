@@ -34,7 +34,7 @@ function ActionResourcesMutator:renderMutator(parent, mutator)
 
 	local popup = parent:AddPopup("")
 
-	parent:AddSeparatorText("General (All Entities)").Font = "Large"
+	parent:AddSeparatorText("General (All Entities)"):SetStyle("SeparatorTextAlign", 0.2, 0.5)
 	local generalGroupTable = parent:AddTable("general", 7)
 	generalGroupTable:AddColumn("", "WidthFixed")
 	generalGroupTable:AddColumn("", "WidthFixed")
@@ -189,10 +189,11 @@ i.e if Base is 5 and this is 2, the next value given will be 3 - if this is 0.3,
 	end
 
 	local classSep = parent:AddSeparatorText("Class-Specific")
-	classSep.Font = "Large"
+	classSep:SetStyle("SeparatorTextAlign", 0.2, 0.5)
 	classSep:Tooltip():AddText("\t Resources defined here will override their General counterparts above if applicable")
 
-	local classParentTable = parent:AddTable("classParent", 1)
+	local classParentTable = parent:AddTable("classParent", 2)
+	classParentTable:AddColumn("", "WidthFixed")
 	classParentTable.BordersInnerH = true
 
 	ClassesAndSubclassesMutator:initClassIndex()
@@ -201,7 +202,15 @@ i.e if Base is 5 and this is 2, the next value given will be 3 - if this is 0.3,
 		Helpers:KillChildren(classParentTable)
 
 		for i, classDependentActionResources in TableUtils:OrderedPairs(mutator.values.classDependent) do
-			local cell = classParentTable:AddRow():AddCell()
+			local row = classParentTable:AddRow()
+			local deleteButton = Styler:ImageButton(row:AddCell():AddImageButton("delete" .. i, "ico_red_x", { 16, 16 }))
+			deleteButton.OnClick = function()
+					mutator.values.classDependent[i].delete = true
+					TableUtils:ReindexNumericTable(mutator.values.classDependent)
+					buildClasses()
+				end
+
+			local cell = row:AddCell()
 			cell:AddText("Group " .. i).Font = "Large"
 
 			for c, classId in TableUtils:OrderedPairs(classDependentActionResources.requiresClasses or {}) do
