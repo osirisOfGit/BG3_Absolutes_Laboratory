@@ -505,6 +505,8 @@ function ActionResourcesMutator:applyMutator(entity, entityVar)
 			end
 		end
 
+		entityVar.originalValues[self.name] = boostString
+
 		Osi.ApplyStatus(entity.Uuid.EntityUuid, statName, -1, 1, "Lab")
 	else
 		Logger:BasicDebug("Removed status %s as there were no resource boosts to apply", statName)
@@ -513,8 +515,16 @@ function ActionResourcesMutator:applyMutator(entity, entityVar)
 end
 
 function ActionResourcesMutator:undoMutator(entity, entityVar, primedEntityVar, reprocessTransient)
-	if not primedEntityVar.appliedMutators[self.name] then
+	if not primedEntityVar or not primedEntityVar.appliedMutators[self.name] then
 		local statName = "ABSOLUTES_LAB_RESOURCE_BOOST_" .. string.sub(entity.Uuid.EntityUuid, #entity.Uuid.EntityUuid - 11)
+		if not Ext.Stats.Get(statName) then
+			Logger:BasicDebug("Creating Resource Stat %s for proper removal", statName)
+			---@type StatusData
+			local newStat = Ext.Stats.Create(statName, "StatusData", "ABSOLUTES_LAB_RESOURCE_BOOST")
+			newStat.Boosts = entityVar.originalValues[self.name] or ""
+			newStat:Sync()
+		end
+
 		Logger:BasicDebug("Removed status %s as no resource mutator will be executed for this entity", statName)
 		Osi.RemoveStatus(entity.Uuid.EntityUuid, statName)
 	else

@@ -1029,7 +1029,8 @@ if Ext.IsServer() then
 	---@param subLists CustomSubList
 	---@param entity EntityHandle
 	---@param addSpells {[EntityHandle]: SpellSpellMeta[]}
-	function SpellListMutator:processSubLists(subLists, entity, addSpells, castedSpells)
+	---@param origValues SpellListOriginalValues
+	function SpellListMutator:processSubLists(subLists, entity, addSpells, origValues)
 		for subListName, spells in pairs(subLists) do
 			for _, spellName in pairs(spells) do
 				if subListName == "guaranteed" then
@@ -1047,12 +1048,16 @@ if Ext.IsServer() then
 							PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
 							SpellCastingAbility = entity.Stats.SpellCastingAbility
 						}
+
+						origValues.addedSpells = origValues.addedSpells or {}
+						table.insert(origValues.addedSpells, spellName)
 						Logger:BasicDebug("Added guaranteed spell %s", spellName)
 					end
 				elseif subListName == "startOfCombatOnly" then
 					if Osi.IsInCombat(entity.Uuid.EntityUuid) == 1 then
 						Osi.UseSpell(entity.Uuid.EntityUuid, spellName, entity.Uuid.EntityUuid)
-						table.insert(castedSpells, spellName)
+						origValues.castedSpells = origValues.castedSpells or {}
+						table.insert(origValues.castedSpells, spellName)
 						Logger:BasicDebug("Used on combat spell %s", spellName)
 					else
 						entity.Vars[SPELL_MUTATOR_ON_COMBAT_START] = entity.Vars[SPELL_MUTATOR_ON_COMBAT_START] or {}
@@ -1062,7 +1067,9 @@ if Ext.IsServer() then
 				elseif subListName == "onLoadOnly" then
 					if Osi.IsDead(entity.Uuid.EntityUuid) == 0 then
 						Osi.UseSpell(entity.Uuid.EntityUuid, spellName, entity.Uuid.EntityUuid)
-						table.insert(castedSpells, spellName)
+
+						origValues.castedSpells = origValues.castedSpells or {}
+						table.insert(origValues.castedSpells, spellName)
 						Logger:BasicDebug("Used on level load spell %s", spellName)
 					elseif not entity.DeadByDefault then
 						entity.Vars[SPELL_MUTATOR_ON_COMBAT_START] = entity.Vars[SPELL_MUTATOR_ON_COMBAT_START] or {}
@@ -1213,7 +1220,7 @@ if Ext.IsServer() then
 					-- Osi.CreateAt("01fa8d64-f63e-4bb8-9ee4-cba84dad3781", 202, 25, 418, 0, 0, "")
 					-- Osi.SetRelationTemporaryHostile("5ebcd998-e4ae-1a42-202c-3619bced3eea", _C().Uuid.EntityUuid)
 					if leveledSpellPool.spells then
-						self:processSubLists(leveledSpellPool.spells, entity, addSpells, origValues.castedSpells)
+						self:processSubLists(leveledSpellPool.spells, entity, addSpells, origValues)
 					end
 
 					if leveledSpellPool.spellLists then
@@ -1263,7 +1270,7 @@ if Ext.IsServer() then
 								if leveledLists then
 									if leveledLists.linkedProgressions then
 										for progressionId, subLists in pairs(leveledLists.linkedProgressions) do
-											self:processSubLists(subLists, entity, addSpells, origValues.castedSpells)
+											self:processSubLists(subLists, entity, addSpells, origValues)
 
 											if SpellListDesigner.progressionTranslations[progressionId] then
 												local progressionTable = SpellListDesigner.progressions[SpellListDesigner.progressionTranslations[progressionId]]
@@ -1279,7 +1286,7 @@ if Ext.IsServer() then
 									end
 
 									if leveledLists.manuallySelectedEntries then
-										self:processSubLists(leveledLists.manuallySelectedEntries, entity, addSpells, origValues.castedSpells)
+										self:processSubLists(leveledLists.manuallySelectedEntries, entity, addSpells, origValues)
 
 										if leveledLists.manuallySelectedEntries.randomized then
 											for _, spellName in pairs(leveledLists.manuallySelectedEntries.randomized) do
