@@ -1,23 +1,23 @@
 # Summary
 
-Date : 2025-07-26 15:19:06
+Date : 2025-07-26 16:04:17
 
 Directory d:\\Mods\\BG3 Modder MultiTool\\Absolutes_Laboratory\\Absolutes_Laboratory\\Mods\\Absolutes_Laboratory\\ScriptExtender\\Lua
 
-Total : 82 files,  23984 codes, 22015 comments, 8954 blanks, all 54953 lines
+Total : 82 files,  23995 codes, 22017 comments, 8958 blanks, all 54970 lines
 
 Summary / [Details](details.md) / [Diff Summary](diff.md) / [Diff Details](diff-details.md)
 
 ## Languages
 | language | files | code | comment | blank | total |
 | :--- | ---: | ---: | ---: | ---: | ---: |
-| Lua | 81 | 23,966 | 22,015 | 8,941 | 54,922 |
+| Lua | 81 | 23,977 | 22,017 | 8,945 | 54,939 |
 | Markdown | 1 | 18 | 0 | 13 | 31 |
 
 ## Directories
 | path | files | code | comment | blank | total |
 | :--- | ---: | ---: | ---: | ---: | ---: |
-| . | 82 | 23,984 | 22,015 | 8,954 | 54,953 |
+| . | 82 | 23,995 | 22,017 | 8,958 | 54,970 |
 | . (Files) | 2 | 25 | 0 | 10 | 35 |
 | Client | 36 | 5,047 | 352 | 830 | 6,229 |
 | Client (Files) | 3 | 444 | 68 | 81 | 593 |
@@ -33,16 +33,16 @@ Summary / [Details](details.md) / [Diff Summary](diff.md) / [Diff Details](diff-
 | Server | 2 | 147 | 6 | 33 | 186 |
 | Server (Files) | 1 | 33 | 2 | 11 | 46 |
 | Server\\Mutations | 1 | 114 | 4 | 22 | 140 |
-| Shared | 26 | 6,105 | 649 | 1,176 | 7,930 |
+| Shared | 26 | 6,116 | 651 | 1,180 | 7,947 |
 | Shared (Files) | 2 | 252 | 24 | 51 | 327 |
 | Shared\\Configurations | 2 | 214 | 103 | 51 | 368 |
-| Shared\\Mutations | 22 | 5,639 | 522 | 1,074 | 7,235 |
+| Shared\\Mutations | 22 | 5,650 | 524 | 1,078 | 7,252 |
 | Shared\\Mutations (Files) | 1 | 73 | 8 | 13 | 94 |
 | Shared\\Mutations\\External | 1 | 150 | 13 | 21 | 184 |
-| Shared\\Mutations\\Mutators | 13 | 4,173 | 349 | 801 | 5,323 |
-| Shared\\Mutations\\Mutators (Files) | 7 | 2,071 | 201 | 449 | 2,721 |
+| Shared\\Mutations\\Mutators | 13 | 4,184 | 351 | 805 | 5,340 |
+| Shared\\Mutations\\Mutators (Files) | 7 | 2,078 | 202 | 451 | 2,731 |
 | Shared\\Mutations\\Mutators\\PassiveList | 2 | 492 | 31 | 79 | 602 |
-| Shared\\Mutations\\Mutators\\SpellList | 2 | 1,157 | 88 | 199 | 1,444 |
+| Shared\\Mutations\\Mutators\\SpellList | 2 | 1,161 | 89 | 201 | 1,451 |
 | Shared\\Mutations\\Mutators\\StatusList | 2 | 453 | 29 | 74 | 556 |
 | Shared\\Mutations\\Selectors | 7 | 1,243 | 152 | 239 | 1,634 |
 | Utilities | 16 | 12,660 | 21,008 | 6,905 | 40,573 |
