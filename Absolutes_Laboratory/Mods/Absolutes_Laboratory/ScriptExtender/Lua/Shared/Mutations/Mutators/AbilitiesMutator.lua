@@ -8,6 +8,14 @@ function AbilitiesMutator:canBeAdditive()
 	return false
 end
 
+function AbilitiesMutator:handleDependencies()
+	-- NOOP
+end
+
+function AbilitiesMutator:Transient()
+	return true
+end
+
 ---@class DieSettings
 ---@field numberOfDice number
 ---@field diceSides number
@@ -187,13 +195,9 @@ Empty values/0 will remove that boundary]])
 	end
 end
 
-function AbilitiesMutator:Transient()
-	return true
-end
-
 function AbilitiesMutator:undoMutator(entity, entityVar, primedEntityVar, reprocessTransient)
-		Logger:BasicDebug("Removed boost %s", entityVar.originalValues[self.name])
-		Osi.RemoveBoosts(entity.Uuid.EntityUuid, entityVar.originalValues[self.name], 1, "Lab", "")
+	Logger:BasicDebug("Removed boost %s", entityVar.originalValues[self.name])
+	Osi.RemoveBoosts(entity.Uuid.EntityUuid, entityVar.originalValues[self.name], 1, "Lab", "")
 end
 
 function AbilitiesMutator:applyMutator(entity, entityVar)

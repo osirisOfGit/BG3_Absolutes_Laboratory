@@ -306,8 +306,106 @@ i.e if Base is 5 and this is 2, the next value given will be 3 - if this is 0.3,
 	end
 end
 
+---@param mutator ActionResourcesMutator
 function ActionResourcesMutator:handleDependencies(export, mutator, removeMissingDependencies)
+	local resourcesIndex = Ext.StaticData.GetSources("ActionResource")
 
+	local function record(actionResourceConfig)
+		local resource = Ext.StaticData.Get(actionResourceConfig.resourceId, "ActionResource")
+		if not resource then
+			return false
+		elseif not removeMissingDependencies then
+			local resourceSource = TableUtils:IndexOf(resourcesIndex, function(value)
+				return TableUtils:IndexOf(value, actionResourceConfig.resourceId) ~= nil
+			end)
+
+			if resourceSource then
+				mutator.modDependencies = mutator.modDependencies or {}
+				if not mutator.modDependencies[resourceSource] then
+					local name, author, version = Helpers:BuildModFields(resourceSource)
+					if author == "Larian" then
+						return true
+					end
+					mutator.modDependencies[resourceSource] = {
+						modName = name,
+						modAuthor = author,
+						modVersion = version,
+						modId = resourceSource,
+						packagedItems = {}
+					}
+				end
+
+				mutator.modDependencies[resourceSource].packagedItems[actionResourceConfig.resourceId] =
+					resource.DisplayName:Get() ~= ""
+					and resource.DisplayName:Get()
+					or resource.Name
+			end
+		end
+	end
+
+	if mutator.values.general then
+		for i, actionResourceConfig in pairs(mutator.values.general) do
+			if not record(actionResourceConfig) then
+				mutator.values.general[i].delete = true
+			end
+		end
+		TableUtils:ReindexNumericTable(mutator.values.general)
+	end
+
+	if mutator.values.classDependent then
+		local classesIndex = Ext.StaticData.GetSources("ClassDescription")
+
+		for co, classConfig in pairs(mutator.values.classDependent) do
+			for ci, classId in pairs(classConfig.requiresClasses) do
+				---@type ResourceClassDescription
+				local class = Ext.StaticData.Get(classId, "ClassDescription")
+				if not class then
+					classConfig.requiresClasses[ci] = nil
+					if not classConfig.requiresClasses() then
+						mutator.values.classDependent[co].delete = true
+						goto continueClass
+					end
+				elseif not removeMissingDependencies then
+					local classSource = TableUtils:IndexOf(classesIndex, function(value)
+						return TableUtils:IndexOf(value, classId) ~= nil
+					end)
+					if classSource then
+						mutator.modDependencies = mutator.modDependencies or {}
+						if not mutator.modDependencies[classSource] then
+							local name, author, version = Helpers:BuildModFields(classSource)
+							if author == "Larian" then
+								goto continue
+							end
+							mutator.modDependencies[classSource] = {
+								modName = name,
+								modAuthor = author,
+								modVersion = version,
+								modId = classSource,
+								packagedItems = {}
+							}
+						end
+
+						mutator.modDependencies[classSource].packagedItems[classId] = class.DisplayName:Get() or class.Name
+					end
+					::continue::
+				end
+			end
+			TableUtils:ReindexNumericTable(classConfig.requiresClasses)
+
+			for i, resourceConfig in pairs(classConfig.actionResources) do
+				if not record(resourceConfig) then
+					classConfig.actionResources[i].delete = true
+					if not classConfig.actionResources() then
+						mutator.values.classDependent[co].delete = true
+						goto continueClass
+					end
+				end
+			end
+			TableUtils:ReindexNumericTable(classConfig.actionResources)
+			::continueClass::
+		end
+		TableUtils:ReindexNumericTable(mutator.values.classDependent)
+	end
 end
 
 -- Quantity then level
@@ -387,7 +485,7 @@ function ActionResourcesMutator:applyMutator(entity, entityVar)
 			Logger:BasicDebug("Not adding resource %s to the boosts as the final amount is %s", resource.Name, amount)
 		end
 	end
-	Logger:BasicDebug("Final boosts is %s", boostString)
+	Logger:BasicDebug("Final boosts are %s", boostString)
 
 	local statName = "ABSOLUTES_LAB_RESOURCE_BOOST_" .. string.sub(entity.Uuid.EntityUuid, #entity.Uuid.EntityUuid - 11)
 	if boostString ~= "" then
