@@ -40,6 +40,7 @@ EntityRecorder.Levels = {
 ---@field Stat string
 ---@field Abilities {[string]: number}
 ---@field Icon string
+---@field XPReward Guid
 
 if Ext.IsClient() then
 	---@type {[GUIDSTRING]: EntityRecord}
@@ -220,7 +221,7 @@ else
 								end)
 							then
 								local recordedEntities = recordedEntities
-								local charLevel = entity.ServerCharacter.Template.LevelName
+								local charLevel = entity.ServerCharacter.Level
 								if charLevel and charLevel ~= "" and charLevel ~= levelName then
 									recordedLevels[charLevel] = recordedLevels[charLevel] or {}
 
@@ -233,6 +234,7 @@ else
 									or (entity.ServerCharacter.Template and entity.ServerCharacter.Template.DisplayName:Get())
 									or entity.Uuid.EntityUuid
 
+								entityRecord.XPReward = Ext.Stats.Get(entity.Data.StatsId).XPReward
 								entityRecord.Icon = entity.Icon.Icon
 								entityRecord.Race = entity.Race.Race
 								entityRecord.Faction = entity.Faction.field_8
