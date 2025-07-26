@@ -401,8 +401,8 @@ function MutationProfileManager:BuildFolderManager()
 				preview:AddText(selectable.Label)
 			end
 
-			if activeProfileId and ConfigurationStructure.config.mutations.profiles[activeProfileId] then
-				if TableUtils:IndexOf(ConfigurationStructure.config.mutations.profiles[activeProfileId].mutationRules, function(mutationRule)
+			if activeProfileId and MutationConfigurationProxy.profiles[activeProfileId] then
+				if TableUtils:IndexOf(MutationConfigurationProxy.profiles[activeProfileId].mutationRules, function(mutationRule)
 						return mutationRule.mutationFolderId == folderId and mutationRule.mutationId == mutationId
 					end)
 				then
@@ -458,7 +458,7 @@ function MutationProfileManager:BuildFolderManager()
 		)
 	end
 
-	self:BuildModFolders(activeMutation)
+	self:BuildModFolders()
 	self:BuildProfileManager()
 end
 
@@ -517,8 +517,8 @@ function MutationProfileManager:BuildModFolders()
 						preview:AddText(selectable.Label)
 					end
 
-					if activeProfileId and ConfigurationStructure.config.mutations.profiles[activeProfileId] then
-						if TableUtils:IndexOf(ConfigurationStructure.config.mutations.profiles[activeProfileId].mutationRules, function(mutationRule)
+					if activeProfileId and MutationConfigurationProxy.profiles[activeProfileId] then
+						if TableUtils:IndexOf(MutationConfigurationProxy.profiles[activeProfileId].mutationRules, function(mutationRule)
 								return mutationRule.mutationFolderId == folderId and mutationRule.mutationId == mutationId
 							end)
 						then
@@ -527,84 +527,83 @@ function MutationProfileManager:BuildModFolders()
 						end
 					end
 
-					mutationSelectable.OnClick = function()
-						if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
-							modPopup:Open()
-							Helpers:KillChildren(modPopup)
+					mutationSelectable.OnRightClick = function()
+						modPopup:Open()
+						Helpers:KillChildren(modPopup)
 
-							---@type ExtuiMenu
-							local copyMenu = modPopup:AddMenu("Copy Mutation To Folder")
+						---@type ExtuiMenu
+						local copyMenu = modPopup:AddMenu("Copy Mutation To Folder")
 
-							local mut = TableUtils:DeeplyCopyTable(mutation)
-							mut.modId = nil
+						local mut = TableUtils:DeeplyCopyTable(mutation)
+						mut.modId = nil
 
-							for _, userFolder in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.folders, function(_, userFolder)
-								return userFolder.name
-							end) do
-								copyMenu:AddSelectable(userFolder.name).OnClick = function()
-									if TableUtils:IndexOf(userFolder.mutations, function(value)
-											return value.name == mut.name
-										end) then
-										mut.name = mut.name .. " (COPY)"
-									end
-
-									userFolder.mutations[FormBuilder:generateGUID()] = mut
-									self:BuildFolderManager()
+						for _, userFolder in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.folders, function(_, userFolder)
+							return userFolder.name
+						end) do
+							copyMenu:AddSelectable(userFolder.name).OnClick = function()
+								if TableUtils:IndexOf(userFolder.mutations, function(value)
+										return value.name == mut.name
+									end) then
+									mut.name = mut.name .. " (COPY)"
 								end
-							end
 
-							copyMenu:AddSelectable("Use Mod's Folder Name").OnClick = function()
-								local folderCopy = {
-									name = TableUtils:IndexOf(ConfigurationStructure.config.mutations.folders, function(value)
-											return value.name == folder.name
-										end)
-										and (folder.name .. " (COPY)")
-										or folder.name,
-									description = folder.description,
-									mutations = { [FormBuilder:generateGUID()] = mut }
-								} --[[@as MutationFolder]]
-
-								ConfigurationStructure.config.mutations.folders[FormBuilder:generateGUID()] = folderCopy
+								userFolder.mutations[FormBuilder:generateGUID()] = mut
 								self:BuildFolderManager()
 							end
-
-							modPopup:AddSelectable("Copy Whole Folder").OnClick = function()
-								local folderCopy = {
-									name = TableUtils:IndexOf(ConfigurationStructure.config.mutations.folders, function(value)
-											return value.name == folder.name
-										end)
-										and (folder.name .. " (COPY)")
-										or folder.name,
-									description = folder.description,
-									mutations = TableUtils:DeeplyCopyTable(folder.mutations)
-								} --[[@as MutationFolder]]
-
-								for _, mutation in pairs(folderCopy.mutations) do
-									mutation.modId = nil
-								end
-
-								ConfigurationStructure.config.mutations.folders[FormBuilder:generateGUID()] = folderCopy
-								self:BuildFolderManager()
-							end
-						else
-							Helpers:KillChildren(self.mutationDesigner)
-
-							if activeMutationView then
-								if activeMutationView.Handle then
-									-- https://github.com/Norbyte/bg3se/blob/f8b982125c6c1997ceab2d65cfaa3c1a04908ea6/BG3Extender/Extender/Client/IMGUI/IMGUI.cpp#L1901C34-L1901C60
-									activeMutationView:SetColor("Button", { 0.46, 0.40, 0.29, 0.5 })
-								end
-								activeMutationView = nil
-							end
-
-							Styler:MiddleAlignedColumnLayout(self.mutationDesigner, function(ele)
-								Styler:CheapTextAlign(folder.name .. "/" .. mutation.name, ele, "Big")
-								Styler:CheapTextAlign(mutation.description, ele)
-
-								Styler:CheapTextAlign("(" .. modName .. ")", ele)
-							end).SameLine = true
-							MutationDesigner:RenderMutationManager(self.mutationDesigner, mutation)
 						end
+
+						copyMenu:AddSelectable("Use Mod's Folder Name").OnClick = function()
+							local folderCopy = {
+								name = TableUtils:IndexOf(ConfigurationStructure.config.mutations.folders, function(value)
+										return value.name == folder.name
+									end)
+									and (folder.name .. " (COPY)")
+									or folder.name,
+								description = folder.description,
+								mutations = { [FormBuilder:generateGUID()] = mut }
+							} --[[@as MutationFolder]]
+
+							ConfigurationStructure.config.mutations.folders[FormBuilder:generateGUID()] = folderCopy
+							self:BuildFolderManager()
+						end
+
+						modPopup:AddSelectable("Copy Whole Folder").OnClick = function()
+							local folderCopy = {
+								name = TableUtils:IndexOf(ConfigurationStructure.config.mutations.folders, function(value)
+										return value.name == folder.name
+									end)
+									and (folder.name .. " (COPY)")
+									or folder.name,
+								description = folder.description,
+								mutations = TableUtils:DeeplyCopyTable(folder.mutations)
+							} --[[@as MutationFolder]]
+
+							for _, mutation in pairs(folderCopy.mutations) do
+								mutation.modId = nil
+							end
+
+							ConfigurationStructure.config.mutations.folders[FormBuilder:generateGUID()] = folderCopy
+							self:BuildFolderManager()
+						end
+					end
+					mutationSelectable.OnClick = function()
+						Helpers:KillChildren(self.mutationDesigner)
+
+						if activeMutationView then
+							if activeMutationView.Handle then
+								-- https://github.com/Norbyte/bg3se/blob/f8b982125c6c1997ceab2d65cfaa3c1a04908ea6/BG3Extender/Extender/Client/IMGUI/IMGUI.cpp#L1901C34-L1901C60
+								activeMutationView:SetColor("Button", { 0.46, 0.40, 0.29, 0.5 })
+							end
+							activeMutationView = nil
+						end
+
+						Styler:MiddleAlignedColumnLayout(self.mutationDesigner, function(ele)
+							Styler:CheapTextAlign(folder.name .. "/" .. mutation.name, ele, "Big")
+							Styler:CheapTextAlign(mutation.description, ele)
+
+							Styler:CheapTextAlign("(" .. modName .. ")", ele)
+						end).SameLine = true
+						MutationDesigner:RenderMutationManager(self.mutationDesigner, mutation)
 					end
 				end
 			end
@@ -613,7 +612,7 @@ function MutationProfileManager:BuildModFolders()
 end
 
 local triedOnce
-function MutationProfileManager:BuildProfileManager(activeMutation)
+function MutationProfileManager:BuildProfileManager()
 	if not activeProfileId and not triedOnce then
 		triedOnce = true
 		-- MCM seems to initialize the tab before the ModVars are loaded, so need to do a deferred load
@@ -1031,7 +1030,8 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 									---@cast mutation ExtuiSelectable
 
 									if mutation.UserData and mutation.UserData.mutationId == removeRule.mutationId then
-										mutation.SelectableDisabled = false
+										mutation.CanDrag = true
+										mutation:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
 										goto continue
 									end
 								end
