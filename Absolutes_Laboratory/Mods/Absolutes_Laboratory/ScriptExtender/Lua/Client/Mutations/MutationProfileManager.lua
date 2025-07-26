@@ -81,7 +81,8 @@ function MutationProfileManager:init(parent)
 						---@cast mutation ExtuiSelectable
 
 						if mutation.UserData and mutation.UserData.mutationId == dropped.UserData.mutationId then
-							mutation.SelectableDisabled = false
+							mutation.CanDrag = true
+							mutation:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
 
 							for _, mutationRule in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles[activeProfileId].mutationRules) do
 								if mutationRule.mutationId == dropped.UserData.mutationId and mutationRule.mutationFolderId == dropped.UserData.mutationFolderId then
@@ -405,7 +406,8 @@ function MutationProfileManager:BuildFolderManager()
 						return mutationRule.mutationFolderId == folderId and mutationRule.mutationId == mutationId
 					end)
 				then
-					mutationSelectable.SelectableDisabled = true
+					mutationSelectable:SetColor("Text", { 0.86, 0.79, 0.68, 0.28 })
+					mutationSelectable.CanDrag = false
 				end
 			end
 		end
@@ -520,7 +522,8 @@ function MutationProfileManager:BuildModFolders()
 								return mutationRule.mutationFolderId == folderId and mutationRule.mutationId == mutationId
 							end)
 						then
-							mutationSelectable.SelectableDisabled = true
+							mutationSelectable:SetColor("Text", { 0.86, 0.79, 0.68, 0.28 })
+							mutationSelectable.CanDrag = false
 						end
 					end
 
@@ -1016,7 +1019,8 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 						activeProfile.mutationRules[dropped.ParentElement.UserData] = activeProfile.mutationRules[row.UserData]._real
 					end
 				else
-					dropped.SelectableDisabled = true
+					dropped:SetColor("Text", { 0.86, 0.79, 0.68, 0.28 })
+					dropped.CanDrag = false
 
 					if activeProfile.mutationRules[row.UserData] then
 						local removeRule = activeProfile.mutationRules[row.UserData]
