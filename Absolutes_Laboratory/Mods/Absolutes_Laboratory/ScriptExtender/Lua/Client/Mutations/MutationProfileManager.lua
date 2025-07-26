@@ -27,8 +27,8 @@ MutationProfileManager = {
 	modFolderGroup = nil,
 	---@type ExtuiGroup
 	profileGroup = nil,
-	---@type ExtuiWindow?
-	formBuilderWindow = nil
+	---@type ExtuiPopup
+	popup = nil
 }
 
 Ext.Require("Client/Mutations/MutationDesigner.lua")
@@ -51,6 +51,12 @@ local activeMutationView
 ---@param parent ExtuiTreeParent
 function MutationProfileManager:init(parent)
 	if not self.userFolderGroup then
+		self.popup = parent:AddPopup("ProfileManager")
+		self.popup:SetColor("PopupBg", { 0, 0, 0, 1 })
+		self.popup:SetColor("Border", { 1, 0, 0, 0.5 })
+		self.popup.AutoClosePopups = true
+		self.popup.UserData = "closeOnSubmit"
+
 		local parentTable = Styler:TwoColumnTable(parent, "mutationsMain")
 		parentTable.Borders = false
 		parentTable.Resizable = false
@@ -63,7 +69,7 @@ function MutationProfileManager:init(parent)
 		local userMutSep = self.selectionParent:AddSeparatorText("Your Mutations ( ? )")
 		userMutSep:SetStyle("SeparatorTextAlign", 0.5)
 		userMutSep:Tooltip():AddText(
-		"\t Ctrl-click on mutations to edit their details or delete them - use the Manage Folder button to create mutations. Drag and Drop mutations into the profile section to add them to a profile")
+			"\t Right-click on mutations to edit their details or delete them - use the Manage Folder button to create mutations. Drag and Drop mutations into the profile section to add them to a profile")
 
 		self.userFolderGroup = self.selectionParent:AddGroup("User Folders")
 		self.userFolderGroup.DragDropType = "MutationRules"
@@ -161,11 +167,6 @@ function MutationProfileManager:init(parent)
 					end
 				end)
 		end
-
-		self.formBuilderWindow = Ext.IMGUI.NewWindow("Create a Profile")
-		self.formBuilderWindow:SetStyle("WindowMinSize", 250)
-		self.formBuilderWindow.Open = false
-		self.formBuilderWindow.Closeable = true
 	end
 end
 
@@ -187,14 +188,11 @@ function MutationProfileManager:BuildFolderManager()
 		end
 
 		local folderPopup = folderHeader:AddPopup(folderId)
-
 		folderPopup:AddSelectable("Create a Mutation").OnClick = function(selectable)
-			self.formBuilderWindow.Label = "Create a Mutation"
-			Helpers:KillChildren(self.formBuilderWindow)
-			self.formBuilderWindow.Open = true
-			self.formBuilderWindow:SetFocus()
+			Helpers:KillChildren(self.popup)
+			self.popup:Open()
 
-			FormBuilder:CreateForm(self.formBuilderWindow, function(formResults)
+			FormBuilder:CreateForm(self.popup, function(formResults)
 					folder.mutations[FormBuilder:generateGUID()] = {
 						name = formResults.Name,
 						description = formResults.Description,
@@ -202,7 +200,6 @@ function MutationProfileManager:BuildFolderManager()
 						mutators = {}
 					} --[[@as Mutation]]
 
-					self.formBuilderWindow.Open = false
 					self:BuildFolderManager()
 				end,
 				{
@@ -221,16 +218,13 @@ function MutationProfileManager:BuildFolderManager()
 
 		---@param selectable ExtuiSelectable
 		folderPopup:AddSelectable("Edit Details").OnClick = function(selectable)
-			self.formBuilderWindow.Label = "Edit Folder " .. folder.name
-			Helpers:KillChildren(self.formBuilderWindow)
-			self.formBuilderWindow.Open = true
-			self.formBuilderWindow:SetFocus()
+			Helpers:KillChildren(self.popup)
+			self.popup:Open()
 
-			FormBuilder:CreateForm(self.formBuilderWindow, function(formResults)
+			FormBuilder:CreateForm(self.popup, function(formResults)
 					folder.name = formResults.Name
 					folder.description = formResults.Description
 
-					self.formBuilderWindow.Open = false
 					self:BuildFolderManager()
 				end,
 				{
@@ -332,16 +326,12 @@ function MutationProfileManager:BuildFolderManager()
 			end
 
 			mutationPopup:AddSelectable("Edit Details").OnClick = function()
-				self.formBuilderWindow.Label = "Edit " .. mutation.name
-				Helpers:KillChildren(self.formBuilderWindow)
-				self.formBuilderWindow.Open = true
-				self.formBuilderWindow:SetFocus()
-
-				FormBuilder:CreateForm(self.formBuilderWindow, function(formResults)
+				Helpers:KillChildren(self.popup)
+				self.popup:Open()
+				FormBuilder:CreateForm(self.popup, function(formResults)
 						mutation.name = formResults.Name
 						mutation.description = formResults.Description
 
-						self.formBuilderWindow.Open = false
 						self:BuildFolderManager()
 					end,
 					{
@@ -383,26 +373,25 @@ function MutationProfileManager:BuildFolderManager()
 				end
 			end
 
+			mutationSelectable.OnRightClick = function()
+				mutationPopup:Open()
+			end
 			mutationSelectable.OnClick = function()
-				if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
-					mutationPopup:Open()
-				else
-					Helpers:KillChildren(self.mutationDesigner)
+				Helpers:KillChildren(self.mutationDesigner)
 
-					if activeMutationView then
-						if activeMutationView.Handle then
-							-- https://github.com/Norbyte/bg3se/blob/f8b982125c6c1997ceab2d65cfaa3c1a04908ea6/BG3Extender/Extender/Client/IMGUI/IMGUI.cpp#L1901C34-L1901C60
-							activeMutationView:SetColor("Button", { 0.46, 0.40, 0.29, 0.5 })
-						end
-						activeMutationView = nil
+				if activeMutationView then
+					if activeMutationView.Handle then
+						-- https://github.com/Norbyte/bg3se/blob/f8b982125c6c1997ceab2d65cfaa3c1a04908ea6/BG3Extender/Extender/Client/IMGUI/IMGUI.cpp#L1901C34-L1901C60
+						activeMutationView:SetColor("Button", { 0.46, 0.40, 0.29, 0.5 })
 					end
-
-					Styler:MiddleAlignedColumnLayout(self.mutationDesigner, function(ele)
-						ele:AddText(folder.name .. "/" .. mutation.name).Font = "Big"
-						Styler:CheapTextAlign(mutation.description, ele)
-					end).SameLine = true
-					MutationDesigner:RenderMutationManager(self.mutationDesigner, mutation)
+					activeMutationView = nil
 				end
+
+				Styler:MiddleAlignedColumnLayout(self.mutationDesigner, function(ele)
+					ele:AddText(folder.name .. "/" .. mutation.name).Font = "Big"
+					Styler:CheapTextAlign(mutation.description, ele)
+				end).SameLine = true
+				MutationDesigner:RenderMutationManager(self.mutationDesigner, mutation)
 			end
 
 			---@param selectable ExtuiSelectable
@@ -441,19 +430,16 @@ function MutationProfileManager:BuildFolderManager()
 	createFolderButton.OnClick = function()
 		createFolderButton.Selected = false
 
-		self.formBuilderWindow.Label = "Create a Folder"
-		Helpers:KillChildren(self.formBuilderWindow)
-		self.formBuilderWindow.Open = true
-		self.formBuilderWindow:SetFocus()
+		Helpers:KillChildren(self.popup)
+		self.popup:Open()
 
-		FormBuilder:CreateForm(self.formBuilderWindow, function(formResults)
+		FormBuilder:CreateForm(self.popup, function(formResults)
 				ConfigurationStructure.config.mutations.folders[FormBuilder:generateGUID()] = {
 					name = formResults.Name,
 					description = formResults.Description,
 					mutations = {}
 				} --[[@as MutationFolder]]
 
-				self.formBuilderWindow.Open = false
 				self:BuildFolderManager()
 			end,
 			{
@@ -470,7 +456,7 @@ function MutationProfileManager:BuildFolderManager()
 		)
 	end
 
-	self:BuildModFolders()
+	self:BuildModFolders(activeMutation)
 	self:BuildProfileManager()
 end
 
@@ -624,7 +610,7 @@ function MutationProfileManager:BuildModFolders()
 end
 
 local triedOnce
-function MutationProfileManager:BuildProfileManager()
+function MutationProfileManager:BuildProfileManager(activeMutation)
 	if not activeProfileId and not triedOnce then
 		triedOnce = true
 		-- MCM seems to initialize the tab before the ModVars are loaded, so need to do a deferred load
@@ -712,12 +698,10 @@ function MutationProfileManager:BuildProfileManager()
 	local manageProfilePopup = self.profileManagerParent:AddPopup("Manage Profiles")
 
 	manageProfilePopup:AddSelectable("Create Profile").OnClick = function()
-		self.formBuilderWindow.Label = "Create a new Profile"
-		Helpers:KillChildren(self.formBuilderWindow)
-		self.formBuilderWindow.Open = true
-		self.formBuilderWindow:SetFocus()
+		Helpers:KillChildren(self.popup)
+		self.popup:Open()
 
-		FormBuilder:CreateForm(self.formBuilderWindow, function(formResults)
+		FormBuilder:CreateForm(self.popup, function(formResults)
 				local profileId = FormBuilder:generateGUID()
 				profiles[profileId] = {
 					name = formResults.Name,
@@ -733,7 +717,6 @@ function MutationProfileManager:BuildProfileManager()
 						end
 					end
 				end
-				self.formBuilderWindow.Open = false
 
 				activeProfileId = profileId
 				Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = profileId
@@ -885,11 +868,9 @@ function MutationProfileManager:BuildProfileManager()
 
 		if not profile.modId then
 			profileMenu:AddItem("Edit").OnClick = function()
-				self.formBuilderWindow.Label = "Edit " .. profileId
-				Helpers:KillChildren(self.formBuilderWindow)
-				self.formBuilderWindow.Open = true
-				self.formBuilderWindow:SetFocus()
-				FormBuilder:CreateForm(self.formBuilderWindow, function(formResults)
+				Helpers:KillChildren(self.popup)
+				self.popup:Open()
+				FormBuilder:CreateForm(self.popup, function(formResults)
 						profile.name = formResults.Name
 						profile.description = formResults.Description
 						profile.defaultActive = formResults.defaultActive
@@ -903,8 +884,6 @@ function MutationProfileManager:BuildProfileManager()
 						end
 						profiles[profileId].delete = true
 						profiles[profileId] = profile
-
-						self.formBuilderWindow.Open = false
 
 						self:BuildProfileManager()
 					end,
@@ -998,7 +977,7 @@ end
 
 ---@param lastMutationActive string?
 function MutationProfileManager:BuildRuleManager(lastMutationActive)
-	Helpers:KillChildren(self.rulesOrderGroup, self.mutationDesigner)
+	Helpers:KillChildren(self.rulesOrderGroup)
 	activeMutationView = nil
 
 	---@type MutationProfile
@@ -1142,67 +1121,69 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 				preview:AddText(button.Label)
 			end
 
-			mutationButton.OnClick = function()
-				if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" and not activeProfile.modId then
-					for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
-						---@cast ele ExtuiCollapsingHeader
-						if ele.UserData == mutationRule.mutationFolderId then
-							for _, mutation in pairs(ele.Children) do
-								---@cast mutation ExtuiSelectable
+			mutationButton.OnRightClick = function()
+				for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
+					---@cast ele ExtuiCollapsingHeader
+					if ele.UserData == mutationRule.mutationFolderId then
+						for _, mutation in pairs(ele.Children) do
+							---@cast mutation ExtuiSelectable
 
-								if mutation.UserData and mutation.UserData.mutationId == mutationRule.mutationId then
-									mutation:OnClick()
-									return
-								end
-							end
-						end
-					end
-				else
-					Helpers:KillChildren(self.mutationDesigner)
-
-					local mutation = folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId]
-
-					if not mutation.modId and (not mutation.selectors() or not mutation.mutators()) then
-						mutationButton:SetColor("Button", { 1, 0.02, 0, 0.4 })
-					end
-
-					if activeMutationView then
-						if activeMutationView.Handle then
-							---@type MutationProfileRule
-							local activeMutationRule = activeMutationView.UserData
-							local mutationConfig = folders[activeMutationRule.mutationFolderId].mutations[activeMutationRule.mutationId]
-
-							if not mutationConfig.modId and (not mutationConfig.selectors() or not mutationConfig.mutators()) then
-								activeMutationView:SetColor("Button", { 1, 0.02, 0, 0.4 })
-							else
-								-- https://github.com/Norbyte/bg3se/blob/f8b982125c6c1997ceab2d65cfaa3c1a04908ea6/BG3Extender/Extender/Client/IMGUI/IMGUI.cpp#L1901C34-L1901C60
-								activeMutationView:SetColor("Button", { 0.46, 0.40, 0.29, 0.5 })
-							end
-
-							if activeMutationView.Handle == mutationButton.Handle then
-								activeMutationView = nil
+							if mutation.UserData and mutation.UserData.mutationId == mutationRule.mutationId then
+								mutation:OnRightClick()
 								return
 							end
 						end
 					end
-
-					activeMutationView = mutationButton
-					mutationButton:SetColor("Button", { 0.64, 0.40, 0.28, 0.5 })
-
-					Styler:MiddleAlignedColumnLayout(self.mutationDesigner, function(ele)
-						Styler:CheapTextAlign(folders[mutationRule.mutationFolderId].name ..
-							"/" .. folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId].name, ele, "Big")
-
-						local mut = folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId]
-						if mut.modId then
-							local modInfo = Ext.Mod.GetMod(mut.modId).Info
-							Styler:CheapTextAlign("(" .. modInfo.Name .. ")", ele)
-							Styler:CheapTextAlign(mut.description, ele)
-						end
-					end).SameLine = true
-
-					MutationDesigner:RenderMutationManager(self.mutationDesigner, mutation)
 				end
+			end
+			mutationButton.OnClick = function()
+				Helpers:KillChildren(self.mutationDesigner)
+
+				local mutation = folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId]
+
+				if not mutation.modId and (not mutation.selectors() or not mutation.mutators()) then
+					mutationButton:SetColor("Button", { 1, 0.02, 0, 0.4 })
+				end
+
+				if activeMutationView then
+					if activeMutationView.Handle then
+						---@type MutationProfileRule
+						local activeMutationRule = activeMutationView.UserData
+						local mutationConfig = folders[activeMutationRule.mutationFolderId].mutations[activeMutationRule.mutationId]
+
+						if not mutationConfig.modId and (not mutationConfig.selectors() or not mutationConfig.mutators()) then
+							activeMutationView:SetColor("Button", { 1, 0.02, 0, 0.4 })
+						else
+							-- https://github.com/Norbyte/bg3se/blob/f8b982125c6c1997ceab2d65cfaa3c1a04908ea6/BG3Extender/Extender/Client/IMGUI/IMGUI.cpp#L1901C34-L1901C60
+							activeMutationView:SetColor("Button", { 0.46, 0.40, 0.29, 0.5 })
+						end
+
+						if activeMutationView.Handle == mutationButton.Handle then
+							activeMutationView = nil
+							return
+						end
+					end
+				end
+
+				activeMutationView = mutationButton
+				mutationButton:SetColor("Button", { 0.64, 0.40, 0.28, 0.5 })
+
+				Styler:MiddleAlignedColumnLayout(self.mutationDesigner, function(ele)
+					Styler:CheapTextAlign(folders[mutationRule.mutationFolderId].name ..
+						"/" .. folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId].name, ele, "Big")
+
+					local mut = folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId]
+
+					if mut.modId then
+						local modInfo = Ext.Mod.GetMod(mut.modId).Info
+						Styler:CheapTextAlign("(" .. modInfo.Name .. ")", ele)
+						Styler:CheapTextAlign(mut.description, ele)
+					else
+						Styler:CheapTextAlign(mut.description, ele)
+					end
+				end).SameLine = true
+
+				MutationDesigner:RenderMutationManager(self.mutationDesigner, mutation)
 			end
 
 			if mutationButton.Label == lastMutationActive then
