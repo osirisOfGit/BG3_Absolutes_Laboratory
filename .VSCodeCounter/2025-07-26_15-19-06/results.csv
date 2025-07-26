@@ -42,7 +42,7 @@
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Channels.lua", "Lua", 8, 0, 0, 1, 9
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Configurations\MutationsConfig.lua", "Lua", 88, 0, 72, 30, 190
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Configurations\_ConfigurationStructure.lua", "Lua", 126, 0, 31, 21, 178
-"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\EntityRecorder.lua", "Lua", 243, 0, 23, 50, 316
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\EntityRecorder.lua", "Lua", 244, 0, 24, 50, 318
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\External\MutationModProxy.lua", "Lua", 150, 0, 13, 21, 184
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\MutationConfigurationProxy.lua", "Lua", 73, 0, 8, 13, 94
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Mutators\AbilitiesMutator.lua", "Lua", 282, 0, 23, 56, 361
@@ -60,10 +60,11 @@
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Mutators\StatusList\StatusListMutator.lua", "Lua", 394, 0, 28, 62, 484
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Selectors\FactionSelector.lua", "Lua", 261, 0, 24, 47, 332
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Selectors\RaceSelector.lua", "Lua", 173, 0, 26, 35, 234
-"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Selectors\SelectorInterface.lua", "Lua", 99, 0, 32, 26, 157
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Selectors\SelectorInterface.lua", "Lua", 100, 0, 32, 26, 158
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Selectors\StatSelector.lua", "Lua", 248, 0, 25, 43, 316
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Selectors\TagSelector.lua", "Lua", 139, 0, 12, 30, 181
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Selectors\TemplateSelector.lua", "Lua", 260, 0, 24, 47, 331
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Selectors\XPRewardSelector.lua", "Lua", 62, 0, 9, 11, 82
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Utilities\Advanced\_CustomEntitySerializer.lua", "Lua", 74, 0, 6, 6, 86
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Utilities\Advanced\_ECSPrinter.lua", "Lua", 330, 0, 54, 54, 438
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Utilities\Client\IMGUI\_FormBuilder.lua", "Lua", 151, 0, 19, 22, 192
@@ -80,4 +81,4 @@
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Utilities\IDEHelpers\Osi.lua", "Lua", 983, 0, 2797, 1007, 4787
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Utilities\Networking\Channels.lua", "Lua", 6, 0, 19, 7, 32
 "d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Utilities\README.md", "Markdown", 0, 18, 0, 13, 31
-"Total", "-", 23902, 18, 22005, 8943, 54868
+"Total", "-", 23966, 18, 22015, 8954, 54953
