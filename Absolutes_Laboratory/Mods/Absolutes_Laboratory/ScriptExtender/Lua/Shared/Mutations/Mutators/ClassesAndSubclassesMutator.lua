@@ -216,7 +216,7 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 					---@type ExtuiMenu
 					local menu = popup:AddMenu(self.translationMap[classId])
 					menu.Disabled = (classConditionalGroup.classIds and classConditionalGroup.classIds[classId]) ~= nil
-
+ 
 					menu:AddSelectable(self.translationMap[classId]).OnClick = function()
 						classConditionalGroup.classIds = classConditionalGroup.classIds or {}
 						classConditionalGroup.classIds[classId] = TableUtils:CountElements(classConditionalGroup.classIds) == 0 and 100 or 0

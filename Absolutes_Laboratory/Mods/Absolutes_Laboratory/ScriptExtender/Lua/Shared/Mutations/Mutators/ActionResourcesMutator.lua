@@ -188,9 +188,10 @@ i.e if Base is 5 and this is 2, the next value given will be 3 - if this is 0.3,
 		resourcePopup(mutator.values.general, function() buildGeneral(generalGroupTable, mutator.values.general) end)
 	end
 
-	local classSep = parent:AddSeparatorText("Class-Specific")
+	local classSep = parent:AddSeparatorText("Class-Specific ( ? )")
 	classSep:SetStyle("SeparatorTextAlign", 0.2, 0.5)
-	classSep:Tooltip():AddText("\t Resources defined here will override their General counterparts above if applicable")
+	classSep:Tooltip():AddText(
+		"\t Resources defined here will override their General counterparts above if applicable. Later groups will override earlier groups in the list if both are applicable.")
 
 	local classParentTable = parent:AddTable("classParent", 2)
 	classParentTable:AddColumn("", "WidthFixed")
@@ -205,10 +206,10 @@ i.e if Base is 5 and this is 2, the next value given will be 3 - if this is 0.3,
 			local row = classParentTable:AddRow()
 			local deleteButton = Styler:ImageButton(row:AddCell():AddImageButton("delete" .. i, "ico_red_x", { 16, 16 }))
 			deleteButton.OnClick = function()
-					mutator.values.classDependent[i].delete = true
-					TableUtils:ReindexNumericTable(mutator.values.classDependent)
-					buildClasses()
-				end
+				mutator.values.classDependent[i].delete = true
+				TableUtils:ReindexNumericTable(mutator.values.classDependent)
+				buildClasses()
+			end
 
 			local cell = row:AddCell()
 			cell:AddText("Group " .. i).Font = "Large"
@@ -305,10 +306,120 @@ i.e if Base is 5 and this is 2, the next value given will be 3 - if this is 0.3,
 	end
 end
 
-function ActionResourcesMutator:applyMutator(entity, entityVar)
+function ActionResourcesMutator:handleDependencies(export, mutator, removeMissingDependencies)
 
 end
 
-function ActionResourcesMutator:undoMutator(entity, entityVar, primedEntityVar, reprocessTransient)
+-- Quantity then level
+-- "Boosts" "ActionResource(Interrupt_MAG_Counterspell, 1, 0)"
+function ActionResourcesMutator:applyMutator(entity, entityVar)
+	local actionResourceMutators = entityVar.appliedMutators[self.name]
+	if not actionResourceMutators[1] then
+		actionResourceMutators = { actionResourceMutators }
+	end
+	---@cast actionResourceMutators ActionResourcesMutator[]
 
+	---@type {[Guid]: ActionResourceConfig}
+	local resourcePool = {}
+
+	for _, actionResourceMutator in ipairs(actionResourceMutators) do
+		if actionResourceMutator.values.general then
+			for _, generalConfig in ipairs(actionResourceMutator.values.general) do
+				if entity.EocLevel.Level >= generalConfig.initialEntityOrClassLevel then
+					resourcePool[generalConfig.resourceId] = generalConfig
+				end
+			end
+		end
+
+		if actionResourceMutator.values.classDependent then
+			for _, classConfig in ipairs(actionResourceMutator.values.classDependent) do
+				---@type {[Guid]: ActionResourceConfig}
+				local config = {}
+				for _, classId in pairs(classConfig.requiresClasses) do
+					for _, classOnEntity in pairs(entity.Classes.Classes) do
+						if classOnEntity.ClassUUID == classId or classOnEntity.SubClassUUID == classId then
+							Logger:BasicDebug("Class %s is present on the entity - adding resources", Ext.StaticData.Get(classId, "ClassDescription").Name)
+							for _, resourceConfig in ipairs(classConfig.actionResources) do
+								if classOnEntity.Level >= resourceConfig.initialEntityOrClassLevel then
+									if not config[resourceConfig.resourceId] then
+										resourceConfig.totalClassLevel = classOnEntity.Level
+										config[resourceConfig.resourceId] = resourceConfig
+									else
+										config[resourceConfig.resourceId].totalClassLevel = config[resourceConfig.resourceId].totalClassLevel + classOnEntity.Level
+									end
+								end
+							end
+						end
+					end
+				end
+				for resource, resourceConfig in pairs(config) do
+					resourcePool[resource] = resourceConfig
+				end
+			end
+		end
+	end
+
+	Logger:BasicTrace("Final resource configs: %s", resourcePool)
+
+	local boostString = ""
+	local template = "ActionResource(%s,%d,%d);"
+
+	for resourceId, config in pairs(resourcePool) do
+		---@type ResourceActionResource
+		local resource = Ext.StaticData.Get(resourceId, "ActionResource")
+
+		local amount = config.amount
+		if config.everyXLevels then
+			local iterationCounter = 0
+			for _ = config.initialEntityOrClassLevel, (config.totalClassLevel or entity.EocLevel.Level), config.everyXLevels do
+				iterationCounter = iterationCounter + 1
+
+				local amountToReduce = ((config.reduceByYEachIteration or 0) * iterationCounter)
+				-- Rounding to the nearest whole number, prioritizing flooring
+				amount = amount + math.floor((config.amount - amountToReduce) + 0.49)
+				Logger:BasicTrace("Adding %s for %s", math.floor((config.amount - amountToReduce) + 0.49), resource.Name)
+			end
+		end
+
+		if amount > 0 then
+			boostString = boostString .. string.format(template, resource.Name, amount, config.resourceLevel or 0)
+		else
+			Logger:BasicDebug("Not adding resource %s to the boosts as the final amount is %s", resource.Name, amount)
+		end
+	end
+	Logger:BasicDebug("Final boosts is %s", boostString)
+
+	local statName = "ABSOLUTES_LAB_RESOURCE_BOOST_" .. string.sub(entity.Uuid.EntityUuid, #entity.Uuid.EntityUuid - 11)
+	if boostString ~= "" then
+		if not Ext.Stats.Get(statName) then
+			Logger:BasicDebug("Creating Resource Stat %s", statName)
+			---@type StatusData
+			local newStat = Ext.Stats.Create(statName, "StatusData", "ABSOLUTES_LAB_RESOURCE_BOOST")
+			newStat.Boosts = boostString
+			newStat:Sync()
+		else
+			Logger:BasicDebug("Updating Resource Stat %s", statName)
+			---@type StatusData
+			local stat = Ext.Stats.Get(statName)
+			if stat.Boosts ~= boostString then
+				stat.Boosts = boostString
+				stat:Sync()
+			end
+		end
+
+		Osi.ApplyStatus(entity.Uuid.EntityUuid, statName, -1, 1, "Lab")
+	else
+		Logger:BasicDebug("Removed status %s as there were no resource boosts to apply", statName)
+		Osi.RemoveStatus(entity.Uuid.EntityUuid, statName)
+	end
+end
+
+function ActionResourcesMutator:undoMutator(entity, entityVar, primedEntityVar, reprocessTransient)
+	if not primedEntityVar.appliedMutators[self.name] then
+		local statName = "ABSOLUTES_LAB_RESOURCE_BOOST_" .. string.sub(entity.Uuid.EntityUuid, #entity.Uuid.EntityUuid - 11)
+		Logger:BasicDebug("Removed status %s as no resource mutator will be executed for this entity", statName)
+		Osi.RemoveStatus(entity.Uuid.EntityUuid, statName)
+	else
+		Logger:BasicDebug("Skipping undoing as there is an action resource mutator primed for this entity")
+	end
 end

@@ -132,7 +132,7 @@ function RaceSelector:renderSelector(parent, existingSelector)
 	buildSubraceOpts(racesWithSubraces[selector.criteriaValue.RaceId], subRaceGroup, selector.criteriaValue.SubRaceIds)
 
 	raceCombo.OnChange = function()
-		if raceCombo.SelectedIndex > 0 then
+		if raceCombo.SelectedIndex > -1 then
 			selector.criteriaValue.RaceId = translationMap[raceOpts[raceCombo.SelectedIndex + 1]]
 
 			selector.criteriaValue.SubRaceIds = nil
@@ -141,7 +141,7 @@ function RaceSelector:renderSelector(parent, existingSelector)
 		else
 			selector.criteriaValue.RaceId = nil
 			selector.criteriaValue.SubRaceIds = nil
-			selector.criteriaValue.SubRaceIds = {}
+			buildSubraceOpts(racesWithSubraces[selector.criteriaValue.RaceId], subRaceGroup, selector.criteriaValue.SubRaceIds)
 		end
 	end
 end
