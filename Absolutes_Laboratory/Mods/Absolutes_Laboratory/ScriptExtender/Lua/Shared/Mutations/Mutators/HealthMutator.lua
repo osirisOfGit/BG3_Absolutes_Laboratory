@@ -40,6 +40,7 @@ function HealthMutator:renderMutator(parent, mutator)
 
 	local modifierParent = parent:AddCollapsingHeader("Modifiers")
 	modifierParent:SetColor("Header", { 1, 1, 1, 0 })
+	mutator.modifiers = mutator.modifiers or {}
 	self:renderModifiers(modifierParent, mutator.modifiers)
 end
 

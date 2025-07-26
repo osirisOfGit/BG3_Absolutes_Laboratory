@@ -62,7 +62,8 @@ function MutationProfileManager:init(parent)
 
 		local userMutSep = self.selectionParent:AddSeparatorText("Your Mutations ( ? )")
 		userMutSep:SetStyle("SeparatorTextAlign", 0.5)
-		userMutSep:Tooltip():AddText("\t Ctrl-click on mutations to edit their details or delete them - use the Manage Folder button to create mutations")
+		userMutSep:Tooltip():AddText(
+		"\t Ctrl-click on mutations to edit their details or delete them - use the Manage Folder button to create mutations. Drag and Drop mutations into the profile section to add them to a profile")
 
 		self.userFolderGroup = self.selectionParent:AddGroup("User Folders")
 		self.userFolderGroup.DragDropType = "MutationRules"
@@ -398,6 +399,7 @@ function MutationProfileManager:BuildFolderManager()
 
 					Styler:MiddleAlignedColumnLayout(self.mutationDesigner, function(ele)
 						ele:AddText(folder.name .. "/" .. mutation.name).Font = "Big"
+						Styler:CheapTextAlign(mutation.description, ele)
 					end).SameLine = true
 					MutationDesigner:RenderMutationManager(self.mutationDesigner, mutation)
 				end
@@ -608,6 +610,7 @@ function MutationProfileManager:BuildModFolders()
 
 							Styler:MiddleAlignedColumnLayout(self.mutationDesigner, function(ele)
 								Styler:CheapTextAlign(folder.name .. "/" .. mutation.name, ele, "Big")
+								Styler:CheapTextAlign(mutation.description, ele)
 
 								Styler:CheapTextAlign("(" .. modName .. ")", ele)
 							end).SameLine = true
@@ -1194,6 +1197,7 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 						if mut.modId then
 							local modInfo = Ext.Mod.GetMod(mut.modId).Info
 							Styler:CheapTextAlign("(" .. modInfo.Name .. ")", ele)
+							Styler:CheapTextAlign(mut.description, ele)
 						end
 					end).SameLine = true
 

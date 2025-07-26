@@ -3,121 +3,211 @@ MutationDesigner = {}
 Ext.Require("Shared/Mutations/Selectors/SelectorInterface.lua")
 Ext.Require("Shared/Mutations/Mutators/MutatorInterface.lua")
 
+local activeButtonColor = { 0.38, 0.26, 0.21, 0.78 }
+local disabledButtonColor = { 0, 0, 0, 0 }
+
+---@type ExtuiPopup
+local popup
 
 ---@param parent ExtuiTreeParent
 ---@param existingMutation Mutation
 function MutationDesigner:RenderMutationManager(parent, existingMutation)
+	popup = parent:AddPopup("Popup")
+
 	if existingMutation.modId then
 		Styler:CheapTextAlign("Mod-Added Mutation - You can browse, but not edit", parent, "Large"):SetColor("Text", { 1, 0, 0, 0.45 })
 	end
 
-	local managerTable = parent:AddTable("ManagerTable", 2)
-	managerTable.Borders = true
+	---@type ExtuiTable
+	local managerTable
 
-	local row = managerTable:AddRow()
+	local buildDesignerFunc
 
-	local selectorColumn = row:AddCell()
-	Styler:CheapTextAlign("Selectors", selectorColumn, "Big").UserData = "keep"
-	Styler:MiddleAlignedColumnLayout(selectorColumn, function(ele)
-		local dryRunButton = ele:AddButton("Dry Run Selectors")
-		dryRunButton.Disabled = false
-		dryRunButton.UserData = "keep"
+	---@type ExtuiButton[]
+	local buttons
 
-		---@type ExtuiWindow
-		local resultsWindow
+	Styler:MiddleAlignedColumnLayout(parent, function(ele)
+		ele.Font = "Small"
+		Styler:CheapTextAlign("Focus:", ele)
 
-		dryRunButton.OnClick = function()
-			if not resultsWindow then
-				resultsWindow = Ext.IMGUI.NewWindow("Dry Run Results###resultswindow")
-				resultsWindow.Closeable = true
-				resultsWindow.AlwaysAutoResize = true
-			else
-				resultsWindow.Open = true
-				resultsWindow:SetFocus()
-				Helpers:KillChildren(resultsWindow)
-			end
+		local focusSelectors = ele:AddButton("Selectors")
+		focusSelectors:SetColor("Button", disabledButtonColor)
 
-			local predicate = SelectorInterface:createComposedPredicate(existingMutation.selectors._real)
+		local focusBoth = ele:AddButton("Both")
+		focusBoth:SetColor("Button", activeButtonColor)
+		focusBoth.UserData = true
+		focusBoth.SameLine = true
 
-			local maxCols = 10
-			local resultCounter = 0
-			for level, entities in pairs(EntityRecorder:GetEntities()) do
-				local header = resultsWindow:AddCollapsingHeader(level)
-				header:SetColor("Header", { 1, 1, 1, 0 })
-				header.Font = "Large"
-				header.DefaultOpen = true
+		local focusMutators = ele:AddButton("Mutators")
+		focusMutators:SetColor("Button", disabledButtonColor)
+		focusMutators.SameLine = true
 
-				local columnCounter = 0
-
-				for entity, record in TableUtils:OrderedPairs(entities, function(key)
-					return entities[key].Name
-				end) do
-					if predicate:Test(record) then
-						resultCounter = resultCounter + 1
-						columnCounter = columnCounter + 1
-
-						local group = header:AddChildWindow(level .. entity)
-						group.Font = "Medium"
-						group.NoSavedSettings = true
-						group.Size = { 100, 100 }
-						group.SameLine = columnCounter > 1 and columnCounter % maxCols ~= 1
-
-						Styler:MiddleAlignedColumnLayout(group, function(ele)
-							local image = ele:AddImage(record.Icon, { 64, 64 })
-							if image.ImageData.Icon == "" then
-								ele:AddImage("Item_Unknown", { 64, 64 })
-							end
-						end)
-
-						Styler:MiddleAlignedColumnLayout(group, function(ele)
-							local hyperlink = Styler:HyperlinkText(ele, record.Name, function(parent)
-								CharacterWindow:BuildWindow(parent, entity)
-							end)
-							hyperlink.Font = "Small"
-						end)
-					end
-				end
-				if columnCounter == 0 then
-					header:Destroy()
+		buttons = { focusSelectors, focusBoth, focusMutators }
+		---@param button ExtuiButton
+		local function changeFocus(button)
+			for _, focusButton in pairs(buttons) do
+				if focusButton.Handle == button.Handle then
+					focusButton:SetColor("Button", activeButtonColor)
+					focusButton.UserData = true
 				else
-					header.Label = string.format("%s - %s Results", header.Label, columnCounter)
+					focusButton:SetColor("Button", disabledButtonColor)
+					focusButton.UserData = false
 				end
 			end
 
-			if resultCounter == 0 then
-				resultsWindow:AddText("No Entities Selected").Font = "Large"
-			end
-
-			resultsWindow.Label = string.format("%s - %s Results###resultswindow", "Dry Run", resultCounter)
+			buildDesignerFunc()
 		end
-	end).UserData = "keep"
 
-	self:RenderSelectors(selectorColumn, existingMutation.selectors)
+		focusSelectors.OnClick = changeFocus
+		focusBoth.OnClick = changeFocus
+		focusMutators.OnClick = changeFocus
+	end)
 
-	local mutatorColumn = row:AddCell()
-	Styler:CheapTextAlign("Mutators", mutatorColumn, "Big").UserData = "keep"
-	mutatorColumn:AddDummy(16, 40)
-	self:RenderMutators(mutatorColumn, existingMutation.mutators)
+	buildDesignerFunc = function()
+		if managerTable then
+			managerTable:Destroy()
+		end
+		managerTable = parent:AddTable("ManagerTable", buttons[2].UserData and 2 or 1)
+		managerTable.Borders = true
 
-	if existingMutation.modId then
-		---@param parent ExtuiTreeParent
-		local function disableNonNavigatableElements(parent)
-			local success = pcall(function(...)
-				for _, child in pairs(parent.Children) do
-					disableNonNavigatableElements(child)
+		local row = managerTable:AddRow()
+
+		if buttons[2].UserData or buttons[1].UserData then
+			local selectorColumn = row:AddCell()
+			Styler:CheapTextAlign("Selectors", selectorColumn, "Big").UserData = "keep"
+			Styler:MiddleAlignedColumnLayout(selectorColumn, function(ele)
+				local dryRunButton = ele:AddButton("Dry Run Selectors")
+				dryRunButton.Disabled = false
+				dryRunButton.UserData = "keep"
+
+				---@type ExtuiWindow
+				local resultsWindow
+
+				dryRunButton.OnClick = function()
+					if not resultsWindow then
+						resultsWindow = Ext.IMGUI.NewWindow("Dry Run Results###resultswindow")
+						resultsWindow.Closeable = true
+						resultsWindow.AlwaysAutoResize = true
+					else
+						resultsWindow.Open = true
+						resultsWindow:SetFocus()
+						Helpers:KillChildren(resultsWindow)
+					end
+
+					local predicate = SelectorInterface:createComposedPredicate(existingMutation.selectors._real)
+
+					local maxCols = 10
+					local resultCounter = 0
+					for level, entities in pairs(EntityRecorder:GetEntities()) do
+						local header = resultsWindow:AddCollapsingHeader(level)
+						header:SetColor("Header", { 1, 1, 1, 0 })
+						header.Font = "Large"
+						header.DefaultOpen = true
+
+						local columnCounter = 0
+
+						for entity, record in TableUtils:OrderedPairs(entities, function(key)
+							return entities[key].Name
+						end) do
+							if predicate:Test(record) then
+								resultCounter = resultCounter + 1
+								columnCounter = columnCounter + 1
+
+								local group = header:AddChildWindow(level .. entity)
+								group.Font = "Medium"
+								group.NoSavedSettings = true
+								group.Size = { 100, 100 }
+								group.SameLine = columnCounter > 1 and columnCounter % maxCols ~= 1
+
+								Styler:MiddleAlignedColumnLayout(group, function(ele)
+									local image = ele:AddImage(record.Icon, { 64, 64 })
+									if image.ImageData.Icon == "" then
+										ele:AddImage("Item_Unknown", { 64, 64 })
+									end
+								end)
+
+								Styler:MiddleAlignedColumnLayout(group, function(ele)
+									local hyperlink = Styler:HyperlinkText(ele, record.Name, function(parent)
+										CharacterWindow:BuildWindow(parent, entity)
+									end)
+									hyperlink.Font = "Small"
+								end)
+							end
+						end
+						if columnCounter == 0 then
+							header:Destroy()
+						else
+							header.Label = string.format("%s - %s Results", header.Label, columnCounter)
+						end
+					end
+
+					if resultCounter == 0 then
+						resultsWindow:AddText("No Entities Selected").Font = "Large"
+					end
+
+					resultsWindow.Label = string.format("%s - %s Results###resultswindow", "Dry Run", resultCounter)
 				end
-			end)
+			end).UserData = "keep"
 
-			if success or parent.UserData == "EnableForMods" then
-				parent.Disabled = false
+			self:RenderSelectors(selectorColumn, existingMutation.selectors)
+		end
+		if buttons[2].UserData or buttons[3].UserData then
+			local setting = ConfigurationStructure.config.mutations.settings.mutationDesigner
+
+			local mutatorColumn = row:AddCell()
+
+			Styler:CheapTextAlign("Mutators", mutatorColumn, "Big").UserData = "keep"
+			Styler:MiddleAlignedColumnLayout(mutatorColumn, function(ele)
+				ele.Font = "Small"
+
+				local sideBarButton = ele:AddButton("Sidebar")
+				sideBarButton:SetColor("Button", setting.mutatorStyle == "Sidebar" and activeButtonColor or disabledButtonColor)
+				sideBarButton.UserData = "EnableForMods"
+
+				local infiniteScrollButton = ele:AddButton("Infinite Scroll")
+				infiniteScrollButton:SetColor("Button", setting.mutatorStyle == "Infinite" and activeButtonColor or disabledButtonColor)
+				infiniteScrollButton.SameLine = true
+				infiniteScrollButton.UserData = "EnableForMods"
+
+				---@param button ExtuiButton
+				sideBarButton.OnClick = function(button)
+					setting.mutatorStyle = button.Label == "Sidebar" and "Sidebar" or "Infinite"
+					sideBarButton:SetColor("Button", setting.mutatorStyle == "Sidebar" and activeButtonColor or disabledButtonColor)
+					infiniteScrollButton:SetColor("Button", setting.mutatorStyle == "Infinite" and activeButtonColor or disabledButtonColor)
+
+					buildDesignerFunc()
+				end
+				infiniteScrollButton.OnClick = sideBarButton.OnClick
+			end).UserData = "keep"
+			if ConfigurationStructure.config.mutations.settings.mutationDesigner.mutatorStyle == "Infinite" then
+				self:RenderMutatorsInfiniteScroll(mutatorColumn, existingMutation.mutators)
 			else
-				parent.Disabled = true
+				self:RenderMutatorsSidebarStyle(mutatorColumn, existingMutation.mutators)
 			end
 		end
 
-		disableNonNavigatableElements(selectorColumn)
-		disableNonNavigatableElements(mutatorColumn)
+		if existingMutation.modId then
+			---@param parent ExtuiTreeParent
+			local function disableNonNavigatableElements(parent)
+				local success = pcall(function(...)
+					for _, child in pairs(parent.Children) do
+						disableNonNavigatableElements(child)
+					end
+				end)
+
+				if success or parent.UserData == "EnableForMods" then
+					parent.Disabled = false
+				else
+					parent.Disabled = true
+				end
+			end
+
+			for _, cell in ipairs(row.Children) do
+				disableNonNavigatableElements(cell)
+			end
+		end
 	end
+	buildDesignerFunc()
 end
 
 ---@param parent ExtuiTreeParent
@@ -161,7 +251,7 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 		if andOrEntry then
 			local andText = entryCell:AddButton("AND")
 			andText.Disabled = true
-			andText:SetColor("Button", { 0, 0, 0, 0 })
+			andText:SetColor("Button", disabledButtonColor)
 			andText.SameLine = true
 
 			local andOrSlider = entryCell:AddSliderInt("", andOrEntry == "AND" and 0 or 1, 0, 1)
@@ -171,15 +261,15 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 
 			local orText = entryCell:AddButton("OR")
 			orText.Disabled = true
-			orText:SetColor("Button", { 0.38, 0.26, 0.21, 0.78 })
+			orText:SetColor("Button", activeButtonColor)
 			orText.SameLine = true
 
 			if existingSelector[i] == "AND" then
-				andText:SetColor("Button", { 0.38, 0.26, 0.21, 0.78 })
-				orText:SetColor("Button", { 0, 0, 0, 0 })
+				andText:SetColor("Button", activeButtonColor)
+				orText:SetColor("Button", disabledButtonColor)
 			else
-				andText:SetColor("Button", { 0, 0, 0, 0 })
-				orText:SetColor("Button", { 0.38, 0.26, 0.21, 0.78 })
+				andText:SetColor("Button", disabledButtonColor)
+				orText:SetColor("Button", activeButtonColor)
 			end
 
 			andOrSlider.OnActivate = function()
@@ -196,11 +286,11 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 				andOrSlider.Value = { newValue, newValue, newValue, newValue }
 
 				if existingSelector[i] == "AND" then
-					andText:SetColor("Button", { 0.38, 0.26, 0.21, 0.78 })
-					orText:SetColor("Button", { 0, 0, 0, 0 })
+					andText:SetColor("Button", activeButtonColor)
+					orText:SetColor("Button", disabledButtonColor)
 				else
-					andText:SetColor("Button", { 0, 0, 0, 0 })
-					orText:SetColor("Button", { 0.38, 0.26, 0.21, 0.78 })
+					andText:SetColor("Button", disabledButtonColor)
+					orText:SetColor("Button", activeButtonColor)
 				end
 			end
 		end
@@ -248,16 +338,29 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 		if #existingSelector >= 1 then
 			table.insert(existingSelector, "AND")
 		end
-		table.insert(existingSelector, TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.selector))
+		Helpers:KillChildren(popup)
+		popup:Open()
 
-		Helpers:KillChildren(parent)
-		self:RenderSelectors(parent, existingSelector)
+		for selectorName in TableUtils:OrderedPairs(SelectorInterface.registeredSelectors) do
+			popup:AddSelectable(selectorName).OnClick = function()
+				table.insert(existingSelector, {
+					criteriaCategory = selectorName,
+					inclusive = true,
+					subSelectors = {},
+				} --[[@as Selector]])
+
+				Helpers:KillChildren(parent)
+				self:RenderSelectors(parent, existingSelector)
+			end
+		end
 	end
 end
 
 ---@param parent ExtuiTreeParent
 ---@param mutators Mutator[]
-function MutationDesigner:RenderMutators(parent, mutators)
+function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators)
+	Helpers:KillChildren(parent)
+
 	local mutatorTable = Styler:TwoColumnTable(parent, "Mutators")
 	mutatorTable.ColumnDefs[1].Width = 20
 	mutatorTable.BordersV = false
@@ -277,8 +380,8 @@ function MutationDesigner:RenderMutators(parent, mutators)
 				mutators[x].delete = true
 				mutators[x] = TableUtils:DeeplyCopyTable(mutators._real[x + 1])
 			end
-			Helpers:KillChildren(parent)
-			self:RenderMutators(parent, mutators)
+
+			self:RenderMutatorsInfiniteScroll(parent, mutators)
 		end
 
 		local mutatorCell = row:AddCell()
@@ -308,8 +411,8 @@ function MutationDesigner:RenderMutators(parent, mutators)
 			mutator.modifiers = {}
 			mutator.values = nil
 			MutatorInterface.registeredMutators[mutator.targetProperty]:renderMutator(mutatorGroup, mutator)
-			Helpers:KillChildren(parent)
-			self:RenderMutators(parent, mutators)
+
+			self:RenderMutatorsInfiniteScroll(parent, mutators)
 		end
 
 		if mutator.targetProperty and mutator.targetProperty ~= "" then
@@ -322,11 +425,93 @@ function MutationDesigner:RenderMutators(parent, mutators)
 	Styler:MiddleAlignedColumnLayout(parent, function(ele)
 		local addNewEntryButton = ele:AddButton("+")
 		addNewEntryButton.OnClick = function()
-			table.insert(mutators,
-				TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.mutator))
+			Helpers:KillChildren(popup)
+			popup:Open()
 
-			Helpers:KillChildren(parent)
-			self:RenderMutators(parent, mutators)
+			for mutatorName in TableUtils:OrderedPairs(MutatorInterface.registeredMutators) do
+				if not TableUtils:IndexOf(mutators, function(value)
+						return value.targetProperty == mutatorName
+					end)
+				then
+					popup:AddSelectable(mutatorName).OnClick = function()
+						table.insert(mutators, {
+							targetProperty = mutatorName
+						} --[[@as Mutator]])
+
+						self:RenderMutatorsInfiniteScroll(parent, mutators)
+					end
+				end
+			end
+		end
+	end)
+end
+
+---@param parent ExtuiTreeParent
+---@param mutators Mutator[]
+function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMutator)
+	Helpers:KillChildren(parent)
+
+	local mutatorTable = Styler:TwoColumnTable(parent, "mutators")
+	local row = mutatorTable:AddRow()
+	local sideBar = row:AddCell()
+	local designer = row:AddCell()
+
+	---@type ExtuiSelectable?
+	local activeMutatorHandle
+
+	for i, mutator in TableUtils:OrderedPairs(mutators, function(key, value)
+		return MutatorInterface.registeredMutators[value.targetProperty]:priority()
+	end) do
+		local delete = Styler:ImageButton(sideBar:AddImageButton("delete" .. mutator.targetProperty, "ico_red_x", { 16, 16 }))
+		delete.OnClick = function()
+			for x = i, TableUtils:CountElements(mutators) do
+				mutators[x].delete = true
+				mutators[x] = TableUtils:DeeplyCopyTable(mutators._real[x + 1])
+			end
+
+			self:RenderMutatorsSidebarStyle(parent, mutators, activeMutatorHandle and activeMutatorHandle.Label)
+		end
+
+		---@type ExtuiSelectable
+		local select = sideBar:AddSelectable(mutator.targetProperty)
+		select.SameLine = true
+		select.OnClick = function()
+			if activeMutatorHandle then
+				activeMutatorHandle.Selected = false
+				Helpers:KillChildren(designer)
+			end
+
+			activeMutatorHandle = select
+
+			MutatorInterface.registeredMutators[mutator.targetProperty]:renderMutator(designer, mutator)
+		end
+
+		if mutator.targetProperty == activeMutator or (not activeMutator and not activeMutatorHandle) then
+			select.Selected = true
+			select.OnClick()
+		end
+	end
+
+	Styler:MiddleAlignedColumnLayout(sideBar, function(ele)
+		local addNewEntryButton = ele:AddButton("+")
+		addNewEntryButton.OnClick = function()
+			Helpers:KillChildren(popup)
+			popup:Open()
+
+			for mutatorName in TableUtils:OrderedPairs(MutatorInterface.registeredMutators) do
+				if not TableUtils:IndexOf(mutators, function(value)
+						return value.targetProperty == mutatorName
+					end)
+				then
+					popup:AddSelectable(mutatorName).OnClick = function()
+						table.insert(mutators, {
+							targetProperty = mutatorName
+						} --[[@as Mutator]])
+
+						self:RenderMutatorsSidebarStyle(parent, mutators, activeMutatorHandle and activeMutatorHandle.Label)
+					end
+				end
+			end
 		end
 	end)
 end

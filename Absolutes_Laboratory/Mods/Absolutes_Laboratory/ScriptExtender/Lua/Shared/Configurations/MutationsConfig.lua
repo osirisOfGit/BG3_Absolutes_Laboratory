@@ -12,6 +12,10 @@ ConfigurationStructure.config.mutations.settings = {
 			name = "displayName",
 			direction = "Descending"
 		}
+	},
+	mutationDesigner = {
+		---@type "Sidebar"|"Infinite"
+		mutatorStyle = "Sidebar"
 	}
 }
 
