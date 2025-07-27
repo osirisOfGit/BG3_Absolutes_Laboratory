@@ -112,7 +112,6 @@ and this list will use the sum of the assigned spell list levels to determine wh
 		if mutator.values.statuses and mutator.values.statuses() then
 			for i, statusId in ipairs(mutator.values.statuses) do
 				local delete = Styler:ImageButton(statusGroup:AddImageButton("delete" .. statusId, "ico_red_x", { 16, 16 }))
-				delete.SameLine = (i - 1) % 3 ~= 0
 				delete.OnClick = function()
 					for x = i, TableUtils:CountElements(mutator.values.statuses) do
 						mutator.values.statuses[x] = nil
