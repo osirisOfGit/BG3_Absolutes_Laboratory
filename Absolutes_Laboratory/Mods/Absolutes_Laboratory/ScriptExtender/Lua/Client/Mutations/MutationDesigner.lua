@@ -76,7 +76,7 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 			local selectorColumn = row:AddCell()
 			Styler:CheapTextAlign("Selectors", selectorColumn, "Big").UserData = "keep"
 			Styler:MiddleAlignedColumnLayout(selectorColumn, function(ele)
-				local dryRunButton = ele:AddButton("Dry Run Selectors")
+				local dryRunButton = ele:AddButton("Dry Run")
 				dryRunButton.Disabled = false
 				dryRunButton.UserData = "keep"
 
