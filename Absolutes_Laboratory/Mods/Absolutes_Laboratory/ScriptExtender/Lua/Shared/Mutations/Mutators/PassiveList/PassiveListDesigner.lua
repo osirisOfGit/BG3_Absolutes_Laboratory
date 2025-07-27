@@ -74,9 +74,19 @@ function PassiveListDesigner:customizeDesigner()
 			self.popup:Open()
 
 			for spellListId, spellList in pairs(MutationConfigurationProxy.spellLists) do
-				self.popup:AddSelectable(spellList.name .. (spellList.modId and string.format(" (from %s)", Ext.Mod.GetMod(spellList.modId).Info.Name) or ""), "DontClosePopups").OnClick = function()
-					self.activeList.spellListDependencies = self.activeList.spellListDependencies or {}
-					self.activeList.spellListDependencies[#self.activeList.spellListDependencies + 1] = spellListId
+				---@type ExtuiSelectable
+				local select = self.popup:AddSelectable(spellList.name .. (spellList.modId and string.format(" (from %s)", Ext.Mod.GetMod(spellList.modId).Info.Name) or ""),
+					"DontClosePopups")
+				select.Selected = TableUtils:IndexOf(self.activeList.spellListDependencies, spellListId) ~= nil
+
+				select.OnClick = function()
+					if not select.Selected then
+						self.activeList.spellListDependencies[TableUtils:IndexOf(self.activeList.spellListDependencies, spellListId)] = nil
+						TableUtils:ReindexNumericTable(self.activeList.spellListDependencies)
+					else
+						self.activeList.spellListDependencies = self.activeList.spellListDependencies or {}
+						self.activeList.spellListDependencies[#self.activeList.spellListDependencies + 1] = spellListId
+					end
 
 					buildTable()
 				end

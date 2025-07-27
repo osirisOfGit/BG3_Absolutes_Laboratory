@@ -56,7 +56,7 @@ function PassiveListMutator:renderMutator(parent, mutator)
 					mutator.values.passiveLists[x] = nil
 					mutator.values.passiveLists[x] = TableUtils:DeeplyCopyTable(mutator.values.passiveLists._real[x + 1])
 				end
-				self:renderMutator(mutatorSection, mutator)
+				self:renderMutator(parent, mutator)
 			end
 
 			local link = mutatorSection:AddTextLink(list.name .. (list.modId and string.format(" (from %s)", Ext.Mod.GetMod(list.modId).Info.Name) or ""))
