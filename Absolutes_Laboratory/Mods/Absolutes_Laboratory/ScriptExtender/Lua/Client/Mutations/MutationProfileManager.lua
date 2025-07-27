@@ -834,13 +834,13 @@ function MutationProfileManager:BuildProfileManager()
 		return (value.modId and ("Z" .. value.modId) or "") .. value.name
 	end) do
 		if not profile.modId then
-			exportProfilesMenu:AddCheckbox(profile.name).UserData = profileId
+			exportProfilesMenu:AddCheckbox(profile.name .. "##" .. profileId).UserData = profileId
 		end
 
 		local isDefault = ConfigurationStructure.config.mutations.settings.defaultProfile == profileId
 
 		---@type ExtuiMenu
-		local profileMenu = manageProfilePopup:AddMenu((isDefault and "(D) " or "") .. profile.name .. (profile.modId and " (M)" or ""))
+		local profileMenu = manageProfilePopup:AddMenu((isDefault and "(D) " or "") .. profile.name .. (profile.modId and " (M)" or "") .. "##" .. profileId)
 
 		if profile.modId then
 			profileMenu:AddSeparatorText("From " .. Ext.Mod.GetMod(profile.modId).Info.Name):SetStyle("Alpha", 0.5)

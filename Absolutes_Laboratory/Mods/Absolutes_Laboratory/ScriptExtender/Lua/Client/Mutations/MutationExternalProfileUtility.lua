@@ -282,6 +282,14 @@ function MutationExternalProfileUtility:importProfile(export)
 			if mutationConfig.profiles[profileId] then
 				mutationConfig.profiles[profileId].delete = true
 			end
+
+			if TableUtils:IndexOf(mutationConfig.profiles, function(value)
+					return value.name == profile.name
+				end)
+			then
+				profile.name = string.format("%s (%s)", profile.name, profileId:sub(1, 3))
+			end
+
 			mutationConfig.profiles[profileId] = profile
 		end
 		for folderId, folder in pairs(importedMutations.folders) do
