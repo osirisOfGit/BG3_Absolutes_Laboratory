@@ -62,7 +62,7 @@ function HealthMutator:renderModifiers(parent, modifiers)
 	cLevelInfoText:SetStyle("SeparatorTextAlign", 0, 0.3)
 	cLevelInfoText:SetStyle("Alpha", 1)
 	cLevelInfoText:Tooltip():AddText(
-		"\t Set the levels at which the modifier changes - for example, setting the modifier to 10% at level 5\nwhen the base modifier is 5% means the modifier will be 5% levels 1-4 and 10% levels 5+")
+		"\t Set the levels at which the modifier increases - for example, setting the modifier to 10% at level 5\nwhen the base modifier is 5% means the modifier will be 5% levels 1-4 and 15% levels 5+")
 
 	parent:AddText("Each character level adds")
 	local baseCLevelMod = parent:AddInputScalar("% to the % Base Health Mutator##characterLevel", characterLevelModifier.value)
