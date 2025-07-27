@@ -272,6 +272,8 @@ function ListDesignerBaseClass:buildLists(activeListId)
 			}
 		})
 	end
+
+	self:buildModLists(activeListId)
 end
 
 function ListDesignerBaseClass:buildModLists(activeListID)
