@@ -210,7 +210,7 @@ function SpellListMutator:renderMutator(parent, mutator)
 		addLeveledPoolButton.OnClick = function()
 			Helpers:KillChildren(poolGroup)
 			spellMutatorGroup.leveledSpellPool = spellMutatorGroup.leveledSpellPool or {}
-			local lastAnchor = 1
+			local lastAnchor = 0
 			for _, pool in pairs(spellMutatorGroup.leveledSpellPool) do
 				lastAnchor = pool.anchorLevel > lastAnchor and pool.anchorLevel or lastAnchor
 			end
