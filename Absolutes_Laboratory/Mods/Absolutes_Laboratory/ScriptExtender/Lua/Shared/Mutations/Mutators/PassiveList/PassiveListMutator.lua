@@ -105,7 +105,6 @@ and this list will use the sum of the assigned spell list levels to determine wh
 		if mutator.values.passives and mutator.values.passives() then
 			for i, passiveId in ipairs(mutator.values.passives) do
 				local delete = Styler:ImageButton(passiveGroup:AddImageButton("delete" .. passiveId, "ico_red_x", { 16, 16 }))
-				delete.SameLine = (i - 1) % 3 ~= 0
 				delete.OnClick = function()
 					for x = i, TableUtils:CountElements(mutator.values.passives) do
 						mutator.values.passives[x] = nil
