@@ -875,6 +875,7 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 									for level, lists in TableUtils:OrderedPairs(indexedProgLevelLists, function(key)
 										return tonumber(key)
 									end) do
+										self.activeList.levels = self.activeList.levels or {}
 										self.activeList.levels[level] = self.activeList.levels[level] or {}
 										local subLevelList = self.activeList.levels[level]
 										subLevelList.manuallySelectedEntries = subLevelList.manuallySelectedEntries or
