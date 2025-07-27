@@ -43,7 +43,6 @@ function SpellListMutator:renderMutator(parent, mutator)
 
 	local displayTable = parent:AddTable("SpellList", 2)
 	displayTable.Resizable = true
-	displayTable.NoSavedSettings = true
 	displayTable.Borders = true
 
 	local popup = parent:AddPopup("spellListMutatorPopup")
@@ -54,6 +53,7 @@ function SpellListMutator:renderMutator(parent, mutator)
 		local groupCell = parentRow:AddCell()
 
 		local header = groupCell:AddCollapsingHeader("Group " .. sMG)
+		header.IDContext = "Group" .. sMG
 
 		local delete = Styler:ImageButton(header:AddImageButton("delete" .. mutator.targetProperty, "ico_red_x", { 16, 16 }))
 		delete:Tooltip():AddText("\t Delete Group")
@@ -66,6 +66,7 @@ function SpellListMutator:renderMutator(parent, mutator)
 		end
 		local poolGroup = header:AddGroup("Group")
 		local function renderPools()
+			Helpers:KillChildren(poolGroup)
 			local leveledTable = poolGroup:AddTable("leveledTable", 1)
 			leveledTable.NoSavedSettings = true
 			leveledTable.Borders = true
@@ -82,7 +83,7 @@ function SpellListMutator:renderMutator(parent, mutator)
 							spellMutatorGroup.leveledSpellPool[x] = TableUtils:DeeplyCopyTable(spellMutatorGroup.leveledSpellPool._real[x + 1])
 						end
 
-						self:renderMutator(parent, mutator)
+						renderPools()
 					end
 
 					cell:AddText("Level is equal to or greater than: ").SameLine = true
@@ -149,7 +150,6 @@ function SpellListMutator:renderMutator(parent, mutator)
 									select.Selected = true
 									table.insert(leveledSpellPool.spellLists, id)
 								end
-								Helpers:KillChildren(poolGroup)
 								renderPools()
 							end
 						end
@@ -191,7 +191,6 @@ function SpellListMutator:renderMutator(parent, mutator)
 												select.Selected = true
 												table.insert(leveledSpellPool.spellLists, guid)
 											end
-											Helpers:KillChildren(poolGroup)
 											renderPools()
 										end
 									end
@@ -211,8 +210,13 @@ function SpellListMutator:renderMutator(parent, mutator)
 		addLeveledPoolButton.OnClick = function()
 			Helpers:KillChildren(poolGroup)
 			spellMutatorGroup.leveledSpellPool = spellMutatorGroup.leveledSpellPool or {}
+			local lastAnchor = 1
+			for _, pool in pairs(spellMutatorGroup.leveledSpellPool) do
+				lastAnchor = pool.anchorLevel > lastAnchor and pool.anchorLevel or lastAnchor
+			end
+
 			table.insert(spellMutatorGroup.leveledSpellPool, {
-				anchorLevel = 1,
+				anchorLevel = lastAnchor + 1,
 				spellLists = {}
 			} --[[@as LeveledSpellPool]])
 
@@ -507,14 +511,14 @@ function SpellListMutator:renderCriteriaSettings(parent, spellMutatorGroup)
 
 		row:AddCell():AddText(ability)
 
-		local combo           = row:AddCell():AddCombo("")
+		local combo = row:AddCell():AddCombo("")
 		combo.WidthFitPreview = true
-		combo.Options         = { ">=", "<=" }
-		combo.SelectedIndex   = existingCriteria and existingCriteria.comparator == "lte" and 1 or 0
+		combo.Options = { ">=", "<=" }
+		combo.SelectedIndex = existingCriteria and existingCriteria.comparator == "lte" and 1 or 0
 
-		local input           = row:AddCell():AddInputInt("", existingCriteria and existingCriteria.value)
+		local input = row:AddCell():AddInputInt("", existingCriteria and existingCriteria.value)
 
-		combo.OnChange        = function()
+		combo.OnChange = function()
 			if input.Value[1] > 1 then
 				if not existingCriteria then
 					spellMutatorGroup.criteria = spellMutatorGroup.criteria or {}
@@ -526,7 +530,7 @@ function SpellListMutator:renderCriteriaSettings(parent, spellMutatorGroup)
 			end
 		end
 
-		input.OnChange        = function()
+		input.OnChange = function()
 			if not existingCriteria then
 				spellMutatorGroup.criteria = spellMutatorGroup.criteria or {}
 				spellMutatorGroup.criteria.abilityCondition = spellMutatorGroup.criteria.abilityCondition or {}
