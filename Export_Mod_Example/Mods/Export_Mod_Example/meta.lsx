@@ -6,6 +6,27 @@
       <children>
         <node id="Dependencies">
           <children>
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Attunement" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Attunement" />
+              <attribute id="UUID" type="FixedString" value="7a526492-f5f4-44a0-ab25-ddcc4c6c1e7e" />
+              <attribute id="Version64" type="int64" value="36451020221448192" />
+            </node>
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Valkrana's Skeleton Crew Feat" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Valkrana's Skeleton Crew Feat" />
+              <attribute id="UUID" type="FixedString" value="d76ff1e5-e09e-4565-a9d2-a035037f6134" />
+              <attribute id="Version64" type="int64" value="38702811445198848" />
+            </node>
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Absolutes_Laboratory" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Absolute's Laboratory" />
+              <attribute id="UUID" type="FixedString" value="a17a3a3d-5c16-404a-910a-68ae9e47f247" />
+              <attribute id="Version64" type="int64" value="36028797018963968" />
+            </node>
           </children>
         </node>
         <node id="ModuleInfo">
