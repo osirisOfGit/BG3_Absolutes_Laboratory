@@ -8,6 +8,10 @@ function ProgressionsMutator:canBeAdditive()
 	return true
 end
 
+function ProgressionsMutator:handleDependencies()
+	-- NOOP
+end
+
 ---@class ProgressionConditionalGroup
 ---@field progressionTableIds {[Guid] : number}?
 ---@field spellListDependencies Guid[]?

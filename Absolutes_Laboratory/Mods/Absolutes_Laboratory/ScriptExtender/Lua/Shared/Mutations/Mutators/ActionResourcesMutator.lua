@@ -392,10 +392,10 @@ function ActionResourcesMutator:handleDependencies(export, mutator, removeMissin
 			end
 			TableUtils:ReindexNumericTable(classConfig.requiresClasses)
 
-			for i, resourceConfig in pairs(classConfig.actionResources) do
+			for i, resourceConfig in TableUtils:OrderedPairs(classConfig.actionResources) do
 				if not record(resourceConfig) then
 					classConfig.actionResources[i].delete = true
-					if not classConfig.actionResources() then
+					if (not classConfig.__real and not next(classConfig.actionResources)) or (classConfig.__real and not classConfig.actionResources()) then
 						mutator.values.classDependent[co].delete = true
 						goto continueClass
 					end
