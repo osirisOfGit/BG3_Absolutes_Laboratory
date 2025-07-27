@@ -31,7 +31,7 @@ function StatusListMutator:renderMutator(parent, mutator)
 	statusListDesignerButton.OnClick = function()
 		StatusListDesigner:launch()
 	end
-local sectionTable = parent:AddTable("Sections", 2)
+	local sectionTable = parent:AddTable("Sections", 2)
 	sectionTable.BordersOuter = true
 	local sectionsRow = sectionTable:AddRow()
 	local mutatorSection = sectionsRow:AddCell()
@@ -55,7 +55,7 @@ local sectionTable = parent:AddTable("Sections", 2)
 					mutator.values.statusLists[x] = nil
 					mutator.values.statusLists[x] = TableUtils:DeeplyCopyTable(mutator.values.statusLists._real[x + 1])
 				end
-				self:renderMutator(mutatorSection, mutator)
+				self:renderMutator(parent, mutator)
 			end
 
 			local link = mutatorSection:AddTextLink(list.name .. (list.modId and string.format(" (from %s)", Ext.Mod.GetMod(list.modId).Info.Name) or ""))
@@ -85,10 +85,18 @@ and this list will use the sum of the assigned spell list levels to determine wh
 		popup:Open()
 
 		for statusListId, statusList in pairs(MutationConfigurationProxy.statusLists) do
-			popup:AddSelectable(statusList.name .. (statusList.modId and string.format(" (from %s)", Ext.Mod.GetMod(statusList.modId).Info.Name) or ""), "DontClosePopups").OnClick = function()
-				mutator.values.statusLists = mutator.values.statusLists or {}
-				mutator.values.statusLists[#mutator.values.statusLists + 1] = statusListId
-
+			---@type ExtuiSelectable
+			local select = popup:AddSelectable(statusList.name .. (statusList.modId and string.format(" (from %s)", Ext.Mod.GetMod(statusList.modId).Info.Name) or ""),
+				"DontClosePopups")
+			select.Selected = TableUtils:IndexOf(mutator.values.statusLists, statusListId) ~= nil
+			select.OnClick = function()
+				if not select.Selected then
+					mutator.values.statusLists[TableUtils:IndexOf(mutator.values.statusLists, statusListId)] = nil
+					TableUtils:ReindexNumericTable(mutator.values.statusLists)
+				else
+					mutator.values.statusLists = mutator.values.statusLists or {}
+					mutator.values.statusLists[#mutator.values.statusLists + 1] = statusListId
+				end
 				self:renderMutator(parent, mutator)
 			end
 		end

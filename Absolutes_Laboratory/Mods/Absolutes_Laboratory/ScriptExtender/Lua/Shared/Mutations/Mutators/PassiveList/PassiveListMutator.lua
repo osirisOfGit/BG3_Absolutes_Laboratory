@@ -86,10 +86,18 @@ and this list will use the sum of the assigned spell list levels to determine wh
 		popup:Open()
 
 		for passiveListId, passiveList in pairs(MutationConfigurationProxy.passiveLists) do
-			popup:AddSelectable(passiveList.name .. (passiveList.modId and string.format(" (from %s)", Ext.Mod.GetMod(passiveList.modId).Info.Name) or ""), "DontClosePopups").OnClick = function()
-				mutator.values.passiveLists = mutator.values.passiveLists or {}
-				mutator.values.passiveLists[#mutator.values.passiveLists + 1] = passiveListId
-
+			---@type ExtuiSelectable
+			local select = popup:AddSelectable(passiveList.name .. (passiveList.modId and string.format(" (from %s)", Ext.Mod.GetMod(passiveList.modId).Info.Name) or ""),
+				"DontClosePopups")
+			select.Selected = TableUtils:IndexOf(mutator.values.passiveLists, passiveListId) ~= nil
+			select.OnClick = function()
+				if not select.Selected then
+					mutator.values.passiveLists[TableUtils:IndexOf(mutator.values.passiveLists, passiveListId)] = nil
+					TableUtils:ReindexNumericTable(mutator.values.passiveLists)
+				else
+					mutator.values.passiveLists = mutator.values.passiveLists or {}
+					mutator.values.passiveLists[#mutator.values.passiveLists + 1] = passiveListId
+				end
 				self:renderMutator(parent, mutator)
 			end
 		end
