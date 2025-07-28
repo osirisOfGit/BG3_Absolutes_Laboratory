@@ -493,26 +493,24 @@ function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMut
 		end
 	end
 
-	Styler:MiddleAlignedColumnLayout(sideBar, function(ele)
-		local addNewEntryButton = ele:AddButton("+")
-		addNewEntryButton.OnClick = function()
-			Helpers:KillChildren(popup)
-			popup:Open()
+	local addNewEntryButton = sideBar:AddButton("+")
+	addNewEntryButton.OnClick = function()
+		Helpers:KillChildren(popup)
+		popup:Open()
 
-			for mutatorName in TableUtils:OrderedPairs(MutatorInterface.registeredMutators) do
-				if not TableUtils:IndexOf(mutators, function(value)
-						return value.targetProperty == mutatorName
-					end)
-				then
-					popup:AddSelectable(mutatorName).OnClick = function()
-						table.insert(mutators, {
-							targetProperty = mutatorName
-						} --[[@as Mutator]])
+		for mutatorName in TableUtils:OrderedPairs(MutatorInterface.registeredMutators) do
+			if not TableUtils:IndexOf(mutators, function(value)
+					return value.targetProperty == mutatorName
+				end)
+			then
+				popup:AddSelectable(mutatorName).OnClick = function()
+					table.insert(mutators, {
+						targetProperty = mutatorName
+					} --[[@as Mutator]])
 
-						self:RenderMutatorsSidebarStyle(parent, mutators, activeMutatorHandle and activeMutatorHandle.Label)
-					end
+					self:RenderMutatorsSidebarStyle(parent, mutators, activeMutatorHandle and activeMutatorHandle.Label)
 				end
 			end
 		end
-	end)
+	end
 end
