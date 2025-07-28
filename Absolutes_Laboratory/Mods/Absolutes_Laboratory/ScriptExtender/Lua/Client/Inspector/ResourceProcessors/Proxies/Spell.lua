@@ -173,15 +173,17 @@ ResourceProxy:RegisterResourceProxy("OriginatorPrototype", SpellProxy)
 ---@param resourceValue string
 function SpellProxy:RenderDisplayableValue(parent, resourceValue)
 	local function render(spellName)
-		---@type SpellData
-		local spell = Ext.Stats.Get(spellName)
+		if spellName then
+			---@type SpellData
+			local spell = Ext.Stats.Get(spellName)
 
-		if spell then
-			Styler:HyperlinkText(parent, spellName, function(parent)
-				ResourceManager:RenderDisplayWindow(spell, parent)
-			end)
-		else
-			parent:AddText(spellName)
+			if spell then
+				Styler:HyperlinkText(parent, spellName, function(parent)
+					ResourceManager:RenderDisplayWindow(spell, parent)
+				end)
+			else
+				parent:AddText(spellName)
+			end
 		end
 	end
 

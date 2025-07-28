@@ -111,14 +111,15 @@ end
 ---@param parent ExtuiTreeParent
 ---@param existingSelector RaceSelector?
 function RaceSelector:renderSelector(parent, existingSelector)
+	initialize()
+	
 	---@type RaceSelector
 	local selector = existingSelector
 	selector.criteriaValue = selector.criteriaValue or {
-		["RaceId"] = nil,
+		["RaceId"] = translationMap[raceOpts[1]],
 		["SubRaceIds"] = {}
 	} --[[@as RaceCriteria]]
 
-	initialize()
 
 	local raceCombo = parent:AddCombo("")
 	raceCombo.IDContext = "race"

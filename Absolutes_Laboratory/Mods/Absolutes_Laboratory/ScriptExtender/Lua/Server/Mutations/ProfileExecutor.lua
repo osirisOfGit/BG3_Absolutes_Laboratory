@@ -20,7 +20,9 @@ Ext.Vars.RegisterModVariable(ModuleUUID, "HasDisabledProfiles", {
 
 MutationProfileExecutor = {}
 
-function MutationProfileExecutor:ExecuteProfile(rerunTransient)
+local mutatedEntities = {}
+
+function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 	local trackerFile = FileUtils:LoadTableFile(EntityRecorder.trackerFilename)
 	if trackerFile and next(trackerFile) then
 		Logger:BasicInfo("Recorder is currently running - skipping Mutations")
@@ -45,8 +47,10 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient)
 		---@type {[Guid] : {[Guid]: SelectorPredicate}}
 		local cachedSelectors = {}
 
-		for _, entity in pairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
+		for _, entity in pairs(... and { ... } or Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
 			if (Osi.IsDead(entity.Uuid.EntityUuid) == 0 or not entity.DeadByDefault) and not entity.PartyMember then
+				mutatedEntities[entity.Uuid.EntityUuid] = true
+
 				---@type MutatorEntityVar
 				local entityVar = {
 					appliedMutators = {},
@@ -121,6 +125,15 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient)
 		Logger:BasicInfo("======= Cleared Mutations From %s Entities in %dms =======", counter, Ext.Timer:MonotonicTime() - time)
 	end
 end
+
+Ext.Osiris.RegisterListener("EnteredCombat", 2, "before", function(entityId, combatGuid)
+	---@type EntityHandle
+	local entity = Ext.Entity.Get(entityId)
+	if not mutatedEntities[entity.Uuid.EntityUuid] and entity.ServerCharacter and not entity.PartyMember then
+		Logger:BasicInfo("%s entered combat %s and hasn't been mutated - executing profile!", entityId, combatGuid)
+		MutationProfileExecutor:ExecuteProfile(false, entity)
+	end
+end)
 
 Ext.RegisterConsoleCommand("Lab_TraceEntities", function(cmd, ...)
 	ECSLogger:ClearLogFile()

@@ -452,6 +452,7 @@ function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMut
 	Helpers:KillChildren(parent)
 
 	local mutatorTable = Styler:TwoColumnTable(parent, "mutators")
+	mutatorTable.Resizable = false
 	local row = mutatorTable:AddRow()
 	local sideBar = row:AddCell()
 	local designer = row:AddCell()

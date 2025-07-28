@@ -202,7 +202,7 @@ i.e if Base is 5 and this is 2, the next value given will be 3 - if this is 0.3,
 	local function buildClasses()
 		Helpers:KillChildren(classParentTable)
 
-		for i, classDependentActionResources in TableUtils:OrderedPairs(mutator.values.classDependent) do
+		for i, classDependentActionResources in TableUtils:OrderedPairs(mutator.values.classDependent or {}) do
 			local row = classParentTable:AddRow()
 			local deleteButton = Styler:ImageButton(row:AddCell():AddImageButton("delete" .. i, "ico_red_x", { 16, 16 }))
 			deleteButton.OnClick = function()
