@@ -12,7 +12,13 @@ end
 
 ---@param parent ExtuiTreeParent
 function MonsterLab:init(parent)
-	local tabBar = parent:AddTabBar("Monster Lab")
+	Styler:MiddleAlignedColumnLayout(parent, function (ele)
+		local existingEncounters = ele:AddButton("Existing Encounters")
+		existingEncounters.OnClick = function ()
+			ExistingEncounters:init(parent)
+			existingEncounters:SetColor("Button", {0.38, 0.26, 0.21, 0.78})
+		end
 
-	ExistingEncounters:init(tabBar:AddTabItem("Existing Encounters"))
+		existingEncounters:OnClick()
+	end).UserData = "keep"
 end

@@ -216,15 +216,19 @@ function TableUtils:CombinedPairs(...)
 end
 
 --- Convenience method for counting the number of elements in a non-numerically indexed table
----@param tbl table
+---@generic K, V
+---@param tbl (table<K, V>)?
+---@param filter (fun(key: K, value: V):boolean)?
 ---@return number
-function TableUtils:CountElements(tbl)
+function TableUtils:CountElements(tbl, filter)
 	if not tbl then
 		return 0
 	end
 	local count = 0
-	for _, _ in pairs(tbl) do
-		count = count + 1
+	for key, value in pairs(tbl) do
+		if not filter or filter(key, value) then
+			count = count + 1
+		end
 	end
 	return count
 end
