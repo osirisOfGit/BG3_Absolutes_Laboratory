@@ -41,6 +41,7 @@ EntityRecorder.Levels = {
 ---@field Abilities {[string]: number}
 ---@field Icon string
 ---@field XPReward Guid
+---@field CombatGroupId Guid?
 
 if Ext.IsClient() then
 	---@type {[GUIDSTRING]: EntityRecord}
@@ -234,7 +235,6 @@ else
 									or (entity.ServerCharacter.Template and entity.ServerCharacter.Template.DisplayName:Get())
 									or entity.Uuid.EntityUuid
 
-								entityRecord.XPReward = Ext.Stats.Get(entity.Data.StatsId).XPReward
 								entityRecord.Icon = entity.Icon.Icon
 								entityRecord.Race = entity.Race.Race
 								entityRecord.Faction = entity.Faction.field_8
@@ -242,6 +242,8 @@ else
 								entityRecord.Template = entity.ServerCharacter.Template.TemplateName
 								entityRecord.Tags = entity.Tag.Tags
 								entityRecord.Abilities = {}
+								entityRecord.CombatGroupId = entity.CombatParticipant.CombatGroupId ~= "" and entity.CombatParticipant.CombatGroupId or nil
+								entityRecord.XPReward = Ext.Stats.Get(entity.Data.StatsId).XPReward
 								for abilityId, val in ipairs(entity.BaseStats.BaseAbilities) do
 									if abilityId > 1 then
 										entityRecord.Abilities[tostring(Ext.Enums.AbilityId[abilityId - 1])] = val

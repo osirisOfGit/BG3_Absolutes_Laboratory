@@ -11,8 +11,11 @@ Ext.Require("Shared/Channels.lua")
 Ext.Require("Client/RandomHelpers.lua")
 Ext.Require("Client/StatBrowser.lua")
 Ext.Require("Client/Styler.lua")
+
 Ext.Require("Client/Inspector/CharacterInspector.lua")
 
 Ext.Require("Shared/Mutations/MutationConfigurationProxy.lua")
 Ext.Require("Client/Mutations/MutationExternalProfileUtility.lua")
 Ext.Require("Client/Mutations/MutationProfileManager.lua")
+
+Ext.Require("Client/MonsterLab/MonsterLab.lua")
