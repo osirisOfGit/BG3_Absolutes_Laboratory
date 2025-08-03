@@ -19,6 +19,7 @@ function ExistingEncounters:init(parent)
 		levelCombo.SelectedIndex = 0
 	end)
 
+	-- Only using this to determine the width of the container, as it keeps scaling the vertical dimension infinitely
 	local cardsWindow = parent:AddChildWindow("Combat Group Cards")
 	cardsWindow.AlwaysAutoResize = true
 	cardsWindow.Size = {0, 1}
