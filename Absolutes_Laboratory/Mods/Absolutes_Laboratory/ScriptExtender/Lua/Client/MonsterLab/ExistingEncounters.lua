@@ -2,7 +2,7 @@ ExistingEncounters = {}
 
 ---@param parent ExtuiTreeParent
 function ExistingEncounters:init(parent)
-	Helpers:KillChildren(parent)
+	-- Helpers:KillChildren(parent)
 
 	---@type ExtuiCombo
 	local levelCombo
@@ -31,13 +31,13 @@ function ExistingEncounters:init(parent)
 		{ 80, 0,   60, 0.4 },
 		{ 50, 0,   0,  0.4 },
 		{ 0,  100, 50, 0.4 },
-		{ 0,  70,  70, 0.4 }, -- Lighter teal
-		{ 60, 0,   70, 0.4 }, -- Darker magenta
-		{ 40, 0,   20, 0.4 }, -- Dark red
-		{ 0,  120, 60, 0.4 }, -- Brighter green
-		{ 20, 0,   40, 0.4 }, -- Deep purple
-		{ 10, 0,   10, 0.4 }, -- Very dark red
-		{ 0,  110, 70, 0.4 }, -- Light green
+		{ 0,  70,  70, 0.4 },
+		{ 60, 0,   70, 0.4 },
+		{ 40, 0,   20, 0.4 },
+		{ 0,  120, 60, 0.4 },
+		{ 20, 0,   40, 0.4 },
+		{ 10, 0,   10, 0.4 },
+		{ 0,  110, 70, 0.4 },
 	}
 
 	local function renderCombatGroupCards(level)
