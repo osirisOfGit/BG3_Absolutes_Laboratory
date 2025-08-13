@@ -221,40 +221,46 @@ else
 									return value[entity.Uuid.EntityUuid]
 								end)
 							then
-								local recordedEntities = recordedEntities
-								local charLevel = entity.ServerCharacter.Level
-								if charLevel and charLevel ~= "" and charLevel ~= levelName then
-									recordedLevels[charLevel] = recordedLevels[charLevel] or {}
+								local success, error = xpcall(function(...)
+									local recordedEntities = recordedEntities
+									local charLevel = entity.ServerCharacter.Level
+									if charLevel and charLevel ~= "" and charLevel ~= levelName then
+										recordedLevels[charLevel] = recordedLevels[charLevel] or {}
 
-									recordedEntities = recordedLevels[charLevel]
-								end
-								recordedEntities[entity.Uuid.EntityUuid] = {}
-								local entityRecord = recordedEntities[entity.Uuid.EntityUuid]
-
-								entityRecord.Name = (entity.DisplayName and entity.DisplayName.Name:Get())
-									or (entity.ServerCharacter.Template and entity.ServerCharacter.Template.DisplayName:Get())
-									or entity.Uuid.EntityUuid
-
-								entityRecord.Icon = entity.Icon.Icon
-								entityRecord.Race = entity.Race.Race
-								entityRecord.Faction = entity.Faction.field_8
-								entityRecord.Stat = entity.Data.StatsId
-								entityRecord.Template = entity.ServerCharacter.Template.TemplateName
-								entityRecord.Tags = entity.Tag.Tags
-								entityRecord.Abilities = {}
-								entityRecord.CombatGroupId = entity.CombatParticipant.CombatGroupId ~= "" and entity.CombatParticipant.CombatGroupId or nil
-								entityRecord.XPReward = Ext.Stats.Get(entity.Data.StatsId).XPReward
-								for abilityId, val in ipairs(entity.BaseStats.BaseAbilities) do
-									if abilityId > 1 then
-										entityRecord.Abilities[tostring(Ext.Enums.AbilityId[abilityId - 1])] = val
+										recordedEntities = recordedLevels[charLevel]
 									end
-								end
+									recordedEntities[entity.Uuid.EntityUuid] = {}
+									local entityRecord = recordedEntities[entity.Uuid.EntityUuid]
 
-								entityRecord.Progressions = {}
-								for _, progressionContainer in ipairs(entity.ProgressionContainer.Progressions) do
-									for _, progression in ipairs(progressionContainer) do
-										table.insert(entityRecord.Progressions, progression.ProgressionMeta.Progression)
+									entityRecord.Name = (entity.DisplayName and entity.DisplayName.Name:Get())
+										or (entity.ServerCharacter.Template and entity.ServerCharacter.Template.DisplayName:Get())
+										or entity.Uuid.EntityUuid
+
+									entityRecord.Icon = entity.Icon.Icon
+									entityRecord.Race = entity.Race.Race
+									entityRecord.Faction = entity.Faction.field_8
+									entityRecord.Stat = entity.Data.StatsId
+									entityRecord.Template = entity.ServerCharacter.Template.TemplateName
+									entityRecord.Tags = entity.Tag.Tags
+									entityRecord.XPReward = entity.Data and Ext.Stats.Get(entity.Data.StatsId) and Ext.Stats.Get(entity.Data.StatsId).XPReward
+									entityRecord.CombatGroupId = entity.CombatParticipant.CombatGroupId ~= "" and entity.CombatParticipant.CombatGroupId or nil
+									entityRecord.Abilities = {}
+									for abilityId, val in ipairs(entity.BaseStats.BaseAbilities) do
+										if abilityId > 1 then
+											entityRecord.Abilities[tostring(Ext.Enums.AbilityId[abilityId - 1])] = val
+										end
 									end
+
+									entityRecord.Progressions = {}
+									for _, progressionContainer in ipairs(entity.ProgressionContainer.Progressions) do
+										for _, progression in ipairs(progressionContainer) do
+											table.insert(entityRecord.Progressions, progression.ProgressionMeta.Progression)
+										end
+									end
+								end, debug.traceback)
+
+								if not success then
+									Logger:BasicError("Couldn't record entity information for %s due to %s", entity.Uuid.EntityUuid, error)
 								end
 							end
 						end
