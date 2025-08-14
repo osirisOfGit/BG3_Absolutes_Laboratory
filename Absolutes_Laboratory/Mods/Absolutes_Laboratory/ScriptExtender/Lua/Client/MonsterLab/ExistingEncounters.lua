@@ -22,22 +22,17 @@ function ExistingEncounters:init(parent)
 	-- Only using this to determine the width of the container, as it keeps scaling the vertical dimension infinitely
 	local cardsWindow = parent:AddChildWindow("Combat Group Cards")
 	cardsWindow.AlwaysAutoResize = true
-	cardsWindow.Size = {0, 1}
+	cardsWindow.Size = { 0, 1 }
 
 	local cardGroup = parent:AddGroup("cards")
 
 	local cardColours = {
-		{ 0,  51,  51, 0.4 },
-		{ 80, 0,   60, 0.4 },
-		{ 50, 0,   0,  0.4 },
-		{ 0,  100, 50, 0.4 },
-		{ 0,  70,  70, 0.4 },
-		{ 60, 0,   70, 0.4 },
-		{ 40, 0,   20, 0.4 },
-		{ 0,  120, 60, 0.4 },
-		{ 20, 0,   40, 0.4 },
-		{ 10, 0,   10, 0.4 },
-		{ 0,  110, 70, 0.4 },
+		{ 255, 0,   0,   0.5 },
+		{ 0,   255, 0,   0.5 },
+		{ 0,   0,   255, 0.5 },
+		{ 255, 0,   255, 0.5 },
+		{ 255, 255, 0,   0.5 },
+		{ 0,   255, 255, 0.5 },
 	}
 
 	local function renderCombatGroupCards(level)
@@ -93,32 +88,43 @@ function ExistingEncounters:init(parent)
 		end) do
 			counter = counter + 1
 
+			---@type ExtuiChildWindow
 			local combatGroupCard = row.Children[(counter % maxRowSize) > 0 and (counter % maxRowSize) or maxRowSize]:AddChildWindow(combatGroupId)
-			combatGroupCard.Border = true
-			combatGroupCard.Size = Styler:ScaleFactor({ 300, TableUtils:CountElements(entityRecords) * 40 })
+			combatGroupCard.Size = Styler:ScaleFactor({ 300, (TableUtils:CountElements(entityRecords) + 1.5) * 40 })
 
-			combatGroupCard:SetColor("ChildBg", Styler:ConvertRGBAToIMGUI(cardColours[(counter % #cardColours) + 1]))
+			local groupTable = combatGroupCard:AddTable("chlidTable", 1)
+			groupTable.Borders = true
+			groupTable:SetColor("TableBorderStrong", Styler:ConvertRGBAToIMGUI(cardColours[(counter % (#cardColours - (maxRowSize % 2 == 0 and 1 or 0))) + 1]))
+
+			local headerCell = groupTable:AddRow():AddCell()
+			Styler:MiddleAlignedColumnLayout(headerCell, function(ele)
+				local editButton = Styler:ImageButton(ele:AddImageButton("Manage", "ico_edit_d", Styler:ScaleFactor({ 20, 20 })))
+
+				local newWindowButton = Styler:ImageButton(ele:AddImageButton("New Window", "ico_copy_d", Styler:ScaleFactor({ 20, 20 })))
+				newWindowButton.SameLine = true
+			end)
 
 			for entityId, entityRecord in TableUtils:OrderedPairs(entityRecords, function(key, value)
 				return value.Name
 			end) do
+				local entityRow = groupTable:AddRow():AddCell()
 				local dupeKey = entityRecord.Name
 
-				local image = combatGroupCard:AddImage(entityRecord.Icon, Styler:ScaleFactor({ 32, 32 }))
+				local image = entityRow:AddImage(entityRecord.Icon, Styler:ScaleFactor({ 32, 32 }))
 				if image.ImageData.Icon == "" then
 					image:Destroy()
-					combatGroupCard:AddImage("Item_Unknown", Styler:ScaleFactor({ 32, 32 }))
+					entityRow:AddImage("Item_Unknown", Styler:ScaleFactor({ 32, 32 }))
 				end
 
-				local link = Styler:HyperlinkText(combatGroupCard, entityRecord.Name .. "##" .. entityId, function(parent)
+				local link = Styler:HyperlinkText(entityRow, entityRecord.Name .. "##" .. entityId, function(parent)
 					CharacterWindow:BuildWindow(parent, entityId)
 				end)
 
-				link:SetColor("TextLink", { 255, 255, 255, .85 })
+				link:SetColor("TextLink", { 0.86, 0.79, 0.68, 0.78 })
 				link.SameLine = true
 
 				if dupeTracker[combatGroupId][dupeKey] > 1 then
-					combatGroupCard:AddText(string.format("x%s", dupeTracker[combatGroupId][dupeKey])).SameLine = true
+					entityRow:AddText(string.format("x%s", dupeTracker[combatGroupId][dupeKey])).SameLine = true
 				end
 			end
 		end
@@ -130,3 +136,5 @@ function ExistingEncounters:init(parent)
 		renderCombatGroupCards(levelCombo.Options[levelCombo.SelectedIndex + 1])
 	end
 end
+
+

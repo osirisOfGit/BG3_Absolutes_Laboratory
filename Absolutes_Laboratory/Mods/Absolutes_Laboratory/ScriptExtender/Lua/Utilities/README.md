@@ -28,3 +28,5 @@ https://github.com/Norbyte/bg3se/blob/main/BG3Extender/IdeHelpers/ExtIdeHelpers.
 Most of the Common Utilities: [Fararagi](https://next.nexusmods.com/profile/Fararagi?gameId=3474)
 
 Aahz's toolbox of insanity - https://github.com/Aahzmandius/_Libs
+
+Norb's IMGUI Color Scheme - https://github.com/Norbyte/bg3se/blob/f8b982125c6c1997ceab2d65cfaa3c1a04908ea6/BG3Extender/Extender/Client/IMGUI/IMGUI.cpp#L1901C34-L1901C60
