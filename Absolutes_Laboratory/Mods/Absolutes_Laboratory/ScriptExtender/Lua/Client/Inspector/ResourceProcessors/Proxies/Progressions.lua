@@ -84,7 +84,11 @@ function ProgressionProxy:buildProgressionIndex()
 				ProgressionProxy.progressionTableMappings[progression.ResourceUUID] = progression.TableUUID
 				ProgressionProxy.progressionTableMappings[progression.TableUUID] = ProgressionProxy.progressionTableMappings[progression.TableUUID] or {}
 
-				table.insert(self.progressionTableMappings[progression.TableUUID], progression.ResourceUUID)
+				if type(self.progressionTableMappings[progression.TableUUID]) == "table" then
+					table.insert(self.progressionTableMappings[progression.TableUUID], progression.ResourceUUID)
+				else
+					Logger:BasicWarning("Progression TableUUID %s is the same as a previously registered ResourceUUID - not sure how?", progression.TableUUID)
+				end
 
 				if not self.translationMap[progression.TableUUID] then
 					self.translationMap[progression.TableUUID] = progression.Name
