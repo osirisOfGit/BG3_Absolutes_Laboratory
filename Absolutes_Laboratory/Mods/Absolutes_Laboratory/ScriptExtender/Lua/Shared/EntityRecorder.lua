@@ -152,6 +152,16 @@ Don't reload, restart, or otherwise mess with the game until the process is comp
 
 		Helpers:KillChildren(reportWindow)
 
+		Styler:MiddleAlignedColumnLayout(reportWindow, function(ele)
+			if data.LevelName then
+				reportWindow:AddText("RECORDING IN PROGRESS")
+				reportWindow:AddText("DO NOT DO ANYTHING")
+			else
+				reportWindow:AddText("RECORDING COMPLETE")
+				reportWindow:AddText("YOU MAY NOW RELOAD")
+			end
+		end)
+
 		local displayTable = Styler:TwoColumnTable(reportWindow)
 		displayTable.SizingFixedSame = true
 
@@ -169,10 +179,14 @@ Don't reload, restart, or otherwise mess with the game until the process is comp
 		end
 	end)
 else
+	local isRecording = false
+
 	Channels.InitiateRecording:SetHandler(function(data, user)
 		Osi.AutoSave()
 
 		Ext.Timer.WaitFor(5000, function()
+			isRecording = true
+
 			---@type {[string] : {[GUIDSTRING] : EntityRecord}}
 			local recordedEntities = {}
 
@@ -191,9 +205,19 @@ else
 		end)
 	end)
 
-	Ext.Osiris.RegisterListener("LevelGameplayStarted", 2, "after", function(levelName, isEditorMode)
-		EntityRecorder:RecordAndTeleport(levelName)
-	end)
+	Ext.Events.GameStateChanged:Subscribe(
+	---@param e EsvLuaGameStateChangedEvent
+		function(e)
+			if isRecording then
+				if e.ToState == "Running" then
+					Ext.Timer.WaitFor(5000, function()
+						EntityRecorder:RecordAndTeleport(Ext.Entity.Get(Osi.GetHostCharacter()).Level.LevelName)
+					end)
+				end
+			else
+				FileUtils:SaveTableToFile(EntityRecorder.trackerFilename, {})
+			end
+		end)
 
 	function EntityRecorder:RecordAndTeleport(level)
 		local recorderTracker = FileUtils:LoadTableFile(EntityRecorder.trackerFilename)
@@ -201,6 +225,11 @@ else
 		if recorderTracker and next(recorderTracker) then
 			for _, levelName in ipairs(self.Levels) do
 				if type(recorderTracker[levelName]) == "string" then
+					Channels.ReportRecordingProgress:Broadcast({
+						Tracker = recorderTracker,
+						LevelName = levelName,
+					})
+
 					if level ~= levelName then
 						Osi.TeleportPartiesToLevelWithMovie(levelName, "", "")
 						return
@@ -209,50 +238,51 @@ else
 						---@type {[GUIDSTRING] : EntityRecord}
 						local recordedEntities = recordedLevels[levelName]
 
-						Channels.ReportRecordingProgress:Broadcast({
-							Tracker = recorderTracker,
-							LevelName = levelName,
-						})
-
 						for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
 							if not entity.DeadByDefault
 								and not TableUtils:IndexOf(recordedLevels, function(value)
 									return value[entity.Uuid.EntityUuid]
 								end)
 							then
-								local recordedEntities = recordedEntities
-								local charLevel = entity.ServerCharacter.Level
-								if charLevel and charLevel ~= "" and charLevel ~= levelName then
-									recordedLevels[charLevel] = recordedLevels[charLevel] or {}
+								local success, error = xpcall(function(...)
+									local recordedEntities = recordedEntities
+									local charLevel = entity.ServerCharacter.Level
+									if charLevel and charLevel ~= "" and charLevel ~= levelName then
+										recordedLevels[charLevel] = recordedLevels[charLevel] or {}
 
-									recordedEntities = recordedLevels[charLevel]
-								end
-								recordedEntities[entity.Uuid.EntityUuid] = {}
-								local entityRecord = recordedEntities[entity.Uuid.EntityUuid]
-
-								entityRecord.Name = (entity.DisplayName and entity.DisplayName.Name:Get())
-									or (entity.ServerCharacter.Template and entity.ServerCharacter.Template.DisplayName:Get())
-									or entity.Uuid.EntityUuid
-
-								entityRecord.XPReward = Ext.Stats.Get(entity.Data.StatsId).XPReward
-								entityRecord.Icon = entity.Icon.Icon
-								entityRecord.Race = entity.Race.Race
-								entityRecord.Faction = entity.Faction.field_8
-								entityRecord.Stat = entity.Data.StatsId
-								entityRecord.Template = entity.ServerCharacter.Template.TemplateName
-								entityRecord.Tags = entity.Tag.Tags
-								entityRecord.Abilities = {}
-								for abilityId, val in ipairs(entity.BaseStats.BaseAbilities) do
-									if abilityId > 1 then
-										entityRecord.Abilities[tostring(Ext.Enums.AbilityId[abilityId - 1])] = val
+										recordedEntities = recordedLevels[charLevel]
 									end
-								end
+									recordedEntities[entity.Uuid.EntityUuid] = {}
+									local entityRecord = recordedEntities[entity.Uuid.EntityUuid]
 
-								entityRecord.Progressions = {}
-								for _, progressionContainer in ipairs(entity.ProgressionContainer.Progressions) do
-									for _, progression in ipairs(progressionContainer) do
-										table.insert(entityRecord.Progressions, progression.ProgressionMeta.Progression)
+									entityRecord.Name = (entity.DisplayName and entity.DisplayName.Name:Get())
+										or (entity.ServerCharacter.Template and entity.ServerCharacter.Template.DisplayName:Get())
+										or entity.Uuid.EntityUuid
+
+									entityRecord.Icon = entity.Icon.Icon
+									entityRecord.Race = entity.Race.Race
+									entityRecord.Faction = entity.Faction.field_8
+									entityRecord.Stat = entity.Data.StatsId
+									entityRecord.Template = entity.ServerCharacter.Template.TemplateName
+									entityRecord.Tags = entity.Tag.Tags
+									entityRecord.XPReward = entity.Data and Ext.Stats.Get(entity.Data.StatsId) and Ext.Stats.Get(entity.Data.StatsId).XPReward
+									entityRecord.Abilities = {}
+									for abilityId, val in ipairs(entity.BaseStats.BaseAbilities) do
+										if abilityId > 1 then
+											entityRecord.Abilities[tostring(Ext.Enums.AbilityId[abilityId - 1])] = val
+										end
 									end
+
+									entityRecord.Progressions = {}
+									for _, progressionContainer in ipairs(entity.ProgressionContainer.Progressions) do
+										for _, progression in ipairs(progressionContainer) do
+											table.insert(entityRecord.Progressions, progression.ProgressionMeta.Progression)
+										end
+									end
+								end, debug.traceback)
+
+								if not success then
+									Logger:BasicError("Couldn't record entity information for %s due to %s", entity.Uuid.EntityUuid, error)
 								end
 							end
 						end
