@@ -205,14 +205,20 @@ else
 		end)
 	end)
 
+	local timer
 	Ext.Events.GameStateChanged:Subscribe(
 	---@param e EsvLuaGameStateChangedEvent
 		function(e)
 			if isRecording then
+				if timer then
+					Ext.Timer.Cancel(timer)
+					timer = nil
+				end
+				
 				Logger:BasicInfo("Recorder: Transitioning from state %s to %s", tostring(e.FromState), tostring(e.ToState))
 				if e.ToState == "Running" then
 					local function run()
-						Ext.Timer.WaitFor(2000, function()
+						timer = Ext.Timer.WaitFor(2000, function()
 							local level = Ext.Entity.Get(Osi.GetHostCharacter()).Level
 							if level then
 								Logger:BasicInfo("Recorder: Scanning Level %s", level.LevelName)
