@@ -209,10 +209,21 @@ else
 	---@param e EsvLuaGameStateChangedEvent
 		function(e)
 			if isRecording then
+				Logger:BasicInfo("Recorder: Transitioning from state %s to %s", tostring(e.FromState), tostring(e.ToState))
 				if e.ToState == "Running" then
-					Ext.Timer.WaitFor(5000, function()
-						EntityRecorder:RecordAndTeleport(Ext.Entity.Get(Osi.GetHostCharacter()).Level.LevelName)
-					end)
+					local function run()
+						Ext.Timer.WaitFor(2000, function()
+							local level = Ext.Entity.Get(Osi.GetHostCharacter()).Level
+							if level then
+								Logger:BasicInfo("Recorder: Scanning Level %s", level.LevelName)
+								EntityRecorder:RecordAndTeleport(level.LevelName)
+							else
+								Logger:BasicInfo("Recorder: Avatar doesn't have their level assigned yet - waiting.")
+								run()
+							end
+						end)
+					end
+					run()
 				end
 			else
 				FileUtils:SaveTableToFile(EntityRecorder.trackerFilename, {})
@@ -231,9 +242,11 @@ else
 					})
 
 					if level ~= levelName then
+						Logger:BasicInfo("Recorder: Teleporting to %s next", levelName)
 						Osi.TeleportPartiesToLevelWithMovie(levelName, "", "")
 						return
 					else
+						local time = Ext.Timer.MonotonicTime()
 						local recordedLevels = FileUtils:LoadTableFile(self.recorderFilename)
 						---@type {[GUIDSTRING] : EntityRecord}
 						local recordedEntities = recordedLevels[levelName]
@@ -290,6 +303,7 @@ else
 						FileUtils:SaveTableToFile(self.recorderFilename, recordedLevels)
 						recorderTracker[levelName] = TableUtils:CountElements(recordedEntities)
 						FileUtils:SaveTableToFile(EntityRecorder.trackerFilename, recorderTracker)
+						Logger:BasicInfo("Recorder: Finished scanning %s in %sms", levelName, Ext.Timer.MonotonicTime() - time)
 					end
 				end
 			end
