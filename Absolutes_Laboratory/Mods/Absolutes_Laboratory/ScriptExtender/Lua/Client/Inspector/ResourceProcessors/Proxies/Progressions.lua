@@ -84,7 +84,7 @@ function ProgressionProxy:buildProgressionIndex()
 				ProgressionProxy.progressionTableMappings[progression.ResourceUUID] = progression.TableUUID
 				ProgressionProxy.progressionTableMappings[progression.TableUUID] = ProgressionProxy.progressionTableMappings[progression.TableUUID] or {}
 
-				table.insert(ProgressionProxy.progressionTableMappings[progression.TableUUID], progression.ResourceUUID)
+				table.insert(self.progressionTableMappings[progression.TableUUID], progression.ResourceUUID)
 
 				if not self.translationMap[progression.TableUUID] then
 					self.translationMap[progression.TableUUID] = progression.Name

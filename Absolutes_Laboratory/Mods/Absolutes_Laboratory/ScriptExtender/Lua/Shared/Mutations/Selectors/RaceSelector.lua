@@ -33,31 +33,35 @@ local function initialize()
 		for _, raceId in pairs(Ext.StaticData.GetAll("Race")) do
 			---@type ResourceRace
 			local race = Ext.StaticData.Get(raceId, "Race")
-			---@type ResourceRace
-			local subRace
+			if race then
+				---@type ResourceRace
+				local subRace
 
-			if race.ParentGuid and race.ParentGuid ~= "00000000-0000-0000-0000-000000000000" then
-				subRace = race
-				race = Ext.StaticData.Get(race.ParentGuid, "Race")
-			end
+				if race.ParentGuid and race.ParentGuid ~= "00000000-0000-0000-0000-000000000000" then
+					subRace = race
+					race = Ext.StaticData.Get(race.ParentGuid, "Race")
+				end
 
-			if not racesWithSubraces[race.ResourceUUID] then
-				racesWithSubraces[race.ResourceUUID] = {}
-				local name = getName(race)
-				table.insert(raceOpts, name)
-				translationMap[name] = race.ResourceUUID
-				translationMap[race.ResourceUUID] = name
-			end
+				if not racesWithSubraces[race.ResourceUUID] then
+					racesWithSubraces[race.ResourceUUID] = {}
+					local name = getName(race)
+					table.insert(raceOpts, name)
+					translationMap[name] = race.ResourceUUID
+					translationMap[race.ResourceUUID] = name
+				end
 
-			if subRace and not foundSubraces[subRace.ResourceUUID] then
-				table.insert(racesWithSubraces[race.ResourceUUID], subRace.ResourceUUID)
+				if subRace and not foundSubraces[subRace.ResourceUUID] then
+					table.insert(racesWithSubraces[race.ResourceUUID], subRace.ResourceUUID)
 
-				foundSubraces[subRace.ResourceUUID] = true
+					foundSubraces[subRace.ResourceUUID] = true
 
-				local name = getName(subRace)
-				table.insert(subRaceOpts, name)
-				translationMap[name] = subRace.ResourceUUID
-				translationMap[subRace.ResourceUUID] = name
+					local name = getName(subRace)
+					table.insert(subRaceOpts, name)
+					translationMap[name] = subRace.ResourceUUID
+					translationMap[subRace.ResourceUUID] = name
+				end
+			else
+				Logger:BasicWarning("Could not retrieve Race Data for RaceId %s", raceId)
 			end
 		end
 
@@ -112,7 +116,7 @@ end
 ---@param existingSelector RaceSelector?
 function RaceSelector:renderSelector(parent, existingSelector)
 	initialize()
-	
+
 	---@type RaceSelector
 	local selector = existingSelector
 	selector.criteriaValue = selector.criteriaValue or {
