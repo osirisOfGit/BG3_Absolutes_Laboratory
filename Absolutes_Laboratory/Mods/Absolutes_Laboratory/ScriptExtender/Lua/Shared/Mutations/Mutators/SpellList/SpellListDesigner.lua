@@ -11,12 +11,12 @@ SpellListDesigner = ListDesignerBaseClass:new("Spell List",
 		---@type ResourceSpellList
 		local progSpellList = Ext.StaticData.Get(spellMeta.SpellUUID, "SpellList")
 
-		if progSpellList.Spells then
+		if progSpellList then
 			for _, spellName in pairs(progSpellList.Spells) do
 				addToListFunc(spellName)
 			end
 		else
-			Logger:BasicWarning("BG3 (not Lab) SpellList %s has a nil Spells array, which probably indicates improper definition", spellMeta.SpellUUID)
+			error(string.format("SpellUUID %s does not exist as a spell list", spellMeta.SpellUUID))
 		end
 	end)
 

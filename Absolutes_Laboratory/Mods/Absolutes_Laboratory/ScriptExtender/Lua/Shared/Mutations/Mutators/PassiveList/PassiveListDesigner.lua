@@ -13,8 +13,12 @@ PassiveListDesigner = ListDesignerBaseClass:new("Passive List",
 			---@type ResourcePassiveList
 			local progSpellList = Ext.StaticData.Get(passiveMeta.UUID, "PassiveList")
 
-			for _, spellName in pairs(progSpellList.Passives) do
-				addToListFunc(spellName)
+			if progSpellList then
+				for _, spellName in pairs(progSpellList.Passives) do
+					addToListFunc(spellName)
+				end
+			else
+				error(string.format"UUID %s is not a valid PassiveList", passiveMeta.UUID)
 			end
 		else
 			addToListFunc(passiveMeta.Name)
