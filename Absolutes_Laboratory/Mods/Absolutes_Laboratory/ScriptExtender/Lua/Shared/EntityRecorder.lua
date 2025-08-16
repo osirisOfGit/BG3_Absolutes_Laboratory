@@ -153,6 +153,16 @@ Don't reload, restart, or otherwise mess with the game until the process is comp
 
 		Helpers:KillChildren(reportWindow)
 
+		Styler:MiddleAlignedColumnLayout(reportWindow, function(ele)
+			if data.LevelName then
+				reportWindow:AddText("RECORDING IN PROGRESS")
+				reportWindow:AddText("DO NOT DO ANYTHING")
+			else
+				reportWindow:AddText("RECORDING COMPLETE")
+				reportWindow:AddText("YOU MAY NOW RELOAD")
+			end
+		end)
+
 		local displayTable = Styler:TwoColumnTable(reportWindow)
 		displayTable.SizingFixedSame = true
 
@@ -170,10 +180,14 @@ Don't reload, restart, or otherwise mess with the game until the process is comp
 		end
 	end)
 else
+	local isRecording = false
+
 	Channels.InitiateRecording:SetHandler(function(data, user)
 		Osi.AutoSave()
 
 		Ext.Timer.WaitFor(5000, function()
+			isRecording = true
+
 			---@type {[string] : {[GUIDSTRING] : EntityRecord}}
 			local recordedEntities = {}
 
@@ -192,9 +206,36 @@ else
 		end)
 	end)
 
-	Ext.Osiris.RegisterListener("LevelGameplayStarted", 2, "after", function(levelName, isEditorMode)
-		EntityRecorder:RecordAndTeleport(levelName)
-	end)
+	local timer
+	Ext.Events.GameStateChanged:Subscribe(
+	---@param e EsvLuaGameStateChangedEvent
+		function(e)
+			if isRecording then
+				if timer then
+					Ext.Timer.Cancel(timer)
+					timer = nil
+				end
+				
+				Logger:BasicInfo("Recorder: Transitioning from state %s to %s", tostring(e.FromState), tostring(e.ToState))
+				if e.ToState == "Running" then
+					local function run()
+						timer = Ext.Timer.WaitFor(2000, function()
+							local level = Ext.Entity.Get(Osi.GetHostCharacter()).Level
+							if level then
+								Logger:BasicInfo("Recorder: Scanning Level %s", level.LevelName)
+								EntityRecorder:RecordAndTeleport(level.LevelName)
+							else
+								Logger:BasicInfo("Recorder: Avatar doesn't have their level assigned yet - waiting.")
+								run()
+							end
+						end)
+					end
+					run()
+				end
+			else
+				FileUtils:SaveTableToFile(EntityRecorder.trackerFilename, {})
+			end
+		end)
 
 	function EntityRecorder:RecordAndTeleport(level)
 		local recorderTracker = FileUtils:LoadTableFile(EntityRecorder.trackerFilename)
@@ -202,18 +243,20 @@ else
 		if recorderTracker and next(recorderTracker) then
 			for _, levelName in ipairs(self.Levels) do
 				if type(recorderTracker[levelName]) == "string" then
+					Channels.ReportRecordingProgress:Broadcast({
+						Tracker = recorderTracker,
+						LevelName = levelName,
+					})
+
 					if level ~= levelName then
+						Logger:BasicInfo("Recorder: Teleporting to %s next", levelName)
 						Osi.TeleportPartiesToLevelWithMovie(levelName, "", "")
 						return
 					else
+						local time = Ext.Timer.MonotonicTime()
 						local recordedLevels = FileUtils:LoadTableFile(self.recorderFilename)
 						---@type {[GUIDSTRING] : EntityRecord}
 						local recordedEntities = recordedLevels[levelName]
-
-						Channels.ReportRecordingProgress:Broadcast({
-							Tracker = recorderTracker,
-							LevelName = levelName,
-						})
 
 						for _, entity in ipairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
 							if not entity.DeadByDefault
@@ -243,7 +286,6 @@ else
 									entityRecord.Template = entity.ServerCharacter.Template.TemplateName
 									entityRecord.Tags = entity.Tag.Tags
 									entityRecord.XPReward = entity.Data and Ext.Stats.Get(entity.Data.StatsId) and Ext.Stats.Get(entity.Data.StatsId).XPReward
-									entityRecord.CombatGroupId = entity.CombatParticipant.CombatGroupId ~= "" and entity.CombatParticipant.CombatGroupId or nil
 									entityRecord.Abilities = {}
 									for abilityId, val in ipairs(entity.BaseStats.BaseAbilities) do
 										if abilityId > 1 then
@@ -268,6 +310,7 @@ else
 						FileUtils:SaveTableToFile(self.recorderFilename, recordedLevels)
 						recorderTracker[levelName] = TableUtils:CountElements(recordedEntities)
 						FileUtils:SaveTableToFile(EntityRecorder.trackerFilename, recorderTracker)
+						Logger:BasicInfo("Recorder: Finished scanning %s in %sms", levelName, Ext.Timer.MonotonicTime() - time)
 					end
 				end
 			end

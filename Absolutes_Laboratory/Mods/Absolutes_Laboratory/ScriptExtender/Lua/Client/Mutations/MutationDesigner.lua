@@ -298,7 +298,7 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 		---@cast selectorEntry Selector
 
 		local inclusiveBox = entryCell:AddCheckbox("Inclusive")
-		inclusiveBox.Checked = selectorEntry.inclusive
+		inclusiveBox.Checked = selectorEntry.inclusive or false
 		inclusiveBox.OnChange = function()
 			selectorEntry.inclusive = inclusiveBox.Checked
 		end

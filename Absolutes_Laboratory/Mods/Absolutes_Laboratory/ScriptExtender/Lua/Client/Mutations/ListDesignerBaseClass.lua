@@ -1082,14 +1082,20 @@ function ListDesignerBaseClass:buildProgressionIndex()
 				end
 
 				for _, meta in TableUtils:CombinedPairs(table.unpack(nodesToIterate)) do
-					self.iterateProgressionEntriesFunc(meta, function(name)
-						if not TableUtils:IndexOf(self.progressions[progression.Name], function(value)
-								return TableUtils:IndexOf(value[self.name], name) ~= nil
-							end)
-						then
-							table.insert(self.progressions[progression.Name][progression.Level][self.name], name)
-						end
+					local success, error = pcall(function(...)
+						self.iterateProgressionEntriesFunc(meta, function(name)
+							if not TableUtils:IndexOf(self.progressions[progression.Name], function(value)
+									return TableUtils:IndexOf(value[self.name], name) ~= nil
+								end)
+							then
+								table.insert(self.progressions[progression.Name][progression.Level][self.name], name)
+							end
+						end)
 					end)
+
+					if not success then
+						Logger:BasicWarning("Could not process a node of progression %s (%s) due to error %s", progression.ResourceUUID, progression.Name, error)
+					end
 				end
 
 				if #self.progressions[progression.Name][progression.Level][self.name] == 0 then

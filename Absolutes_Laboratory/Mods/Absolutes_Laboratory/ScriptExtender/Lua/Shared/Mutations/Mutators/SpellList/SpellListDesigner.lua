@@ -11,8 +11,12 @@ SpellListDesigner = ListDesignerBaseClass:new("Spell List",
 		---@type ResourceSpellList
 		local progSpellList = Ext.StaticData.Get(spellMeta.SpellUUID, "SpellList")
 
-		for _, spellName in pairs(progSpellList.Spells) do
-			addToListFunc(spellName)
+		if progSpellList then
+			for _, spellName in pairs(progSpellList.Spells) do
+				addToListFunc(spellName)
+			end
+		else
+			error(string.format("SpellUUID %s does not exist as a spell list", spellMeta.SpellUUID))
 		end
 	end)
 
@@ -62,9 +66,9 @@ based on this list, if specified - if multiple Spell Lists are assigned, it will
 			input.Disabled = self.activeList.modId ~= nil
 			input.WidthFitPreview = true
 			input.SameLine = true
-			input.Options, input.SelectedIndex  = buildAbilityOptions(abilityCategory)
+			input.Options, input.SelectedIndex = buildAbilityOptions(abilityCategory)
 
-			input.OnChange = function ()
+			input.OnChange = function()
 				local chosenAbility = input.Options[input.SelectedIndex + 1]
 				if chosenAbility == "None" then
 					if self.activeList.abilityPriorities and self.activeList.abilityPriorities[abilityCategory] then
