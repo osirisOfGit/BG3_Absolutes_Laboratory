@@ -41,6 +41,7 @@ EntityRecorder.Levels = {
 ---@field Abilities {[string]: number}
 ---@field Icon string
 ---@field XPReward Guid
+---@field Passives string[]
 
 if Ext.IsClient() then
 	---@type {[GUIDSTRING]: EntityRecord}
@@ -297,6 +298,11 @@ else
 										for _, progression in ipairs(progressionContainer) do
 											table.insert(entityRecord.Progressions, progression.ProgressionMeta.Progression)
 										end
+									end
+
+									entityRecord.Passives = {}
+									for _, passiveContainer in ipairs(entity.PassiveContainer.Passives) do
+										table.insert(entityRecord.Passives, passiveContainer.Passive.PassiveId)
 									end
 								end, debug.traceback)
 
