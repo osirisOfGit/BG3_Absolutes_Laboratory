@@ -976,7 +976,10 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 									return value.linkedProgressions ~= nil and value.linkedProgressions[tableUUID] ~= nil
 								end) ~= nil
 
-								local linkButton = ele:AddButton(hasProgression and "Unlink" or "Link")
+								local linkButton = ele:AddButton(hasProgression and "Unlink" or "Link (?)")
+								if linkButton.Label == "Link" then
+									linkButton:Tooltip():AddText("\t Forms a link to this progression, dynamically pulling all entries from the ProgressionTable when needed. See SpellList wiki page.")
+								end
 								linkButton.SameLine = true
 								linkButton.OnClick = function()
 									if hasProgression then
@@ -985,7 +988,7 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 												subList.linkedProgressions[tableUUID].delete = true
 											end
 										end
-										linkButton.Label = "Link"
+										linkButton.Label = "Link (?)"
 									else
 										self.activeList.levels = self.activeList.levels or {}
 										for level in pairs(self.progressions[progressionName]) do
