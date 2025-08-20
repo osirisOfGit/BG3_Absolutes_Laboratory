@@ -977,9 +977,9 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 								end) ~= nil
 
 								local linkButton = ele:AddButton(hasProgression and "Unlink" or "Link (?)")
-								if linkButton.Label == "Link" then
-									linkButton:Tooltip():AddText("\t Forms a link to this progression, dynamically pulling all entries from the ProgressionTable when needed. See SpellList wiki page.")
-								end
+								linkButton:Tooltip():AddText(
+								"\t (Un)Forms a link to this progression, dynamically pulling all entries from the ProgressionTable when needed. See SpellList wiki page.")
+
 								linkButton.SameLine = true
 								linkButton.OnClick = function()
 									if hasProgression then
