@@ -378,6 +378,58 @@ function ListDesignerBaseClass:buildDesigner()
 		self:buildDesigner()
 	end
 
+	local activeButtonColor = { 0.38, 0.26, 0.21, 0.78 }
+	local disabledButtonColor = { 0, 0, 0, 0 }
+
+	local designerSetting = ConfigurationStructure.config.mutations.settings.customLists
+
+	local iconView = self.designerSection:AddButton("Icons")
+	iconView.Disabled = true
+	iconView:SetColor("Button", disabledButtonColor)
+	iconView.SameLine = true
+
+	local iconOrTextSlider = self.designerSection:AddSliderInt("", designerSetting.iconOrText == "Icon" and 0 or 1, 0, 1)
+	iconOrTextSlider:SetColor("Text", { 1, 1, 1, 0 })
+	iconOrTextSlider.SameLine = true
+	iconOrTextSlider.ItemWidth = 80 * Styler:ScaleFactor()
+
+	local textView = self.designerSection:AddButton("Text")
+	textView.Disabled = true
+	textView:SetColor("Button", activeButtonColor)
+	textView.SameLine = true
+
+	if designerSetting.iconOrText == "Icon" then
+		iconView:SetColor("Button", activeButtonColor)
+		textView:SetColor("Button", disabledButtonColor)
+	else
+		iconView:SetColor("Button", disabledButtonColor)
+		textView:SetColor("Button", activeButtonColor)
+	end
+
+	iconOrTextSlider.OnActivate = function()
+		-- Prevents the user from keeping hold of the grab, triggering the Deactivate instantly
+		-- Slider Grab POS won't update if changed during an OnClick or OnActivate event
+		iconOrTextSlider.Disabled = true
+	end
+
+	iconOrTextSlider.OnDeactivate = function()
+		iconOrTextSlider.Disabled = false
+
+		designerSetting.iconOrText = designerSetting.iconOrText == "Icon" and "Text" or "Icon"
+		local newValue = designerSetting.iconOrText == "Icon" and 0 or 1
+		iconOrTextSlider.Value = { newValue, newValue, newValue, newValue }
+
+		if designerSetting.iconOrText == "Icon" then
+			iconView:SetColor("Button", activeButtonColor)
+			textView:SetColor("Button", disabledButtonColor)
+		else
+			iconView:SetColor("Button", disabledButtonColor)
+			textView:SetColor("Button", activeButtonColor)
+		end
+
+		self:buildDesigner()
+	end
+
 	local leveledListGroup = self.designerSection:AddGroup("leveledLists")
 
 	for level = 1, 30 do
@@ -484,6 +536,18 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 	if progressionTableId and not subLists.randomized then
 		subLists.randomized = {}
 	end
+
+	local useIcons = ConfigurationStructure.config.mutations.settings.customLists.iconOrText == "Icon"
+	local displayTable = parentGroup:AddTable("display", useIcons and 1 or 3)
+	local row = displayTable:AddRow()
+	row:AddCell()
+	if not useIcons then
+		row:AddCell()
+		row:AddCell()
+	end
+
+	local count = 0
+
 	for subListName, subList in TableUtils:OrderedPairs(subLists, function(key)
 		return self.subListIndex[key].name
 	end) do
@@ -513,17 +577,29 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 		for _, entryName in TableUtils:OrderedPairs(subList, function(key)
 			return subList[key]
 		end) do
+			count = count + 1
+			local parent = row.Children[useIcons and 1 or ((count % 3) > 0 and (count % 3) or 3)]
+
 			---@type SpellData|PassiveData|StatusData
 			local entryData = Ext.Stats.Get(entryName)
 			if entryData then
-				local entryImageButton = parentGroup:AddImageButton(entryName .. "##" .. level, entryData.Icon ~= "" and entryData.Icon or "Item_Unknown",
+				local entryImageButton = parent:AddImageButton(entryName .. "##" .. level, entryData.Icon ~= "" and entryData.Icon or "Item_Unknown",
 					{ 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
 				if entryImageButton.Image.Icon == "" then
 					entryImageButton:Destroy()
-					entryImageButton = parentGroup:AddImageButton(entryName .. "##" .. level, "Item_Unknown", { 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
+					entryImageButton = parent:AddImageButton(entryName .. "##" .. level, "Item_Unknown", { 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
 				end
-				entryImageButton.SameLine = #parentGroup.Children > 0
-					and ((#parentGroup.Children - 1) % math.floor((self.designerSection.LastSize[1]) / (63 * Styler:ScaleFactor())) ~= 0)
+
+				if useIcons then
+					entryImageButton.SameLine = #parent.Children > 0
+						and ((#parent.Children - 1) % math.floor((self.designerSection.LastSize[1]) / (63 * Styler:ScaleFactor())) ~= 0)
+				else
+					local link = Styler:HyperlinkText(parent, entryName, function(parent)
+						ResourceManager:RenderDisplayWindow(entryData, parent)
+					end)
+					link.SameLine = true
+					link:SetColor("TextLink", { 0.86, 0.79, 0.68, 0.78 })
+				end
 
 				entryImageButton:SetColor("Button", self.subListIndex[subListName].colour)
 				entryImageButton.UserData = {

@@ -167,7 +167,9 @@ ConfigurationStructure.config.mutations.settings.customLists = {
 		startOfCombatOnly = { 217, 118, 6, 0.8 },
 		onLoadOnly = { 217, 179, 6, 0.8 },
 		blackListed = { .5, .5, .5, 1 },
-	}
+	},
+	---@type "Icon"|"Text"
+	iconOrText = "Icon"
 }
 
 ---@class AbilityPriorities
