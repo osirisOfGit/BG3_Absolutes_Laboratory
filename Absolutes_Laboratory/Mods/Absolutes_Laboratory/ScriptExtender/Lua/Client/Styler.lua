@@ -281,6 +281,63 @@ function Styler:HyperlinkRenderable(renderable, item, modifier, modifierOnHover,
 	end
 end
 
+---@param parent ExtuiTreeParent
+---@param opt1 string
+---@param opt2 string
+---@param startSameLine boolean
+---@param callback fun(swap: boolean?): boolean
+function Styler:ToggleButton(parent, opt1, opt2, startSameLine, callback)
+	local activeButtonColor = { 0.38, 0.26, 0.21, 0.78 }
+	local disabledButtonColor = { 0, 0, 0, 0 }
+
+	local option1 = parent:AddButton(opt1)
+	option1.Disabled = true
+	option1:SetColor("Button", disabledButtonColor)
+	option1.SameLine = startSameLine or false
+
+	local toggle = parent:AddSliderInt("", callback() and 0 or 1, 0, 1)
+	toggle:SetColor("Text", { 1, 1, 1, 0 })
+	toggle.SameLine = true
+	toggle.ItemWidth = 80 * Styler:ScaleFactor()
+
+	local option2 = parent:AddButton(opt2)
+	option2.Disabled = true
+	option2:SetColor("Button", activeButtonColor)
+	option2.SameLine = true
+
+	if callback() then
+		option1:SetColor("Button", activeButtonColor)
+		option2:SetColor("Button", disabledButtonColor)
+	else
+		option1:SetColor("Button", disabledButtonColor)
+		option2:SetColor("Button", activeButtonColor)
+	end
+
+	toggle.OnActivate = function()
+		-- Prevents the user from keeping hold of the grab, triggering the Deactivate instantly
+		-- Slider Grab POS won't update if changed during an OnClick or OnActivate event
+		toggle.Disabled = true
+	end
+
+	toggle.OnDeactivate = function()
+		toggle.Disabled = false
+
+		local useFirstOption = not callback()
+		local newValue = useFirstOption and 0 or 1
+		toggle.Value = { newValue, newValue, newValue, newValue }
+
+		if useFirstOption then
+			option1:SetColor("Button", activeButtonColor)
+			option2:SetColor("Button", disabledButtonColor)
+		else
+			option1:SetColor("Button", disabledButtonColor)
+			option2:SetColor("Button", activeButtonColor)
+		end
+
+		callback(true)
+	end
+end
+
 ---@param colour number[]
 function Styler:ConvertRGBAToIMGUI(colour)
 	for i, col in ipairs(colour) do

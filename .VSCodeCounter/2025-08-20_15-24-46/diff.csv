@@ -1,0 +1,14 @@
+"filename", "language", "Lua", "comment", "blank", "total"
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Client\Inspector\ResourceProcessors\Proxies\Boosts.lua", "Lua", 25, 1, 6, 32
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Client\Inspector\ResourceProcessors\Proxies\Conditions.lua", "Lua", 14, 1, 3, 18
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Client\Inspector\ResourceProcessors\Proxies\Functors.lua", "Lua", 17, 1, 2, 20
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Client\Inspector\ResourceProcessors\Proxies\Passives.lua", "Lua", -1, 0, -1, -2
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Client\Inspector\ResourceProcessors\Proxies\Status.lua", "Lua", -2, 0, -2, -4
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Client\Inspector\ResourceProcessors\Proxies\Tags.lua", "Lua", 1, 0, -1, 0
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Client\Inspector\ResourceProcessors\ResourceProxy.lua", "Lua", 2, 0, 0, 2
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Client\Mutations\ListDesignerBaseClass.lua", "Lua", -31, -2, -9, -42
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Client\Mutations\MutationDesigner.lua", "Lua", -29, -2, -7, -38
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Client\Mutations\MutationProfileManager.lua", "Lua", -12, 13, 0, 1
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Client\Styler.lua", "Lua", 40, 7, 10, 57
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Mutators\HealthMutator.lua", "Lua", 33, 1, 2, 36
+"Total", "-", 57, 20, 3, 80

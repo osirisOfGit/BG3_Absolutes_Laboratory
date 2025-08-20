@@ -378,6 +378,16 @@ function ListDesignerBaseClass:buildDesigner()
 		self:buildDesigner()
 	end
 
+	Styler:ToggleButton(self.designerSection, "Icon", "Text", true, function(swap)
+		local setting = ConfigurationStructure.config.mutations.settings.customLists
+		if swap then
+			setting.iconOrText = setting.iconOrText == "Icon" and "Text" or "Icon"
+			self:buildDesigner()
+		end
+
+		return setting.iconOrText == "Icon"
+	end)
+
 	local leveledListGroup = self.designerSection:AddGroup("leveledLists")
 
 	for level = 1, 30 do
@@ -484,6 +494,18 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 	if progressionTableId and not subLists.randomized then
 		subLists.randomized = {}
 	end
+
+	local useIcons = ConfigurationStructure.config.mutations.settings.customLists.iconOrText == "Icon"
+	local displayTable = parentGroup:AddTable("display", useIcons and 1 or 3)
+	local row = displayTable:AddRow()
+	row:AddCell()
+	if not useIcons then
+		row:AddCell()
+		row:AddCell()
+	end
+
+	local count = 0
+
 	for subListName, subList in TableUtils:OrderedPairs(subLists, function(key)
 		return self.subListIndex[key].name
 	end) do
@@ -513,17 +535,29 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 		for _, entryName in TableUtils:OrderedPairs(subList, function(key)
 			return subList[key]
 		end) do
+			count = count + 1
+			local parent = row.Children[useIcons and 1 or ((count % 3) > 0 and (count % 3) or 3)]
+
 			---@type SpellData|PassiveData|StatusData
 			local entryData = Ext.Stats.Get(entryName)
 			if entryData then
-				local entryImageButton = parentGroup:AddImageButton(entryName .. "##" .. level, entryData.Icon ~= "" and entryData.Icon or "Item_Unknown",
+				local entryImageButton = parent:AddImageButton(entryName .. "##" .. level, entryData.Icon ~= "" and entryData.Icon or "Item_Unknown",
 					{ 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
 				if entryImageButton.Image.Icon == "" then
 					entryImageButton:Destroy()
-					entryImageButton = parentGroup:AddImageButton(entryName .. "##" .. level, "Item_Unknown", { 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
+					entryImageButton = parent:AddImageButton(entryName .. "##" .. level, "Item_Unknown", { 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
 				end
-				entryImageButton.SameLine = #parentGroup.Children > 0
-					and ((#parentGroup.Children - 1) % math.floor((self.designerSection.LastSize[1]) / (63 * Styler:ScaleFactor())) ~= 0)
+
+				if useIcons then
+					entryImageButton.SameLine = #parent.Children > 0
+						and ((#parent.Children - 1) % math.floor((self.designerSection.LastSize[1]) / (63 * Styler:ScaleFactor())) ~= 0)
+				else
+					local link = Styler:HyperlinkText(parent, entryName, function(parent)
+						ResourceManager:RenderDisplayWindow(entryData, parent)
+					end)
+					link.SameLine = true
+					link:SetColor("TextLink", { 0.86, 0.79, 0.68, 0.78 })
+				end
 
 				entryImageButton:SetColor("Button", self.subListIndex[subListName].colour)
 				entryImageButton.UserData = {
@@ -900,7 +934,10 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 									return value.linkedProgressions ~= nil and value.linkedProgressions[tableUUID] ~= nil
 								end) ~= nil
 
-								local linkButton = ele:AddButton(hasProgression and "Unlink" or "Link")
+								local linkButton = ele:AddButton(hasProgression and "Unlink" or "Link (?)")
+								linkButton:Tooltip():AddText(
+									"\t (Un)Forms a link to this progression, dynamically pulling all entries from the ProgressionTable when needed. See SpellList wiki page.")
+
 								linkButton.SameLine = true
 								linkButton.OnClick = function()
 									if hasProgression then
@@ -909,7 +946,7 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 												subList.linkedProgressions[tableUUID].delete = true
 											end
 										end
-										linkButton.Label = "Link"
+										linkButton.Label = "Link (?)"
 									else
 										self.activeList.levels = self.activeList.levels or {}
 										for level in pairs(self.progressions[progressionName]) do

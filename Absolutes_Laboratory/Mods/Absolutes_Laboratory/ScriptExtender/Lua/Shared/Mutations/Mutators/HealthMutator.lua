@@ -5,13 +5,14 @@ function HealthMutator:priority()
 end
 
 function HealthMutator:Transient()
-	return true
+	return false
 end
 
 ---@alias HealthModifierKeys "CharacterLevel"|"GameLevel"|"XPReward"
 
 ---@class HealthMutator : Mutator
 ---@field values number
+---@field staticHealth number
 ---@field modifiers {[HealthModifierKeys]: HealthClassLevelModifier}
 
 ---@class HealthClassLevelModifier : MutationModifier
@@ -20,28 +21,59 @@ end
 
 ---@param mutator HealthMutator
 function HealthMutator:renderMutator(parent, mutator)
-	if not mutator.values then
+	Helpers:KillChildren(parent)
+	if not mutator.values and not mutator.staticHealth then
 		mutator.values = 10
 	end
 
-	parent:AddText("Base Health Increases by ")
-	local input = parent:AddInputScalar("%", mutator.values)
-	input.ItemWidth = 100
-	input.SameLine = true
+	Styler:ToggleButton(parent, "Static", "Dynamic", false, function(swap)
+		if swap then
+			if mutator.values then
+				mutator.values = nil
+				mutator.staticHealth = 100
+				mutator.modifiers.delete = true
+			else
+				mutator.staticHealth = nil
+				mutator.values = 10
+			end
 
-	input.OnChange = function()
-		mutator.values = input.Value[1]
+			self:renderMutator(parent, mutator)
+		end
+
+		return mutator.staticHealth ~= nil
+	end)
+
+	if mutator.values then
+		parent:AddText("Base Health Increases by ")
+		local input = parent:AddInputScalar("%", mutator.values)
+		input.ItemWidth = 100
+		input.SameLine = true
+
+		input.OnChange = function()
+			mutator.values = input.Value[1]
+		end
+
+		local previewButton = parent:AddButton("Preview Matrix")
+		previewButton.OnClick = function()
+			self:previewResult(mutator)
+		end
+
+		local modifierParent = parent:AddCollapsingHeader("Modifiers")
+		modifierParent:SetColor("Header", { 1, 1, 1, 0 })
+		mutator.modifiers = mutator.modifiers or {}
+		self:renderModifiers(modifierParent, mutator.modifiers)
+	else
+		parent:AddText("Set Entity Health To: ")
+		local staticHealthInput = parent:AddInputInt("", mutator.staticHealth)
+		staticHealthInput.SameLine = true
+		staticHealthInput.ItemWidth = 80
+		staticHealthInput.OnChange = function()
+			if staticHealthInput.Value[1] <= 0 then
+				staticHealthInput.Value = { 1, 1, 1, 1 }
+			end
+			mutator.staticHealth = staticHealthInput.Value[1]
+		end
 	end
-
-	local previewButton = parent:AddButton("Preview Matrix")
-	previewButton.OnClick = function()
-		self:previewResult(mutator)
-	end
-
-	local modifierParent = parent:AddCollapsingHeader("Modifiers")
-	modifierParent:SetColor("Header", { 1, 1, 1, 0 })
-	mutator.modifiers = mutator.modifiers or {}
-	self:renderModifiers(modifierParent, mutator.modifiers)
 end
 
 function HealthMutator:renderModifiers(parent, modifiers)
@@ -370,26 +402,30 @@ function HealthMutator:applyMutator(entity, entityVar)
 	---@type HealthMutator
 	local mutator = entityVar.appliedMutators[self.name]
 
-	---@type Character
-	local charStat = Ext.Stats.Get(entity.Data.StatsId)
-
-	---@type number?
-	local xPRewardMod
-	if charStat.XPReward then
-		xPRewardMod = calculateXPRewardLevelModifier(mutator.modifiers["XPReward"], charStat.XPReward)
-	end
-
-	local gameLevelMod = entity.Level and calculateGameLevelModifier(mutator.modifiers["GameLevel"], entity.Level.LevelName) or 0
-	local characterMod = calculateCharacterLevelModifier(mutator.modifiers["CharacterLevel"], entity.AvailableLevel.Level)
-	local percentageToAdd = (mutator.values + (characterMod + gameLevelMod + xPRewardMod)) / 100
-
 	entityVar.originalValues[self.name] = entity.Health.MaxHp
 	local currentHealth = entity.Health.Hp
-
 	local currentHealthPercentage = 1 - (entity.Health.Hp / entity.Health.MaxHp)
 
-	entity.Health.MaxHp = math.floor(entity.Health.MaxHp + (entity.Health.MaxHp * percentageToAdd))
-	entity.Health.Hp = entity.Health.MaxHp - (entity.Health.MaxHp * currentHealthPercentage)
+	if mutator.values then
+		---@type Character
+		local charStat = Ext.Stats.Get(entity.Data.StatsId)
+
+		---@type number?
+		local xPRewardMod
+		if charStat.XPReward then
+			xPRewardMod = calculateXPRewardLevelModifier(mutator.modifiers["XPReward"], charStat.XPReward)
+		end
+
+		local gameLevelMod = entity.Level and calculateGameLevelModifier(mutator.modifiers["GameLevel"], entity.Level.LevelName) or 0
+		local characterMod = calculateCharacterLevelModifier(mutator.modifiers["CharacterLevel"], entity.AvailableLevel.Level)
+		local percentageToAdd = (mutator.values + (characterMod + gameLevelMod + xPRewardMod)) / 100
+
+		entity.Health.MaxHp = math.floor(entity.Health.MaxHp + (entity.Health.MaxHp * percentageToAdd))
+		entity.Health.Hp = entity.Health.MaxHp - (entity.Health.MaxHp * currentHealthPercentage)
+	else
+		entity.Health.MaxHp = mutator.staticHealth
+		entity.Health.Hp = entity.Health.MaxHp - (entity.Health.MaxHp * currentHealthPercentage)
+	end
 
 	Logger:BasicDebug("Changed max from %s -> %s, current from %s -> %s",
 		entityVar.originalValues[self.name],

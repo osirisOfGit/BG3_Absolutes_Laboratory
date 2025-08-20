@@ -1125,21 +1125,22 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 				preview:AddText(button.Label)
 			end
 
-			mutationButton.OnRightClick = function()
-				for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
-					---@cast ele ExtuiCollapsingHeader
-					if ele.UserData == mutationRule.mutationFolderId then
-						for _, mutation in pairs(ele.Children) do
-							---@cast mutation ExtuiSelectable
+			-- Removed per user request, accidentally deleted a mutation while managing a profile. Doesn't make a ton of sense either, but keeping around jic
+			-- mutationButton.OnRightClick = function()
+			-- 	for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
+			-- 		---@cast ele ExtuiCollapsingHeader
+			-- 		if ele.UserData == mutationRule.mutationFolderId then
+			-- 			for _, mutation in pairs(ele.Children) do
+			-- 				---@cast mutation ExtuiSelectable
 
-							if mutation.UserData and mutation.UserData.mutationId == mutationRule.mutationId then
-								mutation:OnRightClick()
-								return
-							end
-						end
-					end
-				end
-			end
+			-- 				if mutation.UserData and mutation.UserData.mutationId == mutationRule.mutationId then
+			-- 					mutation:OnRightClick()
+			-- 					return
+			-- 				end
+			-- 			end
+			-- 		end
+			-- 	end
+			-- end
 			mutationButton.OnClick = function()
 				Helpers:KillChildren(self.mutationDesigner)
 

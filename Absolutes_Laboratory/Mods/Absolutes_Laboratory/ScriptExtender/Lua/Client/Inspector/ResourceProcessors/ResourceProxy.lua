@@ -41,7 +41,7 @@ end
 ---@param statString string
 ---@return fun():string
 function ResourceProxy:SplitSpring(statString)
-	return string.gmatch(statString, "([^" .. self.delimeter .. "]+)")
+	return string.gmatch(statString, "([^" .. self.delimeter .. "]+|)")
 end
 
 ---@param parent ExtuiTreeParent
@@ -310,6 +310,8 @@ Ext.Require("Client/Inspector/ResourceProcessors/Proxies/Progressions.lua")
 
 --- Stat Stuff
 Ext.Require("Client/Inspector/ResourceProcessors/Proxies/ClassDescription.lua")
+Ext.Require("Client/Inspector/ResourceProcessors/Proxies/Boosts.lua")
+Ext.Require("Client/Inspector/ResourceProcessors/Proxies/Conditions.lua")
 Ext.Require("Client/Inspector/ResourceProcessors/Proxies/StatParser.lua")
 Ext.Require("Client/Inspector/ResourceProcessors/Proxies/ItemList.lua")
 Ext.Require("Client/Inspector/ResourceProcessors/Proxies/Functors.lua")

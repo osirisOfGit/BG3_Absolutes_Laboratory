@@ -108,6 +108,11 @@ function StatusDataProxy:RenderDisplayableValue(parent, statString)
 			statusTable = statString
 		end
 
+		if #statusTable >= 10 then
+			parent = parent:AddCollapsingHeader("Statuses")
+			parent:SetColor("Header", { 1, 1, 1, 0 })
+		end
+		
 		for _, statGroup in ipairs(statusTable) do
 			local leftSide, rightSide = statGroup:match("([^:]*):?(.*)")
 			if rightSide and rightSide ~= "" then
@@ -116,29 +121,20 @@ function StatusDataProxy:RenderDisplayableValue(parent, statString)
 				local statusData = self:GetStat(rightSide)
 
 				if statusData then
-					local hasKids = #parent.Children > 0
-					parent:AddText(leftSide .. ":").SameLine = hasKids
+					parent:AddText(leftSide .. ":")
 
-					local text = Styler:HyperlinkText(parent, rightSide, function(parent)
+					Styler:HyperlinkText(parent, rightSide, function(parent)
 						self:RenderDisplayWindow(statusData, parent)
-					end)
-					text.SameLine = true
-
-					parent:AddText(";").SameLine = true
+					end).SameLine = true
 				end
 			else
 				---@type StatusData?
 				local statusData = self:GetStat(leftSide:match("^%s*(.-)%s*$"))
 
 				if statusData then
-					local hasKids = #parent.Children > 0
-
-					local text = Styler:HyperlinkText(parent, leftSide, function(parent)
+					Styler:HyperlinkText(parent, leftSide, function(parent)
 						self:RenderDisplayWindow(statusData, parent)
 					end)
-
-					text.SameLine = hasKids
-					parent:AddText(";").SameLine = true
 				end
 			end
 		end

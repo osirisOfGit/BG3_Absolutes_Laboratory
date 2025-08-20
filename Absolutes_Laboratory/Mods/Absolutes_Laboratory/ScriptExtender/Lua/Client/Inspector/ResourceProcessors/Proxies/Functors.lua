@@ -1,3 +1,4 @@
+---@class FunctorsProxy : ResourceProxy
 FunctorsProxy = ResourceProxy:new()
 
 FunctorsProxy.fieldsToParse = {
@@ -23,7 +24,7 @@ local registeredFunctorTypes = {}
 
 ---@param parent ExtuiTreeParent
 ---@param text string
-local function parseHyperlinks(parent, text)
+function FunctorsProxy:parseHyperlinks(parent, text)
 	local list = {}
 
 	text = text:gsub("%'", "")
@@ -34,10 +35,12 @@ local function parseHyperlinks(parent, text)
 	local label = ""
 	local counter = 0
 	local newlined = false
+	local startedIF = false
+	local multiLine = true
 	for i, section in ipairs(list) do
 		local resourceText, resource
 
-		if section == "HasPassive" then
+		if section == "HasPassive" or section == "HasStatus" then
 			resourceText = list[i + 1]
 			resource = Ext.Stats.Get(resourceText)
 		elseif section == "LevelMapValue" then
@@ -50,7 +53,23 @@ local function parseHyperlinks(parent, text)
 			resource = Ext.Stats.Get(resourceText)
 		end
 
-		if resourceText then
+		if section == "IF" then
+			startedIF = true
+			multiLine = false
+		elseif section == "and" or section == "or" then
+			parent:AddText(label).SameLine = newlined
+			parent:AddNewLine()
+			label = startedIF and "\t" or ""
+			newlined = true
+			multiLine = true
+		elseif startedIF and label:sub(#label - 1) == "):" and multiLine then
+			parent:AddText(label:sub(1, #label - 2)).SameLine = true
+			parent:AddNewLine()
+			newlined = true
+			label = "):"
+		end
+
+		if resourceText and resource then
 			section = section .. "("
 			parent:AddText(label .. section).SameLine = newlined
 			newlined = true
@@ -66,6 +85,7 @@ local function parseHyperlinks(parent, text)
 			table.remove(list, i + 1)
 		else
 			counter = counter + #section
+
 			label = label .. section
 		end
 
@@ -88,7 +108,7 @@ function FunctorsProxy:RenderDisplayableValue(parent, functors)
 		for _, functorList in pairs(functors) do
 			for _, functor in pairs(functorList.Functors) do
 				if registeredFunctorTypes[functor.TypeId] then
-					parseHyperlinks(parent, registeredFunctorTypes[functor.TypeId](functor, parent))
+					self:parseHyperlinks(parent, registeredFunctorTypes[functor.TypeId](functor, parent))
 				else
 					Styler:HyperlinkText(parent, functor.UniqueName, function(parent)
 						ResourceManager:RenderDisplayableValue(parent, Ext.Types.Serialize(functor))
@@ -129,7 +149,7 @@ end
 
 
 ---@param functor StatsExecuteWeaponFunctorsFunctor
-registeredFunctorTypes["ExecuteWeaponFunctors"] = function (functor)
+registeredFunctorTypes["ExecuteWeaponFunctors"] = function(functor)
 	return string.format("%s(%s)", functor.TypeId, functor.WeaponType)
 end
 

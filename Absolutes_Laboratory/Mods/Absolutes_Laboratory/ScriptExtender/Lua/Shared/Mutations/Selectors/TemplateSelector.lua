@@ -87,7 +87,7 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 	local templateTable = Styler:TwoColumnTable(templateTree, "templates")
 	templateTable.Disabled = parent.Disabled
 	templateTable.ColumnDefs[1].Width = 300 * Styler:ScaleFactor()
-	
+
 	local row = templateTable:AddRow()
 
 	local templateSelectCell = row:AddCell()

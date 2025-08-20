@@ -42,6 +42,7 @@ EntityRecorder.Levels = {
 ---@field Icon string
 ---@field XPReward Guid
 ---@field CombatGroupId Guid?
+---@field Passives string[]
 
 if Ext.IsClient() then
 	---@type {[GUIDSTRING]: EntityRecord}
@@ -215,7 +216,7 @@ else
 					Ext.Timer.Cancel(timer)
 					timer = nil
 				end
-				
+
 				Logger:BasicInfo("Recorder: Transitioning from state %s to %s", tostring(e.FromState), tostring(e.ToState))
 				if e.ToState == "Running" then
 					local function run()
@@ -298,6 +299,11 @@ else
 										for _, progression in ipairs(progressionContainer) do
 											table.insert(entityRecord.Progressions, progression.ProgressionMeta.Progression)
 										end
+									end
+
+									entityRecord.Passives = {}
+									for _, passiveContainer in ipairs(entity.PassiveContainer.Passives) do
+										table.insert(entityRecord.Passives, passiveContainer.Passive.PassiveId)
 									end
 								end, debug.traceback)
 

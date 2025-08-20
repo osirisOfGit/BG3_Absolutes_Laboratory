@@ -249,50 +249,12 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 		local entryCell = row:AddCell()
 
 		if andOrEntry then
-			local andText = entryCell:AddButton("AND")
-			andText.Disabled = true
-			andText:SetColor("Button", disabledButtonColor)
-			andText.SameLine = true
-
-			local andOrSlider = entryCell:AddSliderInt("", andOrEntry == "AND" and 0 or 1, 0, 1)
-			andOrSlider:SetColor("Text", { 1, 1, 1, 0 })
-			andOrSlider.SameLine = true
-			andOrSlider.ItemWidth = 80 * Styler:ScaleFactor()
-
-			local orText = entryCell:AddButton("OR")
-			orText.Disabled = true
-			orText:SetColor("Button", activeButtonColor)
-			orText.SameLine = true
-
-			if existingSelector[i] == "AND" then
-				andText:SetColor("Button", activeButtonColor)
-				orText:SetColor("Button", disabledButtonColor)
-			else
-				andText:SetColor("Button", disabledButtonColor)
-				orText:SetColor("Button", activeButtonColor)
-			end
-
-			andOrSlider.OnActivate = function()
-				-- Prevents the user from keeping hold of the grab, triggering the Deactivate instantly
-				-- Slider Grab POS won't update if changed during an OnClick or OnActivate event
-				andOrSlider.Disabled = true
-			end
-
-			andOrSlider.OnDeactivate = function()
-				andOrSlider.Disabled = false
-
-				existingSelector[i] = existingSelector[i] == "AND" and "OR" or "AND"
-				local newValue = existingSelector[i] == "AND" and 0 or 1
-				andOrSlider.Value = { newValue, newValue, newValue, newValue }
-
-				if existingSelector[i] == "AND" then
-					andText:SetColor("Button", activeButtonColor)
-					orText:SetColor("Button", disabledButtonColor)
-				else
-					andText:SetColor("Button", disabledButtonColor)
-					orText:SetColor("Button", activeButtonColor)
+			Styler:ToggleButton(entryCell, "AND", "OR", true, function(swap)
+				if swap then
+					existingSelector[i] = existingSelector[i] == "AND" and "OR" or "AND"
 				end
-			end
+				return existingSelector[i] == "AND"
+			end)
 		end
 
 		---@cast selectorEntry Selector
