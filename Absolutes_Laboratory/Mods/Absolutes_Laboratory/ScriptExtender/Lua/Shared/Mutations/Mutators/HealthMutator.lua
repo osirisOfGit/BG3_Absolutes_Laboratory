@@ -12,6 +12,7 @@ end
 
 ---@class HealthMutator : Mutator
 ---@field values number
+---@field staticHealth number
 ---@field modifiers {[HealthModifierKeys]: HealthClassLevelModifier}
 
 ---@class HealthClassLevelModifier : MutationModifier

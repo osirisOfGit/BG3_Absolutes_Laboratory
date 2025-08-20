@@ -378,57 +378,15 @@ function ListDesignerBaseClass:buildDesigner()
 		self:buildDesigner()
 	end
 
-	local activeButtonColor = { 0.38, 0.26, 0.21, 0.78 }
-	local disabledButtonColor = { 0, 0, 0, 0 }
-
-	local designerSetting = ConfigurationStructure.config.mutations.settings.customLists
-
-	local iconView = self.designerSection:AddButton("Icons")
-	iconView.Disabled = true
-	iconView:SetColor("Button", disabledButtonColor)
-	iconView.SameLine = true
-
-	local iconOrTextSlider = self.designerSection:AddSliderInt("", designerSetting.iconOrText == "Icon" and 0 or 1, 0, 1)
-	iconOrTextSlider:SetColor("Text", { 1, 1, 1, 0 })
-	iconOrTextSlider.SameLine = true
-	iconOrTextSlider.ItemWidth = 80 * Styler:ScaleFactor()
-
-	local textView = self.designerSection:AddButton("Text")
-	textView.Disabled = true
-	textView:SetColor("Button", activeButtonColor)
-	textView.SameLine = true
-
-	if designerSetting.iconOrText == "Icon" then
-		iconView:SetColor("Button", activeButtonColor)
-		textView:SetColor("Button", disabledButtonColor)
-	else
-		iconView:SetColor("Button", disabledButtonColor)
-		textView:SetColor("Button", activeButtonColor)
-	end
-
-	iconOrTextSlider.OnActivate = function()
-		-- Prevents the user from keeping hold of the grab, triggering the Deactivate instantly
-		-- Slider Grab POS won't update if changed during an OnClick or OnActivate event
-		iconOrTextSlider.Disabled = true
-	end
-
-	iconOrTextSlider.OnDeactivate = function()
-		iconOrTextSlider.Disabled = false
-
-		designerSetting.iconOrText = designerSetting.iconOrText == "Icon" and "Text" or "Icon"
-		local newValue = designerSetting.iconOrText == "Icon" and 0 or 1
-		iconOrTextSlider.Value = { newValue, newValue, newValue, newValue }
-
-		if designerSetting.iconOrText == "Icon" then
-			iconView:SetColor("Button", activeButtonColor)
-			textView:SetColor("Button", disabledButtonColor)
-		else
-			iconView:SetColor("Button", disabledButtonColor)
-			textView:SetColor("Button", activeButtonColor)
+	Styler:ToggleButton(self.designerSection, "Icon", "Text", function(swap)
+		local setting = ConfigurationStructure.config.mutations.settings.customLists
+		if swap then
+			setting.iconOrText = setting.iconOrText == "Icon" and "Text" or "Icon"
+			self:buildDesigner()
 		end
 
-		self:buildDesigner()
-	end
+		return setting.iconOrText == "Icon"
+	end)
 
 	local leveledListGroup = self.designerSection:AddGroup("leveledLists")
 
@@ -978,7 +936,7 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 
 								local linkButton = ele:AddButton(hasProgression and "Unlink" or "Link (?)")
 								linkButton:Tooltip():AddText(
-								"\t (Un)Forms a link to this progression, dynamically pulling all entries from the ProgressionTable when needed. See SpellList wiki page.")
+									"\t (Un)Forms a link to this progression, dynamically pulling all entries from the ProgressionTable when needed. See SpellList wiki page.")
 
 								linkButton.SameLine = true
 								linkButton.OnClick = function()
