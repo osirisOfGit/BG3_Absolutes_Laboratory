@@ -284,15 +284,16 @@ end
 ---@param parent ExtuiTreeParent
 ---@param opt1 string
 ---@param opt2 string
+---@param startSameLine boolean
 ---@param callback fun(swap: boolean?): boolean
-function Styler:ToggleButton(parent, opt1, opt2, callback)
+function Styler:ToggleButton(parent, opt1, opt2, startSameLine, callback)
 	local activeButtonColor = { 0.38, 0.26, 0.21, 0.78 }
 	local disabledButtonColor = { 0, 0, 0, 0 }
 
 	local option1 = parent:AddButton(opt1)
 	option1.Disabled = true
 	option1:SetColor("Button", disabledButtonColor)
-	option1.SameLine = true
+	option1.SameLine = startSameLine or false
 
 	local toggle = parent:AddSliderInt("", callback() and 0 or 1, 0, 1)
 	toggle:SetColor("Text", { 1, 1, 1, 0 })

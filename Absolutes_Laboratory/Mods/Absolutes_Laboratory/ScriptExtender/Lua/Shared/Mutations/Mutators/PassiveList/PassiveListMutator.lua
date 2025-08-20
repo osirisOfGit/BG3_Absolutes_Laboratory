@@ -305,7 +305,7 @@ function PassiveListMutator:handleDependencies(export, mutator, removeMissingDep
 end
 
 function PassiveListMutator:undoMutator(entity, mutator, primedEntityVar, reprocessTransient)
-	for _, passiveId in pairs(mutator.originalValues[self.name]) do
+	for _, passiveId in pairs(mutator.originalValues[self.name] or {}) do
 		if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 1 then
 			Logger:BasicDebug("Removing passive %s as it was given by Lab", passiveId)
 			Osi.RemovePassive(entity.Uuid.EntityUuid, passiveId)
