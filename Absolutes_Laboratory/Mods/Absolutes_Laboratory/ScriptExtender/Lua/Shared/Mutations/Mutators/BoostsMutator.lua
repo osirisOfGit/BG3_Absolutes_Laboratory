@@ -1,6 +1,21 @@
 ---@class BoostsMutatorClass : MutatorInterface
 BoostsMutator = MutatorInterface:new("Boosts")
 
+function BoostsMutator:priority()
+	return 99
+end
+
+function BoostsMutator:Transient()
+	return false
+end
+
+function BoostsMutator:canBeAdditive()
+	return true
+end
+
+function BoostsMutator:handleDependencies(export, mutator, removeMissingDependencies)
+end
+
 ---@class BoostTable
 ---@field name string
 ---@field definition table
@@ -210,7 +225,7 @@ function BoostsMutator:renderMutator(parent, mutator)
 
 	parent:AddText("Prettified Boosts:")
 	local pretty = parent:AddChildWindow("Prettified")
-	pretty.Size = Styler:ScaleFactor({0, 400})
+	pretty.Size = Styler:ScaleFactor({ 0, 400 })
 
 	local function updateBoostOutput()
 		local boostString, boostTable = self:buildBoost(mutator)
@@ -276,6 +291,66 @@ function BoostsMutator:buildBoost(mutator)
 	end
 
 	return boostString, boostsEntries
+end
+
+function BoostsMutator:applyMutator(entity, entityVar)
+	local boostsMutators = entityVar.appliedMutators[self.name]
+	if not boostsMutators[1] then
+		boostsMutators = { boostsMutators }
+	end
+	---@cast boostsMutators BoostsMutator[]
+
+	local boostString = ""
+	local boostTables = {}
+	for _, boostMutator in ipairs(boostsMutators) do
+		local bs, bt = self:buildBoost(boostMutator)
+		boostString = boostString .. bs
+		table.insert(boostTables, bt)
+	end
+
+	if boostString ~= "" then
+		Logger:BasicDebug("Adding the following boosts: %s", boostTables)
+
+		local statName = "ABSOLUTES_LAB_BOOSTS_BOOST_" .. string.sub(entity.Uuid.EntityUuid, #entity.Uuid.EntityUuid - 11)
+		if not Ext.Stats.Get(statName) then
+			Logger:BasicDebug("Creating Boost Stat %s", statName)
+			---@type StatusData
+			local newStat = Ext.Stats.Create(statName, "StatusData", "ABSOLUTES_LAB_BOOSTS_BOOST")
+			newStat.Boosts = boostString
+			newStat:Sync()
+		else
+			Logger:BasicDebug("Updating Boost Stat %s", statName)
+			---@type StatusData
+			local stat = Ext.Stats.Get(statName)
+			if stat.Boosts ~= boostString then
+				stat.Boosts = boostString
+				stat:Sync()
+			end
+		end
+
+		entityVar.originalValues[self.name] = boostString
+		Osi.ApplyStatus(entity.Uuid.EntityUuid, statName, -1, 1, "Lab")
+	else
+		Logger:BasicError("Boost string is empty despite boosts mutator being configured?")
+	end
+end
+
+function BoostsMutator:undoMutator(entity, entityVar, primedEntityVar, reprocessTransient)
+	if not primedEntityVar or not primedEntityVar.appliedMutators[self.name] then
+		local statName = "ABSOLUTES_LAB_BOOSTS_BOOST_" .. string.sub(entity.Uuid.EntityUuid, #entity.Uuid.EntityUuid - 11)
+		if not Ext.Stats.Get(statName) then
+			Logger:BasicDebug("Creating Boost Stat %s for proper removal", statName)
+			---@type StatusData
+			local newStat = Ext.Stats.Create(statName, "StatusData", "ABSOLUTES_LAB_BOOSTS_BOOST")
+			newStat.Boosts = entityVar.originalValues[self.name] or ""
+			newStat:Sync()
+		end
+
+		Logger:BasicDebug("Removed status %s as no boosts mutator will be executed for this entity", statName)
+		Osi.RemoveStatus(entity.Uuid.EntityUuid, statName)
+	else
+		Logger:BasicDebug("Skipping undoing as there is a boosts mutator primed for this entity")
+	end
 end
 
 ---@class BoostDefinition
