@@ -191,6 +191,8 @@ function BoostsMutator:renderMutator(parent, mutator)
 		mutator.customBoosts = boostsInput.Text
 	end
 
+	parent:AddSeparatorText("OUTPUT")
+
 	local refreshButton = parent:AddButton("Refresh Output")
 
 	parent:AddText("Raw Stat Output - Validate at:")
