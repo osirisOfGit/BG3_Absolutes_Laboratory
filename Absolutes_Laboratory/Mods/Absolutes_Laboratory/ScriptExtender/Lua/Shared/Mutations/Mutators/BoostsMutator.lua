@@ -13,6 +13,8 @@ function BoostsMutator:renderMutator(parent, mutator)
 	Helpers:KillChildren(parent)
 	mutator.values = mutator.values or {}
 
+	local popup = parent:AddPopup("boostPopup")
+
 	local comboOpts = {}
 	for name in TableUtils:OrderedPairs(self.BoostDefinitions) do
 		table.insert(comboOpts, name)
@@ -22,7 +24,6 @@ function BoostsMutator:renderMutator(parent, mutator)
 	boostDisplayTable.BordersInnerH = true
 	boostDisplayTable.RowBg = true
 	boostDisplayTable:AddColumn("", "WidthFixed")
-	boostDisplayTable:AddColumn("", "WidthStretch")
 
 	local headers = boostDisplayTable:AddRow()
 	headers.Headers = true
@@ -45,7 +46,6 @@ function BoostsMutator:renderMutator(parent, mutator)
 		end
 
 		local nameCombo = boostDisplayRow:AddCell():AddCombo("")
-		nameCombo.WidthFitPreview = true
 		nameCombo.Options = comboOpts
 		nameCombo.SelectedIndex = (TableUtils:IndexOf(comboOpts, boostTable.name) or 0) - 1
 		nameCombo.OnChange = function()
@@ -63,24 +63,28 @@ function BoostsMutator:renderMutator(parent, mutator)
 				if type(boostDefType) == "table" then
 					local enumCombo = cell:AddCombo("")
 					enumCombo.WidthFitPreview = true
-					enumCombo.Options = boostDefType
+					enumCombo.Options = TableUtils:DeeplyCopyTable(boostDefType)
 					enumCombo.SelectedIndex = (TableUtils:IndexOf(boostDefType, boostTable.definition[d]) or 0) - 1
 					enumCombo.OnChange = function()
 						boostTable.definition[d] = enumCombo.Options[enumCombo.SelectedIndex + 1]
 					end
-				elseif boostDefType:lower() == "number" then
+				elseif boostDefType:lower() == "number" or boostDefType:lower() == "percentage" then
 					local numberInput = cell:AddInputInt("", boostTable.definition[d] or 0)
 					numberInput.ItemWidth = 80
 					numberInput.OnChange = function()
 						boostTable.definition[d] = numberInput.Value[1]
 					end
+
+					if boostDefType:lower() == "percentage" then
+						cell:AddText("%").SameLine = true
+					end
 				elseif boostDefType:lower() == "boolean" then
-					local booleanBox = cell:AddCheckbox("", boostTable.definition[d])
-					booleanBox.Label = boostTable.definition[d] and "True" or "False"
+					local booleanBox = cell:AddCheckbox("", boostTable.definition[d] == "true")
+					booleanBox.Label = booleanBox.Checked and "True" or "False"
 
 					booleanBox.OnChange = function()
 						boostTable.definition[d] = booleanBox.Checked
-						booleanBox.Label = boostTable.definition[d] and "True" or "False"
+						booleanBox.Label = booleanBox.Checked and "True" or "False"
 					end
 				elseif boostDefType:lower() == "dice" then
 					boostTable.definition[d] = boostTable.definition[d] or {}
@@ -121,6 +125,52 @@ function BoostsMutator:renderMutator(parent, mutator)
 					enumCombo.SelectedIndex = (TableUtils:IndexOf(options, boostTable.definition[d]) or 0) - 1
 					enumCombo.OnChange = function()
 						boostTable.definition[d] = enumCombo.Options[enumCombo.SelectedIndex + 1]
+					end
+				else
+					local success, data = pcall(
+					---@return Guid[]
+						function()
+							return Ext.StaticData.GetAll(boostDefType)
+						end)
+					if success then
+						local searchInput = cell:AddInputText("")
+						searchInput.Text = (boostDefType == "Faction" and boostTable.definition[d])
+							and Ext.StaticData.Get(boostTable.definition[d], boostDefType).Faction
+							or boostTable.definition[d]
+							or ""
+
+						searchInput.AutoSelectAll = true
+						searchInput.Hint = ("Search for %s, min 2 chars"):format(boostDefType)
+						local timer
+						searchInput.OnChange = function()
+							if #searchInput.Text >= 2 then
+								if timer then
+									Ext.Timer.Cancel(timer)
+								end
+								timer = Ext.Timer.WaitFor(500, function()
+									Helpers:KillChildren(popup)
+									popup:Open()
+
+									for _, resourceId in TableUtils:OrderedPairs(data, function(key, value)
+										local resource = Ext.StaticData.Get(value, boostDefType)
+										return (boostDefType == "Faction") and resource.Faction or resource.Name
+									end) do
+										---@type ResourceTag|ResourceActionResource|ResourceFaction
+										local resource = Ext.StaticData.Get(resourceId, boostDefType)
+										if ((boostDefType == "Faction") and resource.Faction or resource.Name):lower():find(searchInput.Text:lower()) then
+											popup:AddSelectable((boostDefType == "Faction") and resource.Faction or resource.Name).OnClick = function(select)
+												searchInput.Text = select.Label
+												boostTable.definition[d] = (boostDefType == "Faction") and resourceId or select.Label
+											end
+										end
+									end
+
+									timer = nil
+								end)
+							end
+						end
+					else
+						Logger:BasicWarning("Couldn't determine how to render Boost Def Type %s for Boost %s, report this to the idiot that coded it", boostDefType, boostTable.name)
 					end
 				end
 			end
@@ -202,13 +252,13 @@ BoostsMutator.BoostDefinitions = {
 		"AdvantageContext"
 	},
 	FactionOverride = {
-		"faction"
+		"Faction"
 	},
 	FallDamageMultiplier = {
 		"number"
 	},
 	HalveWeaponDamage = {
-		"Ability"
+		"AbilityId"
 	},
 	HorizontalFOVOverride = {
 		"number"
@@ -248,10 +298,6 @@ BoostsMutator.BoostDefinitions = {
 	Proficiency = {
 		"ProficiencyGroupFlags"
 	},
-	ProficiencyBonus = {
-		"ProficiencyBonusBoostType",
-		"string"
-	},
 	ProjectileDeflect = {},
 	RedirectDamage = {
 		"number"
@@ -266,7 +312,11 @@ BoostsMutator.BoostDefinitions = {
 	},
 	Resistance = {
 		"DamageType",
-		"string"
+		{
+			"Vulnerable",
+			"Resistant",
+			"Immune"
+		}
 	},
 	RollBonus = {
 		"StatsRollType",
@@ -287,10 +337,17 @@ BoostsMutator.BoostDefinitions = {
 		"status"
 	},
 	Tag = {
-		"tag"
+		"Tag"
 	},
 	TemporaryHP = {
-		"string"
+		{
+			"StrengthModifier",
+			"DexterityModifier",
+			"ConstitutionModifier",
+			"IntelligenceModifier",
+			"WisdomModifier",
+			"CharismaModifier"
+		}
 	},
 	WeaponEnchantment = {
 		"number"
@@ -342,7 +399,6 @@ JumpMaxDistanceMultiplier JumpMaxDistanceMultiplier(0.25)
 MovementSpeedLimit MovementSpeedLimit(Stroll)
 ObjectSize ObjectSize(-1)
 Proficiency Proficiency(MusicalInstrument)
-ProficiencyBonus ProficiencyBonus(Skill,Arcana)
 ProjectileDeflect ProjectileDeflect()
 RedirectDamage RedirectDamage(1)
 ReduceCriticalAttackThreshold ReduceCriticalAttackThreshold(1)
@@ -411,6 +467,7 @@ Lootable N/A
 MinimumRollResult MinimumRollResult(Damage,20)
 MonkWeaponDamageDiceOverride MonkWeaponDamageDiceOverride(LevelMapValue(SpiritualWeapon_2d8))
 Skill Skill(Intimidation, 2)
+ProficiencyBonus ProficiencyBonus(Skill,Arcana)
 ProficiencyBonusOverride ProficiencyBonusOverride(Owner.LevelMapValue(StandardProficiencyBonusScale))
 UnlockInterrupt UnlockInterrupt(Interrupt_LegendaryResistance)
 UnlockSpell UnlockSpell(Projectile_ChromaticOrb,,d136c5d9-0ff0-43da-acce-a74a07f8d6bf,,);
