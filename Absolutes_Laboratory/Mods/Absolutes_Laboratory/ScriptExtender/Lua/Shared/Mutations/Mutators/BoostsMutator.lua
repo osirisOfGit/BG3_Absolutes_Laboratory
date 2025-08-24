@@ -7,6 +7,7 @@ BoostsMutator = MutatorInterface:new("Boosts")
 
 ---@class BoostsMutator : Mutator
 ---@field values BoostTable[]
+---@field customBoosts string
 
 ---@param mutator BoostsMutator
 function BoostsMutator:renderMutator(parent, mutator)
@@ -68,15 +69,13 @@ function BoostsMutator:renderMutator(parent, mutator)
 					enumCombo.OnChange = function()
 						boostTable.definition[d] = enumCombo.Options[enumCombo.SelectedIndex + 1]
 					end
-				elseif boostDefType:lower() == "number" or boostDefType:lower() == "percentage" then
-					local numberInput = cell:AddInputInt("", boostTable.definition[d] or 0)
+				elseif boostDefType:lower() == "number" then
+					boostTable.definition[d] = boostTable.definition[d] or 0
+
+					local numberInput = cell:AddInputInt("", boostTable.definition[d])
 					numberInput.ItemWidth = 80
 					numberInput.OnChange = function()
 						boostTable.definition[d] = numberInput.Value[1]
-					end
-
-					if boostDefType:lower() == "percentage" then
-						cell:AddText("%").SameLine = true
 					end
 				elseif boostDefType:lower() == "boolean" then
 					local booleanBox = cell:AddCheckbox("", boostTable.definition[d] == "true")
@@ -181,6 +180,100 @@ function BoostsMutator:renderMutator(parent, mutator)
 		table.insert(mutator.values, { name = nil, definition = {} } --[[@as BoostTable]])
 		self:renderMutator(parent, mutator)
 	end
+
+	parent:AddText("Add Custom Boosts (?):"):Tooltip():AddText(
+		"\t You can arbitrarily add new lines and tab spacing - they'll be joined together later. Anything you can add to the Boost field in a stat, you can add here.")
+	local boostsInput = parent:AddInputText("")
+	boostsInput.Multiline = true
+	boostsInput.AllowTabInput = true
+	boostsInput.Text = mutator.customBoosts or ""
+	boostsInput.OnChange = function()
+		mutator.customBoosts = boostsInput.Text
+	end
+
+	local refreshButton = parent:AddButton("Refresh Output")
+
+	parent:AddText("Raw Stat Output - Validate at:")
+	local validate = parent:AddInputText("")
+	validate.Text = "https://bg3.norbyte.dev/stats-validator"
+	validate.ReadOnly = true
+	validate.AutoSelectAll = true
+	validate.SameLine = true
+	validate.ItemWidth = 400 * Styler:ScaleFactor()
+
+	local rawOutput = parent:AddInputText("")
+	rawOutput.Multiline = true
+	rawOutput.ReadOnly = true
+	rawOutput.AutoSelectAll = true
+
+	parent:AddText("Prettified Boosts:")
+	local pretty = parent:AddChildWindow("Prettified")
+	pretty.Size = Styler:ScaleFactor({0, 400})
+
+	local function updateBoostOutput()
+		local boostString, boostTable = self:buildBoost(mutator)
+
+		rawOutput.Text = ([[
+new entry "ABSOLUTES_LAB_BOOSTS_BOOST"
+type "StatusData"
+data "StatusType" "BOOST"
+data "DisplayName" "he352e38cfac146a5a64e718bec47eea14f59;1"
+data "StackId" "ABSOLUTES_LAB_BOOSTS_BOOST"
+data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator"
+data "Boosts" "%s"]]):format(boostString)
+
+		Helpers:KillChildren(pretty)
+		for _, boost in ipairs(boostTable) do
+			FunctorsProxy:parseHyperlinks(pretty, boost)
+		end
+	end
+	updateBoostOutput()
+
+	refreshButton.OnClick = updateBoostOutput
+end
+
+---@param mutator BoostsMutator
+---@return string Boost
+---@return string[] boosts
+function BoostsMutator:buildBoost(mutator)
+	local boostString = ""
+	local boostsEntries = {}
+
+	for _, boostTable in TableUtils:OrderedPairs(mutator.values, function(key, value)
+		return value.name
+	end, function(key, value)
+		return value.name ~= nil
+	end) do
+		boostTable = TableUtils:DeeplyCopyTable(boostTable.__real or boostTable)
+
+		local rawString = ""
+		rawString = boostTable.name .. "("
+
+		for i, param in ipairs(boostTable.definition) do
+			if type(param) == "table" then
+				param = ("%sd%s"):format(param["diceNum"], param["diceSize"])
+			end
+			rawString = rawString .. (i > 1 and "," or "") .. tostring(param)
+		end
+
+		rawString = rawString .. ");"
+
+		table.insert(boostsEntries, rawString)
+		boostString = boostString .. rawString
+	end
+
+	if mutator.customBoosts and mutator.customBoosts ~= "" then
+		local cleanedBoosts = mutator.customBoosts:gsub("\n", ""):gsub("\t", "")
+		boostString = boostString .. cleanedBoosts
+
+		for boost in cleanedBoosts:gmatch("([^;]+)") do
+			if boost ~= "" then
+				table.insert(boostsEntries, boost)
+			end
+		end
+	end
+
+	return boostString, boostsEntries
 end
 
 ---@class BoostDefinition
@@ -275,9 +368,6 @@ BoostsMutator.BoostDefinitions = {
 			"Resistant",
 			"Immune"
 		}
-	},
-	IncreaseMaxHP = {
-		"percentage"
 	},
 	Initiative = {
 		"number"
@@ -392,7 +482,6 @@ IgnoreDamageThreshold IgnoreDamageThreshold(Lightning,10)
 IgnoreFallDamage IgnoreFallDamage()
 IgnoreLeaveAttackRange IgnoreLeaveAttackRange()
 IgnoreResistance IgnoreResistance(Bludgeoning, Resistant)
-IncreaseMaxHP - IncreaseMaxHP(10%);
 Initiative Initiative(-15)
 Invulnerable Invulnerable()
 JumpMaxDistanceMultiplier JumpMaxDistanceMultiplier(0.25)
@@ -463,6 +552,7 @@ Detach N/A
 DownedStatus DownedStatus(DOWNED); DownedStatus(STEEL_WATCHER_INVULNERABILITY,-1)
 GameplayLight GameplayLight(6,false,0.1)
 Immunity - N/A
+IncreaseMaxHP - IncreaseMaxHP(10%);
 Lootable N/A
 MinimumRollResult MinimumRollResult(Damage,20)
 MonkWeaponDamageDiceOverride MonkWeaponDamageDiceOverride(LevelMapValue(SpiritualWeapon_2d8))
