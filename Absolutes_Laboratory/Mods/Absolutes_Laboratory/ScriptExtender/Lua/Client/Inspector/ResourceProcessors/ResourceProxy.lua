@@ -41,7 +41,7 @@ end
 ---@param statString string
 ---@return fun():string
 function ResourceProxy:SplitSpring(statString)
-	return string.gmatch(statString, "([^" .. self.delimeter .. "]+|)")
+	return string.gmatch(statString, "([^" .. self.delimeter .. "]+)")
 end
 
 ---@param parent ExtuiTreeParent

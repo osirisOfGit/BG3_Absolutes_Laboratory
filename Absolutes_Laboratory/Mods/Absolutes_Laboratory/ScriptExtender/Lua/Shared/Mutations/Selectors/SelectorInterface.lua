@@ -150,6 +150,7 @@ function SelectorInterface:createComposedPredicate(selectorQuery)
 end
 
 Ext.Require("Shared/Mutations/Selectors/RaceSelector.lua")
+Ext.Require("Shared/Mutations/Selectors/GameLevelSelector.lua")
 Ext.Require("Shared/Mutations/Selectors/TagSelector.lua")
 Ext.Require("Shared/Mutations/Selectors/TemplateSelector.lua")
 Ext.Require("Shared/Mutations/Selectors/StatSelector.lua")

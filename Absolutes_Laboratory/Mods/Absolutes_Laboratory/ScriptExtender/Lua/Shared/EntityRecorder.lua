@@ -32,6 +32,8 @@ EntityRecorder.Levels = {
 
 ---@class EntityRecord
 ---@field Name string
+---@field LevelName string
+---@field Id Guid
 ---@field Template GUIDSTRING
 ---@field Race RaceUUID
 ---@field Faction Faction
@@ -280,6 +282,8 @@ else
 										or (entity.ServerCharacter.Template and entity.ServerCharacter.Template.DisplayName:Get())
 										or entity.Uuid.EntityUuid
 
+									entityRecord.LevelName = charLevel
+									entityRecord.Id = entity.Uuid.EntityUuid
 									entityRecord.Icon = entity.Icon.Icon
 									entityRecord.Race = entity.Race.Race
 									entityRecord.Faction = entity.Faction.field_8
