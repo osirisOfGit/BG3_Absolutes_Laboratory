@@ -148,6 +148,10 @@ function MonsterLab:buildEncounterView(parent, encounter)
 		levelCombo.Options = levels
 		levelCombo.SelectedIndex = TableUtils:IndexOf(levels, encounter.gameLevel) - 1
 
+		local teleportToLevelButton = ele:AddButton("Teleport To Level")
+		teleportToLevelButton.Visible = false
+		teleportToLevelButton.SameLine = true
+
 		local coordsTable = ele:AddTable("coords", 3)
 
 		local inputRow = coordsTable:AddRow()
@@ -157,16 +161,47 @@ function MonsterLab:buildEncounterView(parent, encounter)
 			cell:AddText(coord .. ": ")
 			local input = cell:AddInputScalar("", encounter.baseCoords[i])
 			input.SameLine = true
-			input.OnChange = function ()
+			input.OnChange = function()
 				encounter.baseCoords[i] = input.Value[1]
 			end
 		end
+
+		local teleportToCoordsButton = Styler:MiddleAlignedColumnLayout(ele, function(ele)
+			ele:AddButton("Teleport To Coords").OnClick = function()
+				Channels.TeleportToCoords:SendToServer({
+					x = encounter.baseCoords[1],
+					y = encounter.baseCoords[2],
+					z = encounter.baseCoords[3],
+				})
+			end
+		end)
+		teleportToCoordsButton.Visible = false
+		teleportToLevelButton.OnClick = function()
+			Channels.TeleportToLevel:SendToServer(encounter.gameLevel)
+			teleportToCoordsButton.Visible = true
+			teleportToLevelButton.Visible = false
+		end
+
+		local function checkCurrentLevel()
+			Channels.GetCurrentHostLevel:RequestToServer(nil, function(levelName)
+				teleportToLevelButton.Visible = levelName ~= encounter.gameLevel
+				teleportToCoordsButton.Visible = not teleportToLevelButton.Visible
+			end)
+		end
+		checkCurrentLevel()
+
+		levelCombo.OnChange = function()
+			encounter.gameLevel = levelCombo.Options[levelCombo.SelectedIndex + 1]
+			checkCurrentLevel()
+		end
 	end)
 
-	local layoutTable = Styler:TwoColumnTable(parent, "layout"):AddRow()
+	local layoutTable = Styler:TwoColumnTable(parent, "layout")
+	layoutTable.Resizable = false
+	local layoutRow = layoutTable:AddRow()
 
-	local entitySidebar = layoutTable:AddCell()
-	local designerSection = layoutTable:AddCell()
+	local entitySidebar = layoutRow:AddCell()
+	local designerSection = layoutRow:AddCell()
 
 	local entityTable = entitySidebar:AddTable("entities", 2)
 	entityTable:AddColumn("", "WidthFixed")
@@ -201,10 +236,17 @@ function MonsterLab:buildEncounterView(parent, encounter)
 		local nameGroup = entityCell:AddGroup("entity")
 		nameGroup.SameLine = true
 
-		local name = Styler:HyperlinkText(nameGroup, entity.displayName, function(parent)
+		---@type ExtuiTextLink
+		local name = Styler:Color(nameGroup:AddTextLink(entity.displayName), "PlainLink")
+		local openPopupFunc = Styler:HyperlinkRenderable(name, entity.template, "Shift", false, nil, function(parent)
 			CharacterWindow:BuildWindow(parent, entity.template)
 		end)
-		Styler:Color(name, "PlainLink")
+
+		name.OnClick = function()
+			if not openPopupFunc() then
+				EncounterDesigner:buildDesigner(designerSection, entity)
+			end
+		end
 
 		if entity.title and entity.title ~= "" then
 			nameGroup:AddText(entity.title)

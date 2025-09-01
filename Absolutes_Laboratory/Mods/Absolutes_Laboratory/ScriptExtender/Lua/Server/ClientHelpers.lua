@@ -3,8 +3,19 @@ Channels.GetEntityIcon:SetRequestHandler(function(data, user)
 	return { Result = entity.Icon and entity.Icon.Icon }
 end)
 
+Channels.GetCurrentHostLevel:SetRequestHandler(function (data, user)
+	---@type EntityHandle
+	local entity = Ext.Entity.Get(Osi.GetHostCharacter())
+
+	return entity.Level.LevelName
+end)
+
 Channels.TeleportToLevel:SetHandler(function(data, user)
 	Osi.TeleportPartiesToLevelWithMovie(data.LevelName, "", "")
+end)
+
+Channels.TeleportToCoords:SetHandler(function (data, user)
+	Osi.TeleportToPosition(Osi.GetHostCharacter(), data.x, data.y, data.z)
 end)
 
 Channels.TeleportToEntity:SetHandler(function(data, user)
