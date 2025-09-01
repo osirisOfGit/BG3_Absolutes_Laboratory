@@ -180,29 +180,14 @@ end
 ---@param text string
 ---@param tooltipCallback fun(parent: ExtuiTreeParent)
 ---@param freeSize boolean?
----@return ExtuiSelectable|ExtuiTextLink
+---@return ExtuiTextLink
 function Styler:HyperlinkText(parent, text, tooltipCallback, freeSize)
-	local fakeTextSelectable
-	if Ext.Utils.Version() >= 25 then
-		---@type ExtuiTextLink
-		fakeTextSelectable = parent:AddTextLink(text)
-	else
-		---@type ExtuiSelectable
-		fakeTextSelectable = parent:AddSelectable(text)
-		if not freeSize then
-			fakeTextSelectable.Size = { (#text * 10) * Styler:ScaleFactor(), 0 }
-		end
+	---@type ExtuiTextLink
+	local link = parent:AddTextLink(text)
 
-		fakeTextSelectable:SetColor("ButtonActive", { 1, 1, 1, 0 })
-		fakeTextSelectable:SetColor("ButtonHovered", { 1, 1, 1, 0 })
-		fakeTextSelectable:SetColor("FrameBgHovered", { 1, 1, 1, 0 })
-		fakeTextSelectable:SetColor("FrameBgActive", { 1, 1, 1, 0 })
-		fakeTextSelectable:SetColor("Text", { 173 / 255, 216 / 255, 230 / 255, 1 })
-	end
+	link.OnClick = self:HyperlinkRenderable(link, text, nil, nil, nil, tooltipCallback)
 
-	fakeTextSelectable.OnClick = self:HyperlinkRenderable(fakeTextSelectable, text, nil, nil, nil, tooltipCallback)
-
-	return fakeTextSelectable
+	return link
 end
 
 ---@param renderable ExtuiStyledRenderable
@@ -346,4 +331,24 @@ function Styler:ConvertRGBAToIMGUI(colour)
 		end
 	end
 	return colour
+end
+
+---@class StylerColors
+Styler.Colours = {
+	PlainLink = function(link)
+		link:SetColor("TextLink", { 0.86, 0.79, 0.68, 0.78 })
+	end
+}
+
+---@param element ExtuiStyledRenderable
+---@param property string|"PlainLink"
+---@param color number[]?
+---@return ExtuiStyledRenderable
+function Styler:Color(element, property, color)
+	if not color then
+		Styler.Colours[property](element)
+	else
+		element:SetColor(property, self:ConvertRGBAToIMGUI(color))
+	end
+	return element
 end

@@ -38,13 +38,14 @@ ConfigurationStructure.DynamicClassDefinitions.monsterLab.encounter = {
 	description = nil,
 	---@type Guid?
 	existingCombatGroupId = nil,
+	---@type {[Guid]: MonsterLabEntity}
 	entities = {},
 	---@type Guid?
 	modId = nil
 }
 
 ---@class MonsterLabEntity
-ConfigurationStructure.DynamicClassDefinitions.monsterLab.entities = {
+ConfigurationStructure.DynamicClassDefinitions.monsterLab.entity = {
 	displayName = "",
 	title = "",
 	---@type Guid

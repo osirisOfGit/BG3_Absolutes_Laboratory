@@ -1,3 +1,4 @@
+---@class TemplateSelectorClass : SelectorInterface
 TemplateSelector = SelectorInterface:new("Templates")
 
 ---@class TemplateCriteria
@@ -7,53 +8,56 @@ TemplateSelector = SelectorInterface:new("Templates")
 ---@class TemplateSelector : Selector
 ---@field criteriaValue TemplateCriteria[]
 
-local templates = {}
-local translationMap = {}
-local childRelationships = {}
+---@type Guid[]
+TemplateSelector.templates = {}
+---@type {[string] : string} template.Id : name and name : template.Id
+TemplateSelector.translationMap = {}
+---@type {[Guid]: Guid[]} parent : children
+TemplateSelector.childRelationships = {}
 
-local function init()
-	if not next(templates) then
+function TemplateSelector:init()
+	if not next(self.templates) then
 		for _, template in pairs(Ext.ClientTemplate.GetAllRootTemplates()) do
-			if template.TemplateType == "character" and not string.find(template.Name, "Timeline") then
+			if template.TemplateType == "character" and not string.find(template.Name, "Timeline") and not string.find(template.Name, "CINE") then
 				---@cast template CharacterTemplate
 
-				table.insert(templates, template.Id)
+				table.insert(self.templates, template.Id)
 				local name = template.Name
-				if translationMap[name] then
+				if self.translationMap[name] then
 					name = string.format("%s (%s)", name, template.Id:sub(-5))
 				end
 
 				if template.ParentTemplateId ~= "00000000-0000-0000-0000-000000000000" then
-					if not childRelationships[template.ParentTemplateId] then
-						childRelationships[template.ParentTemplateId] = {}
+					if not self.childRelationships[template.ParentTemplateId] then
+						self.childRelationships[template.ParentTemplateId] = {}
 					end
-					table.insert(childRelationships[template.ParentTemplateId], template.Id)
+					table.insert(self.childRelationships[template.ParentTemplateId], template.Id)
 				end
 
-				translationMap[template.Id] = name
-				translationMap[name] = template.Id
+				self.translationMap[template.Id] = name
+				self.translationMap[name] = template.Id
 			end
 		end
-		table.sort(templates, function(a, b)
-			return translationMap[a] < translationMap[b]
+		table.sort(self.templates, function(a, b)
+			return self.translationMap[a] < self.translationMap[b]
 		end)
 	end
 end
 
 ---@param parent ExtuiWindow|ExtuiTableCell
 ---@param templateId GUIDSTRING
-local function displayChildTemplates(parent, templateId)
-	if childRelationships[templateId] then
+function TemplateSelector:displayChildTemplates(parent, templateId)
+	if self.childRelationships[templateId] then
 		local displayTable = Styler:TwoColumnTable(parent, "children" .. templateId)
 
-		for _, childId in TableUtils:OrderedPairs(childRelationships[templateId], function(key)
-			return translationMap[childRelationships[templateId][key]]
+		for _, childId in TableUtils:OrderedPairs(self.childRelationships[templateId], function(key)
+			return self.translationMap[self.childRelationships[templateId][key]]
 		end) do
 			local row = displayTable:AddRow()
-			Styler:HyperlinkText(row:AddCell(), translationMap[childId], function(parent)
+			Styler:HyperlinkText(row:AddCell(), self.translationMap[childId], function(parent)
 				ResourceManager:RenderDisplayWindow(Ext.Template.GetTemplate(childId), parent)
 			end, true)
-			displayChildTemplates(row:AddCell(), childId)
+			self:displayChildTemplates(row:AddCell(), childId)
 		end
 	end
 end
@@ -61,14 +65,14 @@ end
 ---@param templateId GUIDSTRING
 ---@param indent string?
 ---@return string
-local function buildChildTemplatesString(templateId, indent)
+function TemplateSelector:buildChildTemplatesString(templateId, indent)
 	indent = indent or ""
-	local result = indent .. (indent ~= "" and "-- " or "") .. translationMap[templateId] .. "\n"
-	if childRelationships[templateId] then
-		for _, childId in TableUtils:OrderedPairs(childRelationships[templateId], function(key)
-			return translationMap[childRelationships[templateId][key]]
+	local result = indent .. (indent ~= "" and "-- " or "") .. self.translationMap[templateId] .. "\n"
+	if self.childRelationships[templateId] then
+		for _, childId in TableUtils:OrderedPairs(self.childRelationships[templateId], function(key)
+			return self.translationMap[self.childRelationships[templateId][key]]
 		end) do
-			result = result .. buildChildTemplatesString(childId, indent .. string.rep(" ", 3) .. "|")
+			result = result .. self:buildChildTemplatesString(childId, indent .. string.rep(" ", 3) .. "|")
 		end
 	end
 	return result
@@ -76,7 +80,7 @@ end
 
 ---@param existingSelector TemplateSelector
 function TemplateSelector:renderSelector(parent, existingSelector)
-	init()
+	self:init()
 
 	existingSelector.criteriaValue = existingSelector.criteriaValue or {}
 
@@ -110,7 +114,7 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 		Helpers:KillChildren(templateDisplay)
 
 		for i, templateCriteria in TableUtils:OrderedPairs(existingSelector.criteriaValue, function(key)
-			return translationMap[existingSelector.criteriaValue[key].id]
+			return self.translationMap[existingSelector.criteriaValue[key].id]
 		end) do
 			local delete = Styler:ImageButton(templateDisplay:AddImageButton("delete" .. templateCriteria.id, "ico_red_x", { 16, 16 }))
 			delete.OnClick = function()
@@ -125,7 +129,7 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 				displaySelectedTemplates()
 			end
 
-			if childRelationships[templateCriteria.id] then
+			if self.childRelationships[templateCriteria.id] then
 				local includeChildrenCheckbox = templateDisplay:AddCheckbox("##" .. templateCriteria.id, templateCriteria.includeChildren)
 				includeChildrenCheckbox.SameLine = true
 
@@ -134,14 +138,14 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 
 				includeChildrenCheckbox.OnChange = function()
 					if Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
-						local window = Ext.IMGUI.NewWindow("Child Templates for " .. translationMap[templateCriteria.id])
+						local window = Ext.IMGUI.NewWindow("Child Templates for " .. self.translationMap[templateCriteria.id])
 						window.Closeable = true
 						window.AlwaysAutoResize = true
 						window:AddButton("Export tree to file").OnClick = function()
-							FileUtils:SaveStringContentToFile(translationMap[templateCriteria.id] .. ".txt", buildChildTemplatesString(templateCriteria.id))
+							FileUtils:SaveStringContentToFile(self.translationMap[templateCriteria.id] .. ".txt", self:buildChildTemplatesString(templateCriteria.id))
 						end
 
-						displayChildTemplates(window, templateCriteria.id)
+						self:displayChildTemplates(window, templateCriteria.id)
 						includeChildrenCheckbox.Checked = templateCriteria.includeChildren
 					else
 						templateCriteria.includeChildren = includeChildrenCheckbox.Checked
@@ -151,7 +155,7 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 				templateDisplay:AddDummy(38, 32).SameLine = true
 			end
 
-			Styler:HyperlinkText(templateDisplay, translationMap[templateCriteria.id], function(parent)
+			Styler:HyperlinkText(templateDisplay, self.translationMap[templateCriteria.id], function(parent)
 				ResourceManager:RenderDisplayWindow(Ext.Template.GetTemplate(templateCriteria.id), parent)
 			end, true).SameLine = true
 		end
@@ -165,13 +169,13 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 	---@param filter string?
 	local function buildSelects(filter)
 		Helpers:KillChildren(templateGroup)
-		for _, template in ipairs(templates) do
+		for _, template in ipairs(self.templates) do
 			if not (filter and #filter > 0)
-				or string.upper(translationMap[template]):find(filter)
+				or string.upper(self.translationMap[template]):find(filter)
 				or string.upper(template):find(filter)
 			then
 				---@type ExtuiSelectable
-				local select = templateGroup:AddSelectable(translationMap[template] .. "##select")
+				local select = templateGroup:AddSelectable(self.translationMap[template] .. "##select")
 				select.UserData = template
 				select.Selected = TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
 					return value.id == template
