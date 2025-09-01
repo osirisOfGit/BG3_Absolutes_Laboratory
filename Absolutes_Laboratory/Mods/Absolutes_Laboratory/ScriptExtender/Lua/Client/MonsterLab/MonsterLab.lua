@@ -1,3 +1,4 @@
+Ext.Require("Client/MonsterLab/EncounterDesigner.lua")
 Ext.Require("Client/MonsterLab/ExistingEncounters.lua")
 
 MonsterLab = {
@@ -70,7 +71,9 @@ function MonsterLab:buildFolderView(parent, designerSection)
 					folder.encounters[FormBuilder:generateGUID()] = {
 						name = formResults.Name,
 						description = formResults.Description,
-						entities = {}
+						entities = {},
+						gameLevel = EntityRecorder.Levels[1],
+						baseCoords = { 0, 0, 0 }
 					}
 
 					self:buildFolderView(parent, designerSection)
@@ -128,38 +131,83 @@ end
 function MonsterLab:buildEncounterView(parent, encounter)
 	Helpers:KillChildren(parent)
 
-	Styler:CheapTextAlign(encounter.name, parent)
+	Styler:CheapTextAlign(encounter.name, parent, "Big")
 	if encounter.description then
 		Styler:CheapTextAlign(encounter.description, parent)
 	end
 
+	Styler:MiddleAlignedColumnLayout(parent, function(ele)
+		ele:AddText("Location:")
+		local levels = {}
+		for _, level in ipairs(EntityRecorder.Levels) do
+			table.insert(levels, level)
+		end
+		local levelCombo = ele:AddCombo("")
+		levelCombo.WidthFitPreview = true
+		levelCombo.SameLine = true
+		levelCombo.Options = levels
+		levelCombo.SelectedIndex = TableUtils:IndexOf(levels, encounter.gameLevel) - 1
+
+		local coordsTable = ele:AddTable("coords", 3)
+
+		local inputRow = coordsTable:AddRow()
+
+		for i, coord in ipairs({ "X", "Y", "Z" }) do
+			local cell = inputRow:AddCell()
+			cell:AddText(coord .. ": ")
+			local input = cell:AddInputScalar("", encounter.baseCoords[i])
+			input.SameLine = true
+			input.OnChange = function ()
+				encounter.baseCoords[i] = input.Value[1]
+			end
+		end
+	end)
+
 	local layoutTable = Styler:TwoColumnTable(parent, "layout"):AddRow()
 
 	local entitySidebar = layoutTable:AddCell()
-	local entityTable = entitySidebar:AddTable("entities", 1)
+	local designerSection = layoutTable:AddCell()
+
+	local entityTable = entitySidebar:AddTable("entities", 2)
+	entityTable:AddColumn("", "WidthFixed")
 	entityTable.BordersInnerH = true
 
 	for id, entity in TableUtils:OrderedPairs(encounter.entities, function(key, value)
 		return value.displayName
 	end) do
-		local cell = entityTable:AddRow():AddCell()
-		---@type CharacterTemplate
-		local characterTemplate = Ext.ClientTemplate.GetTemplate(entity.template)
-		local icon = cell:AddImage(characterTemplate.Icon, Styler:ScaleFactor({ 32, 32 }))
-		if icon.ImageData.Icon == "" then
-			icon:Destroy()
-			icon = cell:AddImage("Item_Unknown", Styler:ScaleFactor({ 32, 32 }))
+		local row = entityTable:AddRow()
+		local managementCell = row:AddCell()
+		local deleteButton = Styler:ImageButton(managementCell:AddImageButton("delete", "ico_red_x", Styler:ScaleFactor({ 16, 16 })))
+		deleteButton.OnClick = function()
+			encounter.entities[id].delete = true
+			self:buildEncounterView(parent, encounter)
 		end
 
-		local name = Styler:HyperlinkText(cell, entity.displayName, function(parent)
+		local settingsButton = Styler:ImageButton(managementCell:AddImageButton("settings", "ico_edit_d", Styler:ScaleFactor({ 16, 16 })))
+		settingsButton.SameLine = true
+		settingsButton.OnClick = function()
+			EncounterDesigner:buildDesigner(designerSection, entity)
+		end
+
+		local entityCell = row:AddCell()
+		---@type CharacterTemplate
+		local characterTemplate = Ext.ClientTemplate.GetTemplate(entity.template)
+		local icon = entityCell:AddImage(characterTemplate.Icon, Styler:ScaleFactor({ 48, 48 }))
+		if icon.ImageData.Icon == "" then
+			icon:Destroy()
+			icon = entityCell:AddImage("Item_Unknown", Styler:ScaleFactor({ 48, 48 }))
+		end
+
+		local nameGroup = entityCell:AddGroup("entity")
+		nameGroup.SameLine = true
+
+		local name = Styler:HyperlinkText(nameGroup, entity.displayName, function(parent)
 			CharacterWindow:BuildWindow(parent, entity.template)
 		end)
 		Styler:Color(name, "PlainLink")
-		name.SameLine = true
 
 		if entity.title and entity.title ~= "" then
-			local title = cell:AddText(("- (%s)"):format(entity.title))
-			title.SameLine = true
+			nameGroup:AddText(entity.title)
 		end
 	end
 
