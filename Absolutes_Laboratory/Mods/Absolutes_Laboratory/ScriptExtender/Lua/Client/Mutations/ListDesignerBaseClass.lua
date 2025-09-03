@@ -497,6 +497,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 
 	local useIcons = ConfigurationStructure.config.mutations.settings.customLists.iconOrText == "Icon"
 	local displayTable = parentGroup:AddTable("display", useIcons and 1 or 3)
+
 	local row = displayTable:AddRow()
 	row:AddCell()
 	if not useIcons then
@@ -742,6 +743,12 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 				end
 			end
 		end
+	end
+
+	if #row.Children[2].Children == 0 then
+		displayTable.Columns = 1
+	elseif #row.Children[3].Children == 0 then
+		displayTable.Columns = 2
 	end
 end
 

@@ -10,7 +10,10 @@ StatBrowser = {}
 function StatBrowser:Render(statType, parent, supplementaryResultProcessor, wrapFunc, shouldTint, customizer, onClickCallback)
 	local settings = ConfigurationStructure.config.mutations.settings.statBrowser
 
+	local settingsButton = Styler:ImageButton(parent:AddImageButton("settings", "ico_edit_d", { 32, 32 }))
+
 	local input = parent:AddInputText("")
+	input.SameLine = true
 	input.ItemWidth = (53 * Styler:ScaleFactor()) * 7
 	input.Hint = "Min 3 Characters"
 
@@ -22,8 +25,6 @@ click outside of the text input first, as the modifier won't be registered while
 You can shift-click on images to pop out their tooltip into a new window, but that will close the search popup]])
 
 	local settingsPopup = parent:AddPopup("settings")
-	local settingsButton = Styler:ImageButton(parent:AddImageButton("settings", "ico_edit_d", { 32, 32 }))
-	settingsButton.SameLine = true
 
 	local resultsGroup = parent:AddChildWindow("results")
 
@@ -105,8 +106,8 @@ You can shift-click on images to pop out their tooltip into a new window, but th
 						local headers = resultsParent:AddRow()
 						headers.Headers = true
 						headers:AddCell()
-						headers:AddCell():AddText("Name")
 						headers:AddCell():AddText("Display Name")
+						headers:AddCell():AddText("Name")
 					end
 
 					table.sort(results, function(a, b)
@@ -162,8 +163,8 @@ You can shift-click on images to pop out their tooltip into a new window, but th
 
 						if not settings.onlyIcons then
 							---@cast imageParent ExtuiTableRow
-							imageParent:AddCell():AddText(statName)
 							imageParent:AddCell():AddText(Ext.Loca.GetTranslatedString(spell.DisplayName, statName))
+							imageParent:AddCell():AddText(statName)
 						end
 					end
 
