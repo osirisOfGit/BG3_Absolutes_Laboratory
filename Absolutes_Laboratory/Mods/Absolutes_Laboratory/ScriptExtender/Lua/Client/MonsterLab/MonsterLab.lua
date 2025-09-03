@@ -136,63 +136,9 @@ function MonsterLab:buildEncounterView(parent, encounter)
 		Styler:CheapTextAlign(encounter.description, parent)
 	end
 
-	Styler:MiddleAlignedColumnLayout(parent, function(ele)
-		ele:AddText("Location:")
-		local levels = {}
-		for _, level in ipairs(EntityRecorder.Levels) do
-			table.insert(levels, level)
-		end
-		local levelCombo = ele:AddCombo("")
-		levelCombo.WidthFitPreview = true
-		levelCombo.SameLine = true
-		levelCombo.Options = levels
-		levelCombo.SelectedIndex = TableUtils:IndexOf(levels, encounter.gameLevel) - 1
-
-		local teleportToLevelButton = ele:AddButton("Teleport To Level")
-		teleportToLevelButton.Visible = false
-		teleportToLevelButton.SameLine = true
-
-		local coordsTable = ele:AddTable("coords", 3)
-
-		local inputRow = coordsTable:AddRow()
-
-		for i, coord in ipairs({ "X", "Y", "Z" }) do
-			local cell = inputRow:AddCell()
-			cell:AddText(coord .. ": ")
-			local input = cell:AddInputScalar("", encounter.baseCoords[i])
-			input.SameLine = true
-			input.OnChange = function()
-				encounter.baseCoords[i] = input.Value[1]
-			end
-		end
-
-		local teleportToCoordsButton = Styler:MiddleAlignedColumnLayout(ele, function(ele)
-			ele:AddButton("Teleport To Coords").OnClick = function()
-				Channels.TeleportToCoords:SendToServer({
-					x = encounter.baseCoords[1],
-					y = encounter.baseCoords[2],
-					z = encounter.baseCoords[3],
-				})
-			end
-		end)
-		teleportToCoordsButton.Visible = false
-		teleportToLevelButton.OnClick = function()
-			Channels.TeleportToLevel:SendToServer(encounter.gameLevel)
-			teleportToCoordsButton.Visible = true
-			teleportToLevelButton.Visible = false
-		end
-
-		local function checkCurrentLevel()
-			Channels.GetCurrentHostLevel:RequestToServer(nil, function(levelName)
-				teleportToLevelButton.Visible = levelName ~= encounter.gameLevel
-				teleportToCoordsButton.Visible = not teleportToLevelButton.Visible
-			end)
-		end
-		checkCurrentLevel()
-
-		levelCombo.OnChange = function()
-			encounter.gameLevel = levelCombo.Options[levelCombo.SelectedIndex + 1]
-			checkCurrentLevel()
+	Styler:MiddleAlignedColumnLayout(parent, function (ele)
+		ele:AddButton("Launch Encounter Designer").OnClick = function ()
+			EncounterDesigner:buildDesigner(encounter)
 		end
 	end)
 
