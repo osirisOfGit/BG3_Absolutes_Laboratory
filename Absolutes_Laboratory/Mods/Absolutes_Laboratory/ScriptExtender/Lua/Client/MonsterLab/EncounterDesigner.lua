@@ -6,11 +6,28 @@ EncounterDesigner = {
 ---@param encounter MonsterLabEncounter
 function EncounterDesigner:buildDesigner(encounter)
 	if not self.window then
-		self.window = Ext.IMGUI.NewWindow(encounter.name .. "###encounterDesigner")
+		self.window = Ext.IMGUI.NewWindow(encounter.name)
 		self.window.Closeable = true
 	else
+		self.window.Label = encounter.name
 		self.window.Open = true
 		self.window:SetFocus()
+		Helpers:KillChildren(self.window)
+	end
+
+	if not TableUtils:TablesAreEqual(encounter.baseCoords, {0, 0, 0}) then
+		Channels.OrbAtPosition:SendToServer({
+			context = "BaseCoords",
+			coords = encounter.baseCoords._real,
+			moonbeam = 5
+		}--[[@as OrbRequest]])
+
+		self.window.OnClose = function ()
+			Channels.OrbAtPosition:SendToServer({
+			context = "BaseCoords",
+			cleanup = true
+		}--[[@as OrbRequest]])
+		end
 	end
 
 	Styler:MiddleAlignedColumnLayout(self.window, function(ele)
@@ -33,14 +50,10 @@ function EncounterDesigner:buildDesigner(encounter)
 			teleportToLevelButton.SameLine = true
 		end)
 
-		local coordsTable = ele:AddTable("coords", 3)
-
-		local inputRow = coordsTable:AddRow()
-
+		local coordsGroup = ele:AddGroup("coords")
 		for i, coord in ipairs({ "X", "Y", "Z" }) do
-			local cell = inputRow:AddCell()
-			cell:AddText(coord .. ": ")
-			local input = cell:AddInputScalar("", encounter.baseCoords[i])
+			coordsGroup:AddText(coord .. ": ").SameLine = i > 1
+			local input = coordsGroup:AddInputScalar("", encounter.baseCoords[i])
 			input.SameLine = true
 			input.ItemWidth = 100
 			input.OnChange = function()
@@ -59,8 +72,12 @@ function EncounterDesigner:buildDesigner(encounter)
 				local tickSub = Ext.Events.Tick:Subscribe(function(e)
 					local coords = Ext.ClientUI.GetPickingHelper(1).Inner.Position
 					for i = 1, 3 do
-						inputRow.Children[i].Children[2].Value = { coords[i], coords[i], coords[i], coords[i] }
+						coordsGroup.Children[i * 2].Value = { coords[i], coords[i], coords[i], coords[i] }
 					end
+					Channels.OrbAtPosition:SendToServer({
+						context = "BaseCoords",
+						coords = coords
+					} --[[@as OrbRequest]])
 				end)
 
 				local mouseSub
@@ -72,7 +89,7 @@ function EncounterDesigner:buildDesigner(encounter)
 							Ext.Events.MouseButtonInput:Unsubscribe(mouseSub)
 							Ext.UI.GetCursorControl().CurrentOverlay = "None"
 							for i = 1, 3 do
-								inputRow.Children[i].Children[2]:OnChange()
+								coordsGroup.Children[i * 2]:OnChange()
 							end
 						end
 					end)

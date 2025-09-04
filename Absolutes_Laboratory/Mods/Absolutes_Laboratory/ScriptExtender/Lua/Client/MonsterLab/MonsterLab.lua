@@ -1,5 +1,5 @@
 Ext.Require("Client/MonsterLab/EncounterDesigner.lua")
-Ext.Require("Client/MonsterLab/ExistingEncounters.lua")
+-- Ext.Require("Client/MonsterLab/ExistingEncounters.lua")
 
 MonsterLab = {
 	config = ConfigurationStructure.config.monsterLab
@@ -167,7 +167,6 @@ function MonsterLab:buildEncounterView(parent, encounter)
 		local settingsButton = Styler:ImageButton(managementCell:AddImageButton("settings", "ico_edit_d", Styler:ScaleFactor({ 16, 16 })))
 		settingsButton.SameLine = true
 		settingsButton.OnClick = function()
-			EncounterDesigner:buildDesigner(designerSection, entity)
 		end
 
 		local entityCell = row:AddCell()
