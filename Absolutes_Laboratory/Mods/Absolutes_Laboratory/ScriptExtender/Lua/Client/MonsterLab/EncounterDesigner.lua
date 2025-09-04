@@ -65,35 +65,8 @@ function EncounterDesigner:buildDesigner(encounter)
 		local teleportToCoordsButton
 
 		Styler:MiddleAlignedColumnLayout(ele, function(ele)
-			pickCoordsButton = Styler:ImageButton(ele:AddImageButton("PickCoords", "Spell_Divination_TrueStrike", Styler:ScaleFactor({ 48, 48 })))
+			pickCoordsButton = self:CoordinatePicker(ele, coordsGroup, "BaseCoords")
 			pickCoordsButton.Visible = false
-			pickCoordsButton.OnClick = function()
-				Ext.UI.GetCursorControl().CurrentOverlay = "Wand"
-				local tickSub = Ext.Events.Tick:Subscribe(function(e)
-					local coords = Ext.ClientUI.GetPickingHelper(1).Inner.Position
-					for i = 1, 3 do
-						coordsGroup.Children[i * 2].Value = { coords[i], coords[i], coords[i], coords[i] }
-					end
-					Channels.OrbAtPosition:SendToServer({
-						context = "BaseCoords",
-						coords = coords
-					} --[[@as OrbRequest]])
-				end)
-
-				local mouseSub
-				mouseSub = Ext.Events.MouseButtonInput:Subscribe(
-				---@param e EclLuaMouseButtonEvent
-					function(e)
-						if e.Pressed and e.Button == 3 then
-							Ext.Events.Tick:Unsubscribe(tickSub)
-							Ext.Events.MouseButtonInput:Unsubscribe(mouseSub)
-							Ext.UI.GetCursorControl().CurrentOverlay = "None"
-							for i = 1, 3 do
-								coordsGroup.Children[i * 2]:OnChange()
-							end
-						end
-					end)
-			end
 
 			teleportToCoordsButton = Styler:ImageButton(ele:AddImageButton("Teleport_Coords", "Spell_Conjuration_DimensionDoor", Styler:ScaleFactor({ 48, 48 })))
 			teleportToCoordsButton.OnClick = function()
@@ -133,7 +106,7 @@ function EncounterDesigner:buildDesigner(encounter)
 end
 
 ---@param parent ExtuiTreeParent
----@param entities MonsterLabEntity[]
+---@param entities {[Guid]: MonsterLabEntity}
 function EncounterDesigner:RenderCardForEntities(parent, entities)
 	Helpers:KillChildren(parent)
 
@@ -176,7 +149,7 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 
 		local counter = 0
 
-		for _, mlEntity in TableUtils:OrderedPairs(entities, function(key, value)
+		for mlEntityId, mlEntity in TableUtils:OrderedPairs(entities, function(key, value)
 			return value.displayName
 		end) do
 			counter = counter + 1
@@ -184,34 +157,92 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 			---@type CharacterTemplate
 			local template = Ext.ClientTemplate.GetTemplate(mlEntity.template)
 
-			---@type ExtuiChildWindow
-			local card = row.Children[(counter % maxRowSize) > 0 and (counter % maxRowSize) or maxRowSize]:AddChildWindow(mlEntity.template .. mlEntity.displayName)
-			card.Size = Styler:ScaleFactor({ 300, (TableUtils:CountElements(entities) + 1.5) * 40 })
+			local card = row.Children[(counter % maxRowSize) > 0 and (counter % maxRowSize) or maxRowSize]:AddGroup(mlEntityId)
 
 			local groupTable = card:AddTable("chlidTable", 1)
 			groupTable.Borders = true
 			groupTable:SetColor("TableBorderStrong", Styler:ConvertRGBAToIMGUI(cardColours[(counter % (#cardColours - (maxRowSize % 2 == 0 and 1 or 0))) + 1]))
 
-			local headerCell = groupTable:AddRow():AddCell()
-			Styler:MiddleAlignedColumnLayout(headerCell, function(ele)
-				local setCoordsButton = Styler:ImageButton(ele:AddImageButton("PickCoords", "Spell_Divination_TrueStrike", Styler:ScaleFactor({ 36, 36 })))
-			end)
 			local entityRow = groupTable:AddRow():AddCell()
 
-			local image = entityRow:AddImage(template.Icon, Styler:ScaleFactor({ 32, 32 }))
-			if image.ImageData.Icon == "" then
-				image:Destroy()
-				entityRow:AddImage("Item_Unknown", Styler:ScaleFactor({ 32, 32 }))
-			end
+			Styler:MiddleAlignedColumnLayout(entityRow, function(ele)
+				Styler:MiddleAlignedColumnLayout(ele, function(ele)
+					local image = ele:AddImage(template.Icon, Styler:ScaleFactor({ 48, 48 }))
+					if image.ImageData.Icon == "" then
+						image:Destroy()
+						ele:AddImage("Item_Unknown", Styler:ScaleFactor({ 48, 48 }))
+					end
+				end)
 
-			local link = Styler:HyperlinkText(entityRow, mlEntity.template, function(parent)
-				ResourceManager:RenderDisplayWindow(template, parent)
+				local link = Styler:HyperlinkText(ele, mlEntity.displayName, function(parent)
+					ResourceManager:RenderDisplayWindow(template, parent)
+				end)
+				link:SetColor("TextLink", { 0.86, 0.79, 0.68, 0.78 })
 			end)
 
-			link:SetColor("TextLink", { 0.86, 0.79, 0.68, 0.78 })
-			link.SameLine = true
+
+			local pickerPlaceholder = entityRow:AddGroup("pickerButton")
+
+			local coordsGroup = entityRow:AddGroup("coords")
+			coordsGroup.SameLine = true
+
+			local coordPickerButton = self:CoordinatePicker(pickerPlaceholder, coordsGroup, mlEntityId .. "Coords")
+			coordPickerButton.Image.Size = Styler:ScaleFactor({ 26, 26 })
+
+
+			for i, coord in ipairs({ "X", "Y", "Z" }) do
+				coordsGroup:AddText(coord .. ": ").SameLine = i > 1
+				local input = coordsGroup:AddInputScalar("", mlEntity.coordinates[i])
+				input.SameLine = true
+				input.ItemWidth = Styler:ScaleFactor() * 65
+				input.OnChange = function()
+					mlEntity.coordinates[i] = input.Value[1]
+				end
+			end
 		end
 	end
 
 	renderGroupCards()
+end
+
+---@param parent ExtuiTreeParent
+---@param coordsGroup ExtuiTreeParent
+---@param contextName string
+---@param visOptions OrbRequest?
+---@return ExtuiImageButton
+function EncounterDesigner:CoordinatePicker(parent, coordsGroup, contextName, visOptions)
+	local orbRequest = visOptions and TableUtils:DeeplyCopyTable(visOptions) or {}
+	orbRequest.context = contextName
+
+	local pickCoordsButton = Styler:ImageButton(parent:AddImageButton("PickCoords", "Spell_Divination_TrueStrike", Styler:ScaleFactor({ 48, 48 })))
+	pickCoordsButton.UserData = false
+	pickCoordsButton.OnClick = function()
+		if not pickCoordsButton.UserData then
+			pickCoordsButton.UserData = true
+			local tickSub = Ext.Events.Tick:Subscribe(function(e)
+				local coords = Ext.ClientUI.GetPickingHelper(1).Inner.Position
+				for i = 1, 3 do
+					coordsGroup.Children[i * 2].Value = { coords[i], coords[i], coords[i], coords[i] }
+				end
+
+				orbRequest.coords = coords
+				Channels.OrbAtPosition:SendToServer(orbRequest)
+			end)
+
+			local mouseSub
+			mouseSub = Ext.Events.MouseButtonInput:Subscribe(
+			---@param e EclLuaMouseButtonEvent
+				function(e)
+					if e.Pressed and e.Button == 3 then
+						Ext.Events.Tick:Unsubscribe(tickSub)
+						Ext.Events.MouseButtonInput:Unsubscribe(mouseSub)
+						for i = 1, 3 do
+							coordsGroup.Children[i * 2]:OnChange()
+						end
+						pickCoordsButton.UserData = false
+					end
+				end)
+		end
+	end
+	return pickCoordsButton
 end
