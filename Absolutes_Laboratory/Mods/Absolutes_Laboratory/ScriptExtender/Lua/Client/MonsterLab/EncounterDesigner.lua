@@ -15,18 +15,18 @@ function EncounterDesigner:buildDesigner(encounter)
 		Helpers:KillChildren(self.window)
 	end
 
-	if not TableUtils:TablesAreEqual(encounter.baseCoords, {0, 0, 0}) then
+	if not TableUtils:TablesAreEqual(encounter.baseCoords, { 0, 0, 0 }) then
 		Channels.OrbAtPosition:SendToServer({
 			context = "BaseCoords",
 			coords = encounter.baseCoords._real,
 			moonbeam = 5
-		}--[[@as OrbRequest]])
+		} --[[@as OrbRequest]])
 
-		self.window.OnClose = function ()
+		self.window.OnClose = function()
 			Channels.OrbAtPosition:SendToServer({
-			context = "BaseCoords",
-			cleanup = true
-		}--[[@as OrbRequest]])
+				context = "BaseCoords",
+				cleanup = true
+			} --[[@as OrbRequest]])
 		end
 	end
 
@@ -128,4 +128,90 @@ function EncounterDesigner:buildDesigner(encounter)
 			checkCurrentLevel()
 		end
 	end)
+
+	self:RenderCardForEntities(self.window:AddGroup("cards"), encounter.entities)
+end
+
+---@param parent ExtuiTreeParent
+---@param entities MonsterLabEntity[]
+function EncounterDesigner:RenderCardForEntities(parent, entities)
+	Helpers:KillChildren(parent)
+
+	-- Only using this to determine the width of the container, as it keeps scaling the vertical dimension infinitely
+	local cardsWindow = parent:AddChildWindow("Combat Group Cards")
+	cardsWindow.AlwaysAutoResize = true
+	cardsWindow.Size = { 0, 1 }
+
+	local cardGroup = parent:AddGroup("cards")
+
+	local cardColours = {
+		{ 255, 0,   0,   0.5 },
+		{ 0,   255, 0,   0.5 },
+		{ 0,   0,   255, 0.5 },
+		{ 255, 0,   255, 0.5 },
+		{ 255, 255, 0,   0.5 },
+		{ 0,   255, 255, 0.5 },
+	}
+
+	local function renderGroupCards()
+		if cardsWindow.LastSize[1] == 0.0 then
+			Ext.Timer.WaitFor(50, function()
+				renderGroupCards()
+			end)
+			return
+		end
+
+		Helpers:KillChildren(cardGroup)
+
+		local maxRowSize = math.floor(cardsWindow.LastSize[1] / (Styler:ScaleFactor() * 300))
+		local entriesPerColumn = math.floor(TableUtils:CountElements(combatGroups) / maxRowSize)
+		entriesPerColumn = entriesPerColumn > 0 and entriesPerColumn or 1
+		local layoutTable = cardGroup:AddTable("cards", maxRowSize)
+
+		local row = layoutTable:AddRow()
+
+		for _ = 1, maxRowSize do
+			row:AddCell()
+		end
+
+		local counter = 0
+
+		for _, mlEntity in TableUtils:OrderedPairs(entities, function(key, value)
+			return value.displayName
+		end) do
+			counter = counter + 1
+
+			---@type CharacterTemplate
+			local template = Ext.ClientTemplate.GetTemplate(mlEntity.template)
+
+			---@type ExtuiChildWindow
+			local card = row.Children[(counter % maxRowSize) > 0 and (counter % maxRowSize) or maxRowSize]:AddChildWindow(mlEntity.template .. mlEntity.displayName)
+			card.Size = Styler:ScaleFactor({ 300, (TableUtils:CountElements(entities) + 1.5) * 40 })
+
+			local groupTable = card:AddTable("chlidTable", 1)
+			groupTable.Borders = true
+			groupTable:SetColor("TableBorderStrong", Styler:ConvertRGBAToIMGUI(cardColours[(counter % (#cardColours - (maxRowSize % 2 == 0 and 1 or 0))) + 1]))
+
+			local headerCell = groupTable:AddRow():AddCell()
+			Styler:MiddleAlignedColumnLayout(headerCell, function(ele)
+				local setCoordsButton = Styler:ImageButton(ele:AddImageButton("PickCoords", "Spell_Divination_TrueStrike", Styler:ScaleFactor({ 36, 36 })))
+			end)
+			local entityRow = groupTable:AddRow():AddCell()
+
+			local image = entityRow:AddImage(template.Icon, Styler:ScaleFactor({ 32, 32 }))
+			if image.ImageData.Icon == "" then
+				image:Destroy()
+				entityRow:AddImage("Item_Unknown", Styler:ScaleFactor({ 32, 32 }))
+			end
+
+			local link = Styler:HyperlinkText(entityRow, mlEntity.template, function(parent)
+				ResourceManager:RenderDisplayWindow(template, parent)
+			end)
+
+			link:SetColor("TextLink", { 0.86, 0.79, 0.68, 0.78 })
+			link.SameLine = true
+		end
+	end
+
+	renderGroupCards()
 end
