@@ -71,7 +71,7 @@ function EncounterDesigner:buildDesigner(encounter)
 	end
 
 	Ext.Timer.WaitFor(50, function()
-		self.designerModeHeader:SetPos({ (Ext.IMGUI.GetViewportSize()[1] / 2) - (self.designerModeHeader.LastSize[1] / 2), 0 }, "Always")
+		self.designerModeHeader:SetPos({0, 0 }, "Always")
 	end)
 
 	Channels.ManageDesignerMode:SendToServer({

@@ -51,6 +51,17 @@ Channels.ManageDesignerMode:SetHandler(
 ---@param request ManageDesignerModeRequest
 	function(request)
 		for _, playerTable in pairs(Osi.DB_Players:Get(nil)) do
+			for _, summmonTable in pairs(Osi.DB_PlayerSummons:Get(playerTable[1])) do
+				Osi.SetCanFight(summmonTable[1], request.playersCanFight and 1 or 0)
+				Osi.SetCanJoinCombat(summmonTable[1], request.playersCanFight and 1 or 0)
+
+				if request.playersCanDialogue then
+					Osi.RemoveBoosts(summmonTable[1], "DialogueBlock();", 0, summmonTable[1], summmonTable[1])
+				else
+					Osi.AddBoosts(summmonTable[1], "DialogueBlock();", summmonTable[1], summmonTable[1])
+				end
+			end
+
 			Osi.SetCanFight(playerTable[1], request.playersCanFight and 1 or 0)
 			Osi.SetCanJoinCombat(playerTable[1], request.playersCanFight and 1 or 0)
 
@@ -179,6 +190,12 @@ Channels.ManageEncounterSpawns:SetHandler(
 							encounterId = request.encounterId,
 							mlEntityId = mlEntityId,
 						} --[[@as MonsterLab_EntityVariable]]
+
+						Osi.SetStoryDisplayName(entity.Uuid.EntityUuid, mlEntity.displayName)
+
+						if mlEntity.title and mlEntity.title ~= "" then
+							Osi.ObjectSetTitle(entity.Uuid.EntityUuid, mlEntity.title)
+						end
 
 						EncounterManager.mazzleMap:Turn_To_Angle(entity.Uuid.EntityUuid, mlEntity.rotation)
 
