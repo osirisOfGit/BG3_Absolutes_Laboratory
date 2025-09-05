@@ -55,9 +55,9 @@ Channels.ManageDesignerMode:SetHandler(
 			Osi.SetCanJoinCombat(playerTable[1], request.playersCanFight and 1 or 0)
 
 			if request.playersCanDialogue then
-				Osi.RemoveBoosts(playerTable[1], "DialogueBlock()", 0, "", "")
+				Osi.RemoveBoosts(playerTable[1], "DialogueBlock();", 0, playerTable[1], playerTable[1])
 			else
-				Osi.AddBoosts(playerTable[1], "DialogueBlock()", "", "")
+				Osi.AddBoosts(playerTable[1], "DialogueBlock();", playerTable[1], playerTable[1])
 			end
 		end
 	end)

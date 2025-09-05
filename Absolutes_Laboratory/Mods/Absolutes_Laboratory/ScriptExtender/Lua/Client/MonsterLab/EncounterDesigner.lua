@@ -75,8 +75,8 @@ function EncounterDesigner:buildDesigner(encounter)
 	end)
 
 	Channels.ManageDesignerMode:SendToServer({
-		playersCanDialogue = true,
-		playersCanFight = true
+		playersCanDialogue = false,
+		playersCanFight = false
 	} --[[@as ManageDesignerModeRequest]])
 
 	Channels.ManageEncounterSpawns:SendToServer({
