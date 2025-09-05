@@ -55,5 +55,7 @@ ConfigurationStructure.DynamicClassDefinitions.monsterLab.entity = {
 	---@type Guid
 	template = nil,
 	---@type number[] x,y,z
-	coordinates = {}
+	coordinates = {},
+	---@type number
+	rotation = 0
 }

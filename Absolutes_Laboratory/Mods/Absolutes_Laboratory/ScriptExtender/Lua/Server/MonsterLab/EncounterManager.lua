@@ -20,6 +20,8 @@ EncounterManager = {
 	mazzleLib = Mods.Mazzle_Lib,
 	---@type Mazzle_Orbs
 	mazzleOrbs = nil,
+	---@type Map
+	mazzleMap = nil,
 	---@type {[Guid]: {[string]: Guid}}
 	encounterVisualizations = {}
 }
@@ -29,7 +31,7 @@ Ext.Events.SessionLoaded:Subscribe(function(e)
 
 	if EncounterManager.mazzleLib then
 		EncounterManager.mazzleOrbs = EncounterManager.mazzleLib.Mazzle_Orbs --[[@as Mazzle_Orbs]]
-
+		EncounterManager.mazzleMap = EncounterManager.mazzleLib.Map
 		-- ---@type MLT_Collection_Metadata
 		-- local collection_parameters = {
 		-- 	allow_clear_removal = false,
@@ -49,7 +51,6 @@ Channels.ManageDesignerMode:SetHandler(
 ---@param request ManageDesignerModeRequest
 	function(request)
 		for _, playerTable in pairs(Osi.DB_Players:Get(nil)) do
-			_D(playerTable[1])
 			Osi.SetCanFight(playerTable[1], request.playersCanFight and 1 or 0)
 			Osi.SetCanJoinCombat(playerTable[1], request.playersCanFight and 1 or 0)
 
@@ -130,7 +131,7 @@ Channels.ManageEncounterSpawns:SetHandler(
 		if not allSpawnedEntities then
 			allSpawnedEntities = Ext.Vars.GetModVariables(ModuleUUID).MonsterLab_SpawnedEntities or {}
 		end
-		
+
 		allSpawnedEntities[request.encounterId] = allSpawnedEntities[request.encounterId] or {}
 
 		local encounterEntities = allSpawnedEntities[request.encounterId]
@@ -149,6 +150,12 @@ Channels.ManageEncounterSpawns:SetHandler(
 					local spawnedEntity = encounterEntities.entities[mlEntityId]
 					if not TableUtils:CompareLists(mlEntity.coordinates, spawnedEntity.coordinates) then
 						Osi.TeleportToPosition(spawnedEntity.realEntityId, mlEntity.coordinates[1], mlEntity.coordinates[2], mlEntity.coordinates[3])
+						spawnedEntity.coordinates = mlEntity.coordinates
+					end
+
+					if mlEntity.rotation ~= spawnedEntity.rotation then
+						EncounterManager.mazzleMap:Turn_To_Angle(spawnedEntity.realEntityId, mlEntity.rotation)
+						spawnedEntity.rotation = mlEntity.rotation
 					end
 				else
 					if encounterEntities.entities[mlEntityId] and encounterEntities.entities[mlEntityId].realEntityId then
@@ -172,6 +179,8 @@ Channels.ManageEncounterSpawns:SetHandler(
 							encounterId = request.encounterId,
 							mlEntityId = mlEntityId,
 						} --[[@as MonsterLab_EntityVariable]]
+
+						EncounterManager.mazzleMap:Turn_To_Angle(entity.Uuid.EntityUuid, mlEntity.rotation)
 
 						Osi.AddPassive(entity.Uuid.EntityUuid, "ABSOLUTES_LAB_MONSTER_LAB_ENTITY_MARKER")
 					end)

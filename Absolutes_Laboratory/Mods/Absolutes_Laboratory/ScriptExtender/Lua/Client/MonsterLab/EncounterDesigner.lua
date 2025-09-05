@@ -70,7 +70,7 @@ function EncounterDesigner:buildDesigner(encounter)
 		Helpers:KillChildren(self.designerWindow)
 	end
 
-	Ext.Timer.WaitFor(50, function ()
+	Ext.Timer.WaitFor(50, function()
 		self.designerModeHeader:SetPos({ (Ext.IMGUI.GetViewportSize()[1] / 2) - (self.designerModeHeader.LastSize[1] / 2), 0 }, "Always")
 	end)
 
@@ -283,6 +283,7 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 			groupTable.Borders = true
 			groupTable:SetColor("TableBorderStrong", Styler:ConvertRGBAToIMGUI(cardColours[(counter % (#cardColours - (maxRowSize % 2 == 0 and 1 or 0))) + 1]))
 
+			---@type ExtuiTableCell
 			local entityRow = groupTable:AddRow():AddCell()
 
 			Styler:MiddleAlignedColumnLayout(entityRow, function(ele)
@@ -320,7 +321,7 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 
 						local entityCopy = TableUtils:DeeplyCopyTable((mlEntity._real or mlEntity))
 						entityCopy.coordinates = coords
-						
+
 						Channels.ManageEncounterSpawns:SendToServer({
 							encounterId = entities._parent_proxy._parent_key,
 							encounter = {
@@ -362,6 +363,33 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 					mlEntity.coordinates[i] = input.Value[1]
 				end
 			end
+
+			--#region Rotation
+			entityRow:AddText("Rotation: ")
+			local rotationGroup = entityRow:AddGroup("Rotatations")
+			rotationGroup.SameLine = true
+
+			local rotateButton = rotationGroup:AddButton("+.25")
+			local rotationValue = rotationGroup:AddInputScalar("", mlEntity.rotation)
+			rotateButton.OnClick = function ()
+				local newVal = rotationValue.Value[1] + .25
+				rotationValue.Value = {newVal, newVal, newVal, newVal}
+				rotationValue:OnChange()
+			end
+			rotationValue.SameLine = true
+			rotationValue.OnChange = function()
+				mlEntity.rotation = rotationValue.Value[1]
+
+				Channels.ManageEncounterSpawns:SendToServer({
+					encounterId = entities._parent_proxy._parent_key,
+					encounter = {
+						entities = {
+							[mlEntityId] = mlEntity._real
+						}
+					}
+				} --[[@as ManageEncounterRequest]])
+			end
+			--#endregion
 		end
 	end
 
