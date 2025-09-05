@@ -1,3 +1,18 @@
+---@class MetaClass
+
+---@class Object_Group: MetaClass
+---@field group_id number
+---@field group_metadata MLT_Group_Metadata
+---@field object_custom_data table<Guid, any>
+---@field children MLT_Object_Group_Reference[]
+---@field collection_name string
+---@field finalized boolean
+---@field storage_character Guid
+---@field is_child_object_set boolean
+---@field on_stage boolean
+---@field visibility_locked boolean?
+---@field parent MLT_Object_Group_Reference
+
 ---@class Object_Manager: MetaClass
 ---@field Object_Count integer
 ---@field Object_Group_Type_Info table<string, MLT_Collection_Metadata>

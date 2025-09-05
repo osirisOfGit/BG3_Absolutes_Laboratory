@@ -8,4 +8,7 @@ Channels.TeleportToEntity = Ext.Net.CreateChannel(ModuleUUID, "TeleportToEntity"
 Channels.TeleportEntityToHost = Ext.Net.CreateChannel(ModuleUUID, "TeleportEntityToHost")
 Channels.ActivateMutationProfile = Ext.Net.CreateChannel(ModuleUUID, "ActivateMutationProfile")
 Channels.GetCurrentHostLevel = Ext.Net.CreateChannel(ModuleUUID, "GetCurrentHostLevel")
+
+-- Monster Lab
 Channels.OrbAtPosition = Ext.Net.CreateChannel(ModuleUUID, "OrbAtPosition")
+Channels.SpawnEncounterEntity = Ext.Net.CreateChannel(ModuleUUID, "SpawnStatue")

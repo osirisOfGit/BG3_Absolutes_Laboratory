@@ -11,3 +11,7 @@ data "StatusType" "BOOST"
 data "DisplayName" "he352e38cfac146a5a64e718bec47eea14f59;1"
 data "StackId" "ABSOLUTES_LAB_BOOSTS_BOOST"
 data "StatusPropertyFlags" "DisableOverhead;DisableCombatlog;DisablePortraitIndicator"
+
+new entry "ABSOLUTES_LAB_MONSTER_LAB_MARKER"
+type "PassiveData"
+data "DisplayName" "he352e38cfac146a5a64e718bec47eea14f59;1"

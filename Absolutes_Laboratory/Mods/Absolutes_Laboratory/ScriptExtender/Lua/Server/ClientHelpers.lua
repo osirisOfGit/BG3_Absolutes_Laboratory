@@ -54,38 +54,3 @@ Channels.GetEntityDump:SetRequestHandler(function(data, user)
 
 	return CustomEntitySerializer:recursiveSerialization(response, nil, { Ext.Entity.HandleToUuid(entity) })
 end)
-
-
----@class OrbRequest
----@field coords number[]?
----@field context string
----@field cleanup boolean?
----@field moonbeam number?
-
-local orbRequests = {}
-Channels.OrbAtPosition:SetHandler(
----@param data OrbRequest
-	function(data)
-		local mazzleLib = Mods.Mazzle_Lib
-
-		if mazzleLib then
-			if data.cleanup then
-				Osi.RequestDelete(orbRequests[data.context])
-				orbRequests[data.context] = nil
-			else
-				---@class Mazzle_Orbs
-				local mazzleOrbs = mazzleLib.Mazzle_Orbs
-				if not orbRequests[data.context] then
-					orbRequests[data.context] = mazzleOrbs:Create_Debug_Orb(data.coords[1], data.coords[2], data.coords[3])
-				else
-					Osi.TeleportToPosition(orbRequests[data.context], data.coords[1], data.coords[2], data.coords[3])
-				end
-
-				if data.moonbeam then
-					mazzleOrbs:Add_VFX_to_Object(orbRequests[data.context], "moonbeam",data.moonbeam)
-				end
-			end
-		else
-			Logger:BasicWarning("MazzleLib isn't loaded?")
-		end
-	end)

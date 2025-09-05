@@ -17,16 +17,17 @@ function EncounterDesigner:buildDesigner(encounter)
 
 	if not TableUtils:TablesAreEqual(encounter.baseCoords, { 0, 0, 0 }) then
 		Channels.OrbAtPosition:SendToServer({
+			encounterId = encounter._parent_key,
 			context = "BaseCoords",
 			coords = encounter.baseCoords._real,
 			moonbeam = 5
-		} --[[@as OrbRequest]])
+		} --[[@as VisualizationRequest]])
 
 		self.window.OnClose = function()
 			Channels.OrbAtPosition:SendToServer({
-				context = "BaseCoords",
-				cleanup = true
-			} --[[@as OrbRequest]])
+				encounterId = encounter._parent_key,
+				cleanupEncounter = true
+			} --[[@as VisualizationRequest]])
 		end
 	end
 
@@ -65,7 +66,10 @@ function EncounterDesigner:buildDesigner(encounter)
 		local teleportToCoordsButton
 
 		Styler:MiddleAlignedColumnLayout(ele, function(ele)
-			pickCoordsButton = self:CoordinatePicker(ele, coordsGroup, "BaseCoords")
+			pickCoordsButton = self:CoordinatePicker(ele, coordsGroup, {
+				context = "BaseCoords",
+				encounterId = encounter._parent_key,
+			})
 			pickCoordsButton.Visible = false
 
 			teleportToCoordsButton = Styler:ImageButton(ele:AddImageButton("Teleport_Coords", "Spell_Conjuration_DimensionDoor", Styler:ScaleFactor({ 48, 48 })))
@@ -186,9 +190,13 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 			local coordsGroup = entityRow:AddGroup("coords")
 			coordsGroup.SameLine = true
 
-			local coordPickerButton = self:CoordinatePicker(pickerPlaceholder, coordsGroup, mlEntityId .. "Coords")
-			coordPickerButton.Image.Size = Styler:ScaleFactor({ 26, 26 })
+			---@diagnostic disable-next-line: missing-fields
+			local coordPickerButton = self:CoordinatePicker(pickerPlaceholder, coordsGroup, {
+				context = mlEntityId,
+				encounterId = entities._parent_table._parent_key
+			})
 
+			coordPickerButton.Image.Size = Styler:ScaleFactor({ 26, 26 })
 
 			for i, coord in ipairs({ "X", "Y", "Z" }) do
 				coordsGroup:AddText(coord .. ": ").SameLine = i > 1
@@ -207,12 +215,10 @@ end
 
 ---@param parent ExtuiTreeParent
 ---@param coordsGroup ExtuiTreeParent
----@param contextName string
----@param visOptions OrbRequest?
+---@param visOptions VisualizationRequest?
 ---@return ExtuiImageButton
-function EncounterDesigner:CoordinatePicker(parent, coordsGroup, contextName, visOptions)
+function EncounterDesigner:CoordinatePicker(parent, coordsGroup, visOptions)
 	local orbRequest = visOptions and TableUtils:DeeplyCopyTable(visOptions) or {}
-	orbRequest.context = contextName
 
 	local pickCoordsButton = Styler:ImageButton(parent:AddImageButton("PickCoords", "Spell_Divination_TrueStrike", Styler:ScaleFactor({ 48, 48 })))
 	pickCoordsButton.UserData = false
