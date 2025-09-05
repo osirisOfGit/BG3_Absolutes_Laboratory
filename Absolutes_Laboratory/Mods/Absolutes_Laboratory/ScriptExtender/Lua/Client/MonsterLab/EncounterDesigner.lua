@@ -1,19 +1,89 @@
+Ext.Vars.RegisterModVariable(ModuleUUID, "MonsterLab_SpawnedEntities", {
+	Server = true,
+	Client = true,
+	WriteableOnServer = true,
+	WriteableOnClient = true,
+	SyncToClient = true,
+	SyncToServer = true
+})
+
+Ext.Vars.RegisterUserVariable("AbsolutesLaboratory_MonsterLab_Entity", {
+	Server = true,
+	Client = true,
+	WriteableOnServer = true,
+	WriteableOnClient = true,
+	SyncToClient = true,
+	SyncToServer = true
+})
+
 EncounterDesigner = {
 	---@type ExtuiWindow
-	window = nil
+	designerWindow = nil,
+	---@type ExtuiWindow
+	designerModeHeader = nil
 }
 
 ---@param encounter MonsterLabEncounter
 function EncounterDesigner:buildDesigner(encounter)
-	if not self.window then
-		self.window = Ext.IMGUI.NewWindow(encounter.name)
-		self.window.Closeable = true
+	if not self.designerWindow then
+		self.designerWindow = Ext.IMGUI.NewWindow(encounter.name)
+		self.designerWindow.Closeable = true
+
+		self.designerModeHeader = Ext.IMGUI.NewWindow("ACTIVE DESIGNER MODE")
+		self.designerModeHeader.Closeable = false
+		self.designerModeHeader.NoResize = true
+		self.designerModeHeader.NoTitleBar = true
+		self.designerModeHeader:SetBgAlpha(0)
+		self.designerModeHeader:SetColor("FrameBg", { 1, 1, 1, 0 })
+
+		Styler:MiddleAlignedColumnLayout(self.designerModeHeader, function(ele)
+			Styler:CheapTextAlign("DESIGNER MODE ACTIVE", ele, "Big")
+
+			---@type ManageDesignerModeRequest
+			local manageDesignerModeRequest = { playersCanDialogue = false, playersCanFight = false }
+
+			Styler:CheapTextAlign("Players:", ele)
+			Styler:ToggleButton(ele, "Can Fight", "Can't Fight", false, function(swap)
+				if swap then
+					manageDesignerModeRequest.playersCanFight = not manageDesignerModeRequest.playersCanFight
+					Channels.ManageDesignerMode:SendToServer(manageDesignerModeRequest)
+				end
+				return manageDesignerModeRequest.playersCanFight
+			end)
+
+			ele:AddText(" | ").SameLine = true
+
+			Styler:ToggleButton(ele, "Can Dialogue", "Can't Dialogue", true, function(swap)
+				if swap then
+					manageDesignerModeRequest.playersCanDialogue = not manageDesignerModeRequest.playersCanDialogue
+					Channels.ManageDesignerMode:SendToServer(manageDesignerModeRequest)
+				end
+				return manageDesignerModeRequest.playersCanDialogue
+			end)
+		end)
 	else
-		self.window.Label = encounter.name
-		self.window.Open = true
-		self.window:SetFocus()
-		Helpers:KillChildren(self.window)
+		self.designerModeHeader.Open = true
+
+		self.designerWindow.Label = encounter.name
+		self.designerWindow.Open = true
+		self.designerWindow:SetFocus()
+		Helpers:KillChildren(self.designerWindow)
 	end
+
+	Ext.Timer.WaitFor(50, function ()
+		self.designerModeHeader:SetPos({ (Ext.IMGUI.GetViewportSize()[1] / 2) - (self.designerModeHeader.LastSize[1] / 2), 0 }, "Always")
+	end)
+
+	Channels.ManageDesignerMode:SendToServer({
+		playersCanDialogue = true,
+		playersCanFight = true
+	} --[[@as ManageDesignerModeRequest]])
+
+	Channels.ManageEncounterSpawns:SendToServer({
+		encounterId = encounter._parent_key,
+		encounter = (encounter._real or encounter)
+	} --[[@as ManageEncounterRequest]])
+
 
 	if not TableUtils:TablesAreEqual(encounter.baseCoords, { 0, 0, 0 }) then
 		Channels.OrbAtPosition:SendToServer({
@@ -22,16 +92,27 @@ function EncounterDesigner:buildDesigner(encounter)
 			coords = encounter.baseCoords._real,
 			moonbeam = 5
 		} --[[@as VisualizationRequest]])
-
-		self.window.OnClose = function()
-			Channels.OrbAtPosition:SendToServer({
-				encounterId = encounter._parent_key,
-				cleanupEncounter = true
-			} --[[@as VisualizationRequest]])
-		end
 	end
 
-	Styler:MiddleAlignedColumnLayout(self.window, function(ele)
+	self.designerWindow.OnClose = function()
+		Channels.OrbAtPosition:SendToServer({
+			encounterId = encounter._parent_key,
+			cleanupEncounter = true
+		} --[[@as VisualizationRequest]])
+
+		self.designerModeHeader.Open = false
+		Channels.ManageDesignerMode:SendToServer({
+			playersCanDialogue = true,
+			playersCanFight = true
+		} --[[@as ManageDesignerModeRequest]])
+
+		Channels.ManageEncounterSpawns:SendToServer({
+			encounterId = encounter._parent_key,
+			delete = true
+		} --[[@as ManageEncounterRequest]])
+	end
+
+	Styler:MiddleAlignedColumnLayout(self.designerWindow, function(ele)
 		local levelCombo
 		local teleportToLevelButton
 		Styler:MiddleAlignedColumnLayout(ele, function(ele)
@@ -66,10 +147,45 @@ function EncounterDesigner:buildDesigner(encounter)
 		local teleportToCoordsButton
 
 		Styler:MiddleAlignedColumnLayout(ele, function(ele)
-			pickCoordsButton = self:CoordinatePicker(ele, coordsGroup, {
-				context = "BaseCoords",
-				encounterId = encounter._parent_key,
-			})
+			pickCoordsButton = Styler:ImageButton(ele:AddImageButton("PickBaseCoords", "Spell_Divination_TrueStrike", Styler:ScaleFactor({ 48, 48 })))
+			pickCoordsButton.UserData = false
+			pickCoordsButton.OnClick = function()
+				if not pickCoordsButton.UserData then
+					pickCoordsButton.UserData = true
+					local tickSub = Ext.Events.Tick:Subscribe(function(e)
+						local coords = Ext.ClientUI.GetPickingHelper(1).Inner.Position
+						for i = 1, 3 do
+							coordsGroup.Children[i * 2].Value = { coords[i], coords[i], coords[i], coords[i] }
+						end
+
+						Channels.OrbAtPosition:SendToServer({
+							encounterId = encounter._parent_key,
+							coords = coords,
+							context = "BaseCoords"
+						} --[[@as VisualizationRequest]])
+					end)
+
+					local mouseSub
+					mouseSub = Ext.Events.MouseButtonInput:Subscribe(
+					---@param e EclLuaMouseButtonEvent
+						function(e)
+							if e.Pressed then
+								if e.Button == 3 then
+									Ext.Events.Tick:Unsubscribe(tickSub)
+									Ext.Events.MouseButtonInput:Unsubscribe(mouseSub)
+									for i = 1, 3 do
+										coordsGroup.Children[i * 2]:OnChange()
+									end
+									pickCoordsButton.UserData = false
+								else
+									for i = 1, 3 do
+										coordsGroup.Children[i * 2]:OnChange()
+									end
+								end
+							end
+						end)
+				end
+			end
 			pickCoordsButton.Visible = false
 
 			teleportToCoordsButton = Styler:ImageButton(ele:AddImageButton("Teleport_Coords", "Spell_Conjuration_DimensionDoor", Styler:ScaleFactor({ 48, 48 })))
@@ -106,7 +222,7 @@ function EncounterDesigner:buildDesigner(encounter)
 		end
 	end)
 
-	self:RenderCardForEntities(self.window:AddGroup("cards"), encounter.entities)
+	self:RenderCardForEntities(self.designerWindow:AddGroup("cards"), encounter.entities)
 end
 
 ---@param parent ExtuiTreeParent
@@ -191,12 +307,51 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 			coordsGroup.SameLine = true
 
 			---@diagnostic disable-next-line: missing-fields
-			local coordPickerButton = self:CoordinatePicker(pickerPlaceholder, coordsGroup, {
-				context = mlEntityId,
-				encounterId = entities._parent_table._parent_key
-			})
+			local pickCoordsButton = Styler:ImageButton(pickerPlaceholder:AddImageButton("PickCoords", "Spell_Divination_TrueStrike", Styler:ScaleFactor({ 26, 26 })))
 
-			coordPickerButton.Image.Size = Styler:ScaleFactor({ 26, 26 })
+			pickCoordsButton.OnClick = function()
+				if not pickCoordsButton.UserData then
+					pickCoordsButton.UserData = true
+					local tickSub = Ext.Events.Tick:Subscribe(function(e)
+						local coords = Ext.ClientUI.GetPickingHelper(1).Inner.Position
+						for i = 1, 3 do
+							coordsGroup.Children[i * 2].Value = { coords[i], coords[i], coords[i], coords[i] }
+						end
+
+						local entityCopy = TableUtils:DeeplyCopyTable((mlEntity._real or mlEntity))
+						entityCopy.coordinates = coords
+						
+						Channels.ManageEncounterSpawns:SendToServer({
+							encounterId = entities._parent_proxy._parent_key,
+							encounter = {
+								entities = {
+									[mlEntityId] = entityCopy
+								}
+							}
+						} --[[@as ManageEncounterRequest]])
+					end)
+
+					local mouseSub
+					mouseSub = Ext.Events.MouseButtonInput:Subscribe(
+					---@param e EclLuaMouseButtonEvent
+						function(e)
+							if e.Pressed then
+								if e.Button == 3 then
+									Ext.Events.Tick:Unsubscribe(tickSub)
+									Ext.Events.MouseButtonInput:Unsubscribe(mouseSub)
+									for i = 1, 3 do
+										coordsGroup.Children[i * 2]:OnChange()
+									end
+									pickCoordsButton.UserData = false
+								else
+									for i = 1, 3 do
+										coordsGroup.Children[i * 2]:OnChange()
+									end
+								end
+							end
+						end)
+				end
+			end
 
 			for i, coord in ipairs({ "X", "Y", "Z" }) do
 				coordsGroup:AddText(coord .. ": ").SameLine = i > 1
@@ -211,44 +366,4 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 	end
 
 	renderGroupCards()
-end
-
----@param parent ExtuiTreeParent
----@param coordsGroup ExtuiTreeParent
----@param visOptions VisualizationRequest?
----@return ExtuiImageButton
-function EncounterDesigner:CoordinatePicker(parent, coordsGroup, visOptions)
-	local orbRequest = visOptions and TableUtils:DeeplyCopyTable(visOptions) or {}
-
-	local pickCoordsButton = Styler:ImageButton(parent:AddImageButton("PickCoords", "Spell_Divination_TrueStrike", Styler:ScaleFactor({ 48, 48 })))
-	pickCoordsButton.UserData = false
-	pickCoordsButton.OnClick = function()
-		if not pickCoordsButton.UserData then
-			pickCoordsButton.UserData = true
-			local tickSub = Ext.Events.Tick:Subscribe(function(e)
-				local coords = Ext.ClientUI.GetPickingHelper(1).Inner.Position
-				for i = 1, 3 do
-					coordsGroup.Children[i * 2].Value = { coords[i], coords[i], coords[i], coords[i] }
-				end
-
-				orbRequest.coords = coords
-				Channels.OrbAtPosition:SendToServer(orbRequest)
-			end)
-
-			local mouseSub
-			mouseSub = Ext.Events.MouseButtonInput:Subscribe(
-			---@param e EclLuaMouseButtonEvent
-				function(e)
-					if e.Pressed and e.Button == 3 then
-						Ext.Events.Tick:Unsubscribe(tickSub)
-						Ext.Events.MouseButtonInput:Unsubscribe(mouseSub)
-						for i = 1, 3 do
-							coordsGroup.Children[i * 2]:OnChange()
-						end
-						pickCoordsButton.UserData = false
-					end
-				end)
-		end
-	end
-	return pickCoordsButton
 end

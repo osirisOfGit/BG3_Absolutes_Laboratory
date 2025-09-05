@@ -11,4 +11,5 @@ Channels.GetCurrentHostLevel = Ext.Net.CreateChannel(ModuleUUID, "GetCurrentHost
 
 -- Monster Lab
 Channels.OrbAtPosition = Ext.Net.CreateChannel(ModuleUUID, "OrbAtPosition")
-Channels.SpawnEncounterEntity = Ext.Net.CreateChannel(ModuleUUID, "SpawnStatue")
+Channels.ManageEncounterSpawns = Ext.Net.CreateChannel(ModuleUUID, "ManageEncounterSpawns")
+Channels.ManageDesignerMode = Ext.Net.CreateChannel(ModuleUUID, "ManageDesignerMode")

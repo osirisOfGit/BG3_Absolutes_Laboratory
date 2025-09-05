@@ -1,3 +1,21 @@
+Ext.Vars.RegisterModVariable(ModuleUUID, "MonsterLab_SpawnedEntities", {
+	Server = true,
+	Client = true,
+	WriteableOnServer = true,
+	WriteableOnClient = true,
+	SyncToClient = true,
+	SyncToServer = true
+})
+
+Ext.Vars.RegisterUserVariable("AbsolutesLaboratory_MonsterLab_Entity", {
+	Server = true,
+	Client = true,
+	WriteableOnServer = true,
+	WriteableOnClient = true,
+	SyncToClient = true,
+	SyncToServer = true
+})
+
 EncounterManager = {
 	mazzleLib = Mods.Mazzle_Lib,
 	---@type Mazzle_Orbs
@@ -23,6 +41,25 @@ Ext.Events.SessionLoaded:Subscribe(function(e)
 		-- mazzleObjectManager:Register_Collection("MonsterLab_EncounterVisualizations", "orb", collection_parameters)
 	end
 end)
+
+---@class ManageDesignerModeRequest
+---@field playersCanFight boolean
+---@field playersCanDialogue boolean
+Channels.ManageDesignerMode:SetHandler(
+---@param request ManageDesignerModeRequest
+	function(request)
+		for _, playerTable in pairs(Osi.DB_Players:Get(nil)) do
+			_D(playerTable[1])
+			Osi.SetCanFight(playerTable[1], request.playersCanFight and 1 or 0)
+			Osi.SetCanJoinCombat(playerTable[1], request.playersCanFight and 1 or 0)
+
+			if request.playersCanDialogue then
+				Osi.RemoveBoosts(playerTable[1], "DialogueBlock()", 0, "", "")
+			else
+				Osi.AddBoosts(playerTable[1], "DialogueBlock()", "", "")
+			end
+		end
+	end)
 
 ---@class VisualizationRequest
 ---@field encounterId Guid
@@ -65,6 +102,82 @@ Channels.OrbAtPosition:SetHandler(
 		end
 	end)
 
-Channels.SpawnEncounterEntity:SetHandler(function (data, user)
-	
-end)
+
+---@class MonsterLab_EntityVariable
+---@field profileId Guid?
+---@field encounterId Guid
+---@field mlEntityId Guid
+
+---@class MonsterLabEntity_Spawned : MonsterLabEntity
+---@field realEntityId Guid
+
+---@class MonsterLabEncounter_Spawned : MonsterLabEncounter
+---@field entities {[Guid]: MonsterLabEntity_Spawned}
+
+---@alias MonsterLab_SpawnedEntities {[Guid]: MonsterLabEncounter_Spawned}
+
+---@class ManageEncounterRequest
+---@field encounterId Guid
+---@field encounter MonsterLabEncounter? not present if delete is true
+---@field profileId Guid?
+---@field delete boolean?
+
+---@type MonsterLab_SpawnedEntities
+local allSpawnedEntities
+Channels.ManageEncounterSpawns:SetHandler(
+---@param request ManageEncounterRequest
+	function(request)
+		if not allSpawnedEntities then
+			allSpawnedEntities = Ext.Vars.GetModVariables(ModuleUUID).MonsterLab_SpawnedEntities or {}
+		end
+		
+		allSpawnedEntities[request.encounterId] = allSpawnedEntities[request.encounterId] or {}
+
+		local encounterEntities = allSpawnedEntities[request.encounterId]
+		encounterEntities.entities = encounterEntities.entities or {}
+
+		if request.delete then
+			for _, entity in pairs(encounterEntities.entities) do
+				if entity.realEntityId then
+					Osi.RequestDeleteTemporary(entity.realEntityId)
+				end
+			end
+			allSpawnedEntities[request.encounterId] = nil
+		else
+			for mlEntityId, mlEntity in pairs(request.encounter.entities) do
+				if encounterEntities.entities[mlEntityId] and encounterEntities.entities[mlEntityId].template == mlEntity.template then
+					local spawnedEntity = encounterEntities.entities[mlEntityId]
+					if not TableUtils:CompareLists(mlEntity.coordinates, spawnedEntity.coordinates) then
+						Osi.TeleportToPosition(spawnedEntity.realEntityId, mlEntity.coordinates[1], mlEntity.coordinates[2], mlEntity.coordinates[3])
+					end
+				else
+					if encounterEntities.entities[mlEntityId] and encounterEntities.entities[mlEntityId].realEntityId then
+						Osi.RequestDeleteTemporary(encounterEntities.entities[mlEntityId].realEntityId)
+					end
+
+					encounterEntities.entities[mlEntityId] = mlEntity
+					encounterEntities.entities[mlEntityId].realEntityId = Osi.CreateAt(mlEntity.template,
+						mlEntity.coordinates[1],
+						mlEntity.coordinates[2],
+						mlEntity.coordinates[3],
+						1,
+						1,
+						"")
+
+					Ext.Timer.WaitFor(100, function()
+						---@type EntityHandle
+						local entity = Ext.Entity.Get(encounterEntities.entities[mlEntityId].realEntityId)
+						entity.Vars.AbsolutesLaboratory_MonsterLab_Entity = {
+							profileId = request.profileId,
+							encounterId = request.encounterId,
+							mlEntityId = mlEntityId,
+						} --[[@as MonsterLab_EntityVariable]]
+
+						Osi.AddPassive(entity.Uuid.EntityUuid, "ABSOLUTES_LAB_MONSTER_LAB_ENTITY_MARKER")
+					end)
+				end
+			end
+		end
+
+		Ext.Vars.GetModVariables(ModuleUUID).MonsterLab_SpawnedEntities = allSpawnedEntities
+	end)
