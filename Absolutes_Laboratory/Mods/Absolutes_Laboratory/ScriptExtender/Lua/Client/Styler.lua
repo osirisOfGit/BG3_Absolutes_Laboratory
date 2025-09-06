@@ -272,12 +272,9 @@ end
 ---@param startSameLine boolean
 ---@param callback fun(swap: boolean?): boolean
 function Styler:ToggleButton(parent, opt1, opt2, startSameLine, callback)
-	local activeButtonColor = { 0.38, 0.26, 0.21, 0.78 }
-	local disabledButtonColor = { 0, 0, 0, 0 }
-
 	local option1 = parent:AddButton(opt1)
 	option1.Disabled = true
-	option1:SetColor("Button", disabledButtonColor)
+	self:Color(option1, "DisabledButton")
 	option1.SameLine = startSameLine or false
 
 	local toggle = parent:AddSliderInt("", callback() and 0 or 1, 0, 1)
@@ -287,15 +284,15 @@ function Styler:ToggleButton(parent, opt1, opt2, startSameLine, callback)
 
 	local option2 = parent:AddButton(opt2)
 	option2.Disabled = true
-	option2:SetColor("Button", activeButtonColor)
+	self:Color(option2, "ActiveButton")
 	option2.SameLine = true
 
 	if callback() then
-		option1:SetColor("Button", activeButtonColor)
-		option2:SetColor("Button", disabledButtonColor)
+		self:Color(option1, "ActiveButton")
+		self:Color(option2, "DisabledButton")
 	else
-		option1:SetColor("Button", disabledButtonColor)
-		option2:SetColor("Button", activeButtonColor)
+		self:Color(option1, "DisabledButton")
+		self:Color(option2, "ActiveButton")
 	end
 
 	toggle.OnActivate = function()
@@ -312,11 +309,11 @@ function Styler:ToggleButton(parent, opt1, opt2, startSameLine, callback)
 		toggle.Value = { newValue, newValue, newValue, newValue }
 
 		if useFirstOption then
-			option1:SetColor("Button", activeButtonColor)
-			option2:SetColor("Button", disabledButtonColor)
+			self:Color(option1, "ActiveButton")
+			self:Color(option2, "DisabledButton")
 		else
-			option1:SetColor("Button", disabledButtonColor)
-			option2:SetColor("Button", activeButtonColor)
+			self:Color(option1, "DisabledButton")
+			self:Color(option2, "ActiveButton")
 		end
 
 		callback(true)
@@ -337,11 +334,17 @@ end
 Styler.Colours = {
 	PlainLink = function(link)
 		link:SetColor("TextLink", { 0.86, 0.79, 0.68, 0.78 })
-	end
+	end,
+	ActiveButton = function(button)
+		button:SetColor("Button", { 0.38, 0.26, 0.21, 0.78 })
+	end,
+	DisabledButton = function(button)
+		button:SetColor("Button", { 0, 0, 0, 0 })
+	end,
 }
 
 ---@param element ExtuiStyledRenderable
----@param property string|"PlainLink"
+---@param property string|"PlainLink"|"ActiveButton"|"DisabledButton"
 ---@param color number[]?
 ---@return ExtuiStyledRenderable
 function Styler:Color(element, property, color)
