@@ -187,7 +187,22 @@ function MonsterLab:buildEncounterView(parent, encounter)
 
 		name.OnClick = function()
 			if not openPopupFunc() then
-				MutationDesigner:RenderMutatorsSidebarStyle(designerSection, entity.mutators)
+				Helpers:KillChildren(designerSection)
+				Styler:MiddleAlignedColumnLayout(designerSection, function(ele)
+					Styler:MiddleAlignedColumnLayout(ele, function(ele)
+						---@type CharacterTemplate
+						local characterTemplate = Ext.ClientTemplate.GetTemplate(entity.template)
+						local icon = ele:AddImage(characterTemplate.Icon, Styler:ScaleFactor({ 48, 48 }))
+						if icon.ImageData.Icon == "" then
+							icon:Destroy()
+							icon = ele:AddImage("Item_Unknown", Styler:ScaleFactor({ 48, 48 }))
+						end
+						icon.SameLine = true
+					end)
+
+					ele:AddText(entity.displayName).Font = "Big"
+				end)
+				MutationDesigner:RenderMutatorsSidebarStyle(designerSection:AddGroup("DesignIt"), entity.mutators)
 			end
 		end
 
