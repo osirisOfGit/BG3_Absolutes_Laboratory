@@ -411,7 +411,8 @@ end
 ---@param parent ExtuiTreeParent
 ---@param mutators Mutator[]
 function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMutator)
-	if not popup then
+	-- Don't ask questions, i hate it too
+	if not popup or not pcall(function() return popup.Handle end) then
 		popup = parent.ParentElement:AddPopup("Popup")
 	end
 

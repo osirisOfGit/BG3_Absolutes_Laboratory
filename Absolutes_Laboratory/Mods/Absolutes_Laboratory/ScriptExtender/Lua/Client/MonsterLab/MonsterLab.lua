@@ -154,6 +154,8 @@ function MonsterLab:buildEncounterView(parent, encounter)
 
 	local encounterGroup = parent:AddGroup("Encounter")
 
+	local lastSelectedEntity
+
 	buildEncounter = function()
 		Helpers:KillChildren(encounterGroup)
 		local layoutTable = Styler:TwoColumnTable(encounterGroup, "layout")
@@ -171,7 +173,7 @@ function MonsterLab:buildEncounterView(parent, encounter)
 			local deleteButton = Styler:ImageButton(entityGroup:AddImageButton("delete" .. id, "ico_red_x", Styler:ScaleFactor({ 16, 16 })))
 			deleteButton.OnClick = function()
 				encounter.entities[id].delete = true
-				self:buildEncounterView(encounterGroup, encounter)
+				buildEncounter()
 			end
 
 			-- local settingsButton = Styler:ImageButton(entityGroup:AddImageButton("settings", "ico_edit_d", Styler:ScaleFactor({ 16, 16 })))
@@ -201,7 +203,16 @@ function MonsterLab:buildEncounterView(parent, encounter)
 
 			name.OnClick = function()
 				if not openPopupFunc() then
+					lastSelectedEntity = id
 					Helpers:KillChildren(designerSection)
+
+					entity.rulesetModifiers[self.activeRuleset] = entity.rulesetModifiers[self.activeRuleset]
+						or TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.monsterLab.rulesetModifiers)
+
+					local activeRuleset = entity.rulesetModifiers[self.activeRuleset]
+
+					local mutatorGroup
+
 					Styler:MiddleAlignedColumnLayout(designerSection, function(ele)
 						Styler:MiddleAlignedColumnLayout(ele, function(ele)
 							---@type CharacterTemplate
@@ -214,10 +225,34 @@ function MonsterLab:buildEncounterView(parent, encounter)
 							icon.SameLine = true
 						end)
 
-						ele:AddText(entity.displayName).Font = "Big"
+						Styler:CheapTextAlign(entity.displayName, ele, "Big")
+						Styler:ToggleButton(ele, "Spawn", "Don't Spawn", false, function(swap)
+							if swap then
+								activeRuleset.shouldSpawn = not activeRuleset.shouldSpawn
+								if not activeRuleset.shouldSpawn then
+									Helpers:KillChildren(mutatorGroup)
+								else
+									activeRuleset.mutators = activeRuleset.mutators or {}
+
+									MutationDesigner:RenderMutatorsSidebarStyle(mutatorGroup, activeRuleset.mutators)
+								end
+							end
+							return activeRuleset.shouldSpawn
+						end)
 					end)
-					MutationDesigner:RenderMutatorsSidebarStyle(designerSection:AddGroup("DesignIt"), entity.mutators)
+
+					mutatorGroup = designerSection:AddGroup("DesignIt")
+
+					if activeRuleset.shouldSpawn then
+						activeRuleset.mutators = activeRuleset.mutators or {}
+
+						MutationDesigner:RenderMutatorsSidebarStyle(mutatorGroup, activeRuleset.mutators)
+					end
 				end
+			end
+
+			if lastSelectedEntity == id then
+				name:OnClick()
 			end
 
 			if entity.title and entity.title ~= "" then
@@ -232,7 +267,7 @@ function MonsterLab:buildEncounterView(parent, encounter)
 			createEntityButton.Selected = false
 
 			self:buildCreateEntityForm(designerSection, encounter, function()
-				self:buildEncounterView(encounterGroup, encounter)
+				buildEncounter()
 			end)
 		end
 	end
@@ -404,7 +439,9 @@ right-click to modify or delete that ruleset. The Base ruleset can't be modified
 	local lastActiveButton
 
 	local createdOne = false
-	for rulesetId, ruleset in TableUtils:OrderedPairs(self.config.rulesets) do
+	for rulesetId, ruleset in TableUtils:OrderedPairs(self.config.rulesets, function(key, value)
+		return key == "Base" and 1 or value.name
+	end) do
 		local rulesetButton = parent:AddButton(ruleset.name)
 		rulesetButton.SameLine = createdOne
 		createdOne = true
@@ -424,6 +461,8 @@ right-click to modify or delete that ruleset. The Base ruleset can't be modified
 				Styler:Color(rulesetButton, "ActiveButton")
 
 				lastActiveButton = rulesetButton
+
+				self.activeRuleset = rulesetId
 
 				rulesetSelectCallback()
 			end

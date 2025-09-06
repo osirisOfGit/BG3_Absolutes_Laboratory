@@ -89,7 +89,6 @@ ConfigurationStructure.DynamicClassDefinitions.monsterLab.rulesetModifiers = {
 ConfigurationStructure.DynamicClassDefinitions.monsterLab.ruleset = {
 	---@type {[string]: (boolean)|(string[])}
 	activeModifiers = {},
-	negate = false,
 	name = "",
 	description = ""
 }
