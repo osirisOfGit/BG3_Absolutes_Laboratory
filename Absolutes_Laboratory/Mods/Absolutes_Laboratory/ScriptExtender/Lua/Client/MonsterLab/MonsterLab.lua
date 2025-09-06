@@ -325,14 +325,11 @@ function MonsterLab:buildCreateEntityForm(parent, encounter, completedCallback)
 	submit.OnClick = function()
 		if chosenTemplateId then
 			FormBuilder:CreateForm(parent, function(formResults)
-					encounter.entities[FormBuilder:generateGUID()] = {
-						displayName = formResults.displayName,
-						title = formResults.Title,
-						template = chosenTemplateId,
-						coordinates = { 0, 0, 0 },
-						rotation = 0,
-						mutators = {},
-					} --[[@as MonsterLabEntity]]
+					local entity = TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.monsterLab.entity)
+					entity.displayName = formResults.displayName
+					entity.title = formResults.Title
+					entity.template = chosenTemplateId
+					encounter.entities[FormBuilder:generateGUID()] = entity
 
 					completedCallback()
 				end,

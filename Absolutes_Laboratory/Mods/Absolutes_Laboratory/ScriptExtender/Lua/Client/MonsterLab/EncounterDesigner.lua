@@ -20,7 +20,9 @@ EncounterDesigner = {
 	---@type ExtuiWindow
 	designerWindow = nil,
 	---@type ExtuiWindow
-	designerModeHeader = nil
+	designerModeHeader = nil,
+	---@type ExtuiPopup
+	popup = nil
 }
 
 ---@param encounter MonsterLabEncounter
@@ -28,6 +30,8 @@ function EncounterDesigner:buildDesigner(encounter)
 	if not self.designerWindow then
 		self.designerWindow = Ext.IMGUI.NewWindow(encounter.name)
 		self.designerWindow.Closeable = true
+
+		self.popup = self.designerWindow:AddPopup("encounter")
 
 		self.designerModeHeader = Ext.IMGUI.NewWindow("ACTIVE DESIGNER MODE")
 		self.designerModeHeader.Closeable = false
@@ -71,7 +75,7 @@ function EncounterDesigner:buildDesigner(encounter)
 	end
 
 	Ext.Timer.WaitFor(50, function()
-		self.designerModeHeader:SetPos({0, 0 }, "Always")
+		self.designerModeHeader:SetPos({ 0, 0 }, "Always")
 	end)
 
 	Channels.ManageDesignerMode:SendToServer({
@@ -277,13 +281,13 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 			---@type CharacterTemplate
 			local template = Ext.ClientTemplate.GetTemplate(mlEntity.template)
 
+			---@type ExtuiGroup
 			local card = row.Children[(counter % maxRowSize) > 0 and (counter % maxRowSize) or maxRowSize]:AddGroup(mlEntityId)
 
 			local groupTable = card:AddTable("chlidTable", 1)
 			groupTable.Borders = true
 			groupTable:SetColor("TableBorderStrong", Styler:ConvertRGBAToIMGUI(cardColours[(counter % (#cardColours - (maxRowSize % 2 == 0 and 1 or 0))) + 1]))
 
-			---@type ExtuiTableCell
 			local entityRow = groupTable:AddRow():AddCell()
 
 			Styler:MiddleAlignedColumnLayout(entityRow, function(ele)
@@ -371,9 +375,9 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 
 			local rotateButton = rotationGroup:AddButton("+.25")
 			local rotationValue = rotationGroup:AddInputScalar("", mlEntity.rotation)
-			rotateButton.OnClick = function ()
+			rotateButton.OnClick = function()
 				local newVal = rotationValue.Value[1] + .25
-				rotationValue.Value = {newVal, newVal, newVal, newVal}
+				rotationValue.Value = { newVal, newVal, newVal, newVal }
 				rotationValue:OnChange()
 			end
 			rotationValue.SameLine = true
@@ -389,6 +393,50 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 					}
 				} --[[@as ManageEncounterRequest]])
 			end
+			--#endregion
+
+			--#region Animation
+			local animationHeader = entityRow:AddCollapsingHeader("Animation")
+			animationHeader:SetColor("Header", { 0, 0, 0, 0 })
+			animationHeader.DefaultOpen = false
+
+			local refreshAnimFunc
+
+			Styler:MiddleAlignedColumnLayout(animationHeader, function(ele)
+				Styler:ToggleButton(ele, "Basic", "Looping", false, function(swap)
+					if swap then
+						mlEntity.animation.simple = not mlEntity.animation.simple and "" or nil
+						refreshAnimFunc()
+					end
+					return mlEntity.animation.simple ~= nil
+				end)
+			end)
+
+			local animationGroup = animationHeader:AddGroup("Animations")
+			refreshAnimFunc = function()
+				Helpers:KillChildren(animationGroup)
+				local animationConfig = mlEntity.animation
+				if animationConfig.simple then
+					---@type ResourceAnimationResource?
+					local existingAnimation = Ext.Resource.Get(animationConfig.simple, "Animation")
+					local animationInput = animationGroup:AddInputText("", existingAnimation and existingAnimation.SourceFile:match("([^/\\]+)$") or "")
+					animationInput.ItemWidth = 500
+					animationInput.Hint = "Enter UUID"
+					animationInput.OnChange = function()
+						---@type ResourceAnimationResource
+						local animation = Ext.Resource.Get(animationInput.Text, "Animation")
+						if animation then
+							animationConfig.simple = animation.Guid
+							animationInput.Text = animation.SourceFile:match("([^/\\]+)$")
+							animationInput:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
+						else
+							animationInput:SetColor("Text", { 1, 0, 0, 0.75 })
+						end
+					end
+				else
+				end
+			end
+			refreshAnimFunc()
 			--#endregion
 		end
 	end

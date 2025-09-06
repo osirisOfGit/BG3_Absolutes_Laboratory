@@ -157,7 +157,7 @@ Channels.ManageEncounterSpawns:SetHandler(
 			allSpawnedEntities[request.encounterId] = nil
 		else
 			for mlEntityId, mlEntity in pairs(request.encounter.entities) do
-				if encounterEntities.entities[mlEntityId] and encounterEntities.entities[mlEntityId].template == mlEntity.template then
+				if encounterEntities.entities[mlEntityId] and encounterEntities.entities[mlEntityId].realEntityId and encounterEntities.entities[mlEntityId].template == mlEntity.template then
 					local spawnedEntity = encounterEntities.entities[mlEntityId]
 					if not TableUtils:CompareLists(mlEntity.coordinates, spawnedEntity.coordinates) then
 						Osi.TeleportToPosition(spawnedEntity.realEntityId, mlEntity.coordinates[1], mlEntity.coordinates[2], mlEntity.coordinates[3])
@@ -174,6 +174,10 @@ Channels.ManageEncounterSpawns:SetHandler(
 					end
 
 					encounterEntities.entities[mlEntityId] = mlEntity
+					if TableUtils:CompareLists(mlEntity.coordinates, {0, 0, 0}) then
+						mlEntity.coordinates = request.encounter.baseCoords
+					end
+					
 					encounterEntities.entities[mlEntityId].realEntityId = Osi.CreateAt(mlEntity.template,
 						mlEntity.coordinates[1],
 						mlEntity.coordinates[2],

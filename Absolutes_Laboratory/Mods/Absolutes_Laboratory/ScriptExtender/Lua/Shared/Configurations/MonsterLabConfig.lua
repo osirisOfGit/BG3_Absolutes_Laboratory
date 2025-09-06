@@ -61,5 +61,17 @@ ConfigurationStructure.DynamicClassDefinitions.monsterLab.entity = {
 	---@type number
 	rotation = 0,
 	---@type Mutator[]
-	mutators = {}
+	mutators = {},
+	animation = {
+		simple = "",
+		looping = {
+			startAnimation = "",
+			loopAnimation = "",
+			endAnimation = "",
+			loopVariation1 = "",
+			loopVariation2 = "",
+			loopVariation3 = "",
+			loopVariation4 = "",
+		}
+	}
 }
