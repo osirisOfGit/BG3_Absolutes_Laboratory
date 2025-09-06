@@ -168,16 +168,36 @@ Channels.ManageEncounterSpawns:SetHandler(
 						EncounterManager.mazzleMap:Turn_To_Angle(spawnedEntity.realEntityId, mlEntity.rotation)
 						spawnedEntity.rotation = mlEntity.rotation
 					end
+
+					if mlEntity.animation.simple then
+						if mlEntity.animation.simple ~= spawnedEntity.animation.simple then
+							Osi.PlayAnimation(spawnedEntity.realEntityId, mlEntity.animation.simple)
+						end
+					else
+						if not TableUtils:CompareLists(mlEntity.animation.looping, spawnedEntity.animation.looping) then
+							local looping = mlEntity.animation.looping
+							Osi.PlayLoopingAnimation(spawnedEntity.realEntityId,
+								looping.startAnimation,
+								looping.loopAnimation,
+								looping.endAnimation,
+								looping.loopVariation1,
+								looping.loopVariation2,
+								looping.loopVariation3,
+								looping.loopVariation4
+							)
+						end
+					end
+					spawnedEntity.animation = mlEntity.animation
 				else
 					if encounterEntities.entities[mlEntityId] and encounterEntities.entities[mlEntityId].realEntityId then
 						Osi.RequestDeleteTemporary(encounterEntities.entities[mlEntityId].realEntityId)
 					end
 
 					encounterEntities.entities[mlEntityId] = mlEntity
-					if TableUtils:CompareLists(mlEntity.coordinates, {0, 0, 0}) then
+					if TableUtils:CompareLists(mlEntity.coordinates, { 0, 0, 0 }) then
 						mlEntity.coordinates = request.encounter.baseCoords
 					end
-					
+
 					encounterEntities.entities[mlEntityId].realEntityId = Osi.CreateAt(mlEntity.template,
 						mlEntity.coordinates[1],
 						mlEntity.coordinates[2],
@@ -204,6 +224,25 @@ Channels.ManageEncounterSpawns:SetHandler(
 						EncounterManager.mazzleMap:Turn_To_Angle(entity.Uuid.EntityUuid, mlEntity.rotation)
 
 						Osi.AddPassive(entity.Uuid.EntityUuid, "ABSOLUTES_LAB_MONSTER_LAB_ENTITY_MARKER")
+
+						if mlEntity.animation.simple then
+							if mlEntity.animation.simple ~= "" then
+								Osi.PlayAnimation(entity.Uuid.EntityUuid, mlEntity.animation.simple)
+							end
+						else
+							if not TableUtils:IndexOf(mlEntity.animation.looping, "") then
+								local looping = mlEntity.animation.looping
+								Osi.PlayLoopingAnimation(entity.Uuid.EntityUuid,
+									looping.startAnimation,
+									looping.loopAnimation,
+									looping.endAnimation,
+									looping.loopVariation1,
+									looping.loopVariation2,
+									looping.loopVariation3,
+									looping.loopVariation4
+								)
+							end
+						end
 					end)
 				end
 			end

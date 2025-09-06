@@ -429,11 +429,48 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 							animationConfig.simple = animation.Guid
 							animationInput.Text = animation.SourceFile:match("([^/\\]+)$")
 							animationInput:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
+							Channels.ManageEncounterSpawns:SendToServer({
+								encounterId = entities._parent_proxy._parent_key,
+								encounter = {
+									entities = {
+										[mlEntityId] = mlEntity._real
+									}
+								}
+							} --[[@as ManageEncounterRequest]])
 						else
 							animationInput:SetColor("Text", { 1, 0, 0, 0.75 })
 						end
 					end
 				else
+					for animationKey, animationId in TableUtils:OrderedPairs(animationConfig.looping) do
+						animationGroup:AddText(animationKey)
+
+						---@type ResourceAnimationResource?
+						local existingAnimation = Ext.Resource.Get(animationId, "Animation")
+						local animationInput = animationGroup:AddInputText("", existingAnimation and existingAnimation.SourceFile:match("([^/\\]+)$") or "")
+						animationInput.ItemWidth = 500
+						animationInput.Hint = "Enter UUID"
+						animationInput.OnChange = function()
+							---@type ResourceAnimationResource
+							local animation = Ext.Resource.Get(animationInput.Text, "Animation")
+							if animation then
+								animationConfig.looping[animationKey] = animation.Guid
+								animationInput.Text = animation.SourceFile:match("([^/\\]+)$")
+								animationInput:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
+
+								Channels.ManageEncounterSpawns:SendToServer({
+									encounterId = entities._parent_proxy._parent_key,
+									encounter = {
+										entities = {
+											[mlEntityId] = mlEntity._real
+										}
+									}
+								} --[[@as ManageEncounterRequest]])
+							else
+								animationInput:SetColor("Text", { 1, 0, 0, 0.75 })
+							end
+						end
+					end
 				end
 			end
 			refreshAnimFunc()
