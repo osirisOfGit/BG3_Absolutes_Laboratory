@@ -136,8 +136,8 @@ function MonsterLab:buildEncounterView(parent, encounter)
 		Styler:CheapTextAlign(encounter.description, parent)
 	end
 
-	Styler:MiddleAlignedColumnLayout(parent, function (ele)
-		ele:AddButton("Launch Encounter Designer").OnClick = function ()
+	Styler:MiddleAlignedColumnLayout(parent, function(ele)
+		ele:AddButton("Launch Encounter Designer").OnClick = function()
 			EncounterDesigner:buildDesigner(encounter)
 		end
 	end)
@@ -149,47 +149,45 @@ function MonsterLab:buildEncounterView(parent, encounter)
 	local entitySidebar = layoutRow:AddCell()
 	local designerSection = layoutRow:AddCell()
 
-	local entityTable = entitySidebar:AddTable("entities", 2)
-	entityTable:AddColumn("", "WidthFixed")
-	entityTable.BordersInnerH = true
 
 	for id, entity in TableUtils:OrderedPairs(encounter.entities, function(key, value)
 		return value.displayName
 	end) do
-		local row = entityTable:AddRow()
-		local managementCell = row:AddCell()
-		local deleteButton = Styler:ImageButton(managementCell:AddImageButton("delete", "ico_red_x", Styler:ScaleFactor({ 16, 16 })))
+		local entityGroup = entitySidebar:AddGroup(id)
+		local deleteButton = Styler:ImageButton(entityGroup:AddImageButton("delete" .. id, "ico_red_x", Styler:ScaleFactor({ 16, 16 })))
 		deleteButton.OnClick = function()
 			encounter.entities[id].delete = true
 			self:buildEncounterView(parent, encounter)
 		end
 
-		local settingsButton = Styler:ImageButton(managementCell:AddImageButton("settings", "ico_edit_d", Styler:ScaleFactor({ 16, 16 })))
-		settingsButton.SameLine = true
-		settingsButton.OnClick = function()
-		end
+		-- local settingsButton = Styler:ImageButton(entityGroup:AddImageButton("settings", "ico_edit_d", Styler:ScaleFactor({ 16, 16 })))
+		-- settingsButton.SameLine = true
+		-- settingsButton.OnClick = function()
+		-- 	entity.mutators = entity.mutators or {}
+		-- 	MutationDesigner:RenderMutatorsSidebarStyle(designerSection, entity.mutators)
+		-- end
 
-		local entityCell = row:AddCell()
 		---@type CharacterTemplate
 		local characterTemplate = Ext.ClientTemplate.GetTemplate(entity.template)
-		local icon = entityCell:AddImage(characterTemplate.Icon, Styler:ScaleFactor({ 48, 48 }))
+		local icon = entityGroup:AddImage(characterTemplate.Icon, Styler:ScaleFactor({ 48, 48 }))
 		if icon.ImageData.Icon == "" then
 			icon:Destroy()
-			icon = entityCell:AddImage("Item_Unknown", Styler:ScaleFactor({ 48, 48 }))
+			icon = entityGroup:AddImage("Item_Unknown", Styler:ScaleFactor({ 48, 48 }))
 		end
+		icon.SameLine = true
 
-		local nameGroup = entityCell:AddGroup("entity")
+		local nameGroup = entityGroup:AddGroup("entity")
 		nameGroup.SameLine = true
 
 		---@type ExtuiTextLink
 		local name = Styler:Color(nameGroup:AddTextLink(entity.displayName), "PlainLink")
-		local openPopupFunc = Styler:HyperlinkRenderable(name, entity.template, "Shift", false, nil, function(parent)
+		local openPopupFunc = Styler:HyperlinkRenderable(name, entity.template, "Shift", true, nil, function(parent)
 			CharacterWindow:BuildWindow(parent, entity.template)
 		end)
 
 		name.OnClick = function()
 			if not openPopupFunc() then
-				EncounterDesigner:buildDesigner(designerSection, entity)
+				MutationDesigner:RenderMutatorsSidebarStyle(designerSection, entity.mutators)
 			end
 		end
 
@@ -203,37 +201,40 @@ function MonsterLab:buildEncounterView(parent, encounter)
 	createEntityButton:SetStyle("SelectableTextAlign", 0.5)
 	createEntityButton.OnClick = function()
 		createEntityButton.Selected = false
-		self:buildCreateEntityForm(parent, encounter)
+
+		self:buildCreateEntityForm(designerSection, encounter, function()
+			self:buildEncounterView(parent, encounter)
+		end)
 	end
 end
 
 ---@param parent ExtuiTreeParent
 ---@param encounter MonsterLabEncounter
-function MonsterLab:buildCreateEntityForm(parent, encounter)
+---@param completedCallback fun()
+function MonsterLab:buildCreateEntityForm(parent, encounter, completedCallback)
 	TemplateSelector:init()
 
-	Helpers:KillChildren(self.popup)
-	self.popup:Open()
+	Helpers:KillChildren(parent)
 
-	Styler:CheapTextAlign("Choose A Character Template", self.popup, "Big")
-	self.popup:AddText("Chosen Template: ")
-	local chosenTemplateGroup = self.popup:AddGroup("template")
+	Styler:CheapTextAlign("Choose A Character Template", parent, "Big")
+	parent:AddText("Chosen Template: ")
+	local chosenTemplateGroup = parent:AddGroup("template")
 	chosenTemplateGroup.SameLine = true
 	local chosenTemplateId
 
-	local submit = self.popup:AddButton("Submit")
+	local submit = parent:AddButton("Submit")
 
-	local searchBox = self.popup:AddInputText("")
+	local searchBox = parent:AddInputText("")
 	searchBox.Hint = "Search Template Name or UUID"
 
 	local templateSources = {}
 
-	self.popup:AddText("From Mod: ")
-	local modCombo = self.popup:AddCombo("")
+	parent:AddText("From Mod: ")
+	local modCombo = parent:AddCombo("")
 	modCombo.SameLine = true
 	modCombo.WidthFitPreview = true
 
-	local templatesWindow = self.popup:AddChildWindow("Templates")
+	local templatesWindow = parent:AddChildWindow("Templates")
 	templatesWindow.Size = Styler:ScaleFactor({ 0, 600 })
 	local templatesTable = templatesWindow:AddTable("Templates", 3)
 	local function buildResults()
@@ -323,16 +324,17 @@ function MonsterLab:buildCreateEntityForm(parent, encounter)
 
 	submit.OnClick = function()
 		if chosenTemplateId then
-			self.popup:Open()
-			FormBuilder:CreateForm(self.popup, function(formResults)
+			FormBuilder:CreateForm(parent, function(formResults)
 					encounter.entities[FormBuilder:generateGUID()] = {
 						displayName = formResults.displayName,
 						title = formResults.Title,
 						template = chosenTemplateId,
-						coordinates = { 0, 0, 0 }
+						coordinates = { 0, 0, 0 },
+						rotation = 0,
+						mutators = {},
 					} --[[@as MonsterLabEntity]]
 
-					self:buildEncounterView(parent, encounter)
+					completedCallback()
 				end,
 				{
 					{

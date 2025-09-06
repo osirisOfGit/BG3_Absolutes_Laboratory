@@ -411,6 +411,10 @@ end
 ---@param parent ExtuiTreeParent
 ---@param mutators Mutator[]
 function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMutator)
+	if not popup then
+		popup = parent.ParentElement:AddPopup("Popup")
+	end
+
 	Helpers:KillChildren(parent)
 
 	local mutatorTable = Styler:TwoColumnTable(parent, "mutators")

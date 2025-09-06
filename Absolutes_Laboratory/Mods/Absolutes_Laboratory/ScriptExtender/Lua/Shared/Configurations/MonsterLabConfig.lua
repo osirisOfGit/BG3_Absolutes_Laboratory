@@ -45,7 +45,9 @@ ConfigurationStructure.DynamicClassDefinitions.monsterLab.encounter = {
 	---@type number[]
 	baseCoords = {},
 	---@type Guid?
-	modId = nil
+	modId = nil,
+	---@type Mutator[]
+	mutators = {}
 }
 
 ---@class MonsterLabEntity
@@ -57,5 +59,7 @@ ConfigurationStructure.DynamicClassDefinitions.monsterLab.entity = {
 	---@type number[] x,y,z
 	coordinates = {},
 	---@type number
-	rotation = 0
+	rotation = 0,
+	---@type Mutator[]
+	mutators = {}
 }
