@@ -273,6 +273,7 @@ end
 ---@param callback fun(swap: boolean?): boolean
 function Styler:ToggleButton(parent, opt1, opt2, startSameLine, callback)
 	local option1 = parent:AddButton(opt1)
+	option1.AllowDuplicateId = true
 	option1.Disabled = true
 	self:Color(option1, "DisabledButton")
 	option1.SameLine = startSameLine or false
@@ -280,9 +281,11 @@ function Styler:ToggleButton(parent, opt1, opt2, startSameLine, callback)
 	local toggle = parent:AddSliderInt("", callback() and 0 or 1, 0, 1)
 	toggle:SetColor("Text", { 1, 1, 1, 0 })
 	toggle.SameLine = true
+	toggle.AllowDuplicateId = true
 	toggle.ItemWidth = 80 * Styler:ScaleFactor()
 
 	local option2 = parent:AddButton(opt2)
+	option2.AllowDuplicateId = true
 	option2.Disabled = true
 	self:Color(option2, "ActiveButton")
 	option2.SameLine = true

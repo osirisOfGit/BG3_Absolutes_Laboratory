@@ -34,9 +34,7 @@ function ConfigurationStructure:generate_recursive_metatable(proxy_table, real_t
 				this_table._parent_table[this_table._parent_key] = nil
 			else
 				if value == nil then
-					if real_table[key] then
-						real_table[key] = nil
-					end
+					real_table[key] = nil
 				else
 					if type(key) == "string" and tonumber(key) then
 						key = tonumber(key)

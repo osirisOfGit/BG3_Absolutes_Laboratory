@@ -461,61 +461,90 @@ right-click to modify or delete that ruleset. The Base ruleset can't be modified
 			local customizeModifiersMenu = self.popup:AddMenu("Customize Ruleset Modifiers")
 			customizeModifiersMenu.IDContext = rulesetId
 
-			for modifier, modifierId in TableUtils:OrderedPairs(Lab_RulesetModifiers) do
-				---@type ResourceRulesetModifier
-				local modifierResource = Ext.StaticData.Get(modifierId, "RulesetModifier")
+			---@type ExtuiMenu
+			local selectModifiersMenu = customizeModifiersMenu:AddMenu("Select Modifiers")
 
-				local enabledCheckbox = customizeModifiersMenu:AddCheckbox("", ruleset.activeModifiers[modifierId] ~= nil)
-				local sep = customizeModifiersMenu:AddSeparatorText(modifierResource.DisplayName:Get() or modifier)
-				sep:SetStyle("SeparatorTextAlign", 0.2)
-				sep.SameLine = true
+			local modGroup = customizeModifiersMenu:AddGroup("mods")
 
+			local function buildCustomizer()
+				modGroup.Visible = TableUtils:CountElements(ruleset.activeModifiers) ~= 0
+				Helpers:KillChildren(modGroup)
+				for modifierId in TableUtils:OrderedPairs(ruleset.activeModifiers, function(key)
+					---@type ResourceRulesetModifier
+					local modifierResource = Ext.StaticData.Get(key, "RulesetModifier")
+					return tostring(modifierResource.RulesetModifierType) .. (modifierResource.DisplayName:Get() or modifierResource.Name)
+				end) do
+					---@type ResourceRulesetModifier
+					local modifierResource = Ext.StaticData.Get(modifierId, "RulesetModifier")
 
-				local modifierGroup = customizeModifiersMenu:AddGroup(modifierId)
-				modifierGroup.Disabled = not enabledCheckbox.Checked
-				enabledCheckbox.OnChange = function()
-					modifierGroup.Disabled = not enabledCheckbox.Checked
-					if enabledCheckbox.Checked then
-						ruleset.activeModifiers[modifierId] = {}
-					else
-						if type(ruleset.activeModifiers[modifierId]) == "table" then
-							ruleset.activeModifiers[modifierId].delete = true
-						else
-							ruleset.activeModifiers[modifierId] = nil
+					modGroup:AddSeparatorText(modifierResource.DisplayName:Get() or modifierResource.Name)
+
+					local modifierGroup = modGroup:AddGroup(modifierId)
+					modifierGroup.IDContext = modifierId
+
+					if modifierResource.RulesetModifierType == 4 then
+						Styler:ToggleButton(modifierGroup, "Enabled", "Disabled", false, function(swap)
+							if swap then
+								ruleset.activeModifiers[modifierId] = not ruleset.activeModifiers[modifierId]
+							end
+							return ruleset.activeModifiers[modifierId]
+						end)
+					elseif modifierResource.RulesetModifierType == 3 then
+						local resourceModifierValues = {}
+						for _, modifierValueId in pairs(Ext.StaticData.GetAll("RulesetModifierOption")) do
+							---@type ResourceRulesetModifierOption
+							local rulesetModifierValue = Ext.StaticData.Get(modifierValueId, "RulesetModifierOption")
+							if rulesetModifierValue.Modifier == modifierId then
+								table.insert(resourceModifierValues, rulesetModifierValue.DisplayName:Get())
+							end
 						end
-					end
-				end
+						table.sort(resourceModifierValues)
 
-				if modifierResource.RulesetModifierType == 4 then
-					Styler:ToggleButton(modifierGroup, "Disabled", "Enabled", false, function(swap)
-						if swap then
-							ruleset.activeModifiers[modifierId] = not ruleset.activeModifiers[modifierId] and true or false
-						end
-						return ruleset.activeModifiers[modifierId]
-					end)
-				elseif modifierResource.RulesetModifierType == 3 then
-					local resourceModifierValues = {}
-					for _, modifierValueId in pairs(Ext.StaticData.GetAll("RulesetModifierOption")) do
-						---@type ResourceRulesetModifierOption
-						local rulesetModifierValue = Ext.StaticData.Get(modifierValueId, "RulesetModifierOption")
-						if rulesetModifierValue.Modifier == modifierId then
-							table.insert(resourceModifierValues, rulesetModifierValue.DisplayName:Get())
-						end
-					end
-					table.sort(resourceModifierValues)
+						local selectedModifiers = ruleset.activeModifiers[modifierId]
 
-					ruleset.activeModifiers[modifierId] = ruleset.activeModifiers[modifierId] or {}
-					local selectedModifiers = ruleset.activeModifiers[modifierId]
-
-					for i, modifierOption in ipairs(resourceModifierValues) do
-						local box = modifierGroup:AddCheckbox(modifierOption, selectedModifiers[modifierOption] or false)
-						box.SameLine = i > 1
-						box.OnChange = function()
-							selectedModifiers[modifierOption] = box.Checked
+						for i, modifierOption in ipairs(resourceModifierValues) do
+							local box = modifierGroup:AddCheckbox(modifierOption, TableUtils:IndexOf(selectedModifiers, modifierOption) ~= nil)
+							box.IDContext = modifierId
+							box.SameLine = i > 1
+							box.OnChange = function()
+								if box.Checked then
+									table.insert(selectedModifiers, modifierOption)
+								else
+									selectedModifiers[TableUtils:IndexOf(selectedModifiers, modifierOption)] = nil
+									TableUtils:ReindexNumericTable(selectedModifiers)
+								end
+							end
 						end
 					end
 				end
 			end
+			buildCustomizer()
+
+			for modifierName, modifierId in TableUtils:OrderedPairs(Lab_RulesetModifiers, function(_, value)
+				---@type ResourceRulesetModifier
+				local modifierResource = Ext.StaticData.Get(value, "RulesetModifier")
+				return tostring(modifierResource.RulesetModifierType) .. (modifierResource.DisplayName:Get() or modifierResource.Name)
+			end) do
+				---@type ResourceRulesetModifier
+				local modifierResource = Ext.StaticData.Get(modifierId, "RulesetModifier")
+
+				---@type ExtuiSelectable
+				local modSelect = selectModifiersMenu:AddSelectable(modifierResource.DisplayName:Get() or modifierResource.Name, "DontClosePopups")
+				modSelect.Selected = ruleset.activeModifiers[modifierId] ~= nil
+				modSelect.OnClick = function()
+					if ruleset.activeModifiers[modifierId] ~= nil then
+						if type(ruleset.activeModifiers[modifierId]) == "table" then
+							ruleset.activeModifiers[modifierId].delete = true
+						end
+						ruleset.activeModifiers[modifierId] = nil
+					else
+						ruleset.activeModifiers[modifierId] = modifierResource.RulesetModifierType == 3 and {} or false
+					end
+
+					buildCustomizer()
+				end
+			end
+
 			self.popup:AddSelectable("Delete Ruleset").OnClick = function()
 				self.config.rulesets[rulesetId].delete = true
 				self:ManageRulesets(parent, rulesetSelectCallback)

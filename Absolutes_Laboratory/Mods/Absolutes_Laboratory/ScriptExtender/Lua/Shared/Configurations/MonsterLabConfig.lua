@@ -87,7 +87,7 @@ ConfigurationStructure.DynamicClassDefinitions.monsterLab.rulesetModifiers = {
 
 ---@class MonsterLab_Ruleset
 ConfigurationStructure.DynamicClassDefinitions.monsterLab.ruleset = {
-	---@type {[string]: (string|boolean|number)|(string|boolean|number)[]}
+	---@type {[string]: (boolean)|(string[])}
 	activeModifiers = {},
 	negate = false,
 	name = "",
@@ -101,7 +101,7 @@ Lab_RulesetModifiers = {
 	["HARD_MODE"] = "0bf382a5-e32a-4310-807c-6de89de471b2",
 	["HIDE_NPC_HP"] = "9b349f94-e520-4c49-83e1-c0a8e0543710",
 	["HONOUR_STATS"] = "ef0506df-da9f-40e2-903a-1349523c1ae4",
-	["IRONMAN_MODE "] = "338450d9-d77d-4950-9e1e-0e7f12210bb3",
+	["IRONMAN_MODE"] = "338450d9-d77d-4950-9e1e-0e7f12210bb3",
 	["NO_DEATH_SAVING_THROWS "] = "8a26f431-6f20-4f62-9733-160c77fe4879",
 	["NO_FREE_FIRST_STRIKE"] = "b2bf9487-6d94-4292-803f-1c2bdf0975c6",
 	["NPC_CAN_CRITICAL_HIT"] = "ebb6a5ea-07d4-4176-b787-bbdab2758527",
