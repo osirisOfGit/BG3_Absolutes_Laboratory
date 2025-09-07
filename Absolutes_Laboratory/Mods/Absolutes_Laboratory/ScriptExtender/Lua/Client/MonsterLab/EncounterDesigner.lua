@@ -32,6 +32,8 @@ function EncounterDesigner:buildDesigner(encounter)
 		self.designerWindow.Closeable = true
 
 		self.popup = self.designerWindow:AddPopup("encounter")
+		self.popup:SetColor("PopupBg", { 0, 0, 0, 1 })
+		self.popup:SetColor("Border", { 1, 0, 0, 0.5 })
 
 		self.designerModeHeader = Ext.IMGUI.NewWindow("ACTIVE DESIGNER MODE")
 		self.designerModeHeader.Closeable = false
@@ -204,6 +206,17 @@ function EncounterDesigner:buildDesigner(encounter)
 					y = encounter.baseCoords[2],
 					z = encounter.baseCoords[3],
 				})
+			end
+
+			local openExtraSettingsButton = Styler:ImageButton(ele:AddImageButton("Extra_Settings", "ico_combatlog_h", Styler:ScaleFactor({ 48, 48 })))
+			openExtraSettingsButton.SameLine = true
+
+			local extraSettingsGroup = self.designerWindow:AddGroup("ExtraSettings")
+			extraSettingsGroup.Visible = false
+
+			self:manageExtraSettings(extraSettingsGroup, encounter)
+			openExtraSettingsButton.OnClick = function()
+				extraSettingsGroup.Visible = not extraSettingsGroup.Visible
 			end
 		end)
 
@@ -380,7 +393,7 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 
 			local rotateButton = rotationGroup:AddButton("+.25")
 			local rotationValue = rotationGroup:AddInputScalar("", mlEntity.rotation)
-			rotationValue.ItemWidth = 85  * Styler:ScaleFactor()
+			rotationValue.ItemWidth = 85 * Styler:ScaleFactor()
 			rotateButton.OnClick = function()
 				local newVal = rotationValue.Value[1] + .25
 				rotationValue.Value = { newVal, newVal, newVal, newVal }
@@ -484,4 +497,88 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 	end
 
 	renderGroupCards()
+end
+
+---@param parent ExtuiTreeParent
+---@param encounter MonsterLabEncounter
+function EncounterDesigner:manageExtraSettings(parent, encounter)
+	Helpers:KillChildren(parent)
+
+	parent:AddText("Copy Values By Selecting Entity: ")
+	local pickEntityButton = Styler:ImageButton(parent:AddImageButton("PickEntityButton", "Spell_Divination_TrueStrike", Styler:ScaleFactor({ 36, 36 })))
+	pickEntityButton.SameLine = true
+	pickEntityButton.UserData = false
+
+	parent:AddText("CombatGroupId: ")
+	local combatGroupId = parent:AddInputText("", encounter.combatGroupId)
+
+	parent:AddText("Faction: ")
+	local factionDisplayName
+	factionDisplayName = Styler:HyperlinkText(parent, "", function(parent)
+		if factionDisplayName.UserData then
+			ResourceManager:RenderDisplayWindow(Ext.StaticData.Get(factionDisplayName.UserData, "Faction"), parent)
+		end
+	end)
+	factionDisplayName.SameLine = true
+
+	local factionInput = parent:AddInputText("", encounter.faction)
+
+	local function setFactionDisplayName()
+		factionDisplayName.UserData = nil
+
+		if factionInput.Text ~= "" then
+			---@type ResourceFaction?
+			local faction = Ext.StaticData.Get(factionInput.Text, "Faction")
+			if faction then
+				factionDisplayName.Label = faction.Faction
+				factionDisplayName.UserData = faction.ResourceUUID
+			end
+		end
+	end
+	setFactionDisplayName()
+
+	pickEntityButton.OnClick = function()
+		if not pickEntityButton.UserData then
+			combatGroupId.Disabled = true
+			factionInput.Disabled = true
+
+			pickEntityButton.UserData = true
+			local tickSub = Ext.Events.Tick:Subscribe(function(e)
+				local entity = Ext.ClientUI.GetPickingHelper(1).Inner.Inner[1].GameObject
+				if entity and entity.ClientCharacter and not entity.Vars.AbsolutesLaboratory_MonsterLab_Entity then
+					if entity.CombatParticipant and entity.CombatParticipant.CombatGroupId then
+						combatGroupId.Text = entity.CombatParticipant.CombatGroupId
+					end
+
+					if entity.Faction and entity.Faction.field_8 then
+						factionInput.Text = entity.Faction.field_8
+						setFactionDisplayName()
+					end
+				else
+					combatGroupId.Text = encounter.combatGroupId
+					factionInput.Text = encounter.faction
+					setFactionDisplayName()
+				end
+			end)
+
+			local mouseSub
+			mouseSub = Ext.Events.MouseButtonInput:Subscribe(
+			---@param e EclLuaMouseButtonEvent
+				function(e)
+					if e.Pressed then
+						if e.Button == 3 then
+							Ext.Events.Tick:Unsubscribe(tickSub)
+							Ext.Events.MouseButtonInput:Unsubscribe(mouseSub)
+							combatGroupId.Disabled = false
+							combatGroupId:OnChange()
+							factionInput.Disabled = false
+							factionInput:OnChange()
+
+							pickEntityButton.UserData = false
+						else
+						end
+					end
+				end)
+		end
+	end
 end

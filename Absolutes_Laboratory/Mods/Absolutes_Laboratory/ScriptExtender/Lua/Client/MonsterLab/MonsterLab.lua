@@ -69,12 +69,15 @@ function MonsterLab:buildFolderView(parent, designerSection)
 			Helpers:KillChildren(self.popup)
 			self.popup:Open()
 			FormBuilder:CreateForm(self.popup, function(formResults)
-					folder.encounters[FormBuilder:generateGUID()] = {
+				local encounterId = FormBuilder:generateGUID()
+					folder.encounters[encounterId] = {
 						name = formResults.Name,
 						description = formResults.Description,
 						entities = {},
 						gameLevel = EntityRecorder.Levels[1],
-						baseCoords = { 0, 0, 0 }
+						baseCoords = { 0, 0, 0 },
+						combatGroupId = encounterId,
+						faction = "64321d50-d516-b1b2-cfac-2eb773de1ff6"
 					}
 
 					self:buildFolderView(parent, designerSection)
@@ -451,7 +454,10 @@ right-click to modify or delete that ruleset. The Base ruleset can't be modified
 		createdOne = true
 
 		rulesetButton.IDContext = rulesetId
-		rulesetButton:Tooltip():AddText("\t" .. ruleset.description)
+		if ruleset.description ~= "" then
+			rulesetButton:Tooltip():AddText("\t" .. ruleset.description)
+		end
+
 		if rulesetId == self.activeRuleset then
 			Styler:Color(rulesetButton, "ActiveButton")
 			lastActiveButton = rulesetButton
