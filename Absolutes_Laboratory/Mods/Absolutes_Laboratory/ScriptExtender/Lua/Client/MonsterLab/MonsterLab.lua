@@ -134,24 +134,14 @@ function MonsterLab:buildEncounterView(parent, encounter)
 
 	Styler:MiddleAlignedColumnLayout(parent, function(ele)
 		Styler:CheapTextAlign(encounter.name, ele).Font = "Big"
-		
+
 		if encounter.description then
 			Styler:CheapTextAlign(encounter.description, parent)
-		end
-
-		ele:AddButton("Launch Designer Mode").OnClick = function()
-			EncounterDesigner:buildDesigner(encounter)
 		end
 	end)
 
 	---@type fun()
 	local buildEncounter
-
-	-- Styler:MiddleAlignedColumnLayout(parent, function(ele)
-	-- 	ele:AddButton("Launch Encounter Designer").OnClick = function()
-	-- 		EncounterDesigner:buildDesigner(encounter)
-	-- 	end
-	-- end)
 
 	Styler:MiddleAlignedColumnLayout(parent, function(ele)
 		self:ManageRulesets(ele:AddGroup("Rulesets"), function()
@@ -174,6 +164,9 @@ function MonsterLab:buildEncounterView(parent, encounter)
 		local layoutRow = layoutTable:AddRow()
 
 		local entitySidebar = layoutRow:AddCell()
+		entitySidebar:AddButton("Launch Designer Mode").OnClick = function()
+			EncounterDesigner:buildDesigner(encounter)
+		end
 		local designerSection = layoutRow:AddCell()
 
 		for id, entity in TableUtils:OrderedPairs(encounter.entities, function(key, value)
@@ -213,6 +206,10 @@ function MonsterLab:buildEncounterView(parent, encounter)
 
 			---@type ExtuiTextLink
 			local name = Styler:Color(nameGroup:AddTextLink(entity.displayName), "PlainLink")
+			name.OnRightClick = function()
+				self:buildCreateEntityForm(designerSection, encounter, buildEncounter, entity)
+			end
+
 			local openPopupFunc = Styler:HyperlinkRenderable(name, entity.template, "Shift", true, nil, function(parent)
 				CharacterWindow:BuildWindow(parent, entity.template)
 			end)
@@ -235,8 +232,6 @@ function MonsterLab:buildEncounterView(parent, encounter)
 
 					local mutatorGroup
 
-					-- Styler:MiddleAlignedColumnLayout(designerSection, function(ele)
-
 					Styler:EnableToggleButton(designerSection, "Spawn", false, function(swap)
 						if swap then
 							activeRuleset.shouldSpawn = not activeRuleset.shouldSpawn
@@ -250,7 +245,6 @@ function MonsterLab:buildEncounterView(parent, encounter)
 						end
 						return activeRuleset.shouldSpawn
 					end)
-					-- end)
 
 					mutatorGroup = designerSection:AddGroup("DesignIt")
 
@@ -303,7 +297,7 @@ function MonsterLab:buildCreateEntityForm(parent, encounter, completedCallback, 
 	parent:AddText("Chosen Template: ")
 	local chosenTemplateGroup = parent:AddGroup("template")
 	chosenTemplateGroup.SameLine = true
-	local chosenTemplateId
+	local chosenTemplateId = existingEntity and existingEntity.template
 
 	local errorText = Styler:Color(parent:AddText("Name/Template fields are required!"), "ErrorText")
 	errorText.Visible = false
@@ -387,6 +381,9 @@ function MonsterLab:buildCreateEntityForm(parent, encounter, completedCallback, 
 						chosenTemplateId = templateId
 					end
 				end
+				if existingEntity and existingEntity.template == templateId then
+					templateSelect:OnClick()
+				end
 			end
 		end
 
@@ -418,7 +415,7 @@ function MonsterLab:buildCreateEntityForm(parent, encounter, completedCallback, 
 			entity.displayName = nameInput.Text
 			entity.title = titleInput.Text
 			entity.template = chosenTemplateId
-			entity.coordinates = TableUtils:DeeplyCopyTable(encounter.baseCoords._real)
+			entity.coordinates = existingEntity and existingEntity.coordinates or TableUtils:DeeplyCopyTable(encounter.baseCoords._real)
 
 			if not existingEntity then
 				encounter.entities[FormBuilder:generateGUID()] = entity
