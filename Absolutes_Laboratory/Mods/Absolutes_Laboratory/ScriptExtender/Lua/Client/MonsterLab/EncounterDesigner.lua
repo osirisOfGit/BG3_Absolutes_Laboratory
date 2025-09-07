@@ -266,9 +266,9 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 		Helpers:KillChildren(cardGroup)
 
 		local maxRowSize = math.floor(cardsWindow.LastSize[1] / (Styler:ScaleFactor() * 300))
-		local entriesPerColumn = math.floor(TableUtils:CountElements(combatGroups) / maxRowSize)
+		local entriesPerColumn = math.floor(TableUtils:CountElements(entities) / maxRowSize)
 		entriesPerColumn = entriesPerColumn > 0 and entriesPerColumn or 1
-		local layoutTable = cardGroup:AddTable("cards", maxRowSize)
+		local layoutTable = cardGroup:AddTable("cards", math.min(TableUtils:CountElements(entities), maxRowSize))
 
 		local row = layoutTable:AddRow()
 
@@ -367,7 +367,7 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 				coordsGroup:AddText(coord .. ": ").SameLine = i > 1
 				local input = coordsGroup:AddInputScalar("", mlEntity.coordinates[i])
 				input.SameLine = true
-				input.ItemWidth = Styler:ScaleFactor() * 65
+				input.ItemWidth = Styler:ScaleFactor() * 85
 				input.OnChange = function()
 					mlEntity.coordinates[i] = input.Value[1]
 				end
@@ -380,6 +380,7 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 
 			local rotateButton = rotationGroup:AddButton("+.25")
 			local rotationValue = rotationGroup:AddInputScalar("", mlEntity.rotation)
+			rotationValue.ItemWidth = 85  * Styler:ScaleFactor()
 			rotateButton.OnClick = function()
 				local newVal = rotationValue.Value[1] + .25
 				rotationValue.Value = { newVal, newVal, newVal, newVal }
@@ -425,7 +426,6 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 					---@type ResourceAnimationResource?
 					local existingAnimation = Ext.Resource.Get(animationConfig.simple, "Animation")
 					local animationInput = animationGroup:AddInputText("", existingAnimation and existingAnimation.SourceFile:match("([^/\\]+)$") or "")
-					animationInput.ItemWidth = 500
 					animationInput.Hint = "Enter UUID"
 					animationInput.OnChange = function()
 						---@type ResourceAnimationResource
