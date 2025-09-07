@@ -47,7 +47,7 @@ function EncounterDesigner:buildDesigner(encounter)
 			local manageDesignerModeRequest = { playersCanDialogue = false, playersCanFight = false }
 
 			Styler:CheapTextAlign("Players:", ele)
-			Styler:ToggleButton(ele, "Can Fight", "Can't Fight", false, function(swap)
+			Styler:DualToggleButton(ele, "Can Fight", "Can't Fight", false, function(swap)
 				if swap then
 					manageDesignerModeRequest.playersCanFight = not manageDesignerModeRequest.playersCanFight
 					Channels.ManageDesignerMode:SendToServer(manageDesignerModeRequest)
@@ -57,7 +57,7 @@ function EncounterDesigner:buildDesigner(encounter)
 
 			ele:AddText(" | ").SameLine = true
 
-			Styler:ToggleButton(ele, "Can Dialogue", "Can't Dialogue", true, function(swap)
+			Styler:DualToggleButton(ele, "Can Dialogue", "Can't Dialogue", true, function(swap)
 				if swap then
 					manageDesignerModeRequest.playersCanDialogue = not manageDesignerModeRequest.playersCanDialogue
 					Channels.ManageDesignerMode:SendToServer(manageDesignerModeRequest)
@@ -409,7 +409,7 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 			local refreshAnimFunc
 
 			Styler:MiddleAlignedColumnLayout(animationHeader, function(ele)
-				Styler:ToggleButton(ele, "Basic", "Looping", false, function(swap)
+				Styler:DualToggleButton(ele, "Basic", "Looping", false, function(swap)
 					if swap then
 						mlEntity.animation.simple = not mlEntity.animation.simple and "" or nil
 						refreshAnimFunc()

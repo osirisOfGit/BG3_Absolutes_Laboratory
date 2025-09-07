@@ -271,7 +271,7 @@ end
 ---@param opt2 string
 ---@param startSameLine boolean
 ---@param callback fun(swap: boolean?): boolean
-function Styler:ToggleButton(parent, opt1, opt2, startSameLine, callback)
+function Styler:DualToggleButton(parent, opt1, opt2, startSameLine, callback)
 	local option1 = parent:AddButton(opt1)
 	option1.AllowDuplicateId = true
 	option1.Disabled = true
@@ -323,6 +323,57 @@ function Styler:ToggleButton(parent, opt1, opt2, startSameLine, callback)
 	end
 end
 
+---@param parent ExtuiTreeParent
+---@param buttonText string
+---@param startSameLine boolean
+---@param callback fun(swap: boolean?): boolean
+function Styler:EnableToggleButton(parent, buttonText, startSameLine, callback)
+	local option1 = parent:AddButton(buttonText)
+	option1.AllowDuplicateId = true
+	option1.Disabled = true
+	self:Color(option1, "ActiveButton")
+	option1.SameLine = startSameLine or false
+
+	local toggle = parent:AddSliderInt("", callback() and 0 or 1, 0, 1)
+	toggle:SetColor("Text", { 1, 1, 1, 0 })
+	toggle:SetColor("SliderGrab", { 0, 1, 0.2, 1 })
+	toggle.SameLine = true
+	toggle.AllowDuplicateId = true
+	toggle.ItemWidth = 80 * Styler:ScaleFactor()
+
+	if callback() then
+		self:Color(option1, "ActiveButton")
+		toggle:SetColor("SliderGrab", { 0, 1, 0.2, 0.3 })
+	else
+		self:Color(option1, "DisabledButton")
+		toggle:SetColor("SliderGrab", { 1, 0.2, 0, 0.3 })
+	end
+
+	toggle.OnActivate = function()
+		-- Prevents the user from keeping hold of the grab, triggering the Deactivate instantly
+		-- Slider Grab POS won't update if changed during an OnClick or OnActivate event
+		toggle.Disabled = true
+	end
+
+	toggle.OnDeactivate = function()
+		toggle.Disabled = false
+
+		local useFirstOption = not callback()
+		local newValue = useFirstOption and 0 or 1
+		toggle.Value = { newValue, newValue, newValue, newValue }
+
+		if useFirstOption then
+			self:Color(option1, "ActiveButton")
+			toggle:SetColor("SliderGrab", { 0, 1, 0.2, 0.30 })
+		else
+			self:Color(option1, "DisabledButton")
+			toggle:SetColor("SliderGrab", { 1, 0.2, 0, 0.30 })
+		end
+
+		callback(true)
+	end
+end
+
 ---@param colour number[]
 function Styler:ConvertRGBAToIMGUI(colour)
 	for i, col in ipairs(colour) do
@@ -344,12 +395,16 @@ Styler.Colours = {
 	DisabledButton = function(button)
 		button:SetColor("Button", { 0, 0, 0, 0 })
 	end,
+	ErrorText = function(text)
+		text:SetColor("Text", { 1, 0.02, 0, 1 })
+	end,
 }
 
----@param element ExtuiStyledRenderable
----@param property string|"PlainLink"|"ActiveButton"|"DisabledButton"
+---@generic Ele : ExtuiStyledRenderable
+---@param element Ele
+---@param property string|"PlainLink"|"ActiveButton"|"DisabledButton"|"ErrorText"
 ---@param color number[]?
----@return ExtuiStyledRenderable
+---@return Ele
 function Styler:Color(element, property, color)
 	if not color then
 		Styler.Colours[property](element)

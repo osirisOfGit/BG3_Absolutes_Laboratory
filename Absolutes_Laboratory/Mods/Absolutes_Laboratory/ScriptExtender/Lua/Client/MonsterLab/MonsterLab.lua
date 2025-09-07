@@ -165,7 +165,6 @@ function MonsterLab:buildEncounterView(parent, encounter)
 		local entitySidebar = layoutRow:AddCell()
 		local designerSection = layoutRow:AddCell()
 
-
 		for id, entity in TableUtils:OrderedPairs(encounter.entities, function(key, value)
 			return value.displayName
 		end) do
@@ -173,6 +172,7 @@ function MonsterLab:buildEncounterView(parent, encounter)
 			local deleteButton = Styler:ImageButton(entityGroup:AddImageButton("delete" .. id, "ico_red_x", Styler:ScaleFactor({ 16, 16 })))
 			deleteButton.OnClick = function()
 				encounter.entities[id].delete = true
+				Helpers:KillChildren(designerSection)
 				buildEncounter()
 			end
 
@@ -226,7 +226,11 @@ function MonsterLab:buildEncounterView(parent, encounter)
 						end)
 
 						Styler:CheapTextAlign(entity.displayName, ele, "Big")
-						Styler:ToggleButton(ele, "Spawn", "Don't Spawn", false, function(swap)
+						if entity.title ~= "" then
+							Styler:CheapTextAlign(entity.title, ele, "Small")
+						end
+						
+						Styler:EnableToggleButton(ele, "Spawn", false, function(swap)
 							if swap then
 								activeRuleset.shouldSpawn = not activeRuleset.shouldSpawn
 								if not activeRuleset.shouldSpawn then
@@ -277,16 +281,29 @@ end
 ---@param parent ExtuiTreeParent
 ---@param encounter MonsterLabEncounter
 ---@param completedCallback fun()
-function MonsterLab:buildCreateEntityForm(parent, encounter, completedCallback)
+---@param existingEntity MonsterLabEntity?
+function MonsterLab:buildCreateEntityForm(parent, encounter, completedCallback, existingEntity)
 	TemplateSelector:init()
 
 	Helpers:KillChildren(parent)
 
-	Styler:CheapTextAlign("Choose A Character Template", parent, "Big")
+	parent:AddText("Name: ")
+	local nameInput = parent:AddInputText("", existingEntity and existingEntity.displayName)
+	nameInput.SameLine = true
+	nameInput.ItemWidth = 200
+
+	parent:AddText("Title: ")
+	local titleInput = parent:AddInputText("", existingEntity and existingEntity.title)
+	titleInput.SameLine = true
+	titleInput.ItemWidth = 200
+
 	parent:AddText("Chosen Template: ")
 	local chosenTemplateGroup = parent:AddGroup("template")
 	chosenTemplateGroup.SameLine = true
 	local chosenTemplateId
+
+	local errorText = Styler:Color(parent:AddText("Name/Template fields are required!"), "ErrorText")
+	errorText.Visible = false
 
 	local submit = parent:AddButton("Submit")
 
@@ -389,36 +406,22 @@ function MonsterLab:buildCreateEntityForm(parent, encounter, completedCallback)
 	modCombo.OnChange = buildResults
 
 	submit.OnClick = function()
-		if chosenTemplateId then
-			FormBuilder:CreateForm(parent, function(formResults)
-					local entity = TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.monsterLab.entity)
-					entity.displayName = formResults.displayName
-					entity.title = formResults.Title
-					entity.template = chosenTemplateId
-					entity.coordinates = TableUtils:DeeplyCopyTable(encounter.baseCoords._real)
-					encounter.entities[FormBuilder:generateGUID()] = entity
+		if nameInput.Text == "" or not chosenTemplateId then
+			errorText.Visible = true
+		else
+			errorText.Visible = false
 
-					completedCallback()
-				end,
-				{
-					{
-						label = "Name",
-						defaultValue = TemplateSelector.translationMap[chosenTemplateId],
-						propertyField = "displayName",
-						type = "Text",
-						errorMessageIfEmpty = "A name is required"
-					},
-					{
-						label = "Title",
-						type = "Text"
-					},
-					{
-						label = "Template",
-						type = "Text",
-						disabled = true,
-						defaultValue = TemplateSelector.translationMap[chosenTemplateId]
-					}
-				})
+			local entity = existingEntity or TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.monsterLab.entity)
+			entity.displayName = nameInput.Text
+			entity.title = titleInput.Text
+			entity.template = chosenTemplateId
+			entity.coordinates = TableUtils:DeeplyCopyTable(encounter.baseCoords._real)
+
+			if not existingEntity then
+				encounter.entities[FormBuilder:generateGUID()] = entity
+			end
+
+			completedCallback()
 		end
 	end
 end
@@ -523,7 +526,7 @@ right-click to modify or delete that ruleset. The Base ruleset can't be modified
 					modifierGroup.IDContext = modifierId
 
 					if modifierResource.RulesetModifierType == 4 then
-						Styler:ToggleButton(modifierGroup, "Enabled", "Disabled", false, function(swap)
+						Styler:DualToggleButton(modifierGroup, "Enabled", "Disabled", false, function(swap)
 							if swap then
 								ruleset.activeModifiers[modifierId] = not ruleset.activeModifiers[modifierId]
 							end

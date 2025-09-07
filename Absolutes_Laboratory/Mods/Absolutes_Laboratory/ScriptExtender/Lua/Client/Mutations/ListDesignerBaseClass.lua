@@ -378,7 +378,7 @@ function ListDesignerBaseClass:buildDesigner()
 		self:buildDesigner()
 	end
 
-	Styler:ToggleButton(self.designerSection, "Icon", "Text", true, function(swap)
+	Styler:DualToggleButton(self.designerSection, "Icon", "Text", true, function(swap)
 		local setting = ConfigurationStructure.config.mutations.settings.customLists
 		if swap then
 			setting.iconOrText = setting.iconOrText == "Icon" and "Text" or "Icon"

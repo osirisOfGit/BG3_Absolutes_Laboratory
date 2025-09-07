@@ -249,7 +249,7 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 		local entryCell = row:AddCell()
 
 		if andOrEntry then
-			Styler:ToggleButton(entryCell, "AND", "OR", true, function(swap)
+			Styler:DualToggleButton(entryCell, "AND", "OR", true, function(swap)
 				if swap then
 					existingSelector[i] = existingSelector[i] == "AND" and "OR" or "AND"
 				end
