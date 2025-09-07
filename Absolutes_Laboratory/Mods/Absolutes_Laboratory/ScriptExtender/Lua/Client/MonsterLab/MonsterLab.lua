@@ -132,19 +132,26 @@ end
 function MonsterLab:buildEncounterView(parent, encounter)
 	Helpers:KillChildren(parent)
 
-	Styler:CheapTextAlign(encounter.name, parent, "Big")
-	if encounter.description then
-		Styler:CheapTextAlign(encounter.description, parent)
-	end
+	Styler:MiddleAlignedColumnLayout(parent, function(ele)
+		Styler:CheapTextAlign(encounter.name, ele).Font = "Big"
+		
+		if encounter.description then
+			Styler:CheapTextAlign(encounter.description, parent)
+		end
+
+		ele:AddButton("Launch Designer Mode").OnClick = function()
+			EncounterDesigner:buildDesigner(encounter)
+		end
+	end)
 
 	---@type fun()
 	local buildEncounter
 
-	Styler:MiddleAlignedColumnLayout(parent, function(ele)
-		ele:AddButton("Launch Encounter Designer").OnClick = function()
-			EncounterDesigner:buildDesigner(encounter)
-		end
-	end)
+	-- Styler:MiddleAlignedColumnLayout(parent, function(ele)
+	-- 	ele:AddButton("Launch Encounter Designer").OnClick = function()
+	-- 		EncounterDesigner:buildDesigner(encounter)
+	-- 	end
+	-- end)
 
 	Styler:MiddleAlignedColumnLayout(parent, function(ele)
 		self:ManageRulesets(ele:AddGroup("Rulesets"), function()
@@ -155,8 +162,12 @@ function MonsterLab:buildEncounterView(parent, encounter)
 	local encounterGroup = parent:AddGroup("Encounter")
 
 	local lastSelectedEntity
+	---@type ExtuiImage?
+	local activeSelectedIcon
 
 	buildEncounter = function()
+		activeSelectedIcon = nil
+
 		Helpers:KillChildren(encounterGroup)
 		local layoutTable = Styler:TwoColumnTable(encounterGroup, "layout")
 		layoutTable.Resizable = false
@@ -185,6 +196,7 @@ function MonsterLab:buildEncounterView(parent, encounter)
 
 			---@type CharacterTemplate
 			local characterTemplate = Ext.ClientTemplate.GetTemplate(entity.template)
+
 			local icon = entityGroup:AddImage(characterTemplate.Icon, Styler:ScaleFactor({ 48, 48 }))
 			if icon.ImageData.Icon == "" then
 				icon:Destroy()
@@ -195,6 +207,10 @@ function MonsterLab:buildEncounterView(parent, encounter)
 			local nameGroup = entityGroup:AddGroup("entity")
 			nameGroup.SameLine = true
 
+			local selectedIcon = entityGroup:AddImage("ico_concentration", Styler:ScaleFactor({ 36, 36 }))
+			selectedIcon.Visible = false
+			selectedIcon.SameLine = true
+
 			---@type ExtuiTextLink
 			local name = Styler:Color(nameGroup:AddTextLink(entity.displayName), "PlainLink")
 			local openPopupFunc = Styler:HyperlinkRenderable(name, entity.template, "Shift", true, nil, function(parent)
@@ -203,6 +219,12 @@ function MonsterLab:buildEncounterView(parent, encounter)
 
 			name.OnClick = function()
 				if not openPopupFunc() then
+					selectedIcon.Visible = true
+					if activeSelectedIcon and activeSelectedIcon.Handle ~= selectedIcon.Handle then
+						activeSelectedIcon.Visible = false
+					end
+					activeSelectedIcon = selectedIcon
+
 					lastSelectedEntity = id
 					Helpers:KillChildren(designerSection)
 
@@ -213,37 +235,22 @@ function MonsterLab:buildEncounterView(parent, encounter)
 
 					local mutatorGroup
 
-					Styler:MiddleAlignedColumnLayout(designerSection, function(ele)
-						Styler:MiddleAlignedColumnLayout(ele, function(ele)
-							---@type CharacterTemplate
-							local characterTemplate = Ext.ClientTemplate.GetTemplate(entity.template)
-							local icon = ele:AddImage(characterTemplate.Icon, Styler:ScaleFactor({ 48, 48 }))
-							if icon.ImageData.Icon == "" then
-								icon:Destroy()
-								icon = ele:AddImage("Item_Unknown", Styler:ScaleFactor({ 48, 48 }))
-							end
-							icon.SameLine = true
-						end)
+					-- Styler:MiddleAlignedColumnLayout(designerSection, function(ele)
 
-						Styler:CheapTextAlign(entity.displayName, ele, "Big")
-						if entity.title ~= "" then
-							Styler:CheapTextAlign(entity.title, ele, "Small")
+					Styler:EnableToggleButton(designerSection, "Spawn", false, function(swap)
+						if swap then
+							activeRuleset.shouldSpawn = not activeRuleset.shouldSpawn
+							if not activeRuleset.shouldSpawn then
+								Helpers:KillChildren(mutatorGroup)
+							else
+								activeRuleset.mutators = activeRuleset.mutators or {}
+
+								MutationDesigner:RenderMutatorsSidebarStyle(mutatorGroup, activeRuleset.mutators)
+							end
 						end
-						
-						Styler:EnableToggleButton(ele, "Spawn", false, function(swap)
-							if swap then
-								activeRuleset.shouldSpawn = not activeRuleset.shouldSpawn
-								if not activeRuleset.shouldSpawn then
-									Helpers:KillChildren(mutatorGroup)
-								else
-									activeRuleset.mutators = activeRuleset.mutators or {}
-
-									MutationDesigner:RenderMutatorsSidebarStyle(mutatorGroup, activeRuleset.mutators)
-								end
-							end
-							return activeRuleset.shouldSpawn
-						end)
+						return activeRuleset.shouldSpawn
 					end)
+					-- end)
 
 					mutatorGroup = designerSection:AddGroup("DesignIt")
 
@@ -257,10 +264,6 @@ function MonsterLab:buildEncounterView(parent, encounter)
 
 			if lastSelectedEntity == id then
 				name:OnClick()
-			end
-
-			if entity.title and entity.title ~= "" then
-				nameGroup:AddText(entity.title)
 			end
 		end
 
