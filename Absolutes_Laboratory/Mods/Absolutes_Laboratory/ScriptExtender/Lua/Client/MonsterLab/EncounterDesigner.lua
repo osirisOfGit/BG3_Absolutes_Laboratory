@@ -74,6 +74,9 @@ function EncounterDesigner:buildDesigner(encounter)
 		Helpers:KillChildren(self.designerWindow)
 	end
 
+	MCM.CloseMCMWindow()
+
+
 	Ext.Timer.WaitFor(50, function()
 		self.designerModeHeader:SetPos({ 0, 0 }, "Always")
 	end)
@@ -114,6 +117,8 @@ function EncounterDesigner:buildDesigner(encounter)
 			encounterId = encounter._parent_key,
 			delete = true
 		} --[[@as ManageEncounterRequest]])
+
+		MCM.OpenMCMWindow()
 	end
 
 	Styler:MiddleAlignedColumnLayout(self.designerWindow, function(ele)

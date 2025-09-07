@@ -48,6 +48,10 @@ ConfigurationStructure.DynamicClassDefinitions.monsterLab.encounter = {
 	gameLevel = nil,
 	---@type number[]
 	baseCoords = {},
+	---@type Guid
+	faction = "",
+	---@type Guid
+	combatGroupId = "",
 	---@type Guid?
 	modId = nil,
 }

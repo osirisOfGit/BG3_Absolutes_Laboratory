@@ -395,6 +395,7 @@ function MonsterLab:buildCreateEntityForm(parent, encounter, completedCallback)
 					entity.displayName = formResults.displayName
 					entity.title = formResults.Title
 					entity.template = chosenTemplateId
+					entity.coordinates = TableUtils:DeeplyCopyTable(encounter.baseCoords._real)
 					encounter.entities[FormBuilder:generateGUID()] = entity
 
 					completedCallback()

@@ -188,15 +188,12 @@ Channels.ManageEncounterSpawns:SetHandler(
 						end
 					end
 					spawnedEntity.animation = mlEntity.animation
-				else
+				elseif not TableUtils:CompareLists(mlEntity.coordinates, { 0, 0, 0 }) then
 					if encounterEntities.entities[mlEntityId] and encounterEntities.entities[mlEntityId].realEntityId then
 						Osi.RequestDeleteTemporary(encounterEntities.entities[mlEntityId].realEntityId)
 					end
 
 					encounterEntities.entities[mlEntityId] = mlEntity
-					if TableUtils:CompareLists(mlEntity.coordinates, { 0, 0, 0 }) then
-						mlEntity.coordinates = request.encounter.baseCoords
-					end
 
 					encounterEntities.entities[mlEntityId].realEntityId = Osi.CreateAt(mlEntity.template,
 						mlEntity.coordinates[1],
