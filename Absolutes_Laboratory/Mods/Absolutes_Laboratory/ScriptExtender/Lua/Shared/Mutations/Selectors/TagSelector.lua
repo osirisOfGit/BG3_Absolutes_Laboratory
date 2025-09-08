@@ -51,9 +51,11 @@ function TagSelector:renderSelector(parent, existingSelector)
 
 	local tagSelect = tagSelectCell:AddChildWindow("Tags")
 	tagSelect.NoSavedSettings = true
+	tagSelect.Size = Styler:ScaleFactor({ 0, 400 })
 
 	local tagDisplay = row:AddCell():AddChildWindow("TagDisplay")
 	tagDisplay.NoSavedSettings = true
+	tagDisplay.Size = Styler:ScaleFactor({ 0, 400 })
 
 	local function displaySelectedTags()
 		Helpers:KillChildren(tagDisplay)
@@ -79,34 +81,36 @@ function TagSelector:renderSelector(parent, existingSelector)
 	---@param filter string?
 	local function buildSelects(filter)
 		Helpers:KillChildren(tagGroup)
-		for _, tag in ipairs(tags) do
-			if not (filter and #filter > 0)
-				or string.upper(translationMap[tag]):find(filter)
-				or string.upper(tag):find(filter)
-			then
-				---@type ExtuiSelectable
-				local select = tagGroup:AddSelectable(translationMap[tag])
-				select.UserData = tag
-				ResourceManager:RenderDisplayWindow(Ext.StaticData.Get(tag, "Tag"), select:Tooltip())
+		-- if filter and #filter >= 3 then
+			for _, tag in ipairs(tags) do
+				if not (filter and #filter > 0)
+					or string.upper(translationMap[tag]):find(filter)
+					or string.upper(tag):find(filter)
+				then
+					---@type ExtuiSelectable
+					local select = tagGroup:AddSelectable(translationMap[tag])
+					select.UserData = tag
+					ResourceManager:RenderDisplayWindow(Ext.StaticData.Get(tag, "Tag"), select:Tooltip())
 
-				if TableUtils:IndexOf(existingSelector.criteriaValue, tag) then
-					select.Selected = true
-				end
-
-				select.OnClick = function()
-					if select.Selected then
-						table.insert(existingSelector.criteriaValue, tag)
-						table.sort(existingSelector.criteriaValue, function(a, b)
-							return translationMap[a] < translationMap[b]
-						end)
-					else
-						table.remove(existingSelector.criteriaValue, TableUtils:IndexOf(existingSelector.criteriaValue, tag))
+					if TableUtils:IndexOf(existingSelector.criteriaValue, tag) then
+						select.Selected = true
 					end
-					displaySelectedTags()
-					updateFunc(#existingSelector.criteriaValue)
+
+					select.OnClick = function()
+						if select.Selected then
+							table.insert(existingSelector.criteriaValue, tag)
+							table.sort(existingSelector.criteriaValue, function(a, b)
+								return translationMap[a] < translationMap[b]
+							end)
+						else
+							table.remove(existingSelector.criteriaValue, TableUtils:IndexOf(existingSelector.criteriaValue, tag))
+						end
+						displaySelectedTags()
+						updateFunc(#existingSelector.criteriaValue)
+					end
 				end
 			end
-		end
+		-- end
 	end
 	buildSelects()
 

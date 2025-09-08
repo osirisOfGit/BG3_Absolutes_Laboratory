@@ -418,6 +418,7 @@ function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMut
 	local row = mutatorTable:AddRow()
 	local sideBar = row:AddCell()
 	local designer = row:AddCell()
+	
 
 	---@type ExtuiSelectable?
 	local activeMutatorHandle

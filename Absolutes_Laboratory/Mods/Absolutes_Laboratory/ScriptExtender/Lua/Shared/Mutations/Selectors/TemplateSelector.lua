@@ -102,9 +102,12 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 
 	local templateSelect = templateSelectCell:AddChildWindow("Templates")
 	templateSelect.NoSavedSettings = true
+	templateSelect.Size = Styler:ScaleFactor({ 0, 400 })
 
 	local templateDisplay = row:AddCell():AddChildWindow("TemplateDisplay")
 	templateDisplay.NoSavedSettings = true
+	templateDisplay.Size = Styler:ScaleFactor({ 0, 400 })
+
 
 	local function displaySelectedTemplates()
 		Helpers:KillChildren(templateDisplay)
@@ -165,52 +168,54 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 	---@param filter string?
 	local function buildSelects(filter)
 		Helpers:KillChildren(templateGroup)
-		for _, template in ipairs(templates) do
-			if not (filter and #filter > 0)
-				or string.upper(translationMap[template]):find(filter)
-				or string.upper(template):find(filter)
-			then
-				---@type ExtuiSelectable
-				local select = templateGroup:AddSelectable(translationMap[template] .. "##select")
-				select.UserData = template
-				select.Selected = TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
-					return value.id == template
-				end) ~= nil
+		if filter and #filter >= 3 then
+			for _, template in ipairs(templates) do
+				if not (filter and #filter > 0)
+					or string.upper(translationMap[template]):find(filter)
+					or string.upper(template):find(filter)
+				then
+					---@type ExtuiSelectable
+					local select = templateGroup:AddSelectable(translationMap[template] .. "##select")
+					select.UserData = template
+					select.Selected = TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
+						return value.id == template
+					end) ~= nil
 
-				local tooltip = select:Tooltip()
-				tooltip.Visible = false
-				select.OnHoverEnter = function()
-					if Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
-						tooltip.Visible = true
-						ResourceManager:RenderDisplayWindow(Ext.Template.GetTemplate(template), tooltip)
-					end
-				end
-
-				select.OnHoverLeave = function()
+					local tooltip = select:Tooltip()
 					tooltip.Visible = false
-					Helpers:KillChildren(tooltip)
-				end
-
-				select.OnClick = function()
-					if select.Selected then
-						table.insert(existingSelector.criteriaValue, {
-							id = template,
-							includeChildren = false
-						} --[[@as TemplateCriteria]])
-					else
-						local i = TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
-							return value.id == template
-						end)
-
-						if i then
-							for x = i, TableUtils:CountElements(existingSelector.criteriaValue) do
-								existingSelector.criteriaValue[x].delete = true
-								existingSelector.criteriaValue[x] = TableUtils:DeeplyCopyTable(existingSelector.criteriaValue._real[x + 1])
-							end
+					select.OnHoverEnter = function()
+						if Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
+							tooltip.Visible = true
+							ResourceManager:RenderDisplayWindow(Ext.Template.GetTemplate(template), tooltip)
 						end
 					end
-					displaySelectedTemplates()
-					updateFunc(#existingSelector.criteriaValue)
+
+					select.OnHoverLeave = function()
+						tooltip.Visible = false
+						Helpers:KillChildren(tooltip)
+					end
+
+					select.OnClick = function()
+						if select.Selected then
+							table.insert(existingSelector.criteriaValue, {
+								id = template,
+								includeChildren = false
+							} --[[@as TemplateCriteria]])
+						else
+							local i = TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
+								return value.id == template
+							end)
+
+							if i then
+								for x = i, TableUtils:CountElements(existingSelector.criteriaValue) do
+									existingSelector.criteriaValue[x].delete = true
+									existingSelector.criteriaValue[x] = TableUtils:DeeplyCopyTable(existingSelector.criteriaValue._real[x + 1])
+								end
+							end
+						end
+						displaySelectedTemplates()
+						updateFunc(#existingSelector.criteriaValue)
+					end
 				end
 			end
 		end
