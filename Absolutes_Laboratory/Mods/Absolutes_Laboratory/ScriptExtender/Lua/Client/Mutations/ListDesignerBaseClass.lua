@@ -745,10 +745,12 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 		end
 	end
 
-	if #row.Children[2].Children == 0 then
-		displayTable.Columns = 1
-	elseif #row.Children[3].Children == 0 then
-		displayTable.Columns = 2
+	if not useIcons then
+		if #row.Children[2].Children == 0 then
+			displayTable.Columns = 1
+		elseif #row.Children[3].Children == 0 then
+			displayTable.Columns = 2
+		end
 	end
 end
 
