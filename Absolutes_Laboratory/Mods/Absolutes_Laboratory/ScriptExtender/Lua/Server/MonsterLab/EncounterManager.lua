@@ -188,6 +188,14 @@ Channels.ManageEncounterSpawns:SetHandler(
 						end
 					end
 					spawnedEntity.animation = mlEntity.animation
+
+					if request.encounter.faction ~= Osi.GetFaction(spawnedEntity.realEntityId) then
+						Osi.SetFaction(spawnedEntity.realEntityId, request.encounter.faction)
+					end
+
+					if request.encounter.combatGroupId ~= Osi.GetCombatGroupID(spawnedEntity.realEntityId) then
+						Osi.SetCombatGroupID(spawnedEntity.realEntityId, request.encounter.combatGroupId)
+					end
 				elseif not TableUtils:CompareLists(mlEntity.coordinates, { 0, 0, 0 }) then
 					if encounterEntities.entities[mlEntityId] and encounterEntities.entities[mlEntityId].realEntityId then
 						Osi.RequestDeleteTemporary(encounterEntities.entities[mlEntityId].realEntityId)
@@ -211,6 +219,9 @@ Channels.ManageEncounterSpawns:SetHandler(
 							encounterId = request.encounterId,
 							mlEntityId = mlEntityId,
 						} --[[@as MonsterLab_EntityVariable]]
+
+						Osi.SetCombatGroupID(entity.Uuid.EntityUuid, request.encounter.combatGroupId)
+						Osi.SetFaction(entity.Uuid.EntityUuid, request.encounter.faction)
 
 						Osi.SetStoryDisplayName(entity.Uuid.EntityUuid, mlEntity.displayName)
 

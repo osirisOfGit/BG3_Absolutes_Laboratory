@@ -40,8 +40,6 @@ ConfigurationStructure.DynamicClassDefinitions.monsterLab.encounter = {
 	name = "",
 	---@type string?
 	description = nil,
-	---@type Guid?
-	existingCombatGroupId = nil,
 	---@type {[Guid]: MonsterLabEntity}
 	entities = {},
 	---@type GameLevel

@@ -511,6 +511,18 @@ function EncounterDesigner:manageExtraSettings(parent, encounter)
 
 	parent:AddText("CombatGroupId: ")
 	local combatGroupId = parent:AddInputText("", encounter.combatGroupId)
+	combatGroupId.OnChange = function()
+		if #combatGroupId.Text == 36 then
+			combatGroupId:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
+			encounter.combatGroupId = combatGroupId.Text
+			Channels.ManageEncounterSpawns:SendToServer({
+				encounterId = encounter._parent_key,
+				encounter = encounter._real
+			} --[[@as ManageEncounterRequest]])
+		else
+			Styler:Color(combatGroupId, "ErrorText")
+		end
+	end
 
 	parent:AddText("Faction: ")
 	local factionDisplayName
@@ -526,16 +538,35 @@ function EncounterDesigner:manageExtraSettings(parent, encounter)
 	local function setFactionDisplayName()
 		factionDisplayName.UserData = nil
 
-		if factionInput.Text ~= "" then
-			---@type ResourceFaction?
-			local faction = Ext.StaticData.Get(factionInput.Text, "Faction")
-			if faction then
-				factionDisplayName.Label = faction.Faction
-				factionDisplayName.UserData = faction.ResourceUUID
-			end
+		if #factionInput.Text == 36 then
+			pcall(function(...)
+				---@type ResourceFaction?
+				local faction = Ext.StaticData.Get(factionInput.Text, "Faction")
+				if faction then
+					factionDisplayName.Label = faction.Faction
+					factionDisplayName.UserData = faction.ResourceUUID
+				else
+					factionDisplayName.Label = ""
+				end
+			end)
+		else
+			factionDisplayName.Label = ""
 		end
 	end
 	setFactionDisplayName()
+	factionInput.OnChange = function()
+		setFactionDisplayName()
+		if #factionDisplayName.Label > 0 then
+			factionInput:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
+			encounter.faction = factionInput.Text
+			Channels.ManageEncounterSpawns:SendToServer({
+				encounterId = encounter._parent_key,
+				encounter = encounter._real
+			} --[[@as ManageEncounterRequest]])
+		else
+			Styler:Color(factionInput, "ErrorText")
+		end
+	end
 
 	pickEntityButton.OnClick = function()
 		if not pickEntityButton.UserData then
