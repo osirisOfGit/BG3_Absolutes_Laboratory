@@ -38,8 +38,11 @@ local function initialize()
 				local subRace
 
 				if race.ParentGuid and race.ParentGuid ~= "00000000-0000-0000-0000-000000000000" then
-					subRace = race
-					race = Ext.StaticData.Get(race.ParentGuid, "Race")
+					local parentRace = Ext.StaticData.Get(race.ParentGuid, "Race")
+					if parentRace then
+						subRace = race
+						race = Ext.StaticData.Get(race.ParentGuid, "Race")
+					end
 				end
 
 				if not racesWithSubraces[race.ResourceUUID] then
