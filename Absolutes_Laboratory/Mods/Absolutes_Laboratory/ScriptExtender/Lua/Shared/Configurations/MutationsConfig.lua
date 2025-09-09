@@ -169,7 +169,28 @@ ConfigurationStructure.config.mutations.settings.customLists = {
 		blackListed = { .5, .5, .5, 1 },
 	},
 	---@type "Icon"|"Text"
-	iconOrText = "Icon"
+	iconOrText = "Icon",
+	savedSpellListSpreads = {
+		spellLists   = {
+			["Default"] = {
+				[1] = 2,
+				[3] = 0,
+				[5] = 1,
+				[7] = 0,
+				[10] = 1
+			}
+		},
+		passiveLists = {
+			["Default"] = {
+				[1] = 1
+			}
+		},
+		statusLists  = {
+			["Default"] = {
+				[1] = 1
+			}
+		}
+	}
 }
 
 ---@class AbilityPriorities

@@ -400,6 +400,8 @@ end
 function SpellListMutator:renderRandomizedAmountSettings(parent, spellMutatorGroup)
 	Helpers:KillChildren(parent)
 
+	local savedPresetSpreads = ConfigurationStructure.config.mutations.settings.customLists.savedSpellListSpreads.spellLists
+
 	local popup = parent:AddPopup("Randomized")
 
 	--#region Randomized Spell Pool Size
@@ -408,11 +410,9 @@ function SpellListMutator:renderRandomizedAmountSettings(parent, spellMutatorGro
 	spellMutatorGroup.randomizedSpellPoolSize = spellMutatorGroup.randomizedSpellPoolSize or {}
 	local randomizedSpellPoolSize = spellMutatorGroup.randomizedSpellPoolSize
 	if getmetatable(randomizedSpellPoolSize) and getmetatable(randomizedSpellPoolSize).__call and not randomizedSpellPoolSize() then
-		randomizedSpellPoolSize[1] = 2
-		randomizedSpellPoolSize[3] = 0
-		randomizedSpellPoolSize[5] = 1
-		randomizedSpellPoolSize[7] = 0
-		randomizedSpellPoolSize[10] = 1
+		spellMutatorGroup.randomizedSpellPoolSize.delete = true
+		spellMutatorGroup.randomizedSpellPoolSize = TableUtils:DeeplyCopyTable(savedPresetSpreads["Default"]._real)
+		randomizedSpellPoolSize = spellMutatorGroup.randomizedSpellPoolSize
 	end
 
 	local randoSpellsTable = randoAmountHeader:AddTable("RandomSpellNumbers", 3)
@@ -477,6 +477,60 @@ This will cause Lab to give the entity 3 random spells from the selected Spell L
 			else
 				randomizedSpellPoolSize[input.Value[1]] = 2
 				self:renderRandomizedAmountSettings(parent, spellMutatorGroup)
+			end
+		end
+	end
+
+	local loadButton = randoAmountHeader:AddButton("L")
+	loadButton:Tooltip():AddText("\t Load a saved preset")
+	loadButton.SameLine = true
+	loadButton.OnClick = function()
+		Helpers:KillChildren(popup)
+		popup:Open()
+
+		for presetName, spread in TableUtils:OrderedPairs(savedPresetSpreads) do
+			if presetName ~= "Default" then
+				local delete = Styler:ImageButton(popup:AddImageButton("delete" .. presetName, "ico_red_x", { 16, 16 }))
+				delete.OnClick = function()
+					savedPresetSpreads[presetName].delete = true
+					loadButton:OnClick()
+				end
+			end
+			local loadPreset = popup:AddSelectable(presetName)
+			loadPreset.SameLine = presetName ~= "Default"
+			loadPreset.OnClick = function()
+				spellMutatorGroup.randomizedSpellPoolSize.delete = true
+				spellMutatorGroup.randomizedSpellPoolSize = TableUtils:DeeplyCopyTable(spread._real)
+				self:renderRandomizedAmountSettings(parent, spellMutatorGroup)
+			end
+		end
+	end
+
+	local saveButton = randoAmountHeader:AddButton("S")
+	saveButton:Tooltip():AddText("\t Save the current table to a new or existing preset")
+	saveButton.SameLine = true
+	saveButton.OnClick = function()
+		Helpers:KillChildren(popup)
+		popup:Open()
+
+		local nameInput = popup:AddInputText("")
+		nameInput.Hint = "New or Existing Preset Name"
+
+		local overrideConfirmation = popup:AddText("Are you sure you want to override %s?")
+		overrideConfirmation.Visible = false
+		overrideConfirmation:SetColor("Text", { 1, 0.2, 0, 1 })
+
+		local submitButton = popup:AddButton("Save")
+		submitButton.OnClick = function()
+			if overrideConfirmation.Visible or not savedPresetSpreads[nameInput.Text] then
+				if savedPresetSpreads[nameInput.Text] then
+					savedPresetSpreads[nameInput.Text].delete = true
+				end
+				savedPresetSpreads[nameInput.Text] = TableUtils:DeeplyCopyTable(randomizedSpellPoolSize._real)
+				self:renderRandomizedAmountSettings(parent, spellMutatorGroup)
+			else
+				overrideConfirmation.Label = string.format("Are you sure you want to override %s?", nameInput.Text)
+				overrideConfirmation.Visible = true
 			end
 		end
 	end

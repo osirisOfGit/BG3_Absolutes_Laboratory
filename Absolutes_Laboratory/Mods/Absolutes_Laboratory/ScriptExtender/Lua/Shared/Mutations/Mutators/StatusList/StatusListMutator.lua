@@ -177,6 +177,8 @@ end
 function StatusListMutator:renderRandomizedAmountSettings(parent, statusPool)
 	Helpers:KillChildren(parent)
 
+	local savedPresetSpreads = ConfigurationStructure.config.mutations.settings.customLists.savedSpellListSpreads.statusLists
+
 	local popup = parent:AddPopup("Randomized")
 
 	--#region Randomized Spell Pool Size
@@ -185,7 +187,9 @@ function StatusListMutator:renderRandomizedAmountSettings(parent, statusPool)
 	statusPool.randomizedStatusPoolSize = statusPool.randomizedStatusPoolSize or {}
 	local randomizedStatusPoolSize = statusPool.randomizedStatusPoolSize
 	if getmetatable(randomizedStatusPoolSize) and getmetatable(randomizedStatusPoolSize).__call and not randomizedStatusPoolSize() then
-		randomizedStatusPoolSize[1] = 1
+		statusPool.randomizedStatusPoolSize.delete = true
+		statusPool.randomizedStatusPoolSize = TableUtils:DeeplyCopyTable(savedPresetSpreads["Default"]._real)
+		randomizedStatusPoolSize = statusPool.randomizedStatusPoolSize
 	end
 
 	local randoSpellsTable = parent:AddTable("RandomSpellNumbers", 3)
@@ -250,6 +254,60 @@ This will cause Lab to give the entity 3 random statuses from the selected Statu
 			else
 				randomizedStatusPoolSize[input.Value[1]] = 2
 				self:renderRandomizedAmountSettings(parent, statusPool)
+			end
+		end
+	end
+
+	local loadButton = parent:AddButton("L")
+	loadButton:Tooltip():AddText("\t Load a saved preset")
+	loadButton.SameLine = true
+	loadButton.OnClick = function()
+		Helpers:KillChildren(popup)
+		popup:Open()
+
+		for presetName, spread in TableUtils:OrderedPairs(savedPresetSpreads) do
+			if presetName ~= "Default" then
+				local delete = Styler:ImageButton(popup:AddImageButton("delete" .. presetName, "ico_red_x", { 16, 16 }))
+				delete.OnClick = function()
+					savedPresetSpreads[presetName].delete = true
+					loadButton:OnClick()
+				end
+			end
+			local loadPreset = popup:AddSelectable(presetName)
+			loadPreset.SameLine = presetName ~= "Default"
+			loadPreset.OnClick = function()
+				statusPool.randomizedStatusPoolSize.delete = true
+				statusPool.randomizedStatusPoolSize = TableUtils:DeeplyCopyTable(spread._real)
+				self:renderRandomizedAmountSettings(parent, statusPool)
+			end
+		end
+	end
+
+	local saveButton = parent:AddButton("S")
+	saveButton:Tooltip():AddText("\t Save the current table to a new or existing preset")
+	saveButton.SameLine = true
+	saveButton.OnClick = function()
+		Helpers:KillChildren(popup)
+		popup:Open()
+
+		local nameInput = popup:AddInputText("")
+		nameInput.Hint = "New or Existing Preset Name"
+
+		local overrideConfirmation = popup:AddText("Are you sure you want to override %s?")
+		overrideConfirmation.Visible = false
+		overrideConfirmation:SetColor("Text", { 1, 0.2, 0, 1 })
+
+		local submitButton = popup:AddButton("Save")
+		submitButton.OnClick = function()
+			if overrideConfirmation.Visible or not savedPresetSpreads[nameInput.Text] then
+				if savedPresetSpreads[nameInput.Text] then
+					savedPresetSpreads[nameInput.Text].delete = true
+				end
+				savedPresetSpreads[nameInput.Text] = TableUtils:DeeplyCopyTable(randomizedStatusPoolSize._real)
+				self:renderRandomizedAmountSettings(parent, statusPool)
+			else
+				overrideConfirmation.Label = string.format("Are you sure you want to override %s?", nameInput.Text)
+				overrideConfirmation.Visible = true
 			end
 		end
 	end
