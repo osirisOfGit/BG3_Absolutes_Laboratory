@@ -501,7 +501,7 @@ BoostsMutator.BoostDefinitions = {
 		"number"
 	},
 	StatusImmunity = {
-		"status"
+		"StatsStatusGroup"
 	},
 	Tag = {
 		"Tag"
