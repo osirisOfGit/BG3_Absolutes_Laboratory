@@ -32,6 +32,7 @@ EntityHandleProxy.fieldsToParse = {
 	"Movement",
 	"ObjectInteraction",
 	"OriginalTemplate",
+	"ObjectSize",
 	"PassiveContainer",
 	"Proficiency",
 	"ProgressionContainer",

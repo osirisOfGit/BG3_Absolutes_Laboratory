@@ -242,6 +242,8 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 				existingSelector[x + 1] = TableUtils:DeeplyCopyTable(existingSelector._real[x + 3])
 			end
 
+			TableUtils:ReindexNumericTable(existingSelector)
+
 			Helpers:KillChildren(parent)
 			self:RenderSelectors(parent, existingSelector)
 		end
