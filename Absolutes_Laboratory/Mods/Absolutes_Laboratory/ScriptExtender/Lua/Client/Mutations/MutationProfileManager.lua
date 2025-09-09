@@ -178,7 +178,9 @@ function MutationProfileManager:BuildFolderManager()
 
 	local folders = ConfigurationStructure.config.mutations.folders
 
-	for folderId, folder in TableUtils:OrderedPairs(folders) do
+	for folderId, folder in TableUtils:OrderedPairs(folders, function (key, value)
+		return value.name
+	end) do
 		local folderHeader = self.userFolderGroup:AddTree(folder.name)
 		folderHeader.UserData = folderId
 		folderHeader.IDContext = folderId
@@ -272,7 +274,9 @@ function MutationProfileManager:BuildFolderManager()
 			self:BuildFolderManager()
 		end
 
-		for mutationId, mutation in TableUtils:OrderedPairs(folder.mutations) do
+		for mutationId, mutation in TableUtils:OrderedPairs(folder.mutations, function (key, value)
+			return value.name
+		end) do
 			---@type ExtuiSelectable
 			local mutationSelectable = folderHeader:AddSelectable(mutation.name)
 			mutationSelectable.IDContext = mutationId
