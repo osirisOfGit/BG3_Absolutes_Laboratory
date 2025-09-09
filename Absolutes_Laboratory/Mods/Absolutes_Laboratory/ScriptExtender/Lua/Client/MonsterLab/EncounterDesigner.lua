@@ -315,12 +315,56 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 						image:Destroy()
 						ele:AddImage("Item_Unknown", Styler:ScaleFactor({ 48, 48 }))
 					end
+					ele:AddDummy(32, 32).SameLine = true
 				end)
 
-				local link = Styler:HyperlinkText(ele, mlEntity.displayName, function(parent)
+				local nameLink = Styler:HyperlinkText(ele, mlEntity.displayName, function(parent)
 					ResourceManager:RenderDisplayWindow(template, parent)
 				end)
-				link:SetColor("TextLink", { 0.86, 0.79, 0.68, 0.78 })
+				nameLink:SetColor("TextLink", { 0.86, 0.79, 0.68, 0.78 })
+
+				local editEntityButton = Styler:ImageButton(ele:AddImageButton("editEntity", "ico_edit_d", Styler:ScaleFactor({ 24, 24 })))
+				editEntityButton.SameLine = true
+				editEntityButton.OnClick = function()
+					Helpers:KillChildren(self.popup)
+					self.popup:Open()
+
+					self.popup:AddSelectable("Edit", "DontClosePopups").OnClick = function()
+						MonsterLab:buildCreateEntityForm(self.popup, entities._parent_proxy, function()
+							Channels.ManageEncounterSpawns:SendToServer({
+								encounterId = entities._parent_proxy._parent_key,
+								encounter = entities._parent_proxy._real
+							} --[[@as ManageEncounterRequest]])
+
+							self.popup:SetCollapsed(true)
+							self:RenderCardForEntities(parent, entities)
+						end, mlEntity)
+					end
+
+					---@param selectable ExtuiSelectable
+					self.popup:AddSelectable("Delete", "DontClosePopups").OnClick = function(selectable)
+						if selectable.Label ~= "Delete" then
+							entities[mlEntityId].delete = true
+
+							-- Clean up, then respawn
+							Channels.ManageEncounterSpawns:SendToServer({
+								encounterId = entities._parent_proxy._parent_key,
+								delete = true
+							} --[[@as ManageEncounterRequest]])
+
+							Channels.ManageEncounterSpawns:SendToServer({
+								encounterId = entities._parent_proxy._parent_key,
+								encounter = entities._parent_proxy._real
+							} --[[@as ManageEncounterRequest]])
+
+							self.popup:SetCollapsed(true)
+							self:RenderCardForEntities(parent, entities)
+						else
+							selectable.Label = "Are You Sure?"
+							Styler:Color(selectable, "ErrorText")
+						end
+					end
+				end
 			end)
 
 
@@ -494,6 +538,39 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 			refreshAnimFunc()
 			--#endregion
 		end
+
+		--#region Adding New Entity
+		---@type ExtuiGroup
+		local card = cardGroup:AddGroup("Add New Entity")
+
+		local groupTable = card:AddTable("chlidTable", 1)
+		groupTable.Borders = true
+		groupTable:SetColor("TableBorderStrong", Styler:ConvertRGBAToIMGUI(cardColours[((counter + 1) % (#cardColours - (maxRowSize % 2 == 0 and 1 or 0))) + 1]))
+
+		local addNewEntityRow = groupTable:AddRow():AddCell()
+
+		---@type ExtuiGroup
+		local formGroup
+		Styler:MiddleAlignedColumnLayout(addNewEntityRow, function(ele)
+			Styler:CheapTextAlign("Add New Entity", ele, "Big")
+			ele:AddButton("Launch Form").OnClick = function(button)
+				if #formGroup.Children == 0 then
+					button.Label = "Close Form"
+					MonsterLab:buildCreateEntityForm(formGroup, entities._parent_proxy, function()
+						Channels.ManageEncounterSpawns:SendToServer({
+							encounterId = entities._parent_proxy._parent_key,
+							encounter = entities._parent_proxy._real
+						} --[[@as ManageEncounterRequest]])
+						self:RenderCardForEntities(parent, entities)
+					end)
+				else
+					button.Label = "Launch Form"
+					Helpers:KillChildren(formGroup)
+				end
+			end
+		end)
+		formGroup = addNewEntityRow:AddGroup("New Entity")
+		--#endregion
 	end
 
 	renderGroupCards()
