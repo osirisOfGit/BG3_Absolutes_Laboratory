@@ -123,6 +123,8 @@ function EncounterDesigner:buildDesigner(encounter)
 		MCM.OpenMCMWindow()
 	end
 
+	local entityCardsGroup
+
 	Styler:MiddleAlignedColumnLayout(self.designerWindow, function(ele)
 		local levelCombo
 		local teleportToLevelButton
@@ -159,6 +161,7 @@ function EncounterDesigner:buildDesigner(encounter)
 
 		Styler:MiddleAlignedColumnLayout(ele, function(ele)
 			pickCoordsButton = Styler:ImageButton(ele:AddImageButton("PickBaseCoords", "Spell_Divination_TrueStrike", Styler:ScaleFactor({ 48, 48 })))
+			pickCoordsButton:Tooltip():AddText("\t Pick a location in the game world to set as the base coordinates for this encounter - has no impact on functionality,\nbut is used for the teleport button to the right and is useful for planning out your encounter")
 			pickCoordsButton.UserData = false
 			pickCoordsButton.OnClick = function()
 				if not pickCoordsButton.UserData then
@@ -200,6 +203,7 @@ function EncounterDesigner:buildDesigner(encounter)
 			pickCoordsButton.Visible = false
 
 			teleportToCoordsButton = Styler:ImageButton(ele:AddImageButton("Teleport_Coords", "Spell_Conjuration_DimensionDoor", Styler:ScaleFactor({ 48, 48 })))
+			teleportToCoordsButton:Tooltip():AddText("\t Teleport to the Encounter's Base Coordinates")
 			teleportToCoordsButton.OnClick = function()
 				Channels.TeleportToCoords:SendToServer({
 					x = encounter.baseCoords[1],
@@ -209,6 +213,7 @@ function EncounterDesigner:buildDesigner(encounter)
 			end
 
 			local openExtraSettingsButton = Styler:ImageButton(ele:AddImageButton("Extra_Settings", "ico_combatlog_h", Styler:ScaleFactor({ 48, 48 })))
+			openExtraSettingsButton:Tooltip():AddText("\t Show extra encounter-level settings")
 			openExtraSettingsButton.SameLine = true
 
 			local extraSettingsGroup = self.designerWindow:AddGroup("ExtraSettings")
@@ -217,6 +222,13 @@ function EncounterDesigner:buildDesigner(encounter)
 			self:manageExtraSettings(extraSettingsGroup, encounter)
 			openExtraSettingsButton.OnClick = function()
 				extraSettingsGroup.Visible = not extraSettingsGroup.Visible
+			end
+
+			local refreshEntitiesButton = Styler:ImageButton(ele:AddImageButton("RefreshView", "ico_reset_d", Styler:ScaleFactor({ 48, 48 })))
+			refreshEntitiesButton.SameLine = true
+			refreshEntitiesButton:Tooltip():AddText("\t Refresh the Entity Card View to match the current window dimensions")
+			refreshEntitiesButton.OnClick = function()
+				self:RenderCardForEntities(entityCardsGroup, encounter.entities)
 			end
 		end)
 
@@ -244,7 +256,9 @@ function EncounterDesigner:buildDesigner(encounter)
 		end
 	end)
 
-	self:RenderCardForEntities(self.designerWindow:AddGroup("cards"), encounter.entities)
+	entityCardsGroup = self.designerWindow:AddGroup("cards")
+
+	self:RenderCardForEntities(entityCardsGroup, encounter.entities)
 end
 
 ---@param parent ExtuiTreeParent
@@ -278,7 +292,7 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 
 		Helpers:KillChildren(cardGroup)
 
-		local maxRowSize = math.floor(cardsWindow.LastSize[1] / (Styler:ScaleFactor() * 300))
+		local maxRowSize = math.floor(cardsWindow.LastSize[1] / (Styler:ScaleFactor() * 500))
 		local entriesPerColumn = math.floor(TableUtils:CountElements(entities) / maxRowSize)
 		entriesPerColumn = entriesPerColumn > 0 and entriesPerColumn or 1
 		local layoutTable = cardGroup:AddTable("cards", math.min(TableUtils:CountElements(entities), maxRowSize))
@@ -339,6 +353,16 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 							self.popup:SetCollapsed(true)
 							self:RenderCardForEntities(parent, entities)
 						end, mlEntity)
+					end
+
+					self.popup:AddSelectable("Copy").OnClick = function()
+						entities[FormBuilder:generateGUID()] = TableUtils:DeeplyCopyTable(mlEntity._real)
+						Channels.ManageEncounterSpawns:SendToServer({
+							encounterId = entities._parent_proxy._parent_key,
+							encounter = entities._parent_proxy._real
+						} --[[@as ManageEncounterRequest]])
+
+						self:RenderCardForEntities(parent, entities)
 					end
 
 					---@param selectable ExtuiSelectable

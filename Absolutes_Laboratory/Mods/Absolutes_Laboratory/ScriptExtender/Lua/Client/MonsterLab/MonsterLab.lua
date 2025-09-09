@@ -200,7 +200,7 @@ function MonsterLab:buildEncounterView(parent, encounter)
 			end
 			icon.SameLine = true
 
-			local nameGroup = entityGroup:AddGroup("entity")
+			local nameGroup = entityGroup:AddGroup(id)
 			nameGroup.SameLine = true
 
 			local selectedIcon = entityGroup:AddImage("ico_concentration", Styler:ScaleFactor({ 36, 36 }))
@@ -209,6 +209,7 @@ function MonsterLab:buildEncounterView(parent, encounter)
 
 			---@type ExtuiTextLink
 			local name = Styler:Color(nameGroup:AddTextLink(entity.displayName), "PlainLink")
+			name.IDContext = id
 			name.OnRightClick = function()
 				self:buildCreateEntityForm(designerSection, encounter, buildEncounter, entity)
 			end
