@@ -390,7 +390,7 @@ function ListDesignerBaseClass:buildDesigner()
 
 	local leveledListGroup = self.designerSection:AddGroup("leveledLists")
 
-	for level = 1, 30 do
+	for level = (self.configKey == "spellLists" and 0 or 1) , 30 do
 		local listGroup = leveledListGroup:AddGroup("list" .. level)
 		listGroup:SetColor("Border", { 1, 0, 0, 1 })
 		listGroup:AddText(tostring(level) .. (level < 10 and "  " or "")).Font = "Big"

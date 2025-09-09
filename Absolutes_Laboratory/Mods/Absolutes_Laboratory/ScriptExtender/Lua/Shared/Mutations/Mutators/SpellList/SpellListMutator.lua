@@ -1247,7 +1247,7 @@ if Ext.IsServer() then
 									maxAppliedLevel = level
 								end
 							end
-							local startingSpellListLevel = (TableUtils:IndexOf(appliedLists, spellListId) or 1)
+							local startingSpellListLevel = (TableUtils:IndexOf(appliedLists, spellListId) or 0)
 
 							if TableUtils:IndexOf(appliedLists, spellListId) then
 								appliedLists[startingSpellListLevel] = nil
