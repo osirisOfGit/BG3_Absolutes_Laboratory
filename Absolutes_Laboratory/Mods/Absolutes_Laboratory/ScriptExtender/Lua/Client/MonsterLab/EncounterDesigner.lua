@@ -49,7 +49,7 @@ function EncounterDesigner:buildDesigner(encounter)
 			local manageDesignerModeRequest = { playersCanDialogue = false, playersCanFight = false }
 
 			Styler:CheapTextAlign("Players:", ele)
-			Styler:DualToggleButton(ele, "Can Fight", "Can't Fight", false, function(swap)
+			Styler:EnableToggleButton(ele, "Can Enter Combat", false, function(swap)
 				if swap then
 					manageDesignerModeRequest.playersCanFight = not manageDesignerModeRequest.playersCanFight
 					Channels.ManageDesignerMode:SendToServer(manageDesignerModeRequest)
@@ -59,7 +59,7 @@ function EncounterDesigner:buildDesigner(encounter)
 
 			ele:AddText(" | ").SameLine = true
 
-			Styler:DualToggleButton(ele, "Can Dialogue", "Can't Dialogue", true, function(swap)
+			Styler:EnableToggleButton(ele, "Can Enter/Trigger Dialogue", true, function(swap)
 				if swap then
 					manageDesignerModeRequest.playersCanDialogue = not manageDesignerModeRequest.playersCanDialogue
 					Channels.ManageDesignerMode:SendToServer(manageDesignerModeRequest)
