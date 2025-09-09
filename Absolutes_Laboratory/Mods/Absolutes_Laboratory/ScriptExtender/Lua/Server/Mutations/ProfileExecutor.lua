@@ -74,7 +74,7 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 								and mProfileRule.additive
 								and MutatorInterface.registeredMutators[mutator.targetProperty]:canBeAdditive(mutator)
 							then
-								if type(entityVar.appliedMutators[mutator.targetProperty]) == "table" then
+								if entityVar.appliedMutators[mutator.targetProperty][1] then
 									table.insert(entityVar.appliedMutators[mutator.targetProperty], mutator)
 								else
 									entityVar.appliedMutators[mutator.targetProperty] = { entityVar.appliedMutators[mutator.targetProperty], mutator }
