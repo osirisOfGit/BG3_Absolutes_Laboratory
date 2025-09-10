@@ -390,7 +390,7 @@ function ListDesignerBaseClass:buildDesigner()
 
 	local leveledListGroup = self.designerSection:AddGroup("leveledLists")
 
-	for level = (self.configKey == "spellLists" and 0 or 1) , 30 do
+	for level = (self.configKey == "spellLists" and 0 or 1), 30 do
 		local listGroup = leveledListGroup:AddGroup("list" .. level)
 		listGroup:SetColor("Border", { 1, 0, 0, 1 })
 		listGroup:AddText(tostring(level) .. (level < 10 and "  " or "")).Font = "Big"
@@ -1238,20 +1238,64 @@ function ListDesignerBaseClass:HandleDependences(export, mutator, lists, removeM
 
 	for l, listId in pairs(lists) do
 		local list = MutationConfigurationProxy[self.configKey][listId]
-		local listModId = list.modId
-		if not listModId then
-			--- @type CustomList
-			local listDef = removeMissingDependencies == true
-				and export[self.configKey][listId]
-				or TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations[self.configKey][listId]._real)
+		if list then
+			local listModId = list.modId
+			if not listModId then
+				--- @type CustomList
+				local listDef = removeMissingDependencies == true
+					and export[self.configKey][listId]
+					or TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations[self.configKey][listId]._real)
 
-			listId = listId .. "Exported"
+				listId = listId .. "Exported"
 
-			if listDef.levels then
-				for level, levelSubList in pairs(listDef.levels) do
-					if levelSubList.linkedProgressions then
-						for progressionTableId, sublists in pairs(levelSubList.linkedProgressions) do
-							for _, entries in pairs(sublists) do
+				if listDef.levels then
+					for level, levelSubList in pairs(listDef.levels) do
+						if levelSubList.linkedProgressions then
+							for progressionTableId, sublists in pairs(levelSubList.linkedProgressions) do
+								for _, entries in pairs(sublists) do
+									for i, entry in pairs(entries) do
+										if not buildStatDependency(entry, listDef) then
+											entries[i] = nil
+										end
+									end
+									TableUtils:ReindexNumericTable(entries)
+								end
+
+								local progressionId = SpellListDesigner.progressionTableToProgression[progressionTableId][level]
+								if progressionId then
+									---@type ResourceProgression
+									local progression = Ext.StaticData.Get(progressionId, "Progression")
+									if not progression then
+										levelSubList.linkedProgressions[progressionId] = nil
+									elseif not removeMissingDependencies then
+										local progressionSource = TableUtils:IndexOf(progressionSources, function(value)
+											return TableUtils:IndexOf(value, progressionId) ~= nil
+										end)
+										if progressionSource then
+											listDef.modDependencies = listDef.modDependencies or {}
+											if not listDef.modDependencies[progressionSource] then
+												local name, author, version = Helpers:BuildModFields(progressionSource)
+												if author == "Larian" then
+													goto continue
+												end
+												listDef.modDependencies[progressionSource] = {
+													modName = name,
+													modAuthor = author,
+													modVersion = version,
+													modId = progressionSource,
+													packagedItems = {}
+												}
+											end
+											listDef.modDependencies[progressionSource].packagedItems[progressionId] = progression.Name
+										end
+										::continue::
+									end
+								end
+							end
+						end
+
+						if levelSubList.manuallySelectedEntries then
+							for _, entries in pairs(levelSubList.manuallySelectedEntries) do
 								for i, entry in pairs(entries) do
 									if not buildStatDependency(entry, listDef) then
 										entries[i] = nil
@@ -1259,67 +1303,25 @@ function ListDesignerBaseClass:HandleDependences(export, mutator, lists, removeM
 								end
 								TableUtils:ReindexNumericTable(entries)
 							end
-
-							local progressionId = SpellListDesigner.progressionTableToProgression[progressionTableId][level]
-							if progressionId then
-								---@type ResourceProgression
-								local progression = Ext.StaticData.Get(progressionId, "Progression")
-								if not progression then
-									levelSubList.linkedProgressions[progressionId] = nil
-								elseif not removeMissingDependencies then
-									local progressionSource = TableUtils:IndexOf(progressionSources, function(value)
-										return TableUtils:IndexOf(value, progressionId) ~= nil
-									end)
-									if progressionSource then
-										listDef.modDependencies = listDef.modDependencies or {}
-										if not listDef.modDependencies[progressionSource] then
-											local name, author, version = Helpers:BuildModFields(progressionSource)
-											if author == "Larian" then
-												goto continue
-											end
-											listDef.modDependencies[progressionSource] = {
-												modName = name,
-												modAuthor = author,
-												modVersion = version,
-												modId = progressionSource,
-												packagedItems = {}
-											}
-										end
-										listDef.modDependencies[progressionSource].packagedItems[progressionId] = progression.Name
-									end
-									::continue::
-								end
-							end
-						end
-					end
-
-					if levelSubList.manuallySelectedEntries then
-						for _, entries in pairs(levelSubList.manuallySelectedEntries) do
-							for i, entry in pairs(entries) do
-								if not buildStatDependency(entry, listDef) then
-									entries[i] = nil
-								end
-							end
-							TableUtils:ReindexNumericTable(entries)
 						end
 					end
 				end
-			end
 
-			export[self.configKey] = export[self.configKey] or {}
-			if not export[self.configKey][listId] then
-				export[self.configKey][listId] = listDef
+				export[self.configKey] = export[self.configKey] or {}
+				if not export[self.configKey][listId] then
+					export[self.configKey][listId] = listDef
+				end
+			else
+				local name, author, version = Helpers:BuildModFields(listModId)
+				mutator.modDependencies = mutator.modDependencies or {}
+				mutator.modDependencies[listModId] = {
+					modAuthor = author,
+					modName = name,
+					modVersion = version,
+					modId = listModId,
+					packagedItems = nil
+				}
 			end
-		else
-			local name, author, version = Helpers:BuildModFields(listModId)
-			mutator.modDependencies = mutator.modDependencies or {}
-			mutator.modDependencies[listModId] = {
-				modAuthor = author,
-				modName = name,
-				modVersion = version,
-				modId = listModId,
-				packagedItems = nil
-			}
 		end
 	end
 end
