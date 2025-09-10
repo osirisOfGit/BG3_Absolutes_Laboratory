@@ -213,6 +213,8 @@ end
 ---@param parent ExtuiTreeParent
 ---@param existingSelector SelectorQuery
 function MutationDesigner:RenderSelectors(parent, existingSelector)
+	Helpers:KillChildren(parent)
+
 	local selectorQueryTable = Styler:TwoColumnTable(parent, "selectorQuery")
 	selectorQueryTable.Resizable = false
 	selectorQueryTable.Borders = false
@@ -230,7 +232,7 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 		local row = selectorQueryTable:AddRow()
 		local sideCell = row:AddCell()
 
-		local delete = Styler:ImageButton(sideCell:AddImageButton("delete", "ico_red_x", { 16, 16 }))
+		local delete = Styler:ImageButton(sideCell:AddImageButton("delete", "ico_red_x", Styler:ScaleFactor({ 16, 16 })))
 		delete.OnClick = function()
 			for x = i, TableUtils:CountElements(existingSelector), 2 do
 				if x > 0 then
@@ -244,16 +246,53 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 
 			TableUtils:ReindexNumericTable(existingSelector)
 
-			Helpers:KillChildren(parent)
 			self:RenderSelectors(parent, existingSelector)
+		end
+
+		if i > 0 then
+			local upArrow = Styler:ImageButton(sideCell:AddImageButton("moveup", "scroll_up_d", Styler:ScaleFactor({ 16, 16 })))
+			upArrow.OnClick = function()
+				local currentSelector = TableUtils:DeeplyCopyTable(selectorEntry._real)
+				selectorEntry.delete = true
+
+				if i ~= 2 then
+					existingSelector[i] = existingSelector[i - 2]
+					existingSelector[i - 2] = andOrEntry
+				end
+				existingSelector[i + 1] = TableUtils:DeeplyCopyTable(existingSelector[i - 1]._real)
+				existingSelector[i - 1].delete = true
+				existingSelector[i - 1] = currentSelector
+
+				self:RenderSelectors(parent, existingSelector)
+			end
+		end
+
+		if i + 1 < #existingSelector then
+			local downArrow = Styler:ImageButton(sideCell:AddImageButton("movedown", "scroll_down_d", Styler:ScaleFactor({ 16, 16 })))
+			downArrow.OnClick = function()
+				local currentSelector = TableUtils:DeeplyCopyTable(selectorEntry._real)
+				selectorEntry.delete = true
+
+				if i ~= 0 then
+					existingSelector[i] = existingSelector[i + 2]
+					existingSelector[i + 2] = andOrEntry
+				end
+
+				existingSelector[i + 1] = TableUtils:DeeplyCopyTable(existingSelector[i + 3]._real)
+				existingSelector[i + 3].delete = true
+				existingSelector[i + 3] = currentSelector
+
+				self:RenderSelectors(parent, existingSelector)
+			end
 		end
 
 		local entryCell = row:AddCell()
 
 		if andOrEntry then
-			Styler:ToggleButton(entryCell, "AND", "OR", true, function(swap)
+			Styler:ToggleButton(entryCell, "AND", "OR", false, function(swap)
 				if swap then
 					existingSelector[i] = existingSelector[i] == "AND" and "OR" or "AND"
+					andOrEntry = existingSelector[i]
 				end
 				return existingSelector[i] == "AND"
 			end)
@@ -313,8 +352,78 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 					subSelectors = {},
 				} --[[@as Selector]])
 
-				Helpers:KillChildren(parent)
 				self:RenderSelectors(parent, existingSelector)
+			end
+		end
+	end
+
+	local managePresetsButton = parent:AddButton("Manage Presets")
+	managePresetsButton.SameLine = true
+	managePresetsButton.OnClick = function()
+		local presets = ConfigurationStructure.config.mutations.settings.mutationPresets.selectors
+
+		Helpers:KillChildren(popup)
+		popup:Open()
+
+		for presetName, preset in TableUtils:OrderedPairs(presets) do
+			---@type ExtuiMenu
+			local presetMenu = popup:AddMenu(presetName)
+			---@type ExtuiMenu
+			local loadMenu = presetMenu:AddMenu("Load")
+
+			loadMenu:AddSelectable("Add To Active Selectors").OnClick = function()
+				existingSelector[#existingSelector + 1] = "AND"
+				table.move(TableUtils:DeeplyCopyTable(preset), 1, #preset, #existingSelector + 1, existingSelector)
+				if type(existingSelector[1]) == "string" then
+					existingSelector[1] = nil
+					TableUtils:ReindexNumericTable(existingSelector)
+				end
+				self:RenderSelectors(parent, existingSelector)
+			end
+
+			loadMenu:AddSelectable("Replace Active Selectors").OnClick = function()
+				for i, entry in ipairs(existingSelector) do
+					if type(entry) == "string" then
+						existingSelector[i] = nil
+					else
+						entry.delete = true
+					end
+				end
+				for i, entry in ipairs(preset) do
+					existingSelector[i] = entry._real and TableUtils:DeeplyCopyTable(entry._real) or entry
+				end
+
+				if type(existingSelector[1]) == "string" then
+					existingSelector[1] = nil
+					TableUtils:ReindexNumericTable(existingSelector)
+				end
+				self:RenderSelectors(parent, existingSelector)
+			end
+
+			---@param selectable ExtuiSelectable
+			presetMenu:AddSelectable("Overwrite Preset with Current Selectors", "DontClosePopups").OnClick = function(selectable)
+				if selectable.Label ~= "Overwrite Preset with Current Selectors" then
+					preset.delete = true
+					presets[presetName] = TableUtils:DeeplyCopyTable(existingSelector._real)
+					popup:SetCollapsed(true)
+				else
+					selectable.Label = "Are you sure?"
+					selectable:SetColor("Text", { 1, 0.2, 0, 1 })
+				end
+			end
+		end
+
+		---@type ExtuiMenu
+		local saveMenu = popup:AddMenu("Save Current Selectors")
+		local nameInput = saveMenu:AddInputText("")
+		---@param saveButton ExtuiButton
+		saveMenu:AddButton("Save").OnClick = function(saveButton)
+			if not presets[nameInput.Text] or saveButton.Label ~= "Save" then
+				presets[nameInput.Text] = TableUtils:DeeplyCopyTable(existingSelector._real)
+				managePresetsButton:OnClick()
+			else
+				saveButton.Label = "Overwrite Existing Preset?"
+				saveButton:SetColor("Text", { 1, 0.2, 0, 1 })
 			end
 		end
 	end
@@ -407,6 +516,12 @@ function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators)
 				end
 			end
 		end
+
+		local loadPresetButton = ele:AddButton("L")
+		loadPresetButton.SameLine = true
+
+		local savePresetButton = ele:AddButton("S")
+		savePresetButton.SameLine = true
 	end)
 end
 
@@ -420,7 +535,6 @@ function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMut
 	local row = mutatorTable:AddRow()
 	local sideBar = row:AddCell()
 	local designer = row:AddCell()
-	
 
 	---@type ExtuiSelectable?
 	local activeMutatorHandle
@@ -478,4 +592,9 @@ function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMut
 			end
 		end
 	end
+	local loadPresetButton = sideBar:AddButton("L")
+	loadPresetButton.SameLine = true
+
+	local savePresetButton = sideBar:AddButton("S")
+	savePresetButton.SameLine = true
 end

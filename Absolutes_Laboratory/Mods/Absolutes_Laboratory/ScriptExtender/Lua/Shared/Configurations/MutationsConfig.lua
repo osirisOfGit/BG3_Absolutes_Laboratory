@@ -16,6 +16,10 @@ ConfigurationStructure.config.mutations.settings = {
 	mutationDesigner = {
 		---@type "Sidebar"|"Infinite"
 		mutatorStyle = "Sidebar"
+	},
+	mutationPresets = {
+		mutators = {},
+		selectors = {}
 	}
 }
 
