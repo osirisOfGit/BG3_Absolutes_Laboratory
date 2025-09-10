@@ -51,9 +51,11 @@ function EntitySelector:renderSelector(parent, existingSelector)
 			end
 
 			if entity then
-				Styler:HyperlinkText(entityDisplay, entity.Name, function(parent)
+				local link = Styler:HyperlinkText(entityDisplay, entity.Name, function(parent)
 					CharacterWindow:BuildWindow(parent, entityId)
-				end, true).SameLine = true
+				end, true)
+				link.IDContext = entityId
+				link.SameLine = true
 			else
 				entityDisplay:AddText(entityId)
 			end
