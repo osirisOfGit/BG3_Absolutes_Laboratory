@@ -22,6 +22,10 @@ end
 
 ---@param faction ResourceFaction
 function FactionsProxy:RenderDisplayWindow(faction, parent)
+	if not faction then
+		parent:AddText("N/A")
+		return
+	end
 	local display = Styler:TwoColumnTable(parent, faction.ResourceUUID)
 
 	for key, value in TableUtils:OrderedPairs(Ext.Types.Serialize(faction)) do
