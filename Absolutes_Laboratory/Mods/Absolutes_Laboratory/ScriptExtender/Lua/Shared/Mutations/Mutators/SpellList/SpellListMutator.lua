@@ -1166,6 +1166,10 @@ if Ext.IsServer() then
 			--#region Criteria
 			local keep = false
 			for g, spellMutatorGroup in ipairs(mutator.values) do
+				if not spellMutatorGroup.leveledSpellPool then
+					Logger:BasicDebug("Skipped group %s due to not having a leveledSpellPool available", g)
+					goto next_group
+				end
 				if spellMutatorGroup.criteria then
 					---@type SpellListCriteriaEntry
 					local criteria = spellMutatorGroup.criteria
