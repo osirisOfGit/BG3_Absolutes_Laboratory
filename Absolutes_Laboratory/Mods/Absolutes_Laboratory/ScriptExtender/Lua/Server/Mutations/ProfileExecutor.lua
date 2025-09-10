@@ -106,6 +106,7 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 			end
 		end
 
+		-- Ensures all undo operations have time to complete
 		Ext.Timer.WaitFor(50, function()
 			for _, func in ipairs(entitiesToProcess) do
 				func()
