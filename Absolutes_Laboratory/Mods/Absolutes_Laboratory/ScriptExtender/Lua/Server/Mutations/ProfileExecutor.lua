@@ -43,10 +43,10 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 	if activeProfile and next(activeProfile.mutationRules) then
 		local time = Ext.Timer:MonotonicTime()
 
-		local counter = 0
 		---@type {[Guid] : {[Guid]: SelectorPredicate}}
 		local cachedSelectors = {}
 
+		local entitiesToProcess = {}
 		for _, entity in pairs(... and { ... } or Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
 			if (Osi.IsDead(entity.Uuid.EntityUuid) == 0 or not entity.DeadByDefault) and not entity.PartyMember then
 				mutatedEntities[entity.Uuid.EntityUuid] = true
@@ -94,21 +94,27 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 				end
 
 				if next(entityVar.appliedMutators) then
-					counter = counter + 1
-					MutatorInterface:applyMutator(entity, entityVar)
+					table.insert(entitiesToProcess, function()
+						MutatorInterface:applyMutator(entity, entityVar)
+						entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = next(entityVar.appliedMutators) and entityVar or nil
+					end)
 				end
-
-				entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = next(entityVar.appliedMutators) and entityVar or nil
 			else
 				if entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] then
 					MutatorInterface:undoMutator(entity, entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME], rerunTransient)
 				end
 			end
 		end
-		Logger:BasicInfo("======= Mutated %s Entities in %dms under Profile %s =======",
-			counter,
-			Ext.Timer:MonotonicTime() - time,
-			activeProfile.name .. (activeProfile.modId and string.format(" (from mod %s)", Ext.Mod.GetMod(activeProfile.modId).Info.Name) or ""))
+
+		Ext.Timer.WaitFor(50, function()
+			for _, func in ipairs(entitiesToProcess) do
+				func()
+			end
+			Logger:BasicInfo("======= Mutated %s Entities in %dms under Profile %s =======",
+				#entitiesToProcess,
+				(Ext.Timer:MonotonicTime() - time) + 50,
+				activeProfile.name .. (activeProfile.modId and string.format(" (from mod %s)", Ext.Mod.GetMod(activeProfile.modId).Info.Name) or ""))
+		end)
 	else
 		local time = Ext.Timer:MonotonicTime()
 		local counter = 0
