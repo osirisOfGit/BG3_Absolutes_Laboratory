@@ -424,7 +424,7 @@ function HealthMutator:applyMutator(entity, entityVar)
 		entity.Health.Hp = entity.Health.MaxHp - (entity.Health.MaxHp * currentHealthPercentage)
 	else
 		entity.Health.MaxHp = mutator.staticHealth
-		entity.Health.Hp = entity.Health.MaxHp - (entity.Health.MaxHp * currentHealthPercentage)
+		entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor(entity.Health.MaxHp * currentHealthPercentage))
 	end
 
 	Logger:BasicDebug("Changed max from %s -> %s, current from %s -> %s",
@@ -443,7 +443,7 @@ function HealthMutator:undoMutator(entity, entityVar)
 	local originalMaxHp = entity.Health.MaxHp
 
 	entity.Health.MaxHp = entityVar.originalValues[self.name]
-	entity.Health.Hp = entity.Health.MaxHp - (entity.Health.MaxHp * healthPercentage)
+	entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * healthPercentage)))
 
 	entity:Replicate("Health")
 
