@@ -18,7 +18,9 @@ ConfigurationStructure.config.mutations.settings = {
 		mutatorStyle = "Sidebar"
 	},
 	mutationPresets = {
+		---@type {[string]: Mutator[]}
 		mutators = {},
+		---@type {[string]: SelectorQuery[]}
 		selectors = {}
 	}
 }

@@ -12,7 +12,10 @@ local popup
 ---@param parent ExtuiTreeParent
 ---@param existingMutation Mutation
 function MutationDesigner:RenderMutationManager(parent, existingMutation)
-	popup = parent:AddPopup("Popup")
+	popup = parent:AddPopup("")
+	popup:SetColor("PopupBg", { 0, 0, 0, 1 })
+	popup:SetColor("Border", { 1, 0, 0, 0.5 })
+	popup.AutoClosePopups = true
 
 	if existingMutation.modId then
 		Styler:CheapTextAlign("Mod-Added Mutation - You can browse, but not edit", parent, "Large"):SetColor("Text", { 1, 0, 0, 0.45 })
@@ -429,6 +432,89 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 	end
 end
 
+---@param managePresetsButton ExtuiButton
+---@param mutators Mutator[]
+---@param callback fun()
+local function buildManageMutationPreset(managePresetsButton, mutators, callback)
+	managePresetsButton.OnClick = function()
+		local presets = ConfigurationStructure.config.mutations.settings.mutationPresets.mutators
+
+		Helpers:KillChildren(popup)
+		popup:Open()
+
+		for presetName, preset in TableUtils:OrderedPairs(presets) do
+			---@type ExtuiMenu
+			local presetMenu = popup:AddMenu(presetName)
+			---@type ExtuiMenu
+			local loadMenu = presetMenu:AddMenu("Load")
+
+			loadMenu:AddSelectable("Add Missing Mutators").OnClick = function()
+				for _, mutator in ipairs(preset) do
+					if not TableUtils:IndexOf(mutators, function(value)
+							return value.targetProperty == mutator.targetProperty
+						end) then
+						table.insert(mutators, TableUtils:DeeplyCopyTable(mutator._real))
+					end
+				end
+				callback()
+			end
+
+			loadMenu:AddSelectable("Replace Mutators With Same Property").OnClick = function()
+				for _, mutator in ipairs(preset) do
+					local existingIndex = TableUtils:IndexOf(mutators, function(value)
+						return value.targetProperty == mutator.targetProperty
+					end)
+
+					if existingIndex then
+						mutators[existingIndex].delete = true
+						mutators[existingIndex] = TableUtils:DeeplyCopyTable(mutator._real)
+					else
+						table.insert(mutators, TableUtils:DeeplyCopyTable(mutator._real))
+					end
+				end
+				callback()
+			end
+
+			loadMenu:AddSelectable("Replace All Mutators").OnClick = function()
+				for i, existingMutator in ipairs(mutators) do
+					existingMutator.delete = true
+				end
+
+				for _, mutator in ipairs(preset) do
+					table.insert(mutators, TableUtils:DeeplyCopyTable(mutator._real))
+				end
+				callback()
+			end
+
+			---@param selectable ExtuiSelectable
+			presetMenu:AddSelectable("Overwrite Preset with Current Mutators", "DontClosePopups").OnClick = function(selectable)
+				if selectable.Label ~= "Overwrite Preset with Current Mutators" then
+					preset.delete = true
+					presets[presetName] = TableUtils:DeeplyCopyTable(mutators._real)
+				else
+					selectable.Label = "Are you sure?"
+					selectable:SetColor("Text", { 1, 0.2, 0, 1 })
+					selectable.DontClosePopups = false
+				end
+			end
+		end
+
+		---@type ExtuiMenu
+		local saveMenu = popup:AddMenu("Save Current Mutators")
+		local nameInput = saveMenu:AddInputText("")
+		---@param saveButton ExtuiButton
+		saveMenu:AddButton("Save").OnClick = function(saveButton)
+			if not presets[nameInput.Text] or saveButton.Label ~= "Save" then
+				presets[nameInput.Text] = TableUtils:DeeplyCopyTable(mutators._real)
+				managePresetsButton:OnClick()
+			else
+				saveButton.Label = "Overwrite Existing Preset?"
+				saveButton:SetColor("Text", { 1, 0.2, 0, 1 })
+			end
+		end
+	end
+end
+
 ---@param parent ExtuiTreeParent
 ---@param mutators Mutator[]
 function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators)
@@ -517,11 +603,11 @@ function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators)
 			end
 		end
 
-		local loadPresetButton = ele:AddButton("L")
-		loadPresetButton.SameLine = true
-
-		local savePresetButton = ele:AddButton("S")
-		savePresetButton.SameLine = true
+		local managePresetsButton = ele:AddButton("Manage Presets")
+		managePresetsButton.SameLine = true
+		buildManageMutationPreset(managePresetsButton, mutators, function()
+			self:RenderMutatorsInfiniteScroll(parent, mutators)
+		end)
 	end)
 end
 
@@ -592,9 +678,11 @@ function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMut
 			end
 		end
 	end
-	local loadPresetButton = sideBar:AddButton("L")
-	loadPresetButton.SameLine = true
 
-	local savePresetButton = sideBar:AddButton("S")
-	savePresetButton.SameLine = true
+	local managePresetsButton = sideBar:AddButton("MP")
+	managePresetsButton:Tooltip():AddText("\t Manage Mutator Presets")
+	managePresetsButton.SameLine = true
+	buildManageMutationPreset(managePresetsButton, mutators, function()
+		self:RenderMutatorsSidebarStyle(parent, mutators, activeMutatorHandle and activeMutatorHandle.Label)
+	end)
 end
