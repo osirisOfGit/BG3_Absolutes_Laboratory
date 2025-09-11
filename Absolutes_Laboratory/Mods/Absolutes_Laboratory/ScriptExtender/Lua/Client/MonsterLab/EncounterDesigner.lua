@@ -78,7 +78,6 @@ function EncounterDesigner:buildDesigner(encounter)
 
 	MCM.CloseMCMWindow()
 
-
 	Ext.Timer.WaitFor(50, function()
 		self.designerModeHeader:SetPos({ 0, 0 }, "Always")
 	end)
@@ -88,10 +87,18 @@ function EncounterDesigner:buildDesigner(encounter)
 		playersCanFight = false
 	} --[[@as ManageDesignerModeRequest]])
 
-	Channels.ManageEncounterSpawns:SendToServer({
-		encounterId = encounter._parent_key,
-		encounter = (encounter._real or encounter)
-	} --[[@as ManageEncounterRequest]])
+
+	local currentGameLevel
+
+	Channels.GetCurrentHostLevel:RequestToServer(nil, function(levelName)
+		currentGameLevel = levelName
+		if levelName == encounter.gameLevel then
+			Channels.ManageEncounterSpawns:SendToServer({
+				encounterId = encounter._parent_key,
+				encounter = (encounter._real or encounter)
+			} --[[@as ManageEncounterRequest]])
+		end
+	end)
 
 
 	if not TableUtils:TablesAreEqual(encounter.baseCoords, { 0, 0, 0 }) then
@@ -161,7 +168,8 @@ function EncounterDesigner:buildDesigner(encounter)
 
 		Styler:MiddleAlignedColumnLayout(ele, function(ele)
 			pickCoordsButton = Styler:ImageButton(ele:AddImageButton("PickBaseCoords", "Spell_Divination_TrueStrike", Styler:ScaleFactor({ 48, 48 })))
-			pickCoordsButton:Tooltip():AddText("\t Pick a location in the game world to set as the base coordinates for this encounter - has no impact on functionality,\nbut is used for the teleport button to the right and is useful for planning out your encounter")
+			pickCoordsButton:Tooltip():AddText(
+				"\t Pick a location in the game world to set as the base coordinates for this encounter - has no impact on functionality,\nbut is used for the teleport button to the right and is useful for planning out your encounter")
 			pickCoordsButton.UserData = false
 			pickCoordsButton.OnClick = function()
 				if not pickCoordsButton.UserData then
@@ -228,24 +236,31 @@ function EncounterDesigner:buildDesigner(encounter)
 			refreshEntitiesButton.SameLine = true
 			refreshEntitiesButton:Tooltip():AddText("\t Refresh the Entity Card View to match the current window dimensions")
 			refreshEntitiesButton.OnClick = function()
-				self:RenderCardForEntities(entityCardsGroup, encounter.entities)
+				self:RenderCardForEntities(entityCardsGroup, encounter.entities, currentGameLevel == encounter.gameLevel)
 			end
 		end)
 
 		teleportToCoordsButton.Visible = false
 		teleportToCoordsButton.SameLine = true
 		teleportToLevelButton.OnClick = function()
-			Channels.TeleportToLevel:SendToServer(encounter.gameLevel)
+			Channels.TeleportToLevel:SendToServer({
+				LevelName = encounter.gameLevel
+			})
+			currentGameLevel = encounter.gameLevel
 			teleportToCoordsButton.Visible = true
 			pickCoordsButton.Visible = true
 			teleportToLevelButton.Visible = false
+			self:RenderCardForEntities(entityCardsGroup, encounter.entities, currentGameLevel == encounter.gameLevel)
 		end
 
 		local function checkCurrentLevel()
 			Channels.GetCurrentHostLevel:RequestToServer(nil, function(levelName)
+				currentGameLevel = levelName
 				teleportToLevelButton.Visible = levelName ~= encounter.gameLevel
 				teleportToCoordsButton.Visible = not teleportToLevelButton.Visible
 				pickCoordsButton.Visible = teleportToCoordsButton.Visible
+
+				self:RenderCardForEntities(entityCardsGroup, encounter.entities, currentGameLevel == encounter.gameLevel)
 			end)
 		end
 		checkCurrentLevel()
@@ -257,13 +272,12 @@ function EncounterDesigner:buildDesigner(encounter)
 	end)
 
 	entityCardsGroup = self.designerWindow:AddGroup("cards")
-
-	self:RenderCardForEntities(entityCardsGroup, encounter.entities)
 end
 
 ---@param parent ExtuiTreeParent
 ---@param entities {[Guid]: MonsterLabEntity}
-function EncounterDesigner:RenderCardForEntities(parent, entities)
+---@param renderCoordPickers boolean
+function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPickers)
 	Helpers:KillChildren(parent)
 
 	-- Only using this to determine the width of the container, as it keeps scaling the vertical dimension infinitely
@@ -393,9 +407,10 @@ function EncounterDesigner:RenderCardForEntities(parent, entities)
 
 
 			local pickerPlaceholder = entityRow:AddGroup("pickerButton")
+			pickerPlaceholder.Visible = renderCoordPickers
 
 			local coordsGroup = entityRow:AddGroup("coords")
-			coordsGroup.SameLine = true
+			coordsGroup.SameLine = renderCoordPickers
 
 			---@diagnostic disable-next-line: missing-fields
 			local pickCoordsButton = Styler:ImageButton(pickerPlaceholder:AddImageButton("PickCoords", "Spell_Divination_TrueStrike", Styler:ScaleFactor({ 26, 26 })))
