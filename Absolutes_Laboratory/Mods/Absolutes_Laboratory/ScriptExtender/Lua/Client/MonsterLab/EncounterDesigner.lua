@@ -365,7 +365,7 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 							} --[[@as ManageEncounterRequest]])
 
 							self.popup:SetCollapsed(true)
-							self:RenderCardForEntities(parent, entities)
+							self:RenderCardForEntities(parent, entities, renderCoordPickers)
 						end, mlEntity)
 					end
 
@@ -376,7 +376,7 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 							encounter = entities._parent_proxy._real
 						} --[[@as ManageEncounterRequest]])
 
-						self:RenderCardForEntities(parent, entities)
+						self:RenderCardForEntities(parent, entities, renderCoordPickers)
 					end
 
 					---@param selectable ExtuiSelectable
@@ -396,7 +396,7 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 							} --[[@as ManageEncounterRequest]])
 
 							self.popup:SetCollapsed(true)
-							self:RenderCardForEntities(parent, entities)
+							self:RenderCardForEntities(parent, entities, renderCoordPickers)
 						else
 							selectable.Label = "Are You Sure?"
 							Styler:Color(selectable, "ErrorText")
@@ -600,7 +600,7 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 							encounterId = entities._parent_proxy._parent_key,
 							encounter = entities._parent_proxy._real
 						} --[[@as ManageEncounterRequest]])
-						self:RenderCardForEntities(parent, entities)
+						self:RenderCardForEntities(parent, entities, renderCoordPickers)
 					end)
 				else
 					button.Label = "Launch Form"
