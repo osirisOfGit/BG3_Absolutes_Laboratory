@@ -39,6 +39,7 @@ function EncounterDesigner:buildDesigner(encounter)
 		self.designerModeHeader.Closeable = false
 		self.designerModeHeader.NoResize = true
 		self.designerModeHeader.NoTitleBar = true
+		self.designerModeHeader.NoMove = true
 		self.designerModeHeader:SetBgAlpha(0)
 		self.designerModeHeader:SetColor("FrameBg", { 1, 1, 1, 0 })
 
@@ -306,7 +307,7 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 
 		Helpers:KillChildren(cardGroup)
 
-		local maxRowSize = math.floor(cardsWindow.LastSize[1] / (Styler:ScaleFactor() * 500))
+		local maxRowSize = math.floor(cardsWindow.LastSize[1] / (Styler:ScaleFactor() * 400))
 		local entriesPerColumn = math.floor(TableUtils:CountElements(entities) / maxRowSize)
 		entriesPerColumn = entriesPerColumn > 0 and entriesPerColumn or 1
 		local layoutTable = cardGroup:AddTable("cards", math.min(TableUtils:CountElements(entities), maxRowSize))
