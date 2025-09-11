@@ -8,6 +8,18 @@ function HealthMutator:Transient()
 	return false
 end
 
+---@param mutator HealthMutator
+---@param existingMutator HealthMutator
+function HealthMutator:canBeAdditive(mutator, existingMutator)
+	if existingMutator then
+		if (mutator.staticHealth and existingMutator.staticHealth)
+			or (not mutator.staticHealth and not existingMutator.staticHealth) then
+			return false
+		end
+	end
+	return true
+end
+
 ---@alias HealthModifierKeys "CharacterLevel"|"GameLevel"|"XPReward"
 
 ---@class HealthMutator : Mutator
@@ -399,40 +411,60 @@ function HealthMutator:previewResult(mutator)
 end
 
 function HealthMutator:applyMutator(entity, entityVar)
-	---@type HealthMutator
-	local mutator = entityVar.appliedMutators[self.name]
-
-	entityVar.originalValues[self.name] = entity.Health.MaxHp
-	local currentHealth = entity.Health.Hp
-	local currentHealthPercentage = 1 - (entity.Health.Hp / entity.Health.MaxHp)
-
-	if mutator.values then
-		---@type Character
-		local charStat = Ext.Stats.Get(entity.Data.StatsId)
-
-		---@type number?
-		local xPRewardMod
-		if charStat.XPReward then
-			xPRewardMod = calculateXPRewardLevelModifier(mutator.modifiers["XPReward"], charStat.XPReward)
-		end
-
-		local gameLevelMod = entity.Level and calculateGameLevelModifier(mutator.modifiers["GameLevel"], entity.Level.LevelName) or 0
-		local characterMod = calculateCharacterLevelModifier(mutator.modifiers["CharacterLevel"], entity.AvailableLevel.Level)
-		local percentageToAdd = (mutator.values + (characterMod + gameLevelMod + xPRewardMod)) / 100
-
-		entity.Health.MaxHp = math.floor(entity.Health.MaxHp + (entity.Health.MaxHp * percentageToAdd))
-		entity.Health.Hp = entity.Health.MaxHp - (entity.Health.MaxHp * currentHealthPercentage)
-	else
-		entity.Health.MaxHp = mutator.staticHealth
-		entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor(entity.Health.MaxHp * currentHealthPercentage))
+	---@type HealthMutator[]
+	local mutators = entityVar.appliedMutators[self.name]
+	if not mutators[1] then
+		mutators = { mutators }
 	end
 
-	Logger:BasicDebug("Changed max from %s -> %s, current from %s -> %s",
-		entityVar.originalValues[self.name],
-		entity.Health.MaxHp,
-		currentHealth,
-		entity.Health.Hp
-	)
+	entityVar.originalValues[self.name] = entity.Health.MaxHp
+
+	for _, mutator in TableUtils:OrderedPairs(mutators, function(key, value)
+		return value.staticHealth and 1 or 2
+	end) do
+		local currentHealth = entity.Health.Hp
+		local currentHealthPercentage = 1 - (entity.Health.Hp / entity.Health.MaxHp)
+
+		if mutator.values then
+			---@type Character
+			local charStat = Ext.Stats.Get(entity.Data.StatsId)
+
+			---@type number?
+			local xPRewardMod = 0
+			if charStat.XPReward then
+				xPRewardMod = calculateXPRewardLevelModifier(mutator.modifiers["XPReward"], charStat.XPReward)
+			end
+
+			local gameLevelMod = entity.Level and calculateGameLevelModifier(mutator.modifiers["GameLevel"], entity.Level.LevelName) or 0
+			local characterMod = calculateCharacterLevelModifier(mutator.modifiers["CharacterLevel"], entity.AvailableLevel.Level)
+			local percentageToAdd = (mutator.values + (characterMod + gameLevelMod + xPRewardMod)) / 100
+
+			local currentMaxHealth = entity.Health.MaxHp
+			entity.Health.MaxHp = math.floor(entity.Health.MaxHp + (entity.Health.MaxHp * percentageToAdd))
+			entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * currentHealthPercentage)))
+
+			Logger:BasicDebug("Dynamically changed max from %s -> %s, current from %s -> %s, due to set percentage being %s%% (base: %s%%, character: %s%%, gameLevel: %s%%, xpReward: %s%%)",
+				currentMaxHealth,
+				entity.Health.MaxHp,
+				currentHealth,
+				entity.Health.Hp,
+				percentageToAdd * 100,
+				mutator.values,
+				characterMod,
+				gameLevelMod,
+				xPRewardMod
+			)
+		else
+			entity.Health.MaxHp = mutator.staticHealth
+			entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor(entity.Health.MaxHp * currentHealthPercentage))
+			Logger:BasicDebug("Statically changed max from %s -> %s, current from %s -> %s",
+				entityVar.originalValues[self.name],
+				entity.Health.MaxHp,
+				currentHealth,
+				entity.Health.Hp
+			)
+		end
+	end
 
 	entity:Replicate("Health")
 end

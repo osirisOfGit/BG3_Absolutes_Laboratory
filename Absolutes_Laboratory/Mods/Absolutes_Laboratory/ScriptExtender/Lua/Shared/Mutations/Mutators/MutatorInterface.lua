@@ -38,8 +38,10 @@ function MutatorInterface:renderMutator(parent, mutator) end
 ---@param modifiers {[string]: MutationModifier}
 function MutatorInterface:renderModifiers(parent, modifiers) end
 
+---@param mutator Mutator
+---@param existingMutator Mutator
 ---@return boolean
-function MutatorInterface:canBeAdditive()
+function MutatorInterface:canBeAdditive(mutator, existingMutator)
 	return false
 end
 
