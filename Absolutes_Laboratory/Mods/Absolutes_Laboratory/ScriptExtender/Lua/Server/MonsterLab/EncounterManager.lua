@@ -229,7 +229,9 @@ Channels.ManageEncounterSpawns:SetHandler(
 							Osi.ObjectSetTitle(entity.Uuid.EntityUuid, mlEntity.title)
 						end
 
-						EncounterManager.mazzleMap:Turn_To_Angle(entity.Uuid.EntityUuid, mlEntity.rotation)
+						if EncounterManager.mazzleLib then
+							EncounterManager.mazzleMap:Turn_To_Angle(entity.Uuid.EntityUuid, mlEntity.rotation)
+						end
 
 						Osi.AddPassive(entity.Uuid.EntityUuid, "ABSOLUTES_LAB_MONSTER_LAB_ENTITY_MARKER")
 

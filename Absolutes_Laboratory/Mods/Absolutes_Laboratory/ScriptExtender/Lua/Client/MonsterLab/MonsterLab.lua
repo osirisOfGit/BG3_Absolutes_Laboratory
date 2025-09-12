@@ -36,6 +36,10 @@ function MonsterLab:init(parent)
 	self:buildFolderView(encounterFolders, encounterDesigner)
 end
 
+function MonsterLab:buildProfileView(parent, designerSection)
+	
+end
+
 ---@param parent ExtuiTreeParent
 ---@param designerSection ExtuiTreeParent
 function MonsterLab:buildFolderView(parent, designerSection)

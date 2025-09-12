@@ -18,10 +18,18 @@ ConfigurationStructure.DynamicClassDefinitions.monsterLab.profile = {
 	name = "",
 	---@type string?
 	description = nil,
-	---@type {[Guid]: MonsterLabFolder}
-	folders = {},
+	---@type MonsterLabProfileEncounterEntry[]
+	encounters = {},
 	---@type Guid?
 	modId = nil
+}
+
+---@class MonsterLabProfileEncounterEntry
+ConfigurationStructure.DynamicClassDefinitions.monsterLab.profileEncounter = {
+	---@type Guid
+	folderId = "",
+	---@type Guid
+	encounterId = ""
 }
 
 ---@class MonsterLabFolder

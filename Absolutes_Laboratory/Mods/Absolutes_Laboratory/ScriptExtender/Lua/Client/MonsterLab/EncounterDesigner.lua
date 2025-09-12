@@ -88,10 +88,12 @@ function EncounterDesigner:buildDesigner(encounter)
 		playersCanFight = false
 	} --[[@as ManageDesignerModeRequest]])
 
-
 	local currentGameLevel
 
 	Channels.GetCurrentHostLevel:RequestToServer(nil, function(levelName)
+		if not encounter.gameLevel then
+			encounter.gameLevel = levelName
+		end
 		currentGameLevel = levelName
 		if levelName == encounter.gameLevel then
 			Channels.ManageEncounterSpawns:SendToServer({
@@ -102,7 +104,7 @@ function EncounterDesigner:buildDesigner(encounter)
 	end)
 
 
-	if not TableUtils:TablesAreEqual(encounter.baseCoords, { 0, 0, 0 }) then
+	if not TableUtils:TablesAreEqual(encounter.baseCoords, { 0, 0, 0 }) and encounter.entities() then
 		Channels.OrbAtPosition:SendToServer({
 			encounterId = encounter._parent_key,
 			context = "BaseCoords",
@@ -298,6 +300,10 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 	}
 
 	local function renderGroupCards()
+		if not entities or not entities() then
+			return
+		end
+		
 		if cardsWindow.LastSize[1] == 0.0 then
 			Ext.Timer.WaitFor(50, function()
 				renderGroupCards()
