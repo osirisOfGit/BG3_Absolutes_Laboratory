@@ -27,7 +27,7 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 	local buildDesignerFunc
 
 	---@type ExtuiButton[]
-	local buttons
+	local focusButtons
 
 	Styler:MiddleAlignedColumnLayout(parent, function(ele)
 		ele.Font = "Small"
@@ -45,10 +45,10 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 		focusMutators:SetColor("Button", disabledButtonColor)
 		focusMutators.SameLine = true
 
-		buttons = { focusSelectors, focusBoth, focusMutators }
+		focusButtons = { focusSelectors, focusBoth, focusMutators }
 		---@param button ExtuiButton
 		local function changeFocus(button)
-			for _, focusButton in pairs(buttons) do
+			for _, focusButton in pairs(focusButtons) do
 				if focusButton.Handle == button.Handle then
 					focusButton:SetColor("Button", activeButtonColor)
 					focusButton.UserData = true
@@ -70,12 +70,12 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 		if managerTable then
 			managerTable:Destroy()
 		end
-		managerTable = parent:AddTable("ManagerTable", buttons[2].UserData and 2 or 1)
+		managerTable = parent:AddTable("ManagerTable", focusButtons[2].UserData and 2 or 1)
 		managerTable.Borders = true
 
 		local row = managerTable:AddRow()
 
-		if buttons[2].UserData or buttons[1].UserData then
+		if focusButtons[2].UserData or focusButtons[1].UserData then
 			local selectorColumn = row:AddCell()
 			Styler:CheapTextAlign("Selectors", selectorColumn, "Big").UserData = "keep"
 			Styler:MiddleAlignedColumnLayout(selectorColumn, function(ele)
@@ -154,7 +154,7 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 
 			self:RenderSelectors(selectorColumn, existingMutation.selectors)
 		end
-		if buttons[2].UserData or buttons[3].UserData then
+		if focusButtons[2].UserData or focusButtons[3].UserData then
 			local setting = ConfigurationStructure.config.mutations.settings.mutationDesigner
 
 			local mutatorColumn = row:AddCell()

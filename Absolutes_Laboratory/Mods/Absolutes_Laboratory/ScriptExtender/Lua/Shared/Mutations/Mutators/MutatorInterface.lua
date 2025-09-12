@@ -165,6 +165,8 @@ end
 ---@param entity EntityHandle
 function MutatorInterface:FinalizeMutator(entity) end
 
+Ext.Require("Shared/Mutations/Mutators/PrepPhaseMarkerMutator.lua")
+
 Ext.Require("Shared/Mutations/Mutators/LevelMutator.lua")
 Ext.Require("Shared/Mutations/Mutators/SpellList/SpellListMutator.lua")
 Ext.Require("Shared/Mutations/Mutators/PassiveList/PassiveListMutator.lua")
