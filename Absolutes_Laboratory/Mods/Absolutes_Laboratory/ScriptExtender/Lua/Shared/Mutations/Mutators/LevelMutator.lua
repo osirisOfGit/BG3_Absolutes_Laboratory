@@ -79,7 +79,7 @@ function LevelMutator:renderMutator(parent, mutator)
 	local thresholdText = parent:AddText("for this mutator to execute (?)")
 	thresholdText.SameLine = true
 	thresholdText:Tooltip():AddText(
-		"\t Value can be negative only when the threshold is relative to the player to represent a comparison of (the player's level - value) vs the entity level; otherwise, it represents the flat number to compare the entity's level against")
+		"\t Value can be negative only when the threshold is relative to the player to represent a comparison of (the player's level - value) vs the entity level;\notherwise, it represents the flat number to compare the entity's level against")
 
 	parent:AddSeparator()
 
