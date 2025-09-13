@@ -3,25 +3,25 @@ Ext.Vars.RegisterUserVariable("Absolutes_Lab_Prep_Phase_Marker", {
 	Client = true
 })
 
-PrepPhaseMarker = MutatorInterface:new("Prep Phase Marker")
+PrepPhaseMarkerMutator = MutatorInterface:new("Prep Phase Marker")
 
-function PrepPhaseMarker:Transient()
+function PrepPhaseMarkerMutator:Transient()
 	return false
 end
 
-function PrepPhaseMarker:canBeAdditive()
+function PrepPhaseMarkerMutator:canBeAdditive()
 	return true
 end
 
-function PrepPhaseMarker:handleDependencies()
+function PrepPhaseMarkerMutator:handleDependencies()
 	-- NOOP
 end
 
 ---@class PrepPhaseMarkerMutator : Mutator
----@field values PrepPhaseCategory[]
+---@field values PrepMarkerCategory[]
 
 ---@param mutator PrepPhaseMarkerMutator
-function PrepPhaseMarker:renderMutator(parent, mutator)
+function PrepPhaseMarkerMutator:renderMutator(parent, mutator)
 	mutator.values = mutator.values or {}
 
 	Helpers:KillChildren(parent)
@@ -124,7 +124,7 @@ function PrepPhaseMarker:renderMutator(parent, mutator)
 				name = formResults.Name,
 				description = formResults.Description,
 				id = FormBuilder:generateGUID()
-			} --[[@as PrepPhaseCategory]])
+			} --[[@as PrepMarkerCategory]])
 			self:renderMutator(parent, mutator)
 		end, {
 			{
@@ -140,8 +140,8 @@ function PrepPhaseMarker:renderMutator(parent, mutator)
 	end
 end
 
-function PrepPhaseMarker:applyMutator(entity, entityVar)
-	---@type PrepPhaseCategory[]
+function PrepPhaseMarkerMutator:applyMutator(entity, entityVar)
+	---@type PrepMarkerCategory[]
 	local prepMarkers = entityVar.appliedMutators[self.name].values
 
 	local prepPhaseCategories = ConfigurationStructure.config.mutations.settings.prepPhaseMarkers
@@ -158,6 +158,6 @@ function PrepPhaseMarker:applyMutator(entity, entityVar)
 	end
 end
 
-function PrepPhaseMarker:undoMutator(entity, entityVar)
+function PrepPhaseMarkerMutator:undoMutator(entity, entityVar)
 	entity.Vars.Absolutes_Lab_Prep_Phase_Marker = nil
 end

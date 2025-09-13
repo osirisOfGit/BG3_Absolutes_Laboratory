@@ -1,5 +1,3 @@
----@meta
-
 ---@class MutationsConfig
 ConfigurationStructure.config.mutations = {}
 
@@ -25,7 +23,7 @@ ConfigurationStructure.config.mutations.settings = {
 		---@type {[string]: SelectorQuery[]}
 		selectors = {}
 	},
-	---@type PrepPhaseCategory[]
+	---@type PrepMarkerCategory[]
 	prepPhaseMarkers = {
 		{
 			name = "Boss",
@@ -51,7 +49,7 @@ ConfigurationStructure.config.mutations.settings = {
 	}
 }
 
----@class PrepPhaseCategory
+---@class PrepMarkerCategory
 ---@field name string
 ---@field description string?
 ---@field id Guid

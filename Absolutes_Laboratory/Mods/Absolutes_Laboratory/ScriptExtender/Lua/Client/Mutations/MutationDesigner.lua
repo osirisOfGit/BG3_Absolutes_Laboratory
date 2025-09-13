@@ -307,7 +307,9 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 		selectorCombo.WidthFitPreview = true
 		local opts = {}
 		for selectorName in TableUtils:OrderedPairs(SelectorInterface.registeredSelectors) do
-			table.insert(opts, selectorName)
+			if not existingSelector._parent_proxy.prepPhase or selectorName ~= PrepMarkerSelector.name then
+				table.insert(opts, selectorName)
+			end
 		end
 		selectorCombo.Options = opts
 		selectorCombo.SelectedIndex = selectorEntry.criteriaCategory and (TableUtils:IndexOf(opts, selectorEntry.criteriaCategory) - 1) or -1
@@ -334,21 +336,23 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 
 	local addNewEntryButton = parent:AddButton("Add New Entry")
 	addNewEntryButton.OnClick = function()
-		if #existingSelector >= 1 then
-			table.insert(existingSelector, "AND")
-		end
 		Helpers:KillChildren(popup)
 		popup:Open()
-
+		
 		for selectorName in TableUtils:OrderedPairs(SelectorInterface.registeredSelectors) do
-			popup:AddSelectable(selectorName).OnClick = function()
-				table.insert(existingSelector, {
-					criteriaCategory = selectorName,
-					inclusive = true,
-					subSelectors = {},
-				} --[[@as Selector]])
+			if not existingSelector._parent_proxy.prepPhase or selectorName ~= PrepMarkerSelector.name then
+				popup:AddSelectable(selectorName).OnClick = function()
+					if #existingSelector >= 1 then
+						table.insert(existingSelector, "AND")
+					end
+					table.insert(existingSelector, {
+						criteriaCategory = selectorName,
+						inclusive = true,
+						subSelectors = {},
+					} --[[@as Selector]])
 
-				self:RenderSelectors(parent, existingSelector)
+					self:RenderSelectors(parent, existingSelector)
+				end
 			end
 		end
 	end
@@ -538,7 +542,7 @@ function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators)
 
 		local mutatorCell = row:AddCell()
 
-		
+
 		local mutatorCombo = mutatorCell:AddCombo("")
 		mutatorCombo.Visible = not mutators._parent_proxy.prepPhase
 		mutatorCombo.Font = "Large"
