@@ -109,6 +109,7 @@ function ListDesignerBaseClass:launch(activeListId)
 		self.layoutTable:AddColumn("ListSection", "WidthFixed")
 		self.layoutTable:AddColumn("", "WidthStretch")
 		self.layoutTable:AddColumn("BrowserSection", "WidthFixed")
+		self.layoutTable.ColumnDefs[1].NoResize = true
 		self.layoutTable.ColumnDefs[1].Width = 300 * Styler:ScaleFactor()
 		self.layoutTable.ColumnDefs[3].Width = 400 * Styler:ScaleFactor()
 
@@ -118,6 +119,27 @@ function ListDesignerBaseClass:launch(activeListId)
 		self.designerSection = row:AddCell():AddChildWindow("Designer")
 		self.browserTabParent = row:AddCell():AddTabBar("Browsers")
 
+		local collapseExpandUserFoldersButton = self.designerSection:AddButton("<<")
+		collapseExpandUserFoldersButton.UserData = "keep"
+		collapseExpandUserFoldersButton.OnClick = function()
+			Helpers:CollapseExpand(
+				collapseExpandUserFoldersButton.Label == "<<",
+				300 * Styler:ScaleFactor(),
+				function(width)
+					if width then
+						self.layoutTable.ColumnDefs[1].Width = width
+					end
+					return self.layoutTable.ColumnDefs[1].Width
+				end,
+				self.listSection,
+				function()
+					if collapseExpandUserFoldersButton.Label == "<<" then
+						collapseExpandUserFoldersButton.Label = ">>"
+					else
+						collapseExpandUserFoldersButton.Label = "<<"
+					end
+				end)
+		end
 		if self.progressionLinkedNodes then
 			self.browserTabs["Progressions"] = self.browserTabParent:AddTabItem("Progressions"):AddChildWindow("Progression Browser")
 			self.browserTabs["Progressions"].NoSavedSettings = true
@@ -129,7 +151,7 @@ function ListDesignerBaseClass:launch(activeListId)
 
 		local colorSettings = self.designerSection:AddGroup("colorSetting")
 		colorSettings.UserData = "keep"
-		colorSettings:AddText("Click A Color To Change It, Hover for Tooltips"):SetStyle("Alpha", 0.6)
+		colorSettings:AddText("Click A Color To Change It, Hover for Tooltips: "):SetStyle("Alpha", 0.6)
 
 		for subListName, colour in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.settings.customLists.subListColours, function(key)
 				return self.subListIndex[key].name
@@ -143,6 +165,7 @@ function ListDesignerBaseClass:launch(activeListId)
 				self.subListIndex[subListName].name,
 				{ 1, 1, 1 }
 			)
+			colorEditer.SameLine = true
 			colorEditer.AlphaBar = true
 			colorEditer.Color = self.subListIndex[subListName].colour
 			colorEditer.NoInputs = true
@@ -226,6 +249,8 @@ function ListDesignerBaseClass:buildLists(activeListId)
 				Helpers:KillChildren(self.designerSection)
 			end
 			self.designerSection.Visible = true
+
+			self.designerSection.Children[1]:OnClick()
 
 			self.activeListHandle = listSelectable
 
@@ -318,6 +343,7 @@ function ListDesignerBaseClass:buildModLists(activeListID)
 							self.activeListHandle.Selected = false
 						end
 						self.designerSection.Visible = true
+						self.designerSection.Children[1]:OnClick()
 
 						self.activeListHandle = spellListSelect
 						self.activeList = list
@@ -345,7 +371,9 @@ function ListDesignerBaseClass:buildDesigner()
 
 	self.entryCacheForProgressions = {}
 	Helpers:KillChildren(self.designerSection)
-	local headerTitle = Styler:CheapTextAlign(self.activeList.name, self.designerSection)
+	self.designerSection:AddNewLine()
+	local headerTitle = self.designerSection:AddSeparatorText(self.activeList.name)
+	headerTitle:SetStyle("SeparatorTextAlign", 0.5)
 	headerTitle.Font = "Big"
 	if self.activeList.description and self.activeList.description ~= "" then
 		headerTitle.Label = headerTitle.Label .. "( ? )"

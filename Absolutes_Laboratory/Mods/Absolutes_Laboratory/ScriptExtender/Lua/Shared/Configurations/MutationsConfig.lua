@@ -191,7 +191,7 @@ ConfigurationStructure.DynamicClassDefinitions.customLeveledList = {
 	description = "",
 	---@type Guid?
 	modId = nil,
-	---@type LeveledSubList[]?
+	---@type (LeveledSubList[]|{[GameLevel] : LeveledSubList})?
 	levels = nil,
 	---@type Guid[]?
 	spellListDependencies = nil,
