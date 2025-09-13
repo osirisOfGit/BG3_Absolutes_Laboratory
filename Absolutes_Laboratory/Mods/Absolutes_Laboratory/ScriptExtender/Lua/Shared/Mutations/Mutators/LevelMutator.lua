@@ -21,7 +21,13 @@ end
 ---@field base LevelRandomModifier?
 ---@field xpReward {[string]: LevelRandomModifier}?
 
+---@class LevelThresholdRequirement
+---@field comparator ">"|">="|"<"|"<="
+---@field level number
+---@field relativeToPlayer boolean
+
 ---@class LevelMutator : Mutator
+---@field levelThreshold LevelThresholdRequirement
 ---@field usePlayerLevel boolean
 ---@field values number
 ---@field modifiers LevelModifier
@@ -30,8 +36,52 @@ end
 function LevelMutator:renderMutator(parent, mutator)
 	mutator.values = mutator.values or 0
 	mutator.usePlayerLevel = mutator.usePlayerLevel or true
+	mutator.levelThreshold = mutator.levelThreshold or {
+		comparator = ">=",
+		level = 1,
+		relativeToPlayer = false
+	} --[[@as LevelThresholdRequirement]]
 
 	Helpers:KillChildren(parent)
+
+	parent:AddText("Entity's level must be ")
+	local comparatorCombo = parent:AddCombo("")
+	comparatorCombo.SameLine = true
+	comparatorCombo.WidthFitPreview = true
+	comparatorCombo.Options = { ">", ">=", "<", "<=" }
+	comparatorCombo.SelectedIndex = TableUtils:IndexOf(comparatorCombo.Options, mutator.levelThreshold.comparator) - 1
+	comparatorCombo.OnChange = function()
+		mutator.levelThreshold.comparator = comparatorCombo.Options[comparatorCombo.SelectedIndex + 1]
+	end
+
+	local levelThresholdInput = parent:AddInputInt("", mutator.levelThreshold.level)
+	levelThresholdInput.SameLine = true
+	levelThresholdInput.ItemWidth = 40
+	levelThresholdInput.OnChange = function()
+		if levelThresholdInput.Value[1] > 1 or mutator.levelThreshold.relativeToPlayer then
+			mutator.levelThreshold.level = levelThresholdInput.Value[1]
+		else
+			levelThresholdInput.Value = { mutator.levelThreshold.level, mutator.levelThreshold.level, mutator.levelThreshold.level, mutator.levelThreshold.level }
+		end
+	end
+
+	Styler:EnableToggleButton(parent, "relative to the highest-leveled player", true, function(swap)
+		if swap then
+			mutator.levelThreshold.relativeToPlayer = not mutator.levelThreshold.relativeToPlayer
+			if not mutator.levelThreshold.relativeToPlayer and mutator.levelThreshold.level < 1 then
+				mutator.levelThreshold.level = 1
+				levelThresholdInput.Value = { 1, 1, 1, 1 }
+			end
+		end
+		return mutator.levelThreshold.relativeToPlayer
+	end)
+
+	local thresholdText = parent:AddText("for this mutator to execute (?)")
+	thresholdText.SameLine = true
+	thresholdText:Tooltip():AddText(
+		"\t Value can be negative only when the threshold is relative to the player to represent a comparison of (the player's level - value) vs the entity level; otherwise, it represents the flat number to compare the entity's level against")
+
+	parent:AddSeparator()
 
 	parent:AddText("Entity should be ")
 
@@ -218,10 +268,45 @@ end
 local levelUpSubscription
 
 function LevelMutator:applyMutator(entity, entityVar)
+	local function calculateHighestPlayerLevel()
+		local targetLevel = 1
+		for _, playerTable in pairs(Osi.DB_Players:Get(nil)) do
+			local player = playerTable[1]
+
+			---@type EntityHandle
+			local playerEntity = Ext.Entity.Get(player)
+
+			if playerEntity.AvailableLevel.Level > targetLevel then
+				targetLevel = playerEntity.AvailableLevel.Level
+			end
+		end
+		return targetLevel
+	end
 	entityVar.originalValues[self.name] = entity.AvailableLevel.Level
 
 	---@type LevelMutator
 	local mutator = entityVar.appliedMutators[self.name]
+
+	local levelThreshold = mutator.levelThreshold
+	local targetLevel = levelThreshold.relativeToPlayer and (calculateHighestPlayerLevel() + levelThreshold.level) or levelThreshold.level
+
+	local entityPasses  = false
+	if levelThreshold.comparator == ">" then
+		entityPasses = entity.EocLevel.Level > targetLevel
+	elseif levelThreshold.comparator == ">=" then
+		entityPasses = entity.EocLevel.Level >= targetLevel
+	elseif levelThreshold.comparator == "<" then
+		entityPasses = entity.EocLevel.Level < targetLevel
+	elseif levelThreshold.comparator == "<=" then
+		entityPasses = entity.EocLevel.Level <= targetLevel 
+	end
+
+	if not entityPasses then
+		Logger:BasicDebug("Entity's level of %s is NOT %s the target level of %s%s", entity.EocLevel.Level, levelThreshold.comparator, targetLevel, levelThreshold.relativeToPlayer and " (calculated relative to the player's level)" or "")
+		return
+	else
+		Logger:BasicDebug("Entity's level of %s is %s the target level of %s%s", entity.EocLevel.Level, levelThreshold.comparator, targetLevel, levelThreshold.relativeToPlayer and " (calculated relative to the player's level)" or "")
+	end
 
 	---@type Character
 	local charStat = Ext.Stats.Get(entity.Data.StatsId)
@@ -268,16 +353,7 @@ function LevelMutator:applyMutator(entity, entityVar)
 
 	local targetLevel = mutator.usePlayerLevel and 1 or entity.EocLevel.Level
 	if mutator.usePlayerLevel then
-		for _, playerTable in pairs(Osi.DB_Players:Get(nil)) do
-			local player = playerTable[1]
-
-			---@type EntityHandle
-			local playerEntity = Ext.Entity.Get(player)
-
-			if playerEntity.AvailableLevel.Level > targetLevel then
-				targetLevel = playerEntity.AvailableLevel.Level
-			end
-		end
+		targetLevel = calculateHighestPlayerLevel()
 		Logger:BasicDebug("Highest player level is %s", targetLevel)
 	else
 		Logger:BasicDebug("Current entity level is %s", targetLevel)
