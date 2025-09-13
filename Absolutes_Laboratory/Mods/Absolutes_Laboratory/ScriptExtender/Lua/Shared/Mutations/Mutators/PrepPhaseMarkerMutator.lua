@@ -22,6 +22,8 @@ end
 
 ---@param mutator PrepPhaseMarkerMutator
 function PrepPhaseMarker:renderMutator(parent, mutator)
+	mutator.values = mutator.values or {}
+
 	Helpers:KillChildren(parent)
 	local popup = parent:AddPopup("")
 

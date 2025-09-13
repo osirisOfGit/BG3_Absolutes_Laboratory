@@ -12,6 +12,7 @@ local popup
 ---@param parent ExtuiTreeParent
 ---@param existingMutation Mutation
 function MutationDesigner:RenderMutationManager(parent, existingMutation)
+	Helpers:KillChildren(parent)
 	popup = parent:AddPopup("")
 	popup:SetColor("PopupBg", { 0, 0, 0, 1 })
 	popup:SetColor("Border", { 1, 0, 0, 0.5 })
@@ -159,30 +160,22 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 
 			local mutatorColumn = row:AddCell()
 
-			Styler:CheapTextAlign("Mutators", mutatorColumn, "Big").UserData = "keep"
+			Styler:CheapTextAlign(("%s"):format(existingMutation.prepPhase and "Prep Mutator" or "Mutators"), mutatorColumn, "Big").UserData = "keep"
 			Styler:MiddleAlignedColumnLayout(mutatorColumn, function(ele)
 				ele.Font = "Small"
 
-				local sideBarButton = ele:AddButton("Sidebar")
-				sideBarButton:SetColor("Button", setting.mutatorStyle == "Sidebar" and activeButtonColor or disabledButtonColor)
-				sideBarButton.UserData = "EnableForMods"
-
-				local infiniteScrollButton = ele:AddButton("Infinite Scroll")
-				infiniteScrollButton:SetColor("Button", setting.mutatorStyle == "Infinite" and activeButtonColor or disabledButtonColor)
-				infiniteScrollButton.SameLine = true
-				infiniteScrollButton.UserData = "EnableForMods"
-
-				---@param button ExtuiButton
-				sideBarButton.OnClick = function(button)
-					setting.mutatorStyle = button.Label == "Sidebar" and "Sidebar" or "Infinite"
-					sideBarButton:SetColor("Button", setting.mutatorStyle == "Sidebar" and activeButtonColor or disabledButtonColor)
-					infiniteScrollButton:SetColor("Button", setting.mutatorStyle == "Infinite" and activeButtonColor or disabledButtonColor)
-
-					buildDesignerFunc()
+				if not existingMutation.prepPhase then
+					Styler:DualToggleButton(ele, "Sidebar", "Infinite Scroll", false, function(swap)
+						if swap then
+							setting.mutatorStyle = setting.mutatorStyle ~= "Sidebar" and "Sidebar" or "Infinite"
+							buildDesignerFunc()
+						end
+						return setting.mutatorStyle == "Sidebar"
+					end)
 				end
-				infiniteScrollButton.OnClick = sideBarButton.OnClick
 			end).UserData = "keep"
-			if ConfigurationStructure.config.mutations.settings.mutationDesigner.mutatorStyle == "Infinite" then
+
+			if setting.mutatorStyle == "Infinite" or existingMutation.prepPhase then
 				self:RenderMutatorsInfiniteScroll(mutatorColumn, existingMutation.mutators)
 			else
 				self:RenderMutatorsSidebarStyle(mutatorColumn, existingMutation.mutators)
@@ -292,7 +285,7 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 		local entryCell = row:AddCell()
 
 		if andOrEntry then
-			Styler:ToggleButton(entryCell, "AND", "OR", false, function(swap)
+			Styler:DualToggleButton(entryCell, "AND", "OR", false, function(swap)
 				if swap then
 					existingSelector[i] = existingSelector[i] == "AND" and "OR" or "AND"
 					andOrEntry = existingSelector[i]
@@ -545,7 +538,9 @@ function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators)
 
 		local mutatorCell = row:AddCell()
 
+		
 		local mutatorCombo = mutatorCell:AddCombo("")
+		mutatorCombo.Visible = not mutators._parent_proxy.prepPhase
 		mutatorCombo.Font = "Large"
 		mutatorCombo.WidthFitPreview = true
 		local opts = {}
@@ -580,35 +575,36 @@ function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators)
 
 		mutatorCell:AddNewLine()
 	end
+	if not mutators._parent_proxy.prepPhase then
+		Styler:MiddleAlignedColumnLayout(parent, function(ele)
+			local addNewEntryButton = ele:AddButton("+")
+			addNewEntryButton.OnClick = function()
+				Helpers:KillChildren(popup)
+				popup:Open()
 
-	Styler:MiddleAlignedColumnLayout(parent, function(ele)
-		local addNewEntryButton = ele:AddButton("+")
-		addNewEntryButton.OnClick = function()
-			Helpers:KillChildren(popup)
-			popup:Open()
+				for mutatorName in TableUtils:OrderedPairs(MutatorInterface.registeredMutators) do
+					if not TableUtils:IndexOf(mutators, function(value)
+							return value.targetProperty == mutatorName
+						end)
+					then
+						popup:AddSelectable(mutatorName).OnClick = function()
+							table.insert(mutators, {
+								targetProperty = mutatorName
+							} --[[@as Mutator]])
 
-			for mutatorName in TableUtils:OrderedPairs(MutatorInterface.registeredMutators) do
-				if not TableUtils:IndexOf(mutators, function(value)
-						return value.targetProperty == mutatorName
-					end)
-				then
-					popup:AddSelectable(mutatorName).OnClick = function()
-						table.insert(mutators, {
-							targetProperty = mutatorName
-						} --[[@as Mutator]])
-
-						self:RenderMutatorsInfiniteScroll(parent, mutators)
+							self:RenderMutatorsInfiniteScroll(parent, mutators)
+						end
 					end
 				end
 			end
-		end
 
-		local managePresetsButton = ele:AddButton("Manage Presets")
-		managePresetsButton.SameLine = true
-		buildManageMutationPreset(managePresetsButton, mutators, function()
-			self:RenderMutatorsInfiniteScroll(parent, mutators)
+			local managePresetsButton = ele:AddButton("Manage Presets")
+			managePresetsButton.SameLine = true
+			buildManageMutationPreset(managePresetsButton, mutators, function()
+				self:RenderMutatorsInfiniteScroll(parent, mutators)
+			end)
 		end)
-	end)
+	end
 end
 
 ---@param parent ExtuiTreeParent
@@ -658,31 +654,33 @@ function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMut
 		end
 	end
 
-	local addNewEntryButton = sideBar:AddButton("+")
-	addNewEntryButton.OnClick = function()
-		Helpers:KillChildren(popup)
-		popup:Open()
+	if not mutators._parent_proxy.prepPhase then
+		local addNewEntryButton = sideBar:AddButton("+")
+		addNewEntryButton.OnClick = function()
+			Helpers:KillChildren(popup)
+			popup:Open()
 
-		for mutatorName in TableUtils:OrderedPairs(MutatorInterface.registeredMutators) do
-			if not TableUtils:IndexOf(mutators, function(value)
-					return value.targetProperty == mutatorName
-				end)
-			then
-				popup:AddSelectable(mutatorName).OnClick = function()
-					table.insert(mutators, {
-						targetProperty = mutatorName
-					} --[[@as Mutator]])
+			for mutatorName in TableUtils:OrderedPairs(MutatorInterface.registeredMutators) do
+				if not TableUtils:IndexOf(mutators, function(value)
+						return value.targetProperty == mutatorName
+					end)
+				then
+					popup:AddSelectable(mutatorName).OnClick = function()
+						table.insert(mutators, {
+							targetProperty = mutatorName
+						} --[[@as Mutator]])
 
-					self:RenderMutatorsSidebarStyle(parent, mutators, activeMutatorHandle and activeMutatorHandle.Label)
+						self:RenderMutatorsSidebarStyle(parent, mutators, activeMutatorHandle and activeMutatorHandle.Label)
+					end
 				end
 			end
 		end
-	end
 
-	local managePresetsButton = sideBar:AddButton("MP")
-	managePresetsButton:Tooltip():AddText("\t Manage Mutator Presets")
-	managePresetsButton.SameLine = true
-	buildManageMutationPreset(managePresetsButton, mutators, function()
-		self:RenderMutatorsSidebarStyle(parent, mutators, activeMutatorHandle and activeMutatorHandle.Label)
-	end)
+		local managePresetsButton = sideBar:AddButton("MP")
+		managePresetsButton:Tooltip():AddText("\t Manage Mutator Presets")
+		managePresetsButton.SameLine = true
+		buildManageMutationPreset(managePresetsButton, mutators, function()
+			self:RenderMutatorsSidebarStyle(parent, mutators, activeMutatorHandle and activeMutatorHandle.Label)
+		end)
+	end
 end

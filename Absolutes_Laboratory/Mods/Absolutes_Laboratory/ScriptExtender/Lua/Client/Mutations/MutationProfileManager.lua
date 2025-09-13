@@ -178,7 +178,7 @@ function MutationProfileManager:BuildFolderManager()
 
 	local folders = ConfigurationStructure.config.mutations.folders
 
-	for folderId, folder in TableUtils:OrderedPairs(folders, function (key, value)
+	for folderId, folder in TableUtils:OrderedPairs(folders, function(key, value)
 		return value.name
 	end) do
 		local folderHeader = self.userFolderGroup:AddTree(folder.name)
@@ -274,11 +274,11 @@ function MutationProfileManager:BuildFolderManager()
 			self:BuildFolderManager()
 		end
 
-		for mutationId, mutation in TableUtils:OrderedPairs(folder.mutations, function (key, value)
+		for mutationId, mutation in TableUtils:OrderedPairs(folder.mutations, function(key, value)
 			return value.name
 		end) do
 			---@type ExtuiSelectable
-			local mutationSelectable = folderHeader:AddSelectable(mutation.name)
+			local mutationSelectable = folderHeader:AddSelectable(("%s%s"):format(mutation.prepPhase and "(P) " or "", mutation.name))
 			mutationSelectable.IDContext = mutationId
 
 			if mutation.description ~= "" then
@@ -302,34 +302,21 @@ function MutationProfileManager:BuildFolderManager()
 				self:BuildFolderManager()
 			end
 
-			mutationPopup:AddSelectable("Delete").OnClick = function()
-				mutation.delete = true
+			---@type ExtuiSelectable
+			local select = mutationPopup:AddSelectable(mutation.prepPhase and "Unmark As Prep Mutation (?)" or "Mark As Prep Mutation (?)", "DontClosePopups")
+			select:Tooltip():AddText(
+				"\t A Prep Mutation is a mutation that is run before all others, assigning specified categories to the selected entities so they can be reused by Selectors in main mutations, greatly simplifying regular mutators. Prep mutations are marked via (P) in their button name")
+			select.OnClick = function()
+				mutation.prepPhase = not mutation.prepPhase
+				mutation.mutators.delete = true
+				mutation.mutators = mutation.prepPhase and { {
+						targetProperty = "Prep Phase Marker"
+					} --[[@as Mutator]] }
+					or {}
 
-				for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
-					local largestIndex = 0
-
-					local toDelete = {}
-					for i, mutRule in TableUtils:OrderedPairs(profile.mutationRules) do
-						largestIndex = i > largestIndex and i or largestIndex
-
-						if mutRule.mutationFolderId == folderId and mutRule.mutationId == mutationId then
-							toDelete[#toDelete + 1] = i - #toDelete
-						end
-					end
-
-					for _, indexToDelete in ipairs(toDelete) do
-						for x = indexToDelete, largestIndex do
-							if profile.mutationRules[x] then
-								profile.mutationRules[x].delete = true
-							end
-							profile.mutationRules[x] = TableUtils:DeeplyCopyTable(profile.mutationRules._real[x + 1])
-						end
-					end
-				end
-
-				self:BuildFolderManager()
+				mutationSelectable.Label = ("%s%s"):format(mutation.prepPhase and "(P) " or "", mutation.name)
+				mutationSelectable:OnClick()
 			end
-
 			mutationPopup:AddSelectable("Edit Details").OnClick = function()
 				Helpers:KillChildren(self.popup)
 				self.popup:Open()
@@ -353,6 +340,40 @@ function MutationProfileManager:BuildFolderManager()
 						}
 					}
 				)
+			end
+
+			---@param selectable ExtuiSelectable
+			mutationPopup:AddSelectable("Delete", "DontClosePopups").OnClick = function(selectable)
+				if selectable.Label ~= "Delete" then
+					mutation.delete = true
+
+					for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
+						local largestIndex = 0
+
+						local toDelete = {}
+						for i, mutRule in TableUtils:OrderedPairs(profile.mutationRules) do
+							largestIndex = i > largestIndex and i or largestIndex
+
+							if mutRule.mutationFolderId == folderId and mutRule.mutationId == mutationId then
+								toDelete[#toDelete + 1] = i - #toDelete
+							end
+						end
+
+						for _, indexToDelete in ipairs(toDelete) do
+							for x = indexToDelete, largestIndex do
+								if profile.mutationRules[x] then
+									profile.mutationRules[x].delete = true
+								end
+								profile.mutationRules[x] = TableUtils:DeeplyCopyTable(profile.mutationRules._real[x + 1])
+							end
+						end
+					end
+
+					self:BuildFolderManager()
+				else
+					selectable.Label = "Are You Sure? This Will Delete From All Profiles"
+					Styler:Color(selectable, "ErrorText")
+				end
 			end
 
 			if TableUtils:CountElements(folders) > 1 then
@@ -396,7 +417,7 @@ function MutationProfileManager:BuildFolderManager()
 					ele:AddText(folder.name .. "/" .. mutation.name).Font = "Big"
 					Styler:CheapTextAlign(mutation.description, ele)
 				end).SameLine = true
-				MutationDesigner:RenderMutationManager(self.mutationDesigner, mutation)
+				MutationDesigner:RenderMutationManager(self.mutationDesigner:AddGroup("designer"), mutation)
 			end
 
 			---@param selectable ExtuiSelectable
@@ -607,7 +628,7 @@ function MutationProfileManager:BuildModFolders()
 
 							Styler:CheapTextAlign("(" .. modName .. ")", ele)
 						end).SameLine = true
-						MutationDesigner:RenderMutationManager(self.mutationDesigner, mutation)
+						MutationDesigner:RenderMutationManager(self.mutationDesigner:AddGroup("designer"), mutation)
 					end
 				end
 			end
@@ -1129,22 +1150,21 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 				preview:AddText(button.Label)
 			end
 
-			-- Removed per user request, accidentally deleted a mutation while managing a profile. Doesn't make a ton of sense either, but keeping around jic
-			-- mutationButton.OnRightClick = function()
-			-- 	for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
-			-- 		---@cast ele ExtuiCollapsingHeader
-			-- 		if ele.UserData == mutationRule.mutationFolderId then
-			-- 			for _, mutation in pairs(ele.Children) do
-			-- 				---@cast mutation ExtuiSelectable
+			mutationButton.OnRightClick = function()
+				for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
+					---@cast ele ExtuiCollapsingHeader
+					if ele.UserData == mutationRule.mutationFolderId then
+						for _, mutation in pairs(ele.Children) do
+							---@cast mutation ExtuiSelectable
 
-			-- 				if mutation.UserData and mutation.UserData.mutationId == mutationRule.mutationId then
-			-- 					mutation:OnRightClick()
-			-- 					return
-			-- 				end
-			-- 			end
-			-- 		end
-			-- 	end
-			-- end
+							if mutation.UserData and mutation.UserData.mutationId == mutationRule.mutationId then
+								mutation:OnRightClick()
+								return
+							end
+						end
+					end
+				end
+			end
 			mutationButton.OnClick = function()
 				Helpers:KillChildren(self.mutationDesigner)
 
@@ -1192,7 +1212,7 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 					end
 				end).SameLine = true
 
-				MutationDesigner:RenderMutationManager(self.mutationDesigner, mutation)
+				MutationDesigner:RenderMutationManager(self.mutationDesigner:AddGroup("designer"), mutation)
 			end
 
 			if mutationButton.Label == lastMutationActive then

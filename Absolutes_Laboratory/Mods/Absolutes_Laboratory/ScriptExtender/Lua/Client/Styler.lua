@@ -286,31 +286,32 @@ end
 ---@param opt2 string
 ---@param startSameLine boolean
 ---@param callback fun(swap: boolean?): boolean
-function Styler:ToggleButton(parent, opt1, opt2, startSameLine, callback)
-	local activeButtonColor = { 0.38, 0.26, 0.21, 0.78 }
-	local disabledButtonColor = { 0, 0, 0, 0 }
-
+function Styler:DualToggleButton(parent, opt1, opt2, startSameLine, callback)
 	local option1 = parent:AddButton(opt1)
+	option1.AllowDuplicateId = true
 	option1.Disabled = true
-	option1:SetColor("Button", disabledButtonColor)
+	self:Color(option1, "DisabledButton")
 	option1.SameLine = startSameLine or false
 
 	local toggle = parent:AddSliderInt("", callback() and 0 or 1, 0, 1)
 	toggle:SetColor("Text", { 1, 1, 1, 0 })
 	toggle.SameLine = true
+	toggle.AllowDuplicateId = true
 	toggle.ItemWidth = 80 * Styler:ScaleFactor()
+	toggle.UserData = "EnableForMods"
 
 	local option2 = parent:AddButton(opt2)
+	option2.AllowDuplicateId = true
 	option2.Disabled = true
-	option2:SetColor("Button", activeButtonColor)
+	self:Color(option2, "ActiveButton")
 	option2.SameLine = true
 
 	if callback() then
-		option1:SetColor("Button", activeButtonColor)
-		option2:SetColor("Button", disabledButtonColor)
+		self:Color(option1, "ActiveButton")
+		self:Color(option2, "DisabledButton")
 	else
-		option1:SetColor("Button", disabledButtonColor)
-		option2:SetColor("Button", activeButtonColor)
+		self:Color(option1, "DisabledButton")
+		self:Color(option2, "ActiveButton")
 	end
 
 	toggle.OnActivate = function()
@@ -327,11 +328,62 @@ function Styler:ToggleButton(parent, opt1, opt2, startSameLine, callback)
 		toggle.Value = { newValue, newValue, newValue, newValue }
 
 		if useFirstOption then
-			option1:SetColor("Button", activeButtonColor)
-			option2:SetColor("Button", disabledButtonColor)
+			self:Color(option1, "ActiveButton")
+			self:Color(option2, "DisabledButton")
 		else
-			option1:SetColor("Button", disabledButtonColor)
-			option2:SetColor("Button", activeButtonColor)
+			self:Color(option1, "DisabledButton")
+			self:Color(option2, "ActiveButton")
+		end
+
+		callback(true)
+	end
+end
+
+---@param parent ExtuiTreeParent
+---@param buttonText string
+---@param startSameLine boolean
+---@param callback fun(swap: boolean?): boolean
+function Styler:EnableToggleButton(parent, buttonText, startSameLine, callback)
+	local option1 = parent:AddButton(buttonText)
+	option1.AllowDuplicateId = true
+	option1.Disabled = true
+	self:Color(option1, "ActiveButton")
+	option1.SameLine = startSameLine or false
+
+	local toggle = parent:AddSliderInt("", callback() and 0 or 1, 0, 1)
+	toggle:SetColor("Text", { 1, 1, 1, 0 })
+	toggle:SetColor("SliderGrab", { 0, 1, 0.2, 1 })
+	toggle.SameLine = true
+	toggle.AllowDuplicateId = true
+	toggle.ItemWidth = 80 * Styler:ScaleFactor()
+
+	if callback() then
+		self:Color(option1, "ActiveButton")
+		toggle:SetColor("SliderGrab", { 0, 1, 0.2, 0.3 })
+	else
+		self:Color(option1, "DisabledButton")
+		toggle:SetColor("SliderGrab", { 1, 0.2, 0, 0.3 })
+	end
+
+	toggle.OnActivate = function()
+		-- Prevents the user from keeping hold of the grab, triggering the Deactivate instantly
+		-- Slider Grab POS won't update if changed during an OnClick or OnActivate event
+		toggle.Disabled = true
+	end
+
+	toggle.OnDeactivate = function()
+		toggle.Disabled = false
+
+		local useFirstOption = not callback()
+		local newValue = useFirstOption and 0 or 1
+		toggle.Value = { newValue, newValue, newValue, newValue }
+
+		if useFirstOption then
+			self:Color(option1, "ActiveButton")
+			toggle:SetColor("SliderGrab", { 0, 1, 0.2, 0.30 })
+		else
+			self:Color(option1, "DisabledButton")
+			toggle:SetColor("SliderGrab", { 1, 0.2, 0, 0.30 })
 		end
 
 		callback(true)
@@ -346,4 +398,34 @@ function Styler:ConvertRGBAToIMGUI(colour)
 		end
 	end
 	return colour
+end
+
+---@class StylerColors
+Styler.Colours = {
+	PlainLink = function(link)
+		link:SetColor("TextLink", { 0.86, 0.79, 0.68, 0.78 })
+	end,
+	ActiveButton = function(button)
+		button:SetColor("Button", { 0.38, 0.26, 0.21, 0.78 })
+	end,
+	DisabledButton = function(button)
+		button:SetColor("Button", { 0, 0, 0, 0 })
+	end,
+	ErrorText = function(text)
+		text:SetColor("Text", { 1, 0.02, 0, 1 })
+	end,
+}
+
+---@generic Ele : ExtuiStyledRenderable
+---@param element Ele
+---@param property string|"PlainLink"|"ActiveButton"|"DisabledButton"|"ErrorText"
+---@param color number[]?
+---@return Ele
+function Styler:Color(element, property, color)
+	if not color then
+		Styler.Colours[property](element)
+	else
+		element:SetColor(property, self:ConvertRGBAToIMGUI(color))
+	end
+	return element
 end

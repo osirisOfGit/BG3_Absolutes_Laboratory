@@ -38,7 +38,7 @@ function HealthMutator:renderMutator(parent, mutator)
 		mutator.values = 10
 	end
 
-	Styler:ToggleButton(parent, "Static", "Dynamic", false, function(swap)
+	Styler:DualToggleButton(parent, "Static", "Dynamic", false, function(swap)
 		if swap then
 			if mutator.values then
 				mutator.values = nil
