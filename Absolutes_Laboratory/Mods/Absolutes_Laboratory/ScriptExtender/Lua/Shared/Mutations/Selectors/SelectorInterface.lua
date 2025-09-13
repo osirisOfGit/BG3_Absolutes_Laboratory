@@ -39,7 +39,7 @@ end
 
 ---@class SelectorPredicate
 SelectorPredicate = {
-	---@type fun(entity: EntityHandle|EntityRecord): boolean
+	---@type fun(entity: (EntityHandle|EntityRecord), entityVar: MutatorEntityVar?): boolean
 	func = nil
 }
 
@@ -55,17 +55,18 @@ function SelectorPredicate:new(func)
 end
 
 ---@param entity EntityHandle|EntityRecord
+---@param entityVar MutatorEntityVar?
 ---@return boolean
-function SelectorPredicate:Test(entity)
-	return self.func(entity)
+function SelectorPredicate:Test(entity, entityVar)
+	return self.func(entity, entityVar)
 end
 
 ---@param f1 SelectorPredicate
 ---@param f2 SelectorPredicate
 ---@return SelectorPredicate
 function SelectorPredicate.And(f1, f2)
-	return SelectorPredicate:new(function(entity)
-		return f1:Test(entity) and f2:Test(entity)
+	return SelectorPredicate:new(function(entity, entityVar)
+		return f1:Test(entity, entityVar) and f2:Test(entity, entityVar)
 	end)
 end
 
@@ -73,16 +74,16 @@ end
 ---@param f2 SelectorPredicate
 ---@return SelectorPredicate
 function SelectorPredicate.Or(f1, f2)
-	return SelectorPredicate:new(function(entity)
-		return f1:Test(entity) or f2:Test(entity)
+	return SelectorPredicate:new(function(entity, entityVar)
+		return f1:Test(entity, entityVar) or f2:Test(entity,entityVar)
 	end)
 end
 
 ---@param f SelectorPredicate
 ---@return SelectorPredicate
 function SelectorPredicate.Negate(f)
-	return SelectorPredicate:new(function(entity)
-		return not f:Test(entity)
+	return SelectorPredicate:new(function(entity, entityVar)
+		return not f:Test(entity, entityVar)
 	end)
 end
 

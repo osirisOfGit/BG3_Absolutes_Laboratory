@@ -162,20 +162,20 @@ function PrepPhaseMarkerMutator:renderMutator(parent, mutator)
 end
 
 function PrepPhaseMarkerMutator:applyMutator(entity, entityVar)
-	---@type Guid[]
-	local prepMarkers = entityVar.appliedMutators[self.name].values
+	-- ---@type Guid[]
+	-- local prepMarkers = entityVar.appliedMutators[self.name].values
 
-	local prepPhaseCategories = MutationConfigurationProxy.prepPhaseMarkers
+	-- local prepPhaseCategories = MutationConfigurationProxy.prepPhaseMarkers
 
-	entity.Vars.Absolutes_Lab_Prep_Phase_Marker = {}
+	-- entity.Vars.Absolutes_Lab_Prep_Phase_Marker = {}
 
-	for _, prepMarkerId in ipairs(prepMarkers) do
-		if prepPhaseCategories[prepMarkerId] then
-			table.insert(entity.Vars.Absolutes_Lab_Prep_Phase_Marker, prepMarkerId)
-		end
-	end
+	-- for _, prepMarkerId in ipairs(prepMarkers) do
+	-- 	if prepPhaseCategories[prepMarkerId] then
+	-- 		table.insert(entity.Vars.Absolutes_Lab_Prep_Phase_Marker, prepMarkerId)
+	-- 	end
+	-- end
 end
 
 function PrepPhaseMarkerMutator:undoMutator(entity, entityVar)
-	entity.Vars.Absolutes_Lab_Prep_Phase_Marker = nil
+	-- entity.Vars.Absolutes_Lab_Prep_Phase_Marker = nil
 end

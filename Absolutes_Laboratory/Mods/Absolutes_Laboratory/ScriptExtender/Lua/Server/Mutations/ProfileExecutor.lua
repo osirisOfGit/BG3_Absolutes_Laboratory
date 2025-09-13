@@ -68,7 +68,7 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 						cachedSelectors[mProfileRule.mutationFolderId][mProfileRule.mutationId] = SelectorInterface:createComposedPredicate(mutation.selectors)
 					end
 
-					if cachedSelectors[mProfileRule.mutationFolderId][mProfileRule.mutationId]:Test(entity) then
+					if cachedSelectors[mProfileRule.mutationFolderId][mProfileRule.mutationId]:Test(entity, entityVar) then
 						for _, mutator in pairs(mutation.mutators) do
 							if entityVar.appliedMutators[mutator.targetProperty]
 								and mProfileRule.additive

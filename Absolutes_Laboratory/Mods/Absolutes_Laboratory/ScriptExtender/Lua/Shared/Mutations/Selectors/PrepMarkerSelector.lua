@@ -69,12 +69,12 @@ function PrepMarkerSelector:handleDependencies(export, selector, removeMissingDe
 end
 
 ---@param selector PrepMarkerSelector
----@return fun(entity: (EntityHandle|EntityRecord)): boolean
+---@return fun(entity: (EntityHandle|EntityRecord), entityVar: MutatorEntityVar): boolean
 function PrepMarkerSelector:predicate(selector)
 	local cachedSelectors = {}
 	local activeProfile = MutationConfigurationProxy.profiles[Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile]
 
-	return function(entity)
+	return function(entity, entityVar)
 		local appliedCategories = {}
 		for i, mProfileRule in ipairs(activeProfile.prepPhaseMutations) do
 			local mutation = MutationConfigurationProxy.folders[mProfileRule.mutationFolderId].mutations[mProfileRule.mutationId]
@@ -99,8 +99,16 @@ function PrepMarkerSelector:predicate(selector)
 								else
 									appliedCategories = { TableUtils:DeeplyCopyTable(appliedCategories), mutator.values }
 								end
+								if entityVar then
+									entityVar.appliedMutators[mutator.targetProperty] = mutator
+									entityVar.appliedMutatorsPath[mutator.targetProperty][i] = mProfileRule
+								end
 							else
 								appliedCategories = mutator.values._real or mutator.values
+								if entityVar then
+									entityVar.appliedMutators[mutator.targetProperty] = mutator
+									entityVar.appliedMutatorsPath[mutator.targetProperty] = { [i] = mProfileRule }
+								end
 							end
 						end
 					end
