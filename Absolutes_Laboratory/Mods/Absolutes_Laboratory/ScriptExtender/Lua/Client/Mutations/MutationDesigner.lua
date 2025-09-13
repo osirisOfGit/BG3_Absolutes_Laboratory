@@ -338,7 +338,7 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 	addNewEntryButton.OnClick = function()
 		Helpers:KillChildren(popup)
 		popup:Open()
-		
+
 		for selectorName in TableUtils:OrderedPairs(SelectorInterface.registeredSelectors) do
 			if not existingSelector._parent_proxy.prepPhase or selectorName ~= PrepMarkerSelector.name then
 				popup:AddSelectable(selectorName).OnClick = function()

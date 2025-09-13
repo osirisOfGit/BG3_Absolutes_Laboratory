@@ -91,6 +91,13 @@ function MutationProfileManager:init(parent)
 								end
 							end
 
+							for _, mutationRule in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles[activeProfileId].prepPhaseMutations) do
+								if mutationRule.mutationId == dropped.UserData.mutationId and mutationRule.mutationFolderId == dropped.UserData.mutationFolderId then
+									mutationRule.delete = true
+									break
+								end
+							end
+
 							activeMutationView = nil
 							self:BuildRuleManager()
 							return
@@ -285,7 +292,7 @@ function MutationProfileManager:BuildFolderManager()
 				mutationSelectable:Tooltip():AddText("\t " .. mutation.description)
 			end
 			mutationSelectable.CanDrag = true
-			mutationSelectable.DragDropType = "MutationRules"
+			mutationSelectable.DragDropType = mutation.prepPhase and "PrepMutationRules" or "MutationRules"
 			mutationSelectable.UserData = {
 				mutationFolderId = folderId,
 				mutationId = mutationId
@@ -315,7 +322,26 @@ function MutationProfileManager:BuildFolderManager()
 					or {}
 
 				mutationSelectable.Label = ("%s%s"):format(mutation.prepPhase and "(P) " or "", mutation.name)
+
+				if not mutation.prepPhase then
+					for _, mutationRule in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles[activeProfileId].prepPhaseMutations) do
+						if mutationRule.mutationId == mutationSelectable.UserData.mutationId and mutationRule.mutationFolderId == mutationSelectable.UserData.mutationFolderId then
+							mutationRule.delete = true
+							break
+						end
+					end
+				else
+					for _, mutationRule in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles[activeProfileId].mutationRules) do
+						if mutationRule.mutationId == mutationSelectable.UserData.mutationId and mutationRule.mutationFolderId == mutationSelectable.UserData.mutationFolderId then
+							mutationRule.delete = true
+							break
+						end
+					end
+				end
+				mutationSelectable:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
+
 				mutationSelectable:OnClick()
+				self:BuildFolderManager()
 			end
 			mutationPopup:AddSelectable("Edit Details").OnClick = function()
 				Helpers:KillChildren(self.popup)
@@ -427,7 +453,11 @@ function MutationProfileManager:BuildFolderManager()
 			end
 
 			if activeProfileId and MutationConfigurationProxy.profiles[activeProfileId] then
-				if TableUtils:IndexOf(MutationConfigurationProxy.profiles[activeProfileId].mutationRules, function(mutationRule)
+				local profile = MutationConfigurationProxy.profiles[activeProfileId]
+				if TableUtils:IndexOf(profile.mutationRules, function(mutationRule)
+						return mutationRule.mutationFolderId == folderId and mutationRule.mutationId == mutationId
+					end)
+					or TableUtils:IndexOf(profile.prepPhaseMutations or {}, function(mutationRule)
 						return mutationRule.mutationFolderId == folderId and mutationRule.mutationId == mutationId
 					end)
 				then
@@ -525,12 +555,12 @@ function MutationProfileManager:BuildModFolders()
 					return value.name
 				end) do
 					---@type ExtuiSelectable
-					local mutationSelectable = folderHeader:AddSelectable(mutation.name)
+					local mutationSelectable = folderHeader:AddSelectable(("%s%s"):format(mutation.prepPhase and "(P) " or "", mutation.name))
 					if mutation.description ~= "" then
 						mutationSelectable:Tooltip():AddText("\t " .. mutation.description)
 					end
 					mutationSelectable.CanDrag = true
-					mutationSelectable.DragDropType = "MutationRules"
+					mutationSelectable.DragDropType = mutation.prepPhase and "PrepMutationRules" or "MutationRules"
 					mutationSelectable.UserData = {
 						mutationFolderId = folderId,
 						mutationId = mutationId
@@ -543,7 +573,11 @@ function MutationProfileManager:BuildModFolders()
 					end
 
 					if activeProfileId and MutationConfigurationProxy.profiles[activeProfileId] then
-						if TableUtils:IndexOf(MutationConfigurationProxy.profiles[activeProfileId].mutationRules, function(mutationRule)
+						local profile = MutationConfigurationProxy.profiles[activeProfileId]
+						if TableUtils:IndexOf(profile.mutationRules, function(mutationRule)
+								return mutationRule.mutationFolderId == folderId and mutationRule.mutationId == mutationId
+							end)
+							or TableUtils:IndexOf(profile.prepPhaseMutations or {}, function(mutationRule)
 								return mutationRule.mutationFolderId == folderId and mutationRule.mutationId == mutationId
 							end)
 						then
@@ -1016,229 +1050,259 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 	end
 
 	local numOfMutations = 0
+	local numOfPrepMutations = 0
 	for _, mutationFolder in pairs(ConfigurationStructure.config.mutations.folders) do
-		numOfMutations = numOfMutations + TableUtils:CountElements(mutationFolder.mutations)
+		for _, mutation in pairs(mutationFolder.mutations) do
+			if not mutation.prepPhase then
+				numOfMutations = numOfMutations + 1
+			else
+				numOfPrepMutations = numOfPrepMutations + 1
+			end
+		end
 	end
 
 	for _, modCache in pairs(MutationModProxy.ModProxy.folders) do
 		---@cast modCache LocalModCache
 
 		for folderId in pairs(modCache.folders) do
-			numOfMutations = numOfMutations + TableUtils:CountElements(MutationModProxy.ModProxy.folders[folderId].mutations)
+			for _, mutation in pairs(MutationModProxy.ModProxy.folders[folderId].mutations) do
+				if not mutation.prepPhase then
+					numOfMutations = numOfMutations + 1
+				else
+					numOfPrepMutations = numOfPrepMutations + 1
+				end
+			end
 		end
 	end
 
-	for counter = 1, numOfMutations do
-		local row = self.rulesOrderGroup:AddGroup("MutationGroup" .. counter)
-
-		row.UserData = counter
-		if not activeProfile.modId then
-			row.DragDropType = "MutationRules"
-			---@param row ExtuiGroup
-			---@param dropped ExtuiSelectable|ExtuiButton
-			row.OnDragDrop = function(row, dropped)
-				if tonumber(dropped.ParentElement.UserData) then
-					activeProfile.mutationRules[dropped.ParentElement.UserData].delete = true
-					if activeProfile.mutationRules[row.UserData] then
-						activeProfile.mutationRules[dropped.ParentElement.UserData] = activeProfile.mutationRules[row.UserData]._real
-					end
-				else
-					dropped:SetColor("Text", { 0.86, 0.79, 0.68, 0.28 })
-					dropped.CanDrag = false
-
-					if activeProfile.mutationRules[row.UserData] then
-						local removeRule = activeProfile.mutationRules[row.UserData]
-						for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
-							---@cast ele ExtuiCollapsingHeader
-							if ele.UserData == removeRule.mutationFolderId then
-								for _, mutation in pairs(ele.Children) do
-									---@cast mutation ExtuiSelectable
-
-									if mutation.UserData and mutation.UserData.mutationId == removeRule.mutationId then
-										mutation.CanDrag = true
-										mutation:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
-										goto continue
-									end
-								end
-							end
-						end
-						::continue::
-					end
-				end
-
-				if activeProfile.mutationRules[row.UserData] then
-					activeProfile.mutationRules[row.UserData].delete = true
-				end
-
-				activeProfile.mutationRules[row.UserData] = {
-					additive = dropped.UserData.additive,
-					mutationFolderId = dropped.UserData.mutationFolderId,
-					mutationId = dropped.UserData.mutationId,
-				}
-
-				self:BuildRuleManager(activeMutationView and activeMutationView.Label)
-			end
+	local function buildSlots(numOfMutations, prepPhase)
+		if prepPhase then
+			self.rulesOrderGroup:AddSeparatorText("Prep Mutations"):SetStyle("SeparatorTextAlign", 0.5)
+		else
+			self.rulesOrderGroup:AddSeparatorText("Main Mutations"):SetStyle("SeparatorTextAlign", 0.5)
+		end
+		if prepPhase then
+			activeProfile.prepPhaseMutations = activeProfile.prepPhaseMutations or {}
 		end
 
-		local orderNumberInput = row:AddInputInt("##" .. counter, counter)
-		orderNumberInput.Disabled = activeProfile.modId ~= nil
-		orderNumberInput.AutoSelectAll = true
-		orderNumberInput.ItemWidth = 40
+		local rulesToUse = prepPhase and activeProfile.prepPhaseMutations or activeProfile.mutationRules
+		for counter = 1, numOfMutations do
+			local row = self.rulesOrderGroup:AddGroup("MutationGroup" .. counter .. (prepPhase and "prep" or "main"))
 
-		if activeProfile and activeProfile.mutationRules[counter] then
-			local mutationRule = activeProfile.mutationRules[counter]
+			row.UserData = counter
+			if not activeProfile.modId then
+				row.DragDropType = prepPhase and "PrepMutationRules" or "MutationRules"
+				---@param row ExtuiGroup
+				---@param dropped ExtuiSelectable|ExtuiButton
+				row.OnDragDrop = function(row, dropped)
+					if tonumber(dropped.ParentElement.UserData) then
+						rulesToUse[dropped.ParentElement.UserData].delete = true
+						if rulesToUse[row.UserData] then
+							rulesToUse[dropped.ParentElement.UserData] = rulesToUse[row.UserData]._real
+						end
+					else
+						dropped:SetColor("Text", { 0.86, 0.79, 0.68, 0.28 })
+						dropped.CanDrag = false
 
-			orderNumberInput.OnDeactivate = function()
-				if orderNumberInput.Value[1] ~= row.UserData then
-					if orderNumberInput.Value[1] <= counter and orderNumberInput.Value[1] > 0 then
-						if activeProfile.mutationRules[orderNumberInput.Value[1]] then
-							local ruletoRemove = activeProfile.mutationRules[orderNumberInput.Value[1]]
-
+						if rulesToUse[row.UserData] then
+							local removeRule = rulesToUse[row.UserData]
 							for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
 								---@cast ele ExtuiCollapsingHeader
-								if ele.UserData == ruletoRemove.mutationFolderId then
+								if ele.UserData == removeRule.mutationFolderId then
 									for _, mutation in pairs(ele.Children) do
 										---@cast mutation ExtuiSelectable
 
-										if mutation.UserData and mutation.UserData.mutationId == ruletoRemove.mutationId then
-											mutation.SelectableDisabled = false
+										if mutation.UserData and mutation.UserData.mutationId == removeRule.mutationId then
+											mutation.CanDrag = true
+											mutation:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
 											goto continue
 										end
 									end
 								end
 							end
 							::continue::
-
-							ruletoRemove.delete = true
 						end
-
-						activeProfile.mutationRules[orderNumberInput.Value[1]] = mutationRule._real
-						mutationRule.delete = true
 					end
+
+					if rulesToUse[row.UserData] then
+						rulesToUse[row.UserData].delete = true
+					end
+
+					rulesToUse[row.UserData] = {
+						additive = dropped.UserData.additive,
+						mutationFolderId = dropped.UserData.mutationFolderId,
+						mutationId = dropped.UserData.mutationId,
+					}
 
 					self:BuildRuleManager(activeMutationView and activeMutationView.Label)
 				end
 			end
 
-			local folders = MutationConfigurationProxy.folders
+			local orderNumberInput = row:AddInputInt("##" .. counter .. (prepPhase and "prep" or "main"), counter)
+			orderNumberInput.Disabled = activeProfile.modId ~= nil
+			orderNumberInput.AutoSelectAll = true
+			orderNumberInput.ItemWidth = 40
 
-			local mutationButton = row:AddButton(folders[mutationRule.mutationFolderId].name ..
-				"/" .. folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId].name)
+			if activeProfile and rulesToUse[counter] then
+				local mutationRule = rulesToUse[counter]
 
-			if folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId].modId then
-				mutationButton.Label = "(M) " .. mutationButton.Label
-			end
+				orderNumberInput.OnDeactivate = function()
+					if orderNumberInput.Value[1] ~= row.UserData then
+						if orderNumberInput.Value[1] <= counter and orderNumberInput.Value[1] > 0 then
+							if rulesToUse[orderNumberInput.Value[1]] then
+								local ruletoRemove = rulesToUse[orderNumberInput.Value[1]]
 
-			mutationButton.IDContext = mutationRule.mutationFolderId .. mutationRule.mutationId
-			mutationButton.SameLine = true
-			mutationButton.UserData = activeProfile.modId and mutationRule or mutationRule._real
+								for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
+									---@cast ele ExtuiCollapsingHeader
+									if ele.UserData == ruletoRemove.mutationFolderId then
+										for _, mutation in pairs(ele.Children) do
+											---@cast mutation ExtuiSelectable
 
-			if not activeProfile.modId then
-				mutationButton.CanDrag = true
-				mutationButton.DragDropType = "MutationRules"
-			end
+											if mutation.UserData and mutation.UserData.mutationId == ruletoRemove.mutationId then
+												mutation.SelectableDisabled = false
+												goto continue
+											end
+										end
+									end
+								end
+								::continue::
 
-			local mutation = folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId]
-			if not mutation.modId and (not mutation.selectors() or not mutation.mutators()) then
-				mutationButton:SetColor("Button", { 1, 0.02, 0, 0.4 })
-				mutationButton:Tooltip():AddText("Missing a defined selector or mutator!")
-			end
+								ruletoRemove.delete = true
+							end
 
-			---@param button ExtuiButton
-			---@param preview ExtuiTreeParent
-			mutationButton.OnDragStart = function(button, preview)
-				preview:AddText(button.Label)
-			end
+							rulesToUse[orderNumberInput.Value[1]] = mutationRule._real
+							mutationRule.delete = true
+						end
 
-			mutationButton.OnRightClick = function()
-				for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
-					---@cast ele ExtuiCollapsingHeader
-					if ele.UserData == mutationRule.mutationFolderId then
-						for _, mutation in pairs(ele.Children) do
-							---@cast mutation ExtuiSelectable
+						self:BuildRuleManager(activeMutationView and activeMutationView.Label)
+					end
+				end
 
-							if mutation.UserData and mutation.UserData.mutationId == mutationRule.mutationId then
-								mutation:OnRightClick()
-								return
+				local folders = MutationConfigurationProxy.folders
+
+				local mutationButton = row:AddButton(folders[mutationRule.mutationFolderId].name ..
+					"/" .. folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId].name)
+
+				if folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId].modId then
+					mutationButton.Label = "(M) " .. mutationButton.Label
+				end
+
+				mutationButton.IDContext = mutationRule.mutationFolderId .. mutationRule.mutationId
+				mutationButton.SameLine = true
+				mutationButton.UserData = activeProfile.modId and mutationRule or mutationRule._real
+
+				if not activeProfile.modId then
+					mutationButton.CanDrag = true
+					mutationButton.DragDropType = row.DragDropType
+				end
+
+				local mutation = folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId]
+				if not mutation.modId and (not mutation.selectors() or not mutation.mutators()) then
+					mutationButton:SetColor("Button", { 1, 0.02, 0, 0.4 })
+					mutationButton:Tooltip():AddText("Missing a defined selector or mutator!")
+				end
+
+				---@param button ExtuiButton
+				---@param preview ExtuiTreeParent
+				mutationButton.OnDragStart = function(button, preview)
+					preview:AddText(button.Label)
+					self.userFolderGroup.DragDropType = prepPhase and "PrepMutationRules" or "MutationRules"
+					self.modFolderGroup.DragDropType = prepPhase and "PrepMutationRules" or "MutationRules"
+				end
+
+				mutationButton.OnRightClick = function()
+					for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
+						---@cast ele ExtuiCollapsingHeader
+						if ele.UserData == mutationRule.mutationFolderId then
+							for _, mutation in pairs(ele.Children) do
+								---@cast mutation ExtuiSelectable
+
+								if mutation.UserData and mutation.UserData.mutationId == mutationRule.mutationId then
+									mutation:OnRightClick()
+									return
+								end
 							end
 						end
 					end
 				end
-			end
-			mutationButton.OnClick = function()
-				Helpers:KillChildren(self.mutationDesigner)
+				mutationButton.OnClick = function()
+					Helpers:KillChildren(self.mutationDesigner)
 
-				local mutation = folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId]
+					local mutation = folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId]
 
-				if not mutation.modId and (not mutation.selectors() or not mutation.mutators()) then
-					mutationButton:SetColor("Button", { 1, 0.02, 0, 0.4 })
-				end
+					if not mutation.modId and (not mutation.selectors() or not mutation.mutators()) then
+						mutationButton:SetColor("Button", { 1, 0.02, 0, 0.4 })
+					end
 
-				if activeMutationView then
-					if activeMutationView.Handle then
-						---@type MutationProfileRule
-						local activeMutationRule = activeMutationView.UserData
-						local mutationConfig = folders[activeMutationRule.mutationFolderId].mutations[activeMutationRule.mutationId]
+					if activeMutationView then
+						if activeMutationView.Handle then
+							---@type MutationProfileRule
+							local activeMutationRule = activeMutationView.UserData
+							local mutationConfig = folders[activeMutationRule.mutationFolderId].mutations[activeMutationRule.mutationId]
 
-						if not mutationConfig.modId and (not mutationConfig.selectors() or not mutationConfig.mutators()) then
-							activeMutationView:SetColor("Button", { 1, 0.02, 0, 0.4 })
+							if not mutationConfig.modId and (not mutationConfig.selectors() or not mutationConfig.mutators()) then
+								activeMutationView:SetColor("Button", { 1, 0.02, 0, 0.4 })
+							else
+								-- https://github.com/Norbyte/bg3se/blob/f8b982125c6c1997ceab2d65cfaa3c1a04908ea6/BG3Extender/Extender/Client/IMGUI/IMGUI.cpp#L1901C34-L1901C60
+								activeMutationView:SetColor("Button", { 0.46, 0.40, 0.29, 0.5 })
+							end
+
+							if activeMutationView.Handle == mutationButton.Handle then
+								activeMutationView = nil
+								return
+							end
+						end
+					end
+
+					activeMutationView = mutationButton
+					mutationButton:SetColor("Button", { 0.64, 0.40, 0.28, 0.5 })
+
+					Styler:MiddleAlignedColumnLayout(self.mutationDesigner, function(ele)
+						Styler:CheapTextAlign(folders[mutationRule.mutationFolderId].name ..
+							"/" .. folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId].name, ele, "Big")
+
+						local mut = folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId]
+
+						if mut.modId then
+							local modInfo = Ext.Mod.GetMod(mut.modId).Info
+							Styler:CheapTextAlign("(" .. modInfo.Name .. ")", ele)
+							Styler:CheapTextAlign(mut.description, ele)
 						else
-							-- https://github.com/Norbyte/bg3se/blob/f8b982125c6c1997ceab2d65cfaa3c1a04908ea6/BG3Extender/Extender/Client/IMGUI/IMGUI.cpp#L1901C34-L1901C60
-							activeMutationView:SetColor("Button", { 0.46, 0.40, 0.29, 0.5 })
+							Styler:CheapTextAlign(mut.description, ele)
 						end
+					end).SameLine = true
 
-						if activeMutationView.Handle == mutationButton.Handle then
-							activeMutationView = nil
-							return
-						end
-					end
+					MutationDesigner:RenderMutationManager(self.mutationDesigner:AddGroup("designer"), mutation)
 				end
 
-				activeMutationView = mutationButton
-				mutationButton:SetColor("Button", { 0.64, 0.40, 0.28, 0.5 })
-
-				Styler:MiddleAlignedColumnLayout(self.mutationDesigner, function(ele)
-					Styler:CheapTextAlign(folders[mutationRule.mutationFolderId].name ..
-						"/" .. folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId].name, ele, "Big")
-
-					local mut = folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId]
-
-					if mut.modId then
-						local modInfo = Ext.Mod.GetMod(mut.modId).Info
-						Styler:CheapTextAlign("(" .. modInfo.Name .. ")", ele)
-						Styler:CheapTextAlign(mut.description, ele)
-					else
-						Styler:CheapTextAlign(mut.description, ele)
-					end
-				end).SameLine = true
-
-				MutationDesigner:RenderMutationManager(self.mutationDesigner:AddGroup("designer"), mutation)
-			end
-
-			if mutationButton.Label == lastMutationActive then
-				mutationButton:OnClick()
-				activeMutationView = mutationButton
-			end
-
-			if TableUtils:IndexOf(mutation.mutators, function(value)
-					return MutatorInterface.registeredMutators[value.targetProperty]:canBeAdditive(value)
-				end)
-			then
-				local additiveCheckbox = row:AddCheckbox("", mutationRule.additive)
-				additiveCheckbox.Disabled = activeProfile.modId ~= nil
-				additiveCheckbox:Tooltip():AddText(
-					"\t If checked, relevant mutators under this mutation will be _additive_, meaning they will be combined with any mutators of the same type that are applicable from mutations earlier in the flow.\n If unchecked, mutators of the same type from earlier mutations will be replaced with these.")
-
-				additiveCheckbox.SameLine = true
-				additiveCheckbox.OnChange = function()
-					mutationRule.additive = additiveCheckbox.Checked
+				if mutationButton.Label == lastMutationActive then
+					mutationButton:OnClick()
+					activeMutationView = mutationButton
 				end
-			end
-		else
-			orderNumberInput.Disabled = true
 
-			local cell = row:AddButton((" "):rep(15) .. "##" .. counter)
-			cell.SameLine = true
+				if TableUtils:IndexOf(mutation.mutators, function(value)
+						return MutatorInterface.registeredMutators[value.targetProperty]:canBeAdditive(value)
+					end)
+				then
+					local additiveCheckbox = row:AddCheckbox("", mutationRule.additive)
+					additiveCheckbox.Disabled = activeProfile.modId ~= nil
+					additiveCheckbox:Tooltip():AddText(
+						"\t If checked, relevant mutators under this mutation will be _additive_, meaning they will be combined with any mutators of the same type that are applicable from mutations earlier in the flow.\n If unchecked, mutators of the same type from earlier mutations will be replaced with these.")
+
+					additiveCheckbox.SameLine = true
+					additiveCheckbox.OnChange = function()
+						mutationRule.additive = additiveCheckbox.Checked
+					end
+				end
+			else
+				orderNumberInput.Disabled = true
+
+				local cell = row:AddButton((" "):rep(15) .. "##" .. counter .. (prepPhase and "prep" or "main"))
+				cell.SameLine = true
+			end
 		end
 	end
+
+	buildSlots(numOfPrepMutations, true)
+	buildSlots(numOfMutations)
 end
