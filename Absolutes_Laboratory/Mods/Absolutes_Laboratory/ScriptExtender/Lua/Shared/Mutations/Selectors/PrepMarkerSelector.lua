@@ -17,20 +17,16 @@ function PrepMarkerSelector:renderSelector(parent, existingSelector)
 	for i, prepPhaseCategory in TableUtils:OrderedPairs(prepPhaseCategories, function(key, value)
 		return value.name
 	end) do
-		local box = row:AddCell():AddCheckbox(prepPhaseCategory.name, TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
-			return value.id == prepPhaseCategory.id
-		end) ~= nil)
+		local box = row:AddCell():AddCheckbox(prepPhaseCategory.name, TableUtils:IndexOf(existingSelector.criteriaValue, prepPhaseCategory.id) ~= nil)
 
 		box.OnChange = function()
-			local index = TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
-				return value.id == prepPhaseCategory.id
-			end)
+			local index = TableUtils:IndexOf(existingSelector.criteriaValue, prepPhaseCategory.id)
 
 			if index then
 				existingSelector.criteriaValue[index] = nil
 				TableUtils:ReindexNumericTable(existingSelector.criteriaValue)
 			else
-				table.insert(existingSelector.criteriaValue, TableUtils:DeeplyCopyTable(prepPhaseCategory._real))
+				table.insert(existingSelector.criteriaValue, prepPhaseCategory.id)
 			end
 		end
 
@@ -52,13 +48,14 @@ function PrepMarkerSelector:predicate(selector)
 
 	return function(entity)
 		local appliedCategories = {}
-		for i, mProfileRule in TableUtils:OrderedPairs(activeProfile.prepPhaseMutations) do
+		for i, mProfileRule in ipairs(activeProfile.prepPhaseMutations) do
 			local mutation = MutationConfigurationProxy.folders[mProfileRule.mutationFolderId].mutations[mProfileRule.mutationId]
+			mutation = mutation._real or mutation
 
 			---@type PrepMarkerCategory[]
 			local markerMutator = mutation.mutators[1].values or {}
 			for _, category in ipairs(markerMutator) do
-				if TableUtils:IndexOf(selector.criteriaValue, category.id) then
+				if TableUtils:IndexOf(selector.criteriaValue, category) then
 					if not cachedSelectors[mProfileRule.mutationFolderId] then
 						cachedSelectors[mProfileRule.mutationFolderId] = {}
 					end
@@ -84,7 +81,6 @@ function PrepMarkerSelector:predicate(selector)
 			end
 			::next::
 		end
-
 		if next(appliedCategories) then
 			return true
 		else

@@ -35,20 +35,16 @@ function PrepPhaseMarkerMutator:renderMutator(parent, mutator)
 	for i, prepPhaseCategory in TableUtils:OrderedPairs(prepPhaseCategories, function(key, value)
 		return value.name
 	end) do
-		local box = row:AddCell():AddCheckbox(prepPhaseCategory.name, TableUtils:IndexOf(mutator.values, function(value)
-			return value.id == prepPhaseCategory.id
-		end) ~= nil)
+		local box = row:AddCell():AddCheckbox(prepPhaseCategory.name, TableUtils:IndexOf(mutator.values, prepPhaseCategory.id) ~= nil)
 
 		box.OnChange = function()
-			local index = TableUtils:IndexOf(mutator.values, function(value)
-				return value.id == prepPhaseCategory.id
-			end)
+			local index = TableUtils:IndexOf(mutator.values, prepPhaseCategory.id)
 
 			if index then
 				mutator.values[index] = nil
 				TableUtils:ReindexNumericTable(mutator.values)
 			else
-				table.insert(mutator.values, TableUtils:DeeplyCopyTable(prepPhaseCategory._real))
+				table.insert(mutator.values, prepPhaseCategory.id)
 			end
 		end
 
@@ -99,9 +95,7 @@ function PrepPhaseMarkerMutator:renderMutator(parent, mutator)
 							if mutation.prepPhase then
 								for _, mutator in ipairs(mutation.mutators) do
 									---@cast mutator PrepPhaseMarkerMutator
-									local index = TableUtils:IndexOf(mutator.values, function(value)
-										return value.id == prepPhaseCategory.id
-									end)
+									local index = TableUtils:IndexOf(mutator.values, prepPhaseCategory.id)
 									if index then
 										mutator.values[index].delete = true
 										TableUtils:ReindexNumericTable(mutator.values)
@@ -141,19 +135,17 @@ function PrepPhaseMarkerMutator:renderMutator(parent, mutator)
 end
 
 function PrepPhaseMarkerMutator:applyMutator(entity, entityVar)
-	---@type PrepMarkerCategory[]
+	---@type Guid[]
 	local prepMarkers = entityVar.appliedMutators[self.name].values
 
 	local prepPhaseCategories = ConfigurationStructure.config.mutations.settings.prepPhaseMarkers
 
 	entity.Vars.Absolutes_Lab_Prep_Phase_Marker = {}
 
-	for _, prepMarker in ipairs(prepMarkers) do
-		if TableUtils:IndexOf(prepPhaseCategories, function(value)
-				return value.id == prepMarker.id
-			end)
+	for _, prepMarkerId in ipairs(prepMarkers) do
+		if TableUtils:IndexOf(prepPhaseCategories, prepMarkerId)
 		then
-			table.insert(entity.Vars.Absolutes_Lab_Prep_Phase_Marker, prepMarker.id)
+			table.insert(entity.Vars.Absolutes_Lab_Prep_Phase_Marker, prepMarkerId)
 		end
 	end
 end
