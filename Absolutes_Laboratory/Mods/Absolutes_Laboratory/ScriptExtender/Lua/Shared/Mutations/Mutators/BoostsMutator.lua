@@ -49,16 +49,40 @@ function BoostsMutator:renderMutator(parent, mutator)
 	headers:AddCell():AddText("Param 2")
 	headers:AddCell():AddText("Param 3")
 
-	for i, boostTable in TableUtils:OrderedPairs(mutator.values, function(key, value)
-		return value.name or ""
-	end) do
+	for i, boostTable in TableUtils:OrderedPairs(mutator.values) do
 		local boostDisplayRow = boostDisplayTable:AddRow()
 
-		local deleteButton = Styler:ImageButton(boostDisplayRow:AddCell():AddImageButton("delete" .. i, "ico_red_x", { 16, 16 }))
+		local actionCell = boostDisplayRow:AddCell()
+		local deleteButton = Styler:ImageButton(actionCell:AddImageButton("delete" .. i, "ico_red_x", { 16, 16 }))
 		deleteButton.OnClick = function()
 			mutator.values[i].delete = true
 			TableUtils:ReindexNumericTable(mutator.values)
 			self:renderMutator(parent, mutator)
+		end
+
+		if i > 1 then
+			local upArrow = Styler:ImageButton(actionCell:AddImageButton("moveup", "scroll_up_d", Styler:ScaleFactor({ 16, 16 })))
+			upArrow.SameLine = true
+			upArrow.OnClick = function()
+				local boost = TableUtils:DeeplyCopyTable(boostTable._real)
+				mutator.values[i].delete = true
+				mutator.values[i] = TableUtils:DeeplyCopyTable(mutator.values[i - 1]._real)
+				mutator.values[i - 1].delete = true
+				mutator.values[i - 1] = boost
+				self:renderMutator(parent, mutator)
+			end
+		end
+		if i < #(mutator.values._real or mutator.values) then
+			local downArrow = Styler:ImageButton(actionCell:AddImageButton("movedown", "scroll_down_d", Styler:ScaleFactor({ 16, 16 })))
+			downArrow.SameLine = true
+			downArrow.OnClick = function()
+				local boost = TableUtils:DeeplyCopyTable(boostTable._real)
+				mutator.values[i].delete = true
+				mutator.values[i] = TableUtils:DeeplyCopyTable(mutator.values[i + 1]._real)
+				mutator.values[i + 1].delete = true
+				mutator.values[i + 1] = boost
+				self:renderMutator(parent, mutator)
+			end
 		end
 
 		local nameCombo = boostDisplayRow:AddCell():AddCombo("")
@@ -285,7 +309,7 @@ function BoostsMutator:buildBoost(mutator)
 
 		for boost in cleanedBoosts:gmatch("([^;]+)") do
 			if boost ~= "" then
-				table.insert(boostsEntries, boost)
+				table.insert(boostsEntries, boost .. ";")
 			end
 		end
 	end
