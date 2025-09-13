@@ -22,37 +22,36 @@ ConfigurationStructure.config.mutations.settings = {
 		mutators = {},
 		---@type {[string]: SelectorQuery[]}
 		selectors = {}
-	},
-	---@type PrepMarkerCategory[]
-	prepPhaseMarkers = {
-		{
-			name = "Boss",
-			description = "Entities that are considered to be bosses (irrespective of their XPReward)",
-			id = "a7e8e508-ee23-484d-ac49-67dfa78d2020"
-		},
-		{
-			name = "MiniBoss",
-			description = "Entities that are considered to be minibosses (irrespective of their XPReward)",
-			id = "7bec1b31-0b70-445f-ae42-62ca8ac18ddc"
-		},
-		{ name = "Barbarian", id = "0d0fea0e-6a01-42c2-bb76-efa6b41b9af8" },
-		{ name = "Bard",      id = "bb06bab9-5b7d-4ec8-bc55-e4dd64afe74b" },
-		{ name = "Cleric",    id = "71efbd0c-10a6-41b8-9add-598eed11afc3" },
-		{ name = "Druid",     id = "6c3f19f2-6209-41ea-90d5-09978964378a" },
-		{ name = "Fighter",   id = "b0876cb8-ad50-42b8-affd-22c11349875e" },
-		{ name = "Monk",      id = "0f25fd8a-15c8-4a1a-b0f1-c435b9f78689" },
-		{ name = "Paladin",   id = "2910a1a8-ded1-4ead-a4fb-57c4f4918046" },
-		{ name = "Ranger",    id = "f076b8a3-68b3-47e5-af20-ba93ecd1c1ad" },
-		{ name = "Rogue",     id = "7293f1dc-b0a6-455d-975f-96b1e020fdb0" },
-		{ name = "Sorcerer",  id = "94945836-3898-486b-95e1-2a62a07234a1" },
-		{ name = "Warlock",   id = "fb2c85dd-12a4-43c1-9aae-5fe4f5230592" },
 	}
 }
 
 ---@class PrepMarkerCategory
 ---@field name string
 ---@field description string?
----@field id Guid
+---@field modId Guid?
+
+---@type {[Guid]: PrepMarkerCategory}
+ConfigurationStructure.config.mutations.prepPhaseMarkers = {
+	["a7e8e508-ee23-484d-ac49-67dfa78d2020"] = {
+		name = "Boss",
+		description = "Entities that are considered to be bosses (irrespective of their XPReward)",
+	},
+	["7bec1b31-0b70-445f-ae42-62ca8ac18ddc"] = {
+		name = "MiniBoss",
+		description = "Entities that are considered to be minibosses (irrespective of their XPReward)",
+	},
+	["0d0fea0e-6a01-42c2-bb76-efa6b41b9af8"] = { name = "Barbarian" },
+	["bb06bab9-5b7d-4ec8-bc55-e4dd64afe74b"] = { name = "Bard" },
+	["71efbd0c-10a6-41b8-9add-598eed11afc3"] = { name = "Cleric" },
+	["6c3f19f2-6209-41ea-90d5-09978964378a"] = { name = "Druid" },
+	["b0876cb8-ad50-42b8-affd-22c11349875e"] = { name = "Fighter" },
+	["0f25fd8a-15c8-4a1a-b0f1-c435b9f78689"] = { name = "Monk" },
+	["2910a1a8-ded1-4ead-a4fb-57c4f4918046"] = { name = "Paladin" },
+	["f076b8a3-68b3-47e5-af20-ba93ecd1c1ad"] = { name = "Ranger" },
+	["7293f1dc-b0a6-455d-975f-96b1e020fdb0"] = { name = "Rogue" },
+	["94945836-3898-486b-95e1-2a62a07234a1"] = { name = "Sorcerer" },
+	["fb2c85dd-12a4-43c1-9aae-5fe4f5230592"] = { name = "Warlock" },
+}
 
 ---@alias ModDependencies {Guid : ModDependency}?
 
@@ -156,7 +155,9 @@ ConfigurationStructure.DynamicClassDefinitions.profileMutationRule = {
 	---@type Guid
 	mutationId = "",
 	---@type boolean
-	additive = false
+	additive = false,
+	---@type ModDependency
+	sourceMod = nil
 }
 
 ---@type {[Guid]: MutationProfile}

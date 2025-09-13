@@ -21,6 +21,29 @@ MutationConfigurationProxy = {
 			return mutationsConfig.folders[k] or MutationModProxy.ModProxy.folders[k]
 		end
 	}),
+	prepPhaseMarkers = setmetatable({}, {
+		__index = function(t, k)
+			return mutationsConfig.prepPhaseMarkers[k] or MutationModProxy.ModProxy.prepPhaseMarkers[k]
+		end,
+		__pairs = function(t)
+			---@type {[Guid]: PrepMarkerCategory}
+			local markerCategories = TableUtils:DeeplyCopyTable(mutationsConfig.prepPhaseMarkers._real)
+
+			for _, modCache in pairs(MutationModProxy.ModProxy.prepPhaseMarkers) do
+				---@cast modCache LocalModCache
+
+				if modCache.prepPhaseMarkers and next(modCache.prepPhaseMarkers) then
+					for markerId in pairs(modCache.prepPhaseMarkers) do
+						markerCategories[markerId] = MutationModProxy.ModProxy.prepPhaseMarkers[markerId]
+					end
+				end
+			end
+
+			return TableUtils:OrderedPairs(markerCategories, function(key, value)
+				return (value.modId or "_") .. value.name
+			end)
+		end
+	}),
 	spellLists = setmetatable({}, {
 		__index = function(t, k)
 			return mutationsConfig.spellLists[k] or MutationModProxy.ModProxy.spellLists[k]

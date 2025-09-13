@@ -82,7 +82,7 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 			Styler:MiddleAlignedColumnLayout(selectorColumn, function(ele)
 				local dryRunButton = ele:AddButton("Dry Run")
 				dryRunButton.Disabled = false
-				dryRunButton.UserData = "keep"
+				dryRunButton.UserData = "EnableForMods"
 
 				---@type ExtuiWindow
 				local resultsWindow
@@ -98,7 +98,7 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 						Helpers:KillChildren(resultsWindow)
 					end
 
-					local predicate = SelectorInterface:createComposedPredicate(existingMutation.selectors._real)
+					local predicate = SelectorInterface:createComposedPredicate(existingMutation.selectors._real or existingMutation.selectors)
 
 					local maxCols = 10
 					local resultCounter = 0
@@ -153,7 +153,7 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 				end
 			end).UserData = "keep"
 
-			self:RenderSelectors(selectorColumn, existingMutation.selectors)
+			self:RenderSelectors(selectorColumn, existingMutation.selectors, existingMutation.prepPhase)
 		end
 		if focusButtons[2].UserData or focusButtons[3].UserData then
 			local setting = ConfigurationStructure.config.mutations.settings.mutationDesigner
@@ -172,13 +172,15 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 						end
 						return setting.mutatorStyle == "Sidebar"
 					end)
+				else
+					ele:AddNewLine()
 				end
 			end).UserData = "keep"
 
 			if setting.mutatorStyle == "Infinite" or existingMutation.prepPhase then
-				self:RenderMutatorsInfiniteScroll(mutatorColumn, existingMutation.mutators)
+				self:RenderMutatorsInfiniteScroll(mutatorColumn, existingMutation.mutators, existingMutation.prepPhase)
 			else
-				self:RenderMutatorsSidebarStyle(mutatorColumn, existingMutation.mutators)
+				self:RenderMutatorsSidebarStyle(mutatorColumn, existingMutation.mutators, existingMutation.prepPhase)
 			end
 		end
 
@@ -208,7 +210,8 @@ end
 
 ---@param parent ExtuiTreeParent
 ---@param existingSelector SelectorQuery
-function MutationDesigner:RenderSelectors(parent, existingSelector)
+---@param prepPhase boolean?
+function MutationDesigner:RenderSelectors(parent, existingSelector, prepPhase)
 	Helpers:KillChildren(parent)
 
 	local selectorQueryTable = Styler:TwoColumnTable(parent, "selectorQuery")
@@ -242,7 +245,7 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 
 			TableUtils:ReindexNumericTable(existingSelector)
 
-			self:RenderSelectors(parent, existingSelector)
+			self:RenderSelectors(parent, existingSelector, prepPhase)
 		end
 
 		if i > 0 then
@@ -259,7 +262,7 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 				existingSelector[i - 1].delete = true
 				existingSelector[i - 1] = currentSelector
 
-				self:RenderSelectors(parent, existingSelector)
+				self:RenderSelectors(parent, existingSelector, prepPhase)
 			end
 		end
 
@@ -278,7 +281,7 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 				existingSelector[i + 3].delete = true
 				existingSelector[i + 3] = currentSelector
 
-				self:RenderSelectors(parent, existingSelector)
+				self:RenderSelectors(parent, existingSelector, prepPhase)
 			end
 		end
 
@@ -307,7 +310,7 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 		selectorCombo.WidthFitPreview = true
 		local opts = {}
 		for selectorName in TableUtils:OrderedPairs(SelectorInterface.registeredSelectors) do
-			if not existingSelector._parent_proxy.prepPhase or selectorName ~= PrepMarkerSelector.name then
+			if not prepPhase or selectorName ~= PrepMarkerSelector.name then
 				table.insert(opts, selectorName)
 			end
 		end
@@ -351,7 +354,7 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 						subSelectors = {},
 					} --[[@as Selector]])
 
-					self:RenderSelectors(parent, existingSelector)
+					self:RenderSelectors(parent, existingSelector, prepPhase)
 				end
 			end
 		end
@@ -378,7 +381,7 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 					existingSelector[1] = nil
 					TableUtils:ReindexNumericTable(existingSelector)
 				end
-				self:RenderSelectors(parent, existingSelector)
+				self:RenderSelectors(parent, existingSelector, prepPhase)
 			end
 
 			loadMenu:AddSelectable("Replace Active Selectors").OnClick = function()
@@ -397,7 +400,7 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 					existingSelector[1] = nil
 					TableUtils:ReindexNumericTable(existingSelector)
 				end
-				self:RenderSelectors(parent, existingSelector)
+				self:RenderSelectors(parent, existingSelector, prepPhase)
 			end
 
 			---@param selectable ExtuiSelectable
@@ -514,7 +517,8 @@ end
 
 ---@param parent ExtuiTreeParent
 ---@param mutators Mutator[]
-function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators)
+---@param prepPhase boolean?
+function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators, prepPhase)
 	Helpers:KillChildren(parent)
 
 	local mutatorTable = Styler:TwoColumnTable(parent, "Mutators")
@@ -537,14 +541,14 @@ function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators)
 				mutators[x] = TableUtils:DeeplyCopyTable(mutators._real[x + 1])
 			end
 
-			self:RenderMutatorsInfiniteScroll(parent, mutators)
+			self:RenderMutatorsInfiniteScroll(parent, mutators, prepPhase)
 		end
 
 		local mutatorCell = row:AddCell()
 
 
 		local mutatorCombo = mutatorCell:AddCombo("")
-		mutatorCombo.Visible = not mutators._parent_proxy.prepPhase
+		mutatorCombo.Visible = not prepPhase
 		mutatorCombo.Font = "Large"
 		mutatorCombo.WidthFitPreview = true
 		local opts = {}
@@ -570,7 +574,7 @@ function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators)
 			mutator.values = nil
 			MutatorInterface.registeredMutators[mutator.targetProperty]:renderMutator(mutatorGroup, mutator)
 
-			self:RenderMutatorsInfiniteScroll(parent, mutators)
+			self:RenderMutatorsInfiniteScroll(parent, mutators, prepPhase)
 		end
 
 		if mutator.targetProperty and mutator.targetProperty ~= "" then
@@ -579,7 +583,7 @@ function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators)
 
 		mutatorCell:AddNewLine()
 	end
-	if not mutators._parent_proxy.prepPhase then
+	if not prepPhase then
 		Styler:MiddleAlignedColumnLayout(parent, function(ele)
 			local addNewEntryButton = ele:AddButton("+")
 			addNewEntryButton.OnClick = function()
@@ -596,7 +600,7 @@ function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators)
 								targetProperty = mutatorName
 							} --[[@as Mutator]])
 
-							self:RenderMutatorsInfiniteScroll(parent, mutators)
+							self:RenderMutatorsInfiniteScroll(parent, mutators, prepPhase)
 						end
 					end
 				end
@@ -605,7 +609,7 @@ function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators)
 			local managePresetsButton = ele:AddButton("Manage Presets")
 			managePresetsButton.SameLine = true
 			buildManageMutationPreset(managePresetsButton, mutators, function()
-				self:RenderMutatorsInfiniteScroll(parent, mutators)
+				self:RenderMutatorsInfiniteScroll(parent, mutators, prepPhase)
 			end)
 		end)
 	end
@@ -613,7 +617,9 @@ end
 
 ---@param parent ExtuiTreeParent
 ---@param mutators Mutator[]
-function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMutator)
+---@param activeMutator string?
+---@param prepPhase boolean?
+function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMutator, prepPhase)
 	Helpers:KillChildren(parent)
 
 	local mutatorTable = Styler:TwoColumnTable(parent, "mutators")
@@ -635,7 +641,7 @@ function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMut
 				mutators[x] = TableUtils:DeeplyCopyTable(mutators._real[x + 1])
 			end
 
-			self:RenderMutatorsSidebarStyle(parent, mutators, activeMutatorHandle and activeMutatorHandle.Label)
+			self:RenderMutatorsSidebarStyle(parent, mutators, activeMutatorHandle and activeMutatorHandle.Label, prepPhase)
 		end
 
 		---@type ExtuiSelectable
@@ -658,7 +664,7 @@ function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMut
 		end
 	end
 
-	if not mutators._parent_proxy.prepPhase then
+	if not prepPhase then
 		local addNewEntryButton = sideBar:AddButton("+")
 		addNewEntryButton.OnClick = function()
 			Helpers:KillChildren(popup)
@@ -674,7 +680,7 @@ function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMut
 							targetProperty = mutatorName
 						} --[[@as Mutator]])
 
-						self:RenderMutatorsSidebarStyle(parent, mutators, activeMutatorHandle and activeMutatorHandle.Label)
+						self:RenderMutatorsSidebarStyle(parent, mutators, activeMutatorHandle and activeMutatorHandle.Label, prepPhase)
 					end
 				end
 			end
@@ -684,7 +690,7 @@ function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMut
 		managePresetsButton:Tooltip():AddText("\t Manage Mutator Presets")
 		managePresetsButton.SameLine = true
 		buildManageMutationPreset(managePresetsButton, mutators, function()
-			self:RenderMutatorsSidebarStyle(parent, mutators, activeMutatorHandle and activeMutatorHandle.Label)
+			self:RenderMutatorsSidebarStyle(parent, mutators, activeMutatorHandle and activeMutatorHandle.Label, prepPhase)
 		end)
 	end
 end

@@ -1,5 +1,7 @@
 MutationModProxy = {}
 
+MutationModProxy.listTypes = { "spellLists", "statusLists", "passiveLists" }
+
 MutationModProxy.Filename = "AbsolutesLaboratory_ProfilesAndMutations"
 
 ---@class LocalModCache
@@ -20,6 +22,7 @@ local function setModProxyFields(tbl, key, target)
 	end)
 
 	if modId then
+		---@type MutationsConfig
 		local mutationConfig = MutationModProxy:ImportMutation(modId)
 		TableUtils:ConvertStringifiedNumberIndexes(mutationConfig)
 
@@ -41,24 +44,19 @@ local function setModProxyFields(tbl, key, target)
 			end
 		end
 
-		if mutationConfig.spellLists then
-			for spellListId, spellList in pairs(mutationConfig.spellLists) do
-				spellList.modId = modId
-				rawset(MutationModProxy.ModProxy.spellLists, spellListId, spellList)
+		if mutationConfig.prepPhaseMarkers then
+			for markerId, prepPhaseMarker in pairs(mutationConfig.prepPhaseMarkers) do
+				prepPhaseMarker.modId = modId
+				rawset(MutationModProxy.ModProxy.prepPhaseMarkers, markerId, prepPhaseMarker)
 			end
 		end
 
-		if mutationConfig.passiveLists then
-			for passiveListId, passiveList in pairs(mutationConfig.passiveLists) do
-				passiveList.modId = modId
-				rawset(MutationModProxy.ModProxy.passiveLists, passiveListId, passiveList)
-			end
-		end
-
-		if mutationConfig.statusLists then
-			for statusListId, statusList in pairs(mutationConfig.statusLists) do
-				statusList.modId = modId
-				rawset(MutationModProxy.ModProxy.statusLists, statusListId, statusList)
+		for _, listType in pairs(MutationModProxy.listTypes) do
+			if mutationConfig[listType] then
+				for listId, list in pairs(mutationConfig[listType]) do
+					list.modId = modId
+					rawset(MutationModProxy.ModProxy[listType], listId, list)
+				end
 			end
 		end
 
@@ -86,6 +84,19 @@ MutationModProxy.ModProxy = {
 		end,
 		__index = function(t, k)
 			return setModProxyFields(t, k, "folders")
+		end,
+		__pairs = function(t)
+			return pairs(modList)
+		end
+	}),
+	prepPhaseMarkers = setmetatable({}, {
+		__mode = "k",
+		__index = function(t, k)
+			return setModProxyFields(t, k, "prepPhaseMarkers")
+		end,
+		__call = function(t)
+			MutationModProxy:ImportMutationsFromMods()
+			return TableUtils:CountElements(modList)
 		end,
 		__pairs = function(t)
 			return pairs(modList)

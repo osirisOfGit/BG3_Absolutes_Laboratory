@@ -43,6 +43,28 @@ function MutationExternalProfileUtility:ValidateMutations(importedMutations)
 		end
 	end
 
+	for profileId, profile in pairs(importedMutations.profiles) do
+		for _, profileRule in pairs(profile.mutationRules) do
+			if profileRule.sourceMod then
+				local modId = profileRule.sourceMod.modId
+				local modDependency = profileRule.sourceMod
+				modCache[modId] = modDependency
+				if modDependency.modName then
+					if not Ext.Mod.GetMod(modId) then
+						failedDependencies[modId] = failedDependencies[modId] or {}
+						table.insert(failedDependencies[modId], {
+							type = "Folder",
+							packagedItems = modDependency.packagedItems
+						} --[[@as DependencyFailure]]
+						)
+
+						modCache[modId] = modDependency
+					end
+				end
+			end
+		end
+	end
+
 	for _, folder in pairs(importedMutations.folders) do
 		if not folder.modId then
 			for _, mutation in pairs(folder.mutations) do
@@ -86,35 +108,38 @@ function MutationExternalProfileUtility:ValidateMutations(importedMutations)
 		end
 	end
 
-	if importedMutations.spellLists then
-		for _, spellList in pairs(importedMutations.spellLists) do
-			if not spellList.modId then
-				if spellList.modDependencies then
-					for modId, modDependency in pairs(spellList.modDependencies) do
-						modCache[modId] = modDependency
-						if modDependency.modName then
-							if not Ext.Mod.GetMod(modId) then
-								failedDependencies[modId] = failedDependencies[modId] or {}
-								table.insert(failedDependencies[modId], {
-									type = "SpellList",
-									target = spellList.name,
-									packagedItems = modDependency.packagedItems
-								} --[[@as DependencyFailure]]
-								)
+	for _, listType in pairs(MutationModProxy.listTypes) do
+		if importedMutations[listType] then
+			for _, list in pairs(importedMutations[listType]) do
+				---@cast list CustomList
+				if not list.modId then
+					if list.modDependencies then
+						for modId, modDependency in pairs(list.modDependencies) do
+							modCache[modId] = modDependency
+							if modDependency.modName then
+								if not Ext.Mod.GetMod(modId) then
+									failedDependencies[modId] = failedDependencies[modId] or {}
+									table.insert(failedDependencies[modId], {
+										type = listType:upper(),
+										target = list.name,
+										packagedItems = modDependency.packagedItems
+									} --[[@as DependencyFailure]]
+									)
+								end
 							end
 						end
+						list.modDependencies = nil
 					end
-					spellList.modDependencies = nil
+				else
+					local name, author, version = Helpers:BuildModFields(list.modId)
+					modCache[list.modId] = {
+						modAuthor = author,
+						modName = name,
+						modVersion = version,
+						modId = list.modId,
+						packagedItems = nil
+					} --[[@as ModDependency]]
 				end
-			else
-				local name, author, version = Helpers:BuildModFields(spellList.modId)
-				modCache[spellList.modId] = {
-					modAuthor = author,
-					modName = name,
-					modVersion = version,
-					modId = spellList.modId,
-					packagedItems = nil
-				} --[[@as ModDependency]]
 			end
 		end
 	end
@@ -185,8 +210,15 @@ function MutationExternalProfileUtility:exportProfile(forMod, ...)
 	local export = {
 		profiles = {},
 		folders = {},
-		spellLists = {}
+		prepPhaseMarkers = {},
+		spellLists = {},
+		statusLists = {},
+		passiveLists = {},
 	}
+
+	for _, listType in pairs(MutationModProxy.listTypes) do
+		export[listType] = {}
+	end
 
 	local names = ""
 
@@ -205,7 +237,8 @@ function MutationExternalProfileUtility:exportProfile(forMod, ...)
 
 		export.profiles[profileID .. "Exported"] = profile
 
-		for _, mutationRule in ipairs(profile.mutationRules) do
+		---@param mutationRule MutationProfileRule
+		local function validateRules(mutationRule)
 			local folder = MutationConfigurationProxy.folders[mutationRule.mutationFolderId]
 
 			if not folder.modId then
@@ -242,7 +275,16 @@ function MutationExternalProfileUtility:exportProfile(forMod, ...)
 					modId = folder.modId,
 					packagedItems = nil
 				} --[[@as ModDependency]]
+
+				mutationRule.sourceMod = mutationDependencies[folder.modId]
 			end
+		end
+
+		for _, mutationRule in ipairs(profile.mutationRules) do
+			validateRules(mutationRule)
+		end
+		for _, mutationRule in ipairs(profile.prepPhaseMutations or {}) do
+			validateRules(mutationRule)
 		end
 	end
 
@@ -260,7 +302,7 @@ end
 local window
 
 ---@class DependencyFailure
----@field type "Selector"|"Mutator"|"SpellList"
+---@field type "Selector"|"Mutator"|"SpellList"|"Folder"
 ---@field target string?
 ---@field folderName string?
 ---@field mutationName string?
@@ -319,20 +361,39 @@ function MutationExternalProfileUtility:importProfile(export)
 			mutationConfig.folders[folderId] = folder
 		end
 
-		if importedMutations.spellLists then
-			for spellListId, spellList in pairs(importedMutations.spellLists) do
-				if mutationConfig.spellLists[spellListId] then
-					mutationConfig.spellLists[spellListId].delete = true
+		if importedMutations.prepPhaseMarkers then
+			for categoryId, markerCategory in pairs(importedMutations.prepPhaseMarkers) do
+				if mutationConfig.prepPhaseMarkers[categoryId] then
+					mutationConfig.prepPhaseMarkers[categoryId].delete = true
 				end
 
-				if TableUtils:IndexOf(mutationConfig.spellLists, function(value)
-						return value.name == spellList.name
+				if TableUtils:IndexOf(mutationConfig.prepPhaseMarkers, function(value)
+						return value.name == markerCategory.name
 					end)
 				then
-					spellList.name = string.format("%s - %s", spellList.name, "Imported")
+					markerCategory.name = markerCategory.name .. " - Imported"
 				end
 
-				mutationConfig.spellLists[spellListId] = spellList
+				mutationConfig.prepPhaseMarkers[categoryId] = markerCategory
+			end
+		end
+
+		for _, listType in pairs(MutationModProxy.listTypes) do
+			if importedMutations[listType] then
+				for listId, list in pairs(importedMutations[listType]) do
+					if mutationConfig[listType][listId] then
+						mutationConfig[listType][listId].delete = true
+					end
+
+					if TableUtils:IndexOf(mutationConfig[listType], function(value)
+							return value.name == list.name
+						end)
+					then
+						list.name = string.format("%s - %s", list.name, "Imported")
+					end
+
+					mutationConfig[listType][listId] = list
+				end
 			end
 		end
 	end

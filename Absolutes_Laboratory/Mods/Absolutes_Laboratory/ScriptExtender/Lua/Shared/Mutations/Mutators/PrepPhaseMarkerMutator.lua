@@ -13,8 +13,35 @@ function PrepPhaseMarkerMutator:canBeAdditive()
 	return true
 end
 
-function PrepPhaseMarkerMutator:handleDependencies()
-	-- NOOP
+---@param mutator PrepPhaseMarkerMutator
+function PrepPhaseMarkerMutator:handleDependencies(export, mutator, removeMissingDependencies)
+	for i, markerId in ipairs(mutator.values) do
+		local marker = MutationConfigurationProxy.prepPhaseMarkers[markerId]
+		if not marker then
+			mutator.values[i] = nil
+		elseif not removeMissingDependencies then
+			if marker.modId then
+				mutator.modDependencies = mutator.modDependencies or {}
+				if not mutator.modDependencies[marker.modId] then
+					local name, author, version = Helpers:BuildModFields(marker.modId)
+					if author == "Larian" then
+						goto continue
+					end
+					mutator.modDependencies[marker.modId] = {
+						modName = name,
+						modAuthor = author,
+						modVersion = version,
+						modId = marker.modId,
+						packagedItems = {}
+					}
+				end
+				mutator.modDependencies[marker.modId].packagedItems[markerId] = marker.name
+			else
+				export.prepPhaseMarkers[markerId] = TableUtils:DeeplyCopyTable(marker._real or marker)
+			end
+		end
+		::continue::
+	end
 end
 
 ---@class PrepPhaseMarkerMutator : Mutator
@@ -27,24 +54,24 @@ function PrepPhaseMarkerMutator:renderMutator(parent, mutator)
 	Helpers:KillChildren(parent)
 	local popup = parent:AddPopup("")
 
-	local prepPhaseCategories = ConfigurationStructure.config.mutations.settings.prepPhaseMarkers
+	local prepPhaseCategories = MutationConfigurationProxy.prepPhaseMarkers
 
 	local markerTable = parent:AddTable("markerTable", 3)
 	local row = markerTable:AddRow()
 
-	for i, prepPhaseCategory in TableUtils:OrderedPairs(prepPhaseCategories, function(key, value)
+	for categoryId, prepPhaseCategory in TableUtils:OrderedPairs(prepPhaseCategories, function(key, value)
 		return value.name
 	end) do
-		local box = row:AddCell():AddCheckbox(prepPhaseCategory.name, TableUtils:IndexOf(mutator.values, prepPhaseCategory.id) ~= nil)
+		local box = row:AddCell():AddCheckbox(prepPhaseCategory.name, TableUtils:IndexOf(mutator.values, categoryId) ~= nil)
 
 		box.OnChange = function()
-			local index = TableUtils:IndexOf(mutator.values, prepPhaseCategory.id)
+			local index = TableUtils:IndexOf(mutator.values, categoryId)
 
 			if index then
 				mutator.values[index] = nil
 				TableUtils:ReindexNumericTable(mutator.values)
 			else
-				table.insert(mutator.values, prepPhaseCategory.id)
+				table.insert(mutator.values, categoryId)
 			end
 		end
 
@@ -58,7 +85,7 @@ function PrepPhaseMarkerMutator:renderMutator(parent, mutator)
 		Helpers:KillChildren(popup)
 		popup:Open()
 
-		for i, prepPhaseCategory in TableUtils:OrderedPairs(prepPhaseCategories, function(key, value)
+		for categoryId, prepPhaseCategory in TableUtils:OrderedPairs(prepPhaseCategories, function(key, value)
 			return value.name
 		end) do
 			---@type ExtuiMenu
@@ -95,7 +122,7 @@ function PrepPhaseMarkerMutator:renderMutator(parent, mutator)
 							if mutation.prepPhase then
 								for _, mutator in ipairs(mutation.mutators) do
 									---@cast mutator PrepPhaseMarkerMutator
-									local index = TableUtils:IndexOf(mutator.values, prepPhaseCategory.id)
+									local index = TableUtils:IndexOf(mutator.values, categoryId)
 									if index then
 										mutator.values[index].delete = true
 										TableUtils:ReindexNumericTable(mutator.values)
@@ -138,13 +165,12 @@ function PrepPhaseMarkerMutator:applyMutator(entity, entityVar)
 	---@type Guid[]
 	local prepMarkers = entityVar.appliedMutators[self.name].values
 
-	local prepPhaseCategories = ConfigurationStructure.config.mutations.settings.prepPhaseMarkers
+	local prepPhaseCategories = MutationConfigurationProxy.prepPhaseMarkers
 
 	entity.Vars.Absolutes_Lab_Prep_Phase_Marker = {}
 
 	for _, prepMarkerId in ipairs(prepMarkers) do
-		if TableUtils:IndexOf(prepPhaseCategories, prepMarkerId)
-		then
+		if prepPhaseCategories[prepMarkerId] then
 			table.insert(entity.Vars.Absolutes_Lab_Prep_Phase_Marker, prepMarkerId)
 		end
 	end

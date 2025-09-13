@@ -3,147 +3,135 @@
 	{
 		"folders" : 
 		{
-			"1488a99d-7339-42a8-a472-773ea1ef2759Exported" : 
+			"6ec81724-dacd-4f57-98e8-0e1dff9ffde6Exported" : 
 			{
-				"description" : "Handles all Goblin-specific shenanigans\n",
+				"description" : "",
 				"mutations" : 
 				{
-					"6b38ff4d-e9cf-4068-be00-7a3ffd294c4e" : 
+					"0de62fc5-5165-4816-a98e-fe8ec4013bfe" : 
 					{
-						"description" : "Main mutators",
+						"description" : "",
 						"mutators" : 
 						[
 							{
 								"modifiers" : [],
-								"targetProperty" : "SpellList",
+								"targetProperty" : "Abilities",
 								"values" : 
-								[
+								{
+									"dieSettings" : 
 									{
-										"leveledSpellPool" : 
-										[
-											{
-												"anchorLevel" : 1,
-												"spellLists" : 
-												[
-													"d646893f-bdb5-4ad6-acc2-5d110a7ce833Exported"
-												]
-											}
-										],
-										"randomizedSpellPoolSize" : 
-										{
-											"1" : 2,
-											"10" : 1,
-											"3" : 0,
-											"5" : 1,
-											"7" : 0
-										}
+										"diceSides" : 6,
+										"numberOfDice" : 4,
+										"numberOfLowestToRemove" : 1
+									},
+									"overriddenAbilityPriorities" : 
+									{
+										"primaryStat" : "Strength",
+										"secondaryStat" : "Dexterity",
+										"tertiaryStat" : "Constitution"
 									}
-								]
+								}
 							}
 						],
-						"name" : "Core",
+						"name" : "Main",
+						"prepPhase" : false,
 						"selectors" : 
 						[
 							{
-								"criteriaCategory" : "Race",
+								"criteriaCategory" : "Prep Marker",
 								"criteriaValue" : 
-								{
-									"RaceId" : "899d275e-9893-490a-9cd5-be856794929f",
-									"SubRaceIds" : 
-									[
-										"54fb4eb9-2cb9-4925-a94f-c16d15e20999"
-									]
-								},
+								[
+									"a7e8e508-ee23-484d-ac49-67dfa78d2020",
+									"b0876cb8-ad50-42b8-affd-22c11349875e"
+								],
 								"inclusive" : true,
-								"modDependencies" : [],
+								"subSelectors" : []
+							}
+						]
+					},
+					"1977894d-e4d3-465b-8993-5ef50680888c" : 
+					{
+						"description" : "",
+						"mutators" : 
+						[
+							{
+								"targetProperty" : "Prep Phase Marker",
+								"values" : 
+								[
+									"a7e8e508-ee23-484d-ac49-67dfa78d2020",
+									"7bec1b31-0b70-445f-ae42-62ca8ac18ddc"
+								]
+							}
+						],
+						"name" : "Main Mut",
+						"prepPhase" : true,
+						"selectors" : 
+						[
+							{
+								"criteriaCategory" : "Templates",
+								"criteriaValue" : 
+								[
+									{
+										"delete" : true,
+										"id" : "5c1b2180-1225-43a6-91ff-f176f2cdd741",
+										"includeChildren" : false
+									},
+									{
+										"delete" : true,
+										"id" : "5968560a-6a96-421d-b173-070566f7519e",
+										"includeChildren" : true
+									}
+								],
+								"inclusive" : true,
 								"subSelectors" : []
 							}
 						]
 					}
 				},
-				"name" : "Blasted Gobbos"
+				"name" : "Main Muts"
+			}
+		},
+		"passiveLists" : [],
+		"prepPhaseMarkers" : 
+		{
+			"7bec1b31-0b70-445f-ae42-62ca8ac18ddc" : 
+			{
+				"description" : "Entities that are considered to be minibosses (irrespective of their XPReward)",
+				"name" : "MiniBoss"
+			},
+			"a7e8e508-ee23-484d-ac49-67dfa78d2020" : 
+			{
+				"description" : "Entities that are considered to be bosses (irrespective of their XPReward)",
+				"name" : "Boss"
+			},
+			"b0876cb8-ad50-42b8-affd-22c11349875e" : 
+			{
+				"name" : "Fighter"
 			}
 		},
 		"profiles" : 
 		{
-			"b08a3bd9-395a-4a72-a747-a96a8e7aed73Exported" : 
+			"22cd8ed9-0640-4a5f-b6dc-85aac6b2e205Exported" : 
 			{
-				"defaultActive" : false,
 				"description" : "",
 				"mutationRules" : 
 				[
 					{
-						"additive" : true,
-						"mutationFolderId" : "1488a99d-7339-42a8-a472-773ea1ef2759Exported",
-						"mutationId" : "6b38ff4d-e9cf-4068-be00-7a3ffd294c4e"
+						"mutationFolderId" : "6ec81724-dacd-4f57-98e8-0e1dff9ffde6Exported",
+						"mutationId" : "0de62fc5-5165-4816-a98e-fe8ec4013bfe"
 					}
 				],
-				"name" : "Profile SEcond"
+				"name" : "Main",
+				"prepPhaseMutations" : 
+				[
+					{
+						"mutationFolderId" : "6ec81724-dacd-4f57-98e8-0e1dff9ffde6Exported",
+						"mutationId" : "1977894d-e4d3-465b-8993-5ef50680888c"
+					}
+				]
 			}
 		},
-		"spellLists" : 
-		{
-			"d646893f-bdb5-4ad6-acc2-5d110a7ce833Exported" : 
-			{
-				"description" : "",
-				"levels" : 
-				{
-					"1" : 
-					{
-						"linkedProgressions" : 
-						{
-							"b82864a7-b093-4553-a802-e176831029c1" : 
-							{
-								"blackListed" : [],
-								"onLoadOnly" : [],
-								"randomized" : []
-							}
-						}
-					},
-					"3" : 
-					{
-						"linkedProgressions" : 
-						{
-							"b82864a7-b093-4553-a802-e176831029c1" : 
-							{
-								"randomized" : []
-							}
-						}
-					},
-					"5" : 
-					{
-						"linkedProgressions" : 
-						{
-							"b82864a7-b093-4553-a802-e176831029c1" : 
-							{
-								"randomized" : []
-							}
-						}
-					},
-					"7" : 
-					{
-						"linkedProgressions" : 
-						{
-							"b82864a7-b093-4553-a802-e176831029c1" : 
-							{
-								"randomized" : []
-							}
-						}
-					},
-					"9" : 
-					{
-						"linkedProgressions" : 
-						{
-							"b82864a7-b093-4553-a802-e176831029c1" : 
-							{
-								"randomized" : []
-							}
-						}
-					}
-				},
-				"modDependencies" : [],
-				"name" : "Test"
-			}
-		}
+		"spellLists" : [],
+		"statusLists" : []
 	}
 }
