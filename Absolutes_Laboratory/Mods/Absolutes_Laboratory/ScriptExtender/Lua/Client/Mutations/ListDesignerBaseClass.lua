@@ -362,7 +362,8 @@ function ListDesignerBaseClass:buildModLists(activeListID)
 	end
 end
 
-function ListDesignerBaseClass:customizeDesigner() end
+---@param parent ExtuiTreeParent
+function ListDesignerBaseClass:customizeDesigner(parent) end
 
 function ListDesignerBaseClass:buildDesigner()
 	if self.progressionLinkedNodes then
@@ -393,27 +394,41 @@ function ListDesignerBaseClass:buildDesigner()
 		return
 	end
 
-	self:customizeDesigner()
+	local extraOptions = self.designerSection:AddTable("extraOptions", 3)
+	extraOptions.BordersInnerV = true
+	extraOptions.BordersOuterH = true
+	extraOptions:SetColor("TableBorderStrong", {0.56, 0.46, 0.26, 0.78})
+	self.designerSection:AddNewLine()
 
-	local deleteAllButton = self.designerSection:AddButton("Delete All Non-Linked Entries")
-	deleteAllButton.Disabled = self.activeList.modId ~= nil
-	deleteAllButton.OnClick = function()
-		for _, leveledSubList in TableUtils:OrderedPairs(self.activeList.levels) do
-			if leveledSubList.manuallySelectedEntries then
-				leveledSubList.manuallySelectedEntries.delete = true
+	local extraOptionsRow = extraOptions:AddRow()
+
+	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function (ele)
+		local deleteAllButton = ele:AddButton("Delete All Non-Linked Entries")
+		deleteAllButton.Disabled = self.activeList.modId ~= nil
+		deleteAllButton.OnClick = function()
+			for _, leveledSubList in TableUtils:OrderedPairs(self.activeList.levels) do
+				if leveledSubList.manuallySelectedEntries then
+					leveledSubList.manuallySelectedEntries.delete = true
+				end
 			end
-		end
-		self:buildDesigner()
-	end
-
-	Styler:DualToggleButton(self.designerSection, "Icon", "Text", true, function(swap)
-		local setting = ConfigurationStructure.config.mutations.settings.customLists
-		if swap then
-			setting.iconOrText = setting.iconOrText == "Icon" and "Text" or "Icon"
 			self:buildDesigner()
 		end
+	end)
 
-		return setting.iconOrText == "Icon"
+	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function (ele)
+		self:customizeDesigner(ele)
+	end)
+
+	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function (ele)
+		Styler:DualToggleButton(ele, "Icon", "Text", false, function(swap)
+			local setting = ConfigurationStructure.config.mutations.settings.customLists
+			if swap then
+				setting.iconOrText = setting.iconOrText == "Icon" and "Text" or "Icon"
+				self:buildDesigner()
+			end
+	
+			return setting.iconOrText == "Icon"
+		end)
 	end)
 
 	local leveledListGroup = self.designerSection:AddGroup("leveledLists")

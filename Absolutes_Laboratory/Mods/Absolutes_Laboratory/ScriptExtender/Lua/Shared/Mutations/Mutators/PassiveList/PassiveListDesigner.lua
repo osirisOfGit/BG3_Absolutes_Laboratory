@@ -35,11 +35,9 @@ function PassiveListDesigner:buildBrowser()
 	self:buildStatBrowser("PassiveData")
 end
 
-function PassiveListDesigner:customizeDesigner()
-	self.designerSection:AddSeparator()
-	Styler:MiddleAlignedColumnLayout(self.designerSection, function(ele)
-		Styler:CheapTextAlign("Linked Spell Lists ( ? )", ele):Tooltip():AddText("\t Spell Lists linked here will be automatically used as dependencies for Passive List Mutators")
-		local linkedSpellListsTable = ele:AddTable("LinkedSpellLists", 1)
+function PassiveListDesigner:customizeDesigner(parent)
+		Styler:CheapTextAlign("Linked Spell Lists ( ? )", parent):Tooltip():AddText("\t Spell Lists linked here will be automatically used as dependencies for Passive List Mutators")
+		local linkedSpellListsTable = parent:AddTable("LinkedSpellLists", 1)
 		linkedSpellListsTable.BordersOuter = true
 		linkedSpellListsTable.SizingFixedFit = true
 
@@ -70,7 +68,7 @@ function PassiveListDesigner:customizeDesigner()
 		end
 		buildTable()
 
-		local addDependencyButton = ele:AddButton("Add Spell List Dependency")
+		local addDependencyButton = parent:AddButton("Add Spell List Dependency")
 		addDependencyButton.Font = "Small"
 		addDependencyButton.Disabled = self.activeList.modId ~= nil
 		addDependencyButton.OnClick = function()
@@ -96,6 +94,4 @@ function PassiveListDesigner:customizeDesigner()
 				end
 			end
 		end
-	end)
-	self.designerSection:AddSeparator()
 end

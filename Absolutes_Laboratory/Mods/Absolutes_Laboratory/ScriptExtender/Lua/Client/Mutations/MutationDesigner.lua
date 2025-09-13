@@ -594,6 +594,7 @@ function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators, prepPha
 					if not TableUtils:IndexOf(mutators, function(value)
 							return value.targetProperty == mutatorName
 						end)
+						and mutatorName ~= PrepPhaseMarkerMutator.name
 					then
 						popup:AddSelectable(mutatorName).OnClick = function()
 							table.insert(mutators, {
@@ -674,6 +675,7 @@ function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMut
 				if not TableUtils:IndexOf(mutators, function(value)
 						return value.targetProperty == mutatorName
 					end)
+					and mutatorName ~= PrepPhaseMarkerMutator.name
 				then
 					popup:AddSelectable(mutatorName).OnClick = function()
 						table.insert(mutators, {
