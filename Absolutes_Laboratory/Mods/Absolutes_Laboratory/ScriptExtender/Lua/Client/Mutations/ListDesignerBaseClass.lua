@@ -25,8 +25,8 @@ ListDesignerBaseClass = {
 	iterateProgressionEntriesFunc = nil,
 	-- Intentionally not cloning the below in :new so all lists share the progression index
 	hasIndexedRelevantProgressions = false,
-	--- ProgressionName:  Level:    ListName  entryNames
-	---@type {[string]: {[integer]: {[string]: string[]}}}
+	--- TableUUID:  Level:    ListName  	ProgList  entryNames
+	---@type {[Guid]: {[integer]: {[string]: {[string]: string[]}}}}
 	progressions = {},
 	---@type {[Guid]: {[number]: Guid}}
 	progressionTableToProgression = {},
@@ -397,12 +397,12 @@ function ListDesignerBaseClass:buildDesigner()
 	local extraOptions = self.designerSection:AddTable("extraOptions", 3)
 	extraOptions.BordersInnerV = true
 	extraOptions.BordersOuterH = true
-	extraOptions:SetColor("TableBorderStrong", {0.56, 0.46, 0.26, 0.78})
+	extraOptions:SetColor("TableBorderStrong", { 0.56, 0.46, 0.26, 0.78 })
 	self.designerSection:AddNewLine()
 
 	local extraOptionsRow = extraOptions:AddRow()
 
-	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function (ele)
+	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function(ele)
 		local deleteAllButton = ele:AddButton("Delete All Non-Linked Entries")
 		deleteAllButton.Disabled = self.activeList.modId ~= nil
 		deleteAllButton.OnClick = function()
@@ -415,18 +415,18 @@ function ListDesignerBaseClass:buildDesigner()
 		end
 	end)
 
-	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function (ele)
+	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function(ele)
 		self:customizeDesigner(ele)
 	end)
 
-	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function (ele)
+	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function(ele)
 		Styler:DualToggleButton(ele, "Icon", "Text", false, function(swap)
 			local setting = ConfigurationStructure.config.mutations.settings.customLists
 			if swap then
 				setting.iconOrText = setting.iconOrText == "Icon" and "Text" or "Icon"
 				self:buildDesigner()
 			end
-	
+
 			return setting.iconOrText == "Icon"
 		end)
 	end)
@@ -553,22 +553,22 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 	for subListName, subList in TableUtils:OrderedPairs(subLists, function(key)
 		return self.subListIndex[key].name
 	end) do
-		if subListName == "randomized"
-			and progressionTableId
-		then
-			local progressionEntry = self.progressions[self.progressionTranslations[progressionTableId]]
+		if subListName == "randomized" and progressionTableId then
+			local progressionEntry = self.progressions[progressionTableId]
 			if progressionEntry
 				and progressionEntry[level]
 				and progressionEntry[level][self.name] then
 				-- So additions to linked progressions don't get stored to the config
 				subList = {}
 
-				for _, entryName in pairs(progressionEntry[level][self.name]) do
-					if not self:CheckIfEntryIsInListLevel(self.activeList.levels[level], entryName, level, true) then
-						if not TableUtils:IndexOf(self.entryCacheForProgressions[level], entryName) then
-							table.insert(subList, entryName)
-							self.entryCacheForProgressions[level] = self.entryCacheForProgressions[level] or {}
-							table.insert(self.entryCacheForProgressions[level], entryName)
+				for nodeName, entryList in pairs(progressionEntry[level][self.name]) do
+					for _, entryName in pairs(entryList) do
+						if not self:CheckIfEntryIsInListLevel(self.activeList.levels[level], entryName, level, true) then
+							if not TableUtils:IndexOf(self.entryCacheForProgressions[level], entryName) then
+								table.insert(subList, entryName)
+								self.entryCacheForProgressions[level] = self.entryCacheForProgressions[level] or {}
+								table.insert(self.entryCacheForProgressions[level], entryName)
+							end
 						end
 					end
 				end
@@ -942,7 +942,10 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 
 				local searchValue = string.upper(searchBox.Text)
 
-				for progressionName, indexedProgLevelLists in TableUtils:OrderedPairs(self.progressions) do
+				for progressionTableUuid, indexedProgLevelLists in TableUtils:OrderedPairs(self.progressions, function(key, value)
+					return self.progressionTranslations[key]
+				end) do
+					local progressionName = self.progressionTranslations[progressionTableUuid]
 					if progressionName:upper():find(searchValue) then
 						---@type ExtuiSelectable
 						local select = resultsGroup:AddSelectable(progressionName)
@@ -981,9 +984,8 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 									self:buildDesigner()
 								end
 
-								local tableUUID = self.progressionTranslations[progressionName]
 								local hasProgression = TableUtils:IndexOf(self.activeList.levels, function(value)
-									return value.linkedProgressions ~= nil and value.linkedProgressions[tableUUID] ~= nil
+									return value.linkedProgressions ~= nil and value.linkedProgressions[progressionTableUuid] ~= nil
 								end) ~= nil
 
 								local linkButton = ele:AddButton(hasProgression and "Unlink" or "Link (?)")
@@ -994,17 +996,17 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 								linkButton.OnClick = function()
 									if hasProgression then
 										for _, subList in TableUtils:OrderedPairs(self.activeList.levels) do
-											if subList.linkedProgressions and subList.linkedProgressions[tableUUID] then
-												subList.linkedProgressions[tableUUID].delete = true
+											if subList.linkedProgressions and subList.linkedProgressions[progressionTableUuid] then
+												subList.linkedProgressions[progressionTableUuid].delete = true
 											end
 										end
 										linkButton.Label = "Link (?)"
 									else
 										self.activeList.levels = self.activeList.levels or {}
-										for level in pairs(self.progressions[progressionName]) do
+										for level in pairs(self.progressions[progressionTableUuid]) do
 											self.activeList.levels[level] = self.activeList.levels[level] or {}
 											self.activeList.levels[level].linkedProgressions = self.activeList.levels[level].linkedProgressions or {}
-											self.activeList.levels[level].linkedProgressions[tableUUID] =
+											self.activeList.levels[level].linkedProgressions[progressionTableUuid] =
 												TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
 										end
 										linkButton.Label = "Unlink"
@@ -1014,7 +1016,7 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 								end
 							end)
 
-							local progTable = Styler:TwoColumnTable(levelView, progressionName)
+							local progTable = Styler:TwoColumnTable(levelView, progressionTableUuid)
 							for level, lists in TableUtils:OrderedPairs(indexedProgLevelLists, function(key)
 								return tonumber(key)
 							end, function(key, value)
@@ -1024,65 +1026,33 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 								row:AddCell():AddText(tostring(level))
 
 								local spellCell = row:AddCell()
-								for i, entryName in ipairs(lists[self.name] or {}) do
-									---@type SpellData|PassiveData|StatusData
-									local entryData = Ext.Stats.Get(entryName)
+								if lists[self.name] then
+									for nodeName, entryList in TableUtils:OrderedPairs(lists[self.name]) do
+										spellCell:AddSeparatorText(nodeName)
+										for i, entryName in ipairs(entryList) do
+											---@type SpellData|PassiveData|StatusData
+											local entryData = Ext.Stats.Get(entryName)
 
-									local entryImageButton = spellCell:AddImageButton(entryName .. i, entryData.Icon ~= "" and entryData.Icon or "Item_Unknown", { 48, 48 })
-									local tooltipFunction = Styler:HyperlinkRenderable(entryImageButton, entryName, "Shift", false, entryName, function(parent)
-										ResourceManager:RenderDisplayWindow(entryData, parent)
-									end)
-									entryImageButton.SameLine = (i - 1) % (math.floor(self.browserTabs["Progressions"].LastSize[1] / 64)) ~= 0
-									entryImageButton.CanDrag = true
-									entryImageButton.DragDropType = "EntryReorder"
-									entryImageButton.UserData = {
-										entryName = entryName
-									} --[[@as EntryHandle]]
-
-									for l = 1, 30 do
-										if self.activeList.levels and self.activeList.levels[l] and self:CheckIfEntryIsInListLevel(self.activeList.levels[l], entryName, l) then
-											entryImageButton.Tint = { 1, 1, 1, 0.2 }
-											break
-										end
-									end
-
-									---@param preview ExtuiTreeParent
-									entryImageButton.OnDragStart = function(_, preview)
-										if self.selectedEntries.context ~= "Browser" then
-											self.selectedEntries.context = "Browser"
-											self.selectedEntries.entries = {}
-											for _, handle in pairs(self.selectedEntries.handles) do
-												if handle.UserData.subListName then
-													handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
-												else
-													handle:SetColor("Button", { 1, 1, 1, 0 })
-												end
-												handle:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
-											end
-											self.selectedEntries.handles = {}
-										else
-											local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-												return value.entryName == entryName
+											local entryImageButton = spellCell:AddImageButton(entryName .. i, entryData.Icon ~= "" and entryData.Icon or "Item_Unknown", { 48, 48 })
+											local tooltipFunction = Styler:HyperlinkRenderable(entryImageButton, entryName, "Shift", false, entryName, function(parent)
+												ResourceManager:RenderDisplayWindow(entryData, parent)
 											end)
-											if not index then
-												table.insert(self.selectedEntries.entries, entryImageButton.UserData)
-												table.insert(self.selectedEntries.handles, entryImageButton)
-											end
-										end
+											entryImageButton.SameLine = i > 1 and ((i - 1) % (math.floor(self.browserTabs["Progressions"].LastSize[1] / 64)) ~= 0)
+											entryImageButton.CanDrag = true
+											entryImageButton.DragDropType = "EntryReorder"
+											entryImageButton.UserData = {
+												entryName = entryName
+											} --[[@as EntryHandle]]
 
-										if #self.selectedEntries.entries > 0 then
-											preview:AddText("Moving:")
-											for _, spellName in pairs(self.selectedEntries.entries) do
-												preview:AddText(spellName.entryName)
+											for l = 1, 30 do
+												if self.activeList.levels and self.activeList.levels[l] and self:CheckIfEntryIsInListLevel(self.activeList.levels[l], entryName, l) then
+													entryImageButton.Tint = { 1, 1, 1, 0.2 }
+													break
+												end
 											end
-										else
-											preview:AddText("Moving " .. entryName)
-										end
-									end
 
-									entryImageButton.OnClick = function()
-										if not tooltipFunction() then
-											if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
+											---@param preview ExtuiTreeParent
+											entryImageButton.OnDragStart = function(_, preview)
 												if self.selectedEntries.context ~= "Browser" then
 													self.selectedEntries.context = "Browser"
 													self.selectedEntries.entries = {}
@@ -1092,6 +1062,7 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 														else
 															handle:SetColor("Button", { 1, 1, 1, 0 })
 														end
+														handle:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
 													end
 													self.selectedEntries.handles = {}
 												else
@@ -1101,14 +1072,50 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 													if not index then
 														table.insert(self.selectedEntries.entries, entryImageButton.UserData)
 														table.insert(self.selectedEntries.handles, entryImageButton)
-														entryImageButton:SetColor("Button", { 0, 1, 0, .8 })
-														entryImageButton:SetColor("ButtonHovered", { 0, 1, 0, .8 })
-													else
-														table.remove(self.selectedEntries.entries, index)
-														table.remove(self.selectedEntries.handles, index)
+													end
+												end
 
-														entryImageButton:SetColor("Button", { 1, 1, 1, 0 })
-														entryImageButton:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+												if #self.selectedEntries.entries > 0 then
+													preview:AddText("Moving:")
+													for _, spellName in pairs(self.selectedEntries.entries) do
+														preview:AddText(spellName.entryName)
+													end
+												else
+													preview:AddText("Moving " .. entryName)
+												end
+											end
+
+											entryImageButton.OnClick = function()
+												if not tooltipFunction() then
+													if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
+														if self.selectedEntries.context ~= "Browser" then
+															self.selectedEntries.context = "Browser"
+															self.selectedEntries.entries = {}
+															for _, handle in pairs(self.selectedEntries.handles) do
+																if handle.UserData.subListName then
+																	handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
+																else
+																	handle:SetColor("Button", { 1, 1, 1, 0 })
+																end
+															end
+															self.selectedEntries.handles = {}
+														else
+															local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+																return value.entryName == entryName
+															end)
+															if not index then
+																table.insert(self.selectedEntries.entries, entryImageButton.UserData)
+																table.insert(self.selectedEntries.handles, entryImageButton)
+																entryImageButton:SetColor("Button", { 0, 1, 0, .8 })
+																entryImageButton:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+															else
+																table.remove(self.selectedEntries.entries, index)
+																table.remove(self.selectedEntries.handles, index)
+
+																entryImageButton:SetColor("Button", { 1, 1, 1, 0 })
+																entryImageButton:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+															end
+														end
 													end
 												end
 											end
@@ -1145,52 +1152,74 @@ function ListDesignerBaseClass:buildProgressionIndex()
 		for _, progressionId in pairs(Ext.StaticData.GetAll("Progression")) do
 			---@type ResourceProgression
 			local progression = Ext.StaticData.Get(progressionId, "Progression")
+
 			if hasRelevantNodes(progression) then
 				if not self.progressionTranslations[progression.Name] then
 					self.progressionTranslations[progression.Name] = progression.TableUUID
 				end
 				self.progressionTranslations[progression.TableUUID] = progression.Name
 
-				self.progressions[progression.Name] = self.progressions[progression.Name] or {}
-				self.progressions[progression.Name][progression.Level] = self.progressions[progression.Name][progression.Level] or {}
-				self.progressions[progression.Name][progression.Level][self.name] = self.progressions[progression.Name][progression.Level][self.name] or {}
+				self.progressions[progression.TableUUID] = self.progressions[progression.TableUUID] or {}
+				self.progressions[progression.TableUUID][progression.Level] = self.progressions[progression.TableUUID][progression.Level] or {}
+				self.progressions[progression.TableUUID][progression.Level][self.name] = self.progressions[progression.TableUUID][progression.Level][self.name] or {}
 
+				---@type {[string] : string[]}
 				local nodesToIterate = {}
 				for _, node in pairs(self.progressionLinkedNodes) do
+					nodesToIterate[node] = {}
 					if type(progression[node]) == "table" or type(progression[node]) == "userdata" then
-						table.insert(nodesToIterate, progression[node])
+						for _, entry in ipairs(progression[node]) do
+							table.insert(nodesToIterate[node], entry)
+						end
 					else
 						local splitTable = {}
 						for _, val in string.gmatch(progression[node], "([^;]+)") do
 							table.insert(splitTable, val)
 						end
 						if next(splitTable) then
-							table.insert(nodesToIterate, splitTable)
+							for _, entry in ipairs(splitTable) do
+								table.insert(nodesToIterate[node], entry)
+							end
 						end
 					end
 				end
 
-				for _, meta in TableUtils:CombinedPairs(table.unpack(nodesToIterate)) do
-					local success, error = pcall(function(...)
-						self.iterateProgressionEntriesFunc(meta, function(name)
-							if not TableUtils:IndexOf(self.progressions[progression.Name], function(value)
-									return TableUtils:IndexOf(value[self.name], name) ~= nil
-								end)
-							then
-								table.insert(self.progressions[progression.Name][progression.Level][self.name], name)
-							end
-						end)
-					end)
+				for nodeName, metaList in TableUtils:OrderedPairs(nodesToIterate) do
+					self.progressions[progression.TableUUID][progression.Level][self.name][nodeName] = self.progressions[progression.TableUUID][progression.Level][self.name]
+						[nodeName] or {}
+					for _, meta in pairs(metaList, function(key, value)
+						return value
+					end) do
+						local success, error = xpcall(function(...)
+							self.iterateProgressionEntriesFunc(meta, function(name)
+								if not TableUtils:IndexOf(self.progressions[progression.TableUUID], function(value)
+										return TableUtils:IndexOf(value[self.name], function(value)
+											return TableUtils:IndexOf(value, name) ~= nil
+										end) ~= nil
+									end)
+								then
+									table.insert(self.progressions[progression.TableUUID][progression.Level][self.name][nodeName], name)
+								end
+							end)
+						end, debug.traceback)
 
-					if not success then
-						Logger:BasicWarning("Could not process a node of progression %s (%s) due to error %s", progression.ResourceUUID, progression.Name, error)
+						if not success then
+							Logger:BasicWarning("Could not process a node of progression %s (%s) due to error %s", progression.ResourceUUID, progression.Name, error)
+						end
+					end
+					if #self.progressions[progression.TableUUID][progression.Level][self.name][nodeName] == 0 then
+						self.progressions[progression.TableUUID][progression.Level][self.name][nodeName] = nil
 					end
 				end
 
-				if #self.progressions[progression.Name][progression.Level][self.name] == 0 then
-					self.progressions[progression.Name][progression.Level][self.name] = nil
-					if not next(self.progressions[progression.Name][progression.Level]) then
-						self.progressions[progression.Name][progression.Level] = nil
+				if not next(self.progressions[progression.TableUUID][progression.Level][self.name]) then
+					self.progressions[progression.TableUUID][progression.Level][self.name] = nil
+					if not next(self.progressions[progression.TableUUID][progression.Level]) then
+						self.progressions[progression.TableUUID][progression.Level] = nil
+
+						if not next(self.progressions[progression.TableUUID]) then
+							self.progressions[progression.TableUUID] = nil
+						end
 					end
 				else
 					self.progressionTableToProgression[progression.TableUUID] = self.progressionTableToProgression[progression.TableUUID] or {}
@@ -1226,7 +1255,11 @@ function ListDesignerBaseClass:CheckIfEntryIsInListLevel(leveledSubList, entryNa
 
 		if not ignoreProgressions then
 			for progressionId, subLists in pairs(leveledSubList.linkedProgressions) do
-				if TableUtils:IndexOf(self.progressions[self.progressionTranslations[progressionId]][level], entryName) then
+				if TableUtils:IndexOf(self.progressions[progressionId][level], function(value)
+						return TableUtils:IndexOf(value, function(value)
+							return TableUtils:IndexOf(value, entryName) ~= nil
+						end) ~= nil
+					end) then
 					return true
 				end
 			end
