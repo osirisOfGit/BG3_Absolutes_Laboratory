@@ -525,7 +525,7 @@ function MutationProfileManager:BuildModFolders()
 		local modFolders = {}
 
 		for modId, modCache in pairs(MutationModProxy.ModProxy.folders) do
-			---@cast modCache LocalModCache
+			---@cast modCache +LocalModCache
 
 			local modInfo = Ext.Mod.GetMod(modId).Info
 			if next(modCache.folders) then
@@ -706,7 +706,7 @@ function MutationProfileManager:BuildProfileManager()
 	local combinedProfiles = TableUtils:DeeplyCopyTable(profiles._real)
 
 	for _, modCache in pairs(MutationModProxy.ModProxy.profiles) do
-		---@cast modCache LocalModCache
+		---@cast modCache +LocalModCache
 		for profileId in pairs(modCache.profiles) do
 			combinedProfiles[profileId] = MutationModProxy.ModProxy.profiles[profileId]
 		end
@@ -1062,7 +1062,7 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 	end
 
 	for _, modCache in pairs(MutationModProxy.ModProxy.folders) do
-		---@cast modCache LocalModCache
+		---@cast modCache +LocalModCache
 
 		for folderId in pairs(modCache.folders) do
 			for _, mutation in pairs(MutationModProxy.ModProxy.folders[folderId].mutations) do

@@ -11,7 +11,7 @@ MutationModProxy.Filename = "AbsolutesLaboratory_ProfilesAndMutations"
 ---@field passiveLists {[Guid] : string}
 ---@field statusLists {[Guid] : string}
 
----@type {[Guid] : LocalModCache}
+---@type {[Guid] : +LocalModCache}
 local modList = {}
 
 local function setModProxyFields(tbl, key, target)

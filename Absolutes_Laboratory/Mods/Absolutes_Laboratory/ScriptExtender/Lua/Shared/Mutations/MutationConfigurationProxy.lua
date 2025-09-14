@@ -30,7 +30,7 @@ MutationConfigurationProxy = {
 			local markerCategories = TableUtils:DeeplyCopyTable(mutationsConfig.prepPhaseMarkers._real)
 
 			for _, modCache in pairs(MutationModProxy.ModProxy.prepPhaseMarkers) do
-				---@cast modCache LocalModCache
+				---@cast modCache +LocalModCache
 
 				if modCache.prepPhaseMarkers and next(modCache.prepPhaseMarkers) then
 					for markerId in pairs(modCache.prepPhaseMarkers) do
@@ -53,7 +53,7 @@ MutationConfigurationProxy = {
 			local spellLists = TableUtils:DeeplyCopyTable(mutationsConfig.spellLists._real)
 
 			for _, modCache in pairs(MutationModProxy.ModProxy.spellLists) do
-				---@cast modCache LocalModCache
+				---@cast modCache +LocalModCache
 
 				if modCache.spellLists and next(modCache.spellLists) then
 					for spellListId in pairs(modCache.spellLists) do
@@ -76,7 +76,7 @@ MutationConfigurationProxy = {
 			local passiveLists = TableUtils:DeeplyCopyTable(mutationsConfig.passiveLists._real)
 
 			for _, modCache in pairs(MutationModProxy.ModProxy.passiveLists) do
-				---@cast modCache LocalModCache
+				---@cast modCache +LocalModCache
 
 				if modCache.passiveLists and next(modCache.passiveLists) then
 					for passiveListId in pairs(modCache.passiveLists) do
@@ -99,7 +99,7 @@ MutationConfigurationProxy = {
 			local statusLists = TableUtils:DeeplyCopyTable(mutationsConfig.statusLists._real)
 
 			for _, modCache in pairs(MutationModProxy.ModProxy.statusLists) do
-				---@cast modCache LocalModCache
+				---@cast modCache +LocalModCache
 
 				if modCache.statusLists and next(modCache.statusLists) then
 					for statusListId in pairs(modCache.statusLists) do

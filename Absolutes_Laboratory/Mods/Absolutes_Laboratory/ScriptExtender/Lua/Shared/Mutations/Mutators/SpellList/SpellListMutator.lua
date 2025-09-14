@@ -184,7 +184,7 @@ Using entity level will use the entity's character level, post Character Level M
 							local modSpellLists = {}
 
 							for modId, modCache in pairs(MutationModProxy.ModProxy.spellLists) do
-								---@cast modCache LocalModCache
+								---@cast modCache +LocalModCache
 
 								if modCache.spellLists and next(modCache.spellLists) then
 									modSpellLists[modId] = {}
@@ -1340,7 +1340,7 @@ if Ext.IsServer() then
 						if spellListId and MutationConfigurationProxy.spellLists[spellListId] then
 							local nextAnchor = math.min((spellMutatorGroup.leveledSpellPool[lSP + 1]
 									and spellMutatorGroup.leveledSpellPool[lSP + 1].anchorLevel - 1) or (useGameLevel and #EntityRecorder.Levels or 30),
-								entity.EocLevel.Level)
+								useGameLevel and EntityRecorder.Levels[entity.Level.LevelName] or entity.EocLevel.Level)
 
 							local maxAppliedLevel = 0
 							for level in pairs(appliedLists) do
@@ -1348,7 +1348,7 @@ if Ext.IsServer() then
 									maxAppliedLevel = level
 								end
 							end
-							local startingSpellListLevel = (TableUtils:IndexOf(appliedLists, spellListId) or (useGameLevel and 1 or 0))
+							local startingSpellListLevel = TableUtils:IndexOf(appliedLists, spellListId) or 0
 
 							if TableUtils:IndexOf(appliedLists, spellListId) then
 								appliedLists[startingSpellListLevel] = nil
@@ -1390,7 +1390,8 @@ if Ext.IsServer() then
 																---@type ResourceProgression
 																local progressionResource = Ext.StaticData.Get(progressionId, "Progression")
 
-																Logger:BasicDebug("%s from progression %s (%s - level %s) is already known, not adding to the random pool", spellName, progressionId, progressionResource.Name, progressionResource.Level)
+																Logger:BasicDebug("%s from progression %s (%s - level %s) is already known, not adding to the random pool", spellName,
+																	progressionId, progressionResource.Name, progressionResource.Level)
 															end
 														end
 													end
@@ -1433,7 +1434,8 @@ if Ext.IsServer() then
 								end
 
 								if numRandomSpellsToPick > 0 then
-									Logger:BasicDebug("Giving %s random spells out of %s from level %s", numRandomSpellsToPick, #randomPool, useGameLevel and EntityRecorder.Levels[i] or i)
+									Logger:BasicDebug("Giving %s random spells out of %s from level %s", numRandomSpellsToPick, #randomPool,
+										useGameLevel and EntityRecorder.Levels[i] or i)
 									local spellsToGive = {}
 									if #randomPool <= numRandomSpellsToPick then
 										spellsToGive = randomPool
@@ -1461,7 +1463,8 @@ if Ext.IsServer() then
 										Logger:BasicDebug("Added spell %s", spellName)
 									end
 								else
-									Logger:BasicDebug("Skipping level %s for random spell assignment due to configured size being 0", useGameLevel and EntityRecorder.Levels[maxAppliedLevel + i] or maxAppliedLevel + i)
+									Logger:BasicDebug("Skipping level %s for random spell assignment due to configured size being 0",
+										useGameLevel and EntityRecorder.Levels[maxAppliedLevel + i] or maxAppliedLevel + i)
 								end
 							end
 						end

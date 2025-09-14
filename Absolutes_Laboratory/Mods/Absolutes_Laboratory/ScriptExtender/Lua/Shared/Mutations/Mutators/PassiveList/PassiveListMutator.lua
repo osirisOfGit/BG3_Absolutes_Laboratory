@@ -18,10 +18,12 @@ end
 
 ---@class PassiveListMutator : Mutator
 ---@field values PassivePool
+---@field useGameLevel boolean
 
 ---@param mutator PassiveListMutator
 function PassiveListMutator:renderMutator(parent, mutator)
 	mutator.values = mutator.values or {}
+	mutator.useGameLevel = mutator.useGameLevel or false
 	Helpers:KillChildren(parent)
 
 	local popup = parent:AddPopup("")
@@ -31,6 +33,20 @@ function PassiveListMutator:renderMutator(parent, mutator)
 	passiveListDesignerButton.OnClick = function()
 		PassiveListDesigner:launch()
 	end
+
+	parent:AddText("(?) Distribute By: "):Tooltip():AddText([[
+	Changing this option will clear all level groups and only allow selecting lists that have the same option set, as the two options are not compatible with each other.
+Using game level will distribute all entries in the same level that the entity is in and all the ones that come before (i.e. TUT, WLD, CRE, SCL if they're in SCL).
+Using entity level will use the entity's character level, post Character Level Mutators if applicable.]])
+	Styler:DualToggleButton(parent, "Entity Level", "Game Level", true, function(swap)
+		if swap then
+			mutator.useGameLevel = not mutator.useGameLevel
+			mutator.values.delete = true
+			mutator.values = {}
+			self:renderMutator(parent, mutator)
+		end
+		return not mutator.useGameLevel
+	end)
 
 	local sectionTable = parent:AddTable("Sections", 2)
 	sectionTable.BordersOuter = true
@@ -93,19 +109,72 @@ and this list will use the sum of the assigned spell list levels to determine wh
 		popup:Open()
 
 		for passiveListId, passiveList in pairs(MutationConfigurationProxy.passiveLists) do
-			---@type ExtuiSelectable
-			local select = popup:AddSelectable(passiveList.name .. (passiveList.modId and string.format(" (from %s)", Ext.Mod.GetMod(passiveList.modId).Info.Name) or ""),
-				"DontClosePopups")
-			select.Selected = TableUtils:IndexOf(mutator.values.passiveLists, passiveListId) ~= nil
-			select.OnClick = function()
-				if not select.Selected then
-					mutator.values.passiveLists[TableUtils:IndexOf(mutator.values.passiveLists, passiveListId)] = nil
-					TableUtils:ReindexNumericTable(mutator.values.passiveLists)
-				else
-					mutator.values.passiveLists = mutator.values.passiveLists or {}
-					mutator.values.passiveLists[#mutator.values.passiveLists + 1] = passiveListId
+			if passiveList.useGameLevel == mutator.useGameLevel then
+				---@type ExtuiSelectable
+				local select = popup:AddSelectable(passiveList.name .. (passiveList.modId and string.format(" (from %s)", Ext.Mod.GetMod(passiveList.modId).Info.Name) or ""),
+					"DontClosePopups")
+				select.Selected = TableUtils:IndexOf(mutator.values.passiveLists, passiveListId) ~= nil
+				select.OnClick = function()
+					if not select.Selected then
+						mutator.values.passiveLists[TableUtils:IndexOf(mutator.values.passiveLists, passiveListId)] = nil
+						TableUtils:ReindexNumericTable(mutator.values.passiveLists)
+					else
+						mutator.values.passiveLists = mutator.values.passiveLists or {}
+						mutator.values.passiveLists[#mutator.values.passiveLists + 1] = passiveListId
+					end
+					self:renderMutator(parent, mutator)
 				end
-				self:renderMutator(parent, mutator)
+			end
+		end
+
+		if MutationModProxy.ModProxy.passiveLists() then
+			---@type {[Guid]: Guid[]}
+			local modPassiveLists = {}
+
+			for modId, modCache in pairs(MutationModProxy.ModProxy.passiveLists) do
+				---@cast modCache +LocalModCache
+
+				if modCache.passiveLists and next(modCache.passiveLists) then
+					modPassiveLists[modId] = {}
+					for passiveListId in pairs(modCache.passiveLists) do
+						table.insert(modPassiveLists[modId], passiveListId)
+					end
+				end
+			end
+
+			if next(modPassiveLists) then
+				for modId, passiveLists in TableUtils:OrderedPairs(modPassiveLists, function(key, value)
+					return Ext.Mod.GetMod(key).Info.Name
+				end) do
+					local modGroup = popup:AddGroup("Mods" .. modId)
+
+					modGroup:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name).Font = "Small"
+
+					for _, passiveListId in TableUtils:OrderedPairs(passiveLists, function(key, value)
+						return MutationModProxy.ModProxy.spellLists[value].name
+					end) do
+						local passiveList = MutationModProxy.ModProxy.spellLists[passiveListId]
+						if mutator.useGameLevel == passiveList.useGameLevel then
+							---@type ExtuiSelectable
+							local select = modGroup:AddSelectable(passiveList.name, "DontClosePopups")
+							select.Selected = TableUtils:IndexOf(mutator.values.passiveLists, passiveListId) ~= nil
+							select.OnClick = function()
+								local index = TableUtils:IndexOf(mutator.values.passiveLists, passiveListId)
+								if index then
+									mutator.values.passiveLists[index] = nil
+									select.Selected = false
+								else
+									select.Selected = true
+									table.insert(mutator.values.passiveLists, passiveListId)
+								end
+								self:renderMutator(parent, mutator)
+							end
+						end
+					end
+					if #modGroup.Children == 1 then
+						modGroup:Destroy()
+					end
+				end
 			end
 		end
 	end
@@ -117,7 +186,7 @@ and this list will use the sum of the assigned spell list levels to determine wh
 	local passiveGroup = mutatorSection:AddGroup("passives")
 	local function buildPassives()
 		Helpers:KillChildren(passiveGroup)
-		if mutator.values.passives and mutator.values.passives() then
+		if mutator.values.passives and next(mutator.values.passives._real or mutator.values.passives) then
 			for i, passiveId in ipairs(mutator.values.passives) do
 				local delete = Styler:ImageButton(passiveGroup:AddImageButton("delete" .. passiveId, "ico_red_x", { 16, 16 }))
 				delete.OnClick = function()
@@ -377,7 +446,9 @@ end
 ---@param numRandomPassivesPerLevel number[]
 ---@param appliedPassives string[]
 local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassivesPerLevel, appliedPassives)
-	Logger:BasicDebug("Applying levels 1 to %s of list %s", levelToUse,
+	Logger:BasicDebug("Applying levels %s to %s of list %s",
+		passiveList.useGameLevel and EntityRecorder.Levels[1] or 1,
+		passiveList.useGameLevel and EntityRecorder.Levels[levelToUse] or levelToUse,
 		passiveList.name .. (passiveList.modId and (" from mod " .. Ext.Mod.GetMod(passiveList.modId).Info.Name) or ""))
 
 	if passiveList.levels then
@@ -395,7 +466,11 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 									Osi.AddPassive(entity.Uuid.EntityUuid, passiveId)
 									table.insert(appliedPassives, passiveId)
 								else
-									Logger:BasicDebug("Guaranteed passive %s from progression %s is already present", passiveId, progressionId)
+									---@type ResourceProgression
+									local progressionResource = Ext.StaticData.Get(progressionId, "Progression")
+
+									Logger:BasicDebug("Guaranteed passive %s from progression %s (%s - level %s) is already known", passiveId, progressionId,
+										progressionResource.Name, progressionResource.Level)
 								end
 							end
 						end
@@ -405,7 +480,14 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 							if progressionTable and progressionTable[level] and progressionTable[level][PassiveListDesigner.name] then
 								for _, passiveId in pairs(progressionTable[level][PassiveListDesigner.name]) do
 									if not TableUtils:IndexOf(subLists.blackListed, passiveId) then
-										table.insert(randomPool, passiveId)
+										if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
+											table.insert(randomPool, passiveId)
+										else
+											---@type ResourceProgression
+											local progressionResource = Ext.StaticData.Get(progressionId, "Progression")
+											Logger:BasicDebug("%s from progression %s (%s - level %s) is already known, not adding to the random pool", passiveId, progressionId,
+												progressionResource.Name, progressionResource.Level)
+										end
 									end
 								end
 							end
@@ -453,7 +535,11 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 			end
 
 			if numRandomPassivesToPick > 0 then
-				Logger:BasicDebug("Giving %s random passives out of %s from level %s", numRandomPassivesToPick, #randomPool, level)
+				Logger:BasicDebug("Giving %s random passives out of %s from level %s",
+					numRandomPassivesToPick,
+					#randomPool,
+					passiveList.useGameLevel and EntityRecorder.Levels[level] or level)
+
 				local passivesToGive = {}
 				if #randomPool <= numRandomPassivesToPick then
 					passivesToGive = randomPool
@@ -471,7 +557,8 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 					Logger:BasicDebug("Added passive %s", passiveId)
 				end
 			else
-				Logger:BasicDebug("Skipping level %s for random passive assignment due to configured size being 0", level)
+				Logger:BasicDebug("Skipping level %s for random passive assignment due to configured size being 0",
+				passiveList.useGameLevel and EntityRecorder.Levels[level] or level)
 			end
 		end
 	end
@@ -558,7 +645,7 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 						TableUtils:CountElements(passiveListsPool),
 						passiveList.name .. (passiveList.modId and (" from mod " .. Ext.Mod.GetMod(passiveList.modId).Info.Name) or ""))
 
-					local levelToUse = entity.EocLevel.Level
+					local levelToUse = passiveList.useGameLevel and entity.Level.LevelName or entity.EocLevel.Level
 					applyPassiveLists(entity, levelToUse, passiveList, numRandomPassivesPerLevel, appliedPassives)
 					break
 				end

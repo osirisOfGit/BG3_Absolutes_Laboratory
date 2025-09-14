@@ -210,6 +210,7 @@ function ListDesignerBaseClass:buildLists(activeListId)
 	for guid, list in TableUtils:OrderedPairs(listConfig, function(key)
 		return listConfig[key].name
 	end) do
+		list.useGameLevel = list.useGameLevel or false
 		---@type ExtuiSelectable
 		local listSelectable = self.listSection:AddSelectable(list.name)
 		listSelectable.IDContext = guid
@@ -225,6 +226,7 @@ function ListDesignerBaseClass:buildLists(activeListId)
 				FormBuilder:CreateForm(self.popup, function(formResults)
 					list.name = formResults.Name
 					list.description = formResults.Description
+					list.useGameLevel = false
 
 					self:launch(self.activeListHandle and self.activeListHandle.UserData)
 				end, {
@@ -312,7 +314,7 @@ function ListDesignerBaseClass:buildModLists(activeListID)
 		local modLists = {}
 
 		for modId, modCache in pairs(MutationModProxy.ModProxy[self.configKey]) do
-			---@cast modCache LocalModCache
+			---@cast modCache +LocalModCache
 
 			if modCache[self.configKey] and next(modCache[self.configKey]) then
 				modLists[modId] = {}
