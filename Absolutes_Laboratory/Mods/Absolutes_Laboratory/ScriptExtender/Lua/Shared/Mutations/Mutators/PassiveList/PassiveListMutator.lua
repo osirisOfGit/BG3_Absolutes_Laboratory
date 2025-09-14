@@ -151,9 +151,9 @@ and this list will use the sum of the assigned spell list levels to determine wh
 					modGroup:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name).Font = "Small"
 
 					for _, passiveListId in TableUtils:OrderedPairs(passiveLists, function(key, value)
-						return MutationModProxy.ModProxy.spellLists[value].name
+						return MutationModProxy.ModProxy.passiveLists[value].name
 					end) do
-						local passiveList = MutationModProxy.ModProxy.spellLists[passiveListId]
+						local passiveList = MutationModProxy.ModProxy.passiveLists[passiveListId]
 						if mutator.useGameLevel == passiveList.useGameLevel then
 							---@type ExtuiSelectable
 							local select = modGroup:AddSelectable(passiveList.name, "DontClosePopups")

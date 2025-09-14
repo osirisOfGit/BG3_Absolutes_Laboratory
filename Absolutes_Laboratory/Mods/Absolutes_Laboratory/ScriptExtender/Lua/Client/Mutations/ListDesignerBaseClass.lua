@@ -474,7 +474,9 @@ Using entity level will use the entity's character level, post Character Level M
 		Styler:DualToggleButton(ele, "Entity Level", "Game Level", true, function(swap)
 			if swap then
 				self.activeList.useGameLevel = not self.activeList.useGameLevel
-				self.activeList.levels.delete = true
+				if self.activeList.levels then
+					self.activeList.levels.delete = true
+				end
 				self.activeList.levels = {}
 				if self.activeList.useGameLevel then
 					for level in ipairs(EntityRecorder.Levels) do
