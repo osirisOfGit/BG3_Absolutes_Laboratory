@@ -1,7 +1,7 @@
 LevelMutator = MutatorInterface:new("Character Level")
 
 function LevelMutator:priority()
-	return self:recordPriority(5)
+	return self:recordPriority(1)
 end
 
 function LevelMutator:handleDependencies()

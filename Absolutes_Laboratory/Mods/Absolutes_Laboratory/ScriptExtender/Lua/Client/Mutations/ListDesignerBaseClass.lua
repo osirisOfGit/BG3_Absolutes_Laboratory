@@ -996,6 +996,51 @@ function ListDesignerBaseClass:buildStatBrowser(statType)
 						statImage:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
 					end
 				end
+			elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
+				if #self.selectedEntries.entries >= 1 then
+					if self.selectedEntries.context == "Browser" then
+						local lastEntry = self.selectedEntries.handles[#self.selectedEntries.handles]
+						---@type ExtuiTreeParent
+						local buttonParent = statImage.ParentElement
+
+						if lastEntry.ParentElement.Handle == buttonParent.Handle then
+							local startSelecting = false
+							for _, child in ipairs(buttonParent.Children) do
+								if child.UserData then
+									if startSelecting then
+										local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+											return value.entryName == statName
+										end)
+										if not index then
+											table.insert(self.selectedEntries.entries, child.UserData)
+											table.insert(self.selectedEntries.handles, child)
+											child:SetColor("Button", { 0, 1, 0, .8 })
+											child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+										end
+									elseif child.Handle == lastEntry.Handle then
+										startSelecting = true
+									end
+								end
+							end
+						end
+					else
+						local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+							return value.entryName == statName
+						end)
+						if not index then
+							table.insert(self.selectedEntries.entries, statImage.UserData)
+							table.insert(self.selectedEntries.handles, statImage)
+							statImage:SetColor("Button", { 0, 1, 0, .8 })
+							statImage:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+						else
+							table.remove(self.selectedEntries.entries, index)
+							table.remove(self.selectedEntries.handles, index)
+
+							statImage:SetColor("Button", { 1, 1, 1, 0 })
+							statImage:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+						end
+					end
+				end
 			end
 		end)
 end
@@ -1130,7 +1175,7 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 											local entryImageButton = buttonParent:AddImageButton(entryName .. totalChildren,
 												entryData.Icon ~= "" and entryData.Icon or "Item_Unknown", { 48, 48 })
 
-											local tooltipFunction = Styler:HyperlinkRenderable(entryImageButton, entryName, "Shift", false, entryName, function(parent)
+											local tooltipFunction = Styler:HyperlinkRenderable(entryImageButton, entryName, "Alt", true, entryName, function(parent)
 												ResourceManager:RenderDisplayWindow(entryData, parent)
 											end)
 											entryImageButton.SameLine = totalChildren > 1 and
@@ -1211,6 +1256,30 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 
 																entryImageButton:SetColor("Button", { 1, 1, 1, 0 })
 																entryImageButton:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+															end
+														end
+													elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
+														if #self.selectedEntries.entries >= 1 and self.selectedEntries.context == "Browser" then
+															local lastEntry = self.selectedEntries.handles[#self.selectedEntries.handles]
+															if lastEntry.ParentElement.Handle == buttonParent.Handle then
+																local startSelecting = false
+																for _, child in ipairs(buttonParent.Children) do
+																	if child.UserData then
+																		if startSelecting then
+																			local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+																				return value.entryName == entryName
+																			end)
+																			if not index then
+																				table.insert(self.selectedEntries.entries, child.UserData)
+																				table.insert(self.selectedEntries.handles, child)
+																				child:SetColor("Button", { 0, 1, 0, .8 })
+																				child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+																			end
+																		elseif child.Handle == lastEntry.Handle then
+																			startSelecting = true
+																		end
+																	end
+																end
 															end
 														end
 													end

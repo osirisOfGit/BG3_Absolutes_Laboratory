@@ -147,7 +147,7 @@ You can shift-click on images to pop out their tooltip into a new window, but th
 
 						local hyperlinkFunc = Styler:HyperlinkRenderable(statImage,
 							statName,
-							"Shift",
+							"Alt",
 							true,
 							string.format("%s\n%s", statName, Ext.Loca.GetTranslatedString(spell.DisplayName, statName)),
 							function(parent)
