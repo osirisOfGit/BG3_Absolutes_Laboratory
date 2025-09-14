@@ -362,10 +362,12 @@ function StatusListMutator:handleDependencies(export, mutator, removeMissingDepe
 end
 
 function StatusListMutator:undoMutator(entity, mutator, primedEntityVar, reprocessTransient)
-	for _, statusId in pairs(mutator.originalValues[self.name]) do
-		if Osi.HasActiveStatus(entity.Uuid.EntityUuid, statusId) == 1 then
-			Logger:BasicDebug("Removing status %s as it was given by Lab", statusId)
-			Osi.RemoveStatus(entity.Uuid.EntityUuid, statusId)
+	if mutator.originalValues[self.name] then
+		for _, statusId in pairs(mutator.originalValues[self.name]) do
+			if Osi.HasActiveStatus(entity.Uuid.EntityUuid, statusId) == 1 then
+				Logger:BasicDebug("Removing status %s as it was given by Lab", statusId)
+				Osi.RemoveStatus(entity.Uuid.EntityUuid, statusId)
+			end
 		end
 	end
 end

@@ -1365,7 +1365,7 @@ if Ext.IsServer() then
 								spellList.name .. (spellList.modId and (" from mod " .. Ext.Mod.GetMod(spellList.modId).Info.Name) or ""),
 								spellListId,
 								useGameLevel and EntityRecorder.Levels[leveledSpellPool.anchorLevel] or leveledSpellPool.anchorLevel,
-								useGameLevel and EntityRecorder.Levels[startingSpellListLevel] or startingSpellListLevel,
+								useGameLevel and EntityRecorder.Levels[startingSpellListLevel == 0 and 1 or startingSpellListLevel] or startingSpellListLevel,
 								useGameLevel and EntityRecorder.Levels[cLevel] or cLevel)
 
 							for i = startingSpellListLevel, cLevel do

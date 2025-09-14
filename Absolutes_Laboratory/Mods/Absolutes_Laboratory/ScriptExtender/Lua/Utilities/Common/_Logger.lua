@@ -177,7 +177,7 @@ function Logger:BasicInfo(content, ...)
     end
 end
 
-local bufferLimit = 20 -- Adjust buffer size as needed
+local bufferLimit = 50 -- Adjust buffer size as needed
 
 --- Flushes the buffer to the log file
 function Logger:FlushLogBuffer()
