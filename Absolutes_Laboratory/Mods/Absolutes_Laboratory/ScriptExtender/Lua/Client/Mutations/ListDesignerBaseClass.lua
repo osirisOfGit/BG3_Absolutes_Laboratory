@@ -602,9 +602,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 	local displayTable = parentGroup:AddTable("display", useIcons and 1 or 3)
 
 	local row = displayTable:AddRow()
-	row:AddCell()
-	if not useIcons then
-		row:AddCell()
+	if useIcons then
 		row:AddCell()
 	end
 
@@ -646,7 +644,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 		end) do
 			count = count + 1
 			---@type ExtuiTreeParent
-			local parent = row.Children[useIcons and 1 or ((count % 3) > 0 and (count % 3) or 3)]
+			local parent = useIcons and row.Children[1] or row:AddCell()
 
 			---@type SpellData|PassiveData|StatusData
 			local entryData = Ext.Stats.Get(entryName)
@@ -699,19 +697,18 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 					end
 				end
 
-				entryImageButton.OnClick = function()
-					if Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
-						local window = Ext.IMGUI.NewWindow(entryName)
-						window.Closeable = true
-						window.AlwaysAutoResize = true
+				local altTooltip = entryName
+				altTooltip = altTooltip .. "\n\t " .. self.subListIndex[subListName].name
+				if progressionTableId then
+					altTooltip = altTooltip .. "\n\t  Linked from Progression " .. self.progressionTranslations[progressionTableId]
+				end
 
-						window.OnClose = function()
-							window:Destroy()
-							window = nil
-						end
-						ResourceManager:RenderDisplayWindow(entryData, window)
-					elseif not self.activeList.modId then
-						if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
+				local showedTooltip = Styler:HyperlinkRenderable(entryImageButton, entryName, "Alt", true, altTooltip, function(parent)
+					ResourceManager:RenderDisplayWindow(entryData, parent)
+				end)
+				entryImageButton.OnClick = function()
+					if not showedTooltip() then
+						local function onCtrl()
 							if self.selectedEntries.context ~= "Main"
 								or (self.selectedEntries.linkedSpells and not progressionTableId)
 								or (not self.selectedEntries.linkedSpells and progressionTableId)
@@ -749,12 +746,115 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 								entryImageButton:SetColor("Button", { 1, 1, 1, 0 })
 								entryImageButton:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
 							end
-						else
-							Helpers:KillChildren(self.popup)
-							self.popup:Open()
-							for subListCategory, index in TableUtils:OrderedPairs(self.subListIndex) do
-								if subListCategory ~= subListName and (subListCategory ~= "blackListed" or progressionTableId) then
-									self.popup:AddSelectable("Set As " .. index.name .. "##" .. level).OnClick = function()
+						end
+
+						if not self.activeList.modId then
+							if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
+								onCtrl()
+							elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
+								if #self.selectedEntries.entries >= 1 and self.selectedEntries.context == "Main" then
+									local lastEntry = self.selectedEntries.handles[#self.selectedEntries.handles]
+									local lastEntryParent = lastEntry.ParentElement
+									---@type ExtuiTreeParent
+									local buttonParent = entryImageButton.ParentElement
+									if not useIcons or self.settings.showSeperatorsInMain then
+										buttonParent = buttonParent.ParentElement
+										lastEntryParent = lastEntryParent.ParentElement
+									end
+									if lastEntryParent.Handle == buttonParent.Handle then
+										local startSelecting = false
+										---@param func fun(child: ExtuiStyledRenderable)
+										local function iterateFunc(func)
+											for _, child in ipairs(buttonParent.Children) do
+												---@cast child ExtuiTreeParent
+												if not useIcons or self.settings.showSeperatorsInMain then
+													if pcall(function()
+															return child.Children
+														end)
+													then
+														for _, actualChild in ipairs(child.Children) do
+															if type(actualChild.UserData) == "table" then
+																func(actualChild)
+															end
+														end
+													end
+												else
+													if type(child.UserData) == "table" then
+														func(child)
+													end
+												end
+											end
+										end
+										iterateFunc(function(child)
+											if startSelecting then
+												local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+													return value.entryName == entryName
+												end)
+												if not index then
+													table.insert(self.selectedEntries.entries, child.UserData)
+													table.insert(self.selectedEntries.handles, child)
+													child:SetColor("Button", { 0, 1, 0, .8 })
+													child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+												end
+											elseif child.Handle == lastEntry.Handle then
+												startSelecting = true
+											end
+										end)
+									end
+								else
+									onCtrl()
+								end
+							else
+								Helpers:KillChildren(self.popup)
+								self.popup:Open()
+								for subListCategory, index in TableUtils:OrderedPairs(self.subListIndex) do
+									if subListCategory ~= subListName and (subListCategory ~= "blackListed" or progressionTableId) then
+										self.popup:AddSelectable("Set As " .. index.name .. "##" .. level).OnClick = function()
+											---@type EntryHandle[]
+											local handles = {}
+											if self.selectedEntries.context == "Main" and #self.selectedEntries.entries > 0 then
+												handles = self.selectedEntries.entries
+											end
+
+											if not TableUtils:IndexOf(handles, function(value)
+													return value.entryName == entryName
+												end)
+											then
+												table.insert(handles, entryImageButton.UserData)
+											end
+
+											for _, handle in pairs(handles) do
+												---@type CustomSubList
+												local subList =
+													self.activeList.levels[handle.level][handle.progressionTableId and "linkedProgressions" or "manuallySelectedEntries"]
+
+												if handle.progressionTableId then
+													subList = subList[handle.progressionTableId]
+												end
+
+												if subListCategory ~= "randomized" or not progressionTableId then
+													subList[subListCategory] = subList[subListCategory] or {}
+													table.insert(subList[subListCategory], handle.entryName)
+												end
+												if handle.subListName then
+													local index = TableUtils:IndexOf(subList[handle.subListName], handle.entryName)
+													if index then
+														subList[handle.subListName][index] = nil
+														if not subList[handle.subListName]() then
+															subList[handle.subListName].delete = true
+														end
+													end
+												end
+											end
+											self.selectedEntries.handles = {}
+											self.selectedEntries.entries = {}
+											self:buildDesigner()
+										end
+									end
+								end
+
+								if not progressionTableId then
+									self.popup:AddSelectable("Remove").OnClick = function()
 										---@type EntryHandle[]
 										local handles = {}
 										if self.selectedEntries.context == "Main" and #self.selectedEntries.entries > 0 then
@@ -770,22 +870,13 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 
 										for _, handle in pairs(handles) do
 											---@type CustomSubList
-											local subList = self.activeList.levels[handle.level][handle.progressionTableId and "linkedProgressions" or "manuallySelectedEntries"]
-											if handle.progressionTableId then
-												subList = subList[handle.progressionTableId]
-											end
+											local subList = self.activeList.levels[handle.level].manuallySelectedEntries
 
-											if subListCategory ~= "randomized" or not progressionTableId then
-												subList[subListCategory] = subList[subListCategory] or {}
-												table.insert(subList[subListCategory], handle.entryName)
-											end
-											if handle.subListName then
-												local index = TableUtils:IndexOf(subList[handle.subListName], handle.entryName)
-												if index then
-													subList[handle.subListName][index] = nil
-													if not subList[handle.subListName]() then
-														subList[handle.subListName].delete = true
-													end
+											local index = TableUtils:IndexOf(subList[handle.subListName], handle.entryName)
+											if index then
+												subList[handle.subListName][index] = nil
+												if not subList[handle.subListName]() then
+													subList[handle.subListName].delete = true
 												end
 											end
 										end
@@ -795,64 +886,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 									end
 								end
 							end
-
-							if not progressionTableId then
-								self.popup:AddSelectable("Remove").OnClick = function()
-									---@type EntryHandle[]
-									local handles = {}
-									if self.selectedEntries.context == "Main" and #self.selectedEntries.entries > 0 then
-										handles = self.selectedEntries.entries
-									end
-
-									if not TableUtils:IndexOf(handles, function(value)
-											return value.entryName == entryName
-										end)
-									then
-										table.insert(handles, entryImageButton.UserData)
-									end
-
-									for _, handle in pairs(handles) do
-										---@type CustomSubList
-										local subList = self.activeList.levels[handle.level].manuallySelectedEntries
-
-										local index = TableUtils:IndexOf(subList[handle.subListName], handle.entryName)
-										if index then
-											subList[handle.subListName][index] = nil
-											if not subList[handle.subListName]() then
-												subList[handle.subListName].delete = true
-											end
-										end
-									end
-									self.selectedEntries.handles = {}
-									self.selectedEntries.entries = {}
-									self:buildDesigner()
-								end
-							end
 						end
-					end
-				end
-
-				local tooltip = entryImageButton:Tooltip()
-
-				entryImageButton.OnHoverEnter = function()
-					Helpers:KillChildren(tooltip)
-					if Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
-						ResourceManager:RenderDisplayWindow(entryData, tooltip)
-					else
-						tooltip:AddText("\t " .. entryName)
-						tooltip:AddText("\t " .. self.subListIndex[subListName].name)
-						if progressionTableId then
-							tooltip:AddText("\t  Linked from Progression " .. self.progressionTranslations[progressionTableId])
-						end
-					end
-				end
-
-				entryImageButton.OnHoverLeave = function()
-					Helpers:KillChildren(tooltip)
-					tooltip:AddText("\t " .. entryName)
-					tooltip:AddText("\t " .. self.subListIndex[subListName].name)
-					if progressionTableId then
-						tooltip:AddText("\tLinked from Progression: " .. self.progressionTranslations[progressionTableId])
 					end
 				end
 			end
@@ -1280,6 +1314,22 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 																		end
 																	end
 																end
+															end
+														else
+															local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+																return value.entryName == entryName
+															end)
+															if not index then
+																table.insert(self.selectedEntries.entries, entryImageButton.UserData)
+																table.insert(self.selectedEntries.handles, entryImageButton)
+																entryImageButton:SetColor("Button", { 0, 1, 0, .8 })
+																entryImageButton:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+															else
+																table.remove(self.selectedEntries.entries, index)
+																table.remove(self.selectedEntries.handles, index)
+
+																entryImageButton:SetColor("Button", { 1, 1, 1, 0 })
+																entryImageButton:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
 															end
 														end
 													end
