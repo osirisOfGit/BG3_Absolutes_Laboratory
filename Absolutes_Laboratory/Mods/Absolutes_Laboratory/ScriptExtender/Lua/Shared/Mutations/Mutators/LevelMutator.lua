@@ -290,7 +290,7 @@ function LevelMutator:applyMutator(entity, entityVar)
 	local levelThreshold = mutator.levelThreshold
 	local targetLevel = levelThreshold.relativeToPlayer and (calculateHighestPlayerLevel() + levelThreshold.level) or levelThreshold.level
 
-	local entityPasses  = false
+	local entityPasses = false
 	if levelThreshold.comparator == ">" then
 		entityPasses = entity.EocLevel.Level > targetLevel
 	elseif levelThreshold.comparator == ">=" then
@@ -298,14 +298,16 @@ function LevelMutator:applyMutator(entity, entityVar)
 	elseif levelThreshold.comparator == "<" then
 		entityPasses = entity.EocLevel.Level < targetLevel
 	elseif levelThreshold.comparator == "<=" then
-		entityPasses = entity.EocLevel.Level <= targetLevel 
+		entityPasses = entity.EocLevel.Level <= targetLevel
 	end
 
 	if not entityPasses then
-		Logger:BasicDebug("Entity's level of %s is NOT %s the target level of %s%s", entity.EocLevel.Level, levelThreshold.comparator, targetLevel, levelThreshold.relativeToPlayer and " (calculated relative to the player's level)" or "")
+		Logger:BasicDebug("Entity's level of %s is NOT %s the target level of %s%s", entity.EocLevel.Level, levelThreshold.comparator, targetLevel,
+			levelThreshold.relativeToPlayer and " (calculated relative to the player's level)" or "")
 		return
 	else
-		Logger:BasicDebug("Entity's level of %s is %s the target level of %s%s", entity.EocLevel.Level, levelThreshold.comparator, targetLevel, levelThreshold.relativeToPlayer and " (calculated relative to the player's level)" or "")
+		Logger:BasicDebug("Entity's level of %s is %s the target level of %s%s", entity.EocLevel.Level, levelThreshold.comparator, targetLevel,
+			levelThreshold.relativeToPlayer and " (calculated relative to the player's level)" or "")
 	end
 
 	---@type Character
