@@ -58,7 +58,7 @@ function LevelMutator:renderMutator(parent, mutator)
 	levelThresholdInput.SameLine = true
 	levelThresholdInput.ItemWidth = 40
 	levelThresholdInput.OnChange = function()
-		if levelThresholdInput.Value[1] > 1 or mutator.levelThreshold.relativeToPlayer then
+		if levelThresholdInput.Value[1] >= 1 or mutator.levelThreshold.relativeToPlayer then
 			mutator.levelThreshold.level = levelThresholdInput.Value[1]
 		else
 			levelThresholdInput.Value = { mutator.levelThreshold.level, mutator.levelThreshold.level, mutator.levelThreshold.level, mutator.levelThreshold.level }
