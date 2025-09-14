@@ -209,6 +209,7 @@ ConfigurationStructure.config.mutations.settings.customLists = {
 	},
 	---@type "Icon"|"Text"
 	iconOrText = "Icon",
+	showSeperatorsInMain = true,
 	savedSpellListSpreads = {
 		spellLists   = {
 			["Default"] = {

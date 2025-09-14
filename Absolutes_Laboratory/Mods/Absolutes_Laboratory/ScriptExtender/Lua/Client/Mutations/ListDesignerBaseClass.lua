@@ -422,8 +422,8 @@ function ListDesignerBaseClass:buildDesigner()
 	end)
 
 	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function(ele)
+		local setting = ConfigurationStructure.config.mutations.settings.customLists
 		Styler:DualToggleButton(ele, "Icon", "Text", false, function(swap)
-			local setting = ConfigurationStructure.config.mutations.settings.customLists
 			if swap then
 				setting.iconOrText = setting.iconOrText == "Icon" and "Text" or "Icon"
 				self:buildDesigner()
@@ -431,6 +431,16 @@ function ListDesignerBaseClass:buildDesigner()
 
 			return setting.iconOrText == "Icon"
 		end)
+
+		if setting.iconOrText == "Icon" and self:renderEntriesBySubcategories({}, ele) then
+			Styler:EnableToggleButton(ele, "Show SubCategories Under Levels", false, function (swap)
+				if swap then
+					setting.showSeperatorsInMain = not setting.showSeperatorsInMain
+					self:buildDesigner()
+				end
+				return setting.showSeperatorsInMain
+			end)
+		end
 	end)
 
 	local leveledListGroup = self.designerSection:AddGroup("leveledLists")
@@ -578,15 +588,26 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 		end
 
 		---@cast subList EntryName[]
+		local groupFunc
+		if useIcons and ConfigurationStructure.config.mutations.settings.customLists.showSeperatorsInMain then
+			groupFunc = self:renderEntriesBySubcategories(subList, row.Children[1])
+		end
+
 		for _, entryName in TableUtils:OrderedPairs(subList, function(key)
 			return subList[key]
 		end) do
 			count = count + 1
+			---@type ExtuiTreeParent
 			local parent = row.Children[useIcons and 1 or ((count % 3) > 0 and (count % 3) or 3)]
 
 			---@type SpellData|PassiveData|StatusData
 			local entryData = Ext.Stats.Get(entryName)
 			if entryData then
+				if groupFunc then
+					parent = groupFunc(entryData)
+				end
+				local totalChildren = #parent.Children + 1
+
 				local entryImageButton = parent:AddImageButton(entryName .. "##" .. level, entryData.Icon ~= "" and entryData.Icon or "Item_Unknown",
 					{ 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
 				if entryImageButton.Image.Icon == "" then
@@ -595,8 +616,8 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 				end
 
 				if useIcons then
-					entryImageButton.SameLine = #parent.Children > 0
-						and ((#parent.Children - 1) % math.floor((self.designerSection.LastSize[1]) / (63 * Styler:ScaleFactor())) ~= 0)
+					entryImageButton.SameLine = totalChildren > 1
+						and ((totalChildren) % math.floor((self.designerSection.LastSize[1]) / (64 * Styler:ScaleFactor())) ~= 0)
 				else
 					local link = Styler:HyperlinkText(parent, entryName, function(parent)
 						ResourceManager:RenderDisplayWindow(entryData, parent)
@@ -825,6 +846,7 @@ function ListDesignerBaseClass:buildStatBrowser(statType)
 						local stat = Ext.Stats.Get(statName)
 
 						local level = (stat.ModifierList == "SpellData" and stat.Level ~= "" and stat.Level > 0) and stat.Level or 1
+						self.activeList.levels = self.activeList.levels or {}
 						self.activeList.levels[level] = self.activeList.levels[level] or {}
 						local subLevelList = self.activeList.levels[level]
 

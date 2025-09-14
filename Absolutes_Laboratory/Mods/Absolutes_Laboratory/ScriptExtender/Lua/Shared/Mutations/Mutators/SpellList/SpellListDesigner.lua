@@ -96,19 +96,21 @@ function SpellListDesigner:renderEntriesBySubcategories(entries, parent)
 		---@type SpellData
 		local spell = Ext.Stats.Get(entry)
 
-		if not TableUtils:IndexOf(spell.SpellFlags, "IsSpell") then
-			if not groups["Class Actions"] then
-				parent:AddSeparatorText("Class Actions"):SetStyle("SeparatorTextAlign", 0.1)
-				groups["Class Actions"] = parent:AddGroup("Class Actions")
+		if spell then
+			if not TableUtils:IndexOf(spell.SpellFlags, "IsSpell") then
+				if not groups["Class Actions"] then
+					parent:AddSeparatorText("Class Actions"):SetStyle("SeparatorTextAlign", 0.1)
+					groups["Class Actions"] = parent:AddGroup("Class Actions")
+				end
+			elseif spell.Level == 0 then
+				if not groups["Cantrips"] then
+					parent:AddSeparatorText("Cantrips"):SetStyle("SeparatorTextAlign", 0.1)
+					groups["Cantrips"] = parent:AddGroup("Cantrips")
+				end
+			elseif not groups["Regular Spells"] then
+				parent:AddSeparatorText("Regular Spells"):SetStyle("SeparatorTextAlign", 0.1)
+				groups["Regular Spells"] = parent:AddGroup("Regular Spells")
 			end
-		elseif spell.Level == 0 then
-			if not groups["Cantrips"] then
-				parent:AddSeparatorText("Cantrips"):SetStyle("SeparatorTextAlign", 0.1)
-				groups["Cantrips"] = parent:AddGroup("Cantrips")
-			end
-		elseif not groups["Regular Spells"] then
-			parent:AddSeparatorText("Regular Spells"):SetStyle("SeparatorTextAlign", 0.1)
-			groups["Regular Spells"] = parent:AddGroup("Regular Spells")
 		end
 	end
 
