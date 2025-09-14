@@ -450,7 +450,7 @@ end
 local function applyStatusLists(entity, levelToUse, statusList, numRandomStatusesPerLevel, appliedStatuses)
 	Logger:BasicDebug("Applying levels %s to %s of list %s",
 		statusList.useGameLevel and EntityRecorder.Levels[1] or 1,
-		levelToUse,
+		statusList.useGameLevel and EntityRecorder.Levels[levelToUse] or levelToUse,
 		statusList.name .. (statusList.modId and (" from mod " .. Ext.Mod.GetMod(statusList.modId).Info.Name) or ""))
 
 	for level = 1, levelToUse do
