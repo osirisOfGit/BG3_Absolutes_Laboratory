@@ -31,7 +31,7 @@ function SpellListDesigner:buildBrowser()
 end
 
 function SpellListDesigner:customizeDesigner(parent)
-	parent:AddText("Primary Abilities ( ? )"):Tooltip():AddText([[
+	parent:AddText("Primary Abilities ( ? )\t\t\t"):Tooltip():AddText([[
 	Any Abilities Mutators that run will check the entity for assigned Spell Lists - if it finds them, it will decide which Abilities get the highest scores (in addition to +2 and +1 base additions)
 based on this list, if specified - if multiple Spell Lists are assigned, it will average out the priorities based on how many levels of each list were assigned]])
 	local abilityGroup = parent:AddGroup("AbilityGroup")
@@ -84,4 +84,41 @@ based on this list, if specified - if multiple Spell Lists are assigned, it will
 		end
 	end
 	build()
+end
+
+---@return fun(entry: SpellData): ExtuiTreeParent
+function SpellListDesigner:renderEntriesBySubcategories(entries, parent)
+	local groups = {}
+	for _, entry in pairs(entries) do
+		if TableUtils:CountElements(groups) == 3 then
+			break
+		end
+		---@type SpellData
+		local spell = Ext.Stats.Get(entry)
+
+		if not TableUtils:IndexOf(spell.SpellFlags, "IsSpell") then
+			if not groups["Class Actions"] then
+				parent:AddSeparatorText("Class Actions"):SetStyle("SeparatorTextAlign", 0.1)
+				groups["Class Actions"] = parent:AddGroup("Class Actions")
+			end
+		elseif spell.Level == 0 then
+			if not groups["Cantrips"] then
+				parent:AddSeparatorText("Cantrips"):SetStyle("SeparatorTextAlign", 0.1)
+				groups["Cantrips"] = parent:AddGroup("Cantrips")
+			end
+		elseif not groups["Regular Spells"] then
+			parent:AddSeparatorText("Regular Spells"):SetStyle("SeparatorTextAlign", 0.1)
+			groups["Regular Spells"] = parent:AddGroup("Regular Spells")
+		end
+	end
+
+	return function(spell)
+		if not TableUtils:IndexOf(spell.SpellFlags, "IsSpell") then
+			return groups["Class Actions"]
+		elseif spell.Level == 0 then
+			return groups["Cantrips"]
+		else
+			return groups["Regular Spells"]
+		end
+	end
 end

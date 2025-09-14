@@ -34,6 +34,8 @@ ListDesignerBaseClass = {
 	-- Used when building the lists in the designer, so we're not adding the same entry from multiple progressions - should be unique per inheriting class
 	---@type EntryName[][]
 	entryCacheForProgressions = {},
+	---@type {[string]: string}
+	progressNodeTranslations = {},
 
 	---@type ExtuiSelectable?
 	activeListHandle = nil,
@@ -800,6 +802,12 @@ end
 function ListDesignerBaseClass:buildBrowser()
 end
 
+---@param entries string[]
+---@param parent ExtuiTreeParent
+---@return fun(entry: SpellData|PassiveData|StatusData): ExtuiTreeParent
+function ListDesignerBaseClass:renderEntriesBySubcategories(entries, parent)
+end
+
 function ListDesignerBaseClass:buildStatBrowser(statType)
 	Helpers:KillChildren(self.browserTabs[statType])
 
@@ -1029,15 +1037,25 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 								if lists[self.name] then
 									for nodeName, entryList in TableUtils:OrderedPairs(lists[self.name]) do
 										spellCell:AddSeparatorText(nodeName)
+										local groupFunc = self:renderEntriesBySubcategories(entryList, spellCell)
 										for i, entryName in ipairs(entryList) do
 											---@type SpellData|PassiveData|StatusData
 											local entryData = Ext.Stats.Get(entryName)
 
-											local entryImageButton = spellCell:AddImageButton(entryName .. i, entryData.Icon ~= "" and entryData.Icon or "Item_Unknown", { 48, 48 })
+											local buttonParent = spellCell
+											if groupFunc then
+												buttonParent = groupFunc(entryData)
+											end
+											local totalChildren = groupFunc and (#buttonParent.Children + 1) or i
+
+											local entryImageButton = buttonParent:AddImageButton(entryName .. totalChildren,
+												entryData.Icon ~= "" and entryData.Icon or "Item_Unknown", { 48, 48 })
+
 											local tooltipFunction = Styler:HyperlinkRenderable(entryImageButton, entryName, "Shift", false, entryName, function(parent)
 												ResourceManager:RenderDisplayWindow(entryData, parent)
 											end)
-											entryImageButton.SameLine = i > 1 and ((i - 1) % (math.floor(self.browserTabs["Progressions"].LastSize[1] / 64)) ~= 0)
+											entryImageButton.SameLine = totalChildren > 1 and
+												((totalChildren - 1) % (math.floor(self.browserTabs["Progressions"].LastSize[1] / 64)) ~= 0)
 											entryImageButton.CanDrag = true
 											entryImageButton.DragDropType = "EntryReorder"
 											entryImageButton.UserData = {
@@ -1185,8 +1203,11 @@ function ListDesignerBaseClass:buildProgressionIndex()
 				end
 
 				for nodeName, metaList in TableUtils:OrderedPairs(nodesToIterate) do
-					self.progressions[progression.TableUUID][progression.Level][self.name][nodeName] = self.progressions[progression.TableUUID][progression.Level][self.name]
-						[nodeName] or {}
+					local nodeName = self.progressNodeTranslations[nodeName] or nodeName
+
+					self.progressions[progression.TableUUID][progression.Level][self.name][nodeName] =
+						self.progressions[progression.TableUUID][progression.Level][self.name][nodeName] or {}
+
 					for _, meta in pairs(metaList, function(key, value)
 						return value
 					end) do
@@ -1214,6 +1235,7 @@ function ListDesignerBaseClass:buildProgressionIndex()
 
 				if not next(self.progressions[progression.TableUUID][progression.Level][self.name]) then
 					self.progressions[progression.TableUUID][progression.Level][self.name] = nil
+
 					if not next(self.progressions[progression.TableUUID][progression.Level]) then
 						self.progressions[progression.TableUUID][progression.Level] = nil
 

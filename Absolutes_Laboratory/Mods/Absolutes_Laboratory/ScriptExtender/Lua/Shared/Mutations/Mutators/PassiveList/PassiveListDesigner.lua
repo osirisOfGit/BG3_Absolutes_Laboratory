@@ -25,6 +25,11 @@ PassiveListDesigner = ListDesignerBaseClass:new("Passive List",
 		end
 	end)
 
+	PassiveListDesigner.progressNodeTranslations = {
+		["PassivePrototypesAdded"] = "PassivesAdded",
+		["PassivePrototypesRemoved"] = "PassivesRemoved"
+	}
+
 function PassiveListDesigner:buildBrowser()
 	if not self.browserTabs["PassiveData"] then
 		self.browserTabs["PassiveData"] = self.browserTabParent:AddTabItem("Passives"):AddChildWindow("Passive Browser")
