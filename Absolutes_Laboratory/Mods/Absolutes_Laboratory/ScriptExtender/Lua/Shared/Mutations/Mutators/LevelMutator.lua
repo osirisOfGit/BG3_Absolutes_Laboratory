@@ -352,7 +352,6 @@ function LevelMutator:applyMutator(entity, entityVar)
 		end
 	end
 
-
 	local targetLevel = mutator.usePlayerLevel and 1 or entity.EocLevel.Level
 	if mutator.usePlayerLevel then
 		targetLevel = calculateHighestPlayerLevel()
@@ -360,7 +359,6 @@ function LevelMutator:applyMutator(entity, entityVar)
 	else
 		Logger:BasicDebug("Current entity level is %s", targetLevel)
 	end
-
 
 	if not levelUpSubscription and mutator.usePlayerLevel then
 		---@diagnostic disable-next-line: param-type-mismatch

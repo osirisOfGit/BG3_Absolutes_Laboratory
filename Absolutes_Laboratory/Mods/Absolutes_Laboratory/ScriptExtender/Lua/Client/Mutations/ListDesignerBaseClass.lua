@@ -4,6 +4,8 @@ ListDesignerBaseClass = {
 	---@type string
 	configKey = nil,
 
+	settings = ConfigurationStructure.config.mutations.settings.customLists,
+
 	---@type ExtuiWindow
 	mainWindow = nil,
 	---@type ExtuiTable
@@ -88,6 +90,7 @@ function ListDesignerBaseClass:new(name, configKey, subListTypesToExclude, progr
 		linkedEntries = false
 	}
 	instance.subListIndex = TableUtils:DeeplyCopyTable(ListDesignerBaseClass.subListIndex)
+	instance.settings = ConfigurationStructure.config.mutations.settings.customLists
 
 	if subListTypesToExclude then
 		for _, subListType in pairs(subListTypesToExclude) do
@@ -155,7 +158,7 @@ function ListDesignerBaseClass:launch(activeListId)
 		colorSettings.UserData = "keep"
 		colorSettings:AddText("Click A Color To Change It, Hover for Tooltips: "):SetStyle("Alpha", 0.6)
 
-		for subListName, colour in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.settings.customLists.subListColours, function(key)
+		for subListName, colour in TableUtils:OrderedPairs(self.settings.subListColours, function(key)
 				return self.subListIndex[key].name
 			end,
 			function(key, value)
@@ -367,6 +370,25 @@ end
 ---@param parent ExtuiTreeParent
 function ListDesignerBaseClass:customizeDesigner(parent) end
 
+---@param createListFunc fun(level: (number|GameLevel)):any?
+function ListDesignerBaseClass:iterateLevels(createListFunc)
+	if self.activeList.useGameLevel then
+		for level in ipairs(EntityRecorder.Levels) do
+			local result = createListFunc(level)
+			if result then
+				return result
+			end
+		end
+	else
+		for level = (self.configKey == "spellLists" and 0 or 1), 30 do
+			local result = createListFunc(level)
+			if result then
+				return result
+			end
+		end
+	end
+end
+
 function ListDesignerBaseClass:buildDesigner()
 	if self.progressionLinkedNodes then
 		self:buildProgressionIndex()
@@ -422,33 +444,54 @@ function ListDesignerBaseClass:buildDesigner()
 	end)
 
 	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function(ele)
-		local setting = ConfigurationStructure.config.mutations.settings.customLists
 		Styler:DualToggleButton(ele, "Icon", "Text", false, function(swap)
 			if swap then
-				setting.iconOrText = setting.iconOrText == "Icon" and "Text" or "Icon"
+				self.settings.iconOrText = self.settings.iconOrText == "Icon" and "Text" or "Icon"
 				self:buildDesigner()
 			end
 
-			return setting.iconOrText == "Icon"
+			return self.settings.iconOrText == "Icon"
 		end)
 
-		if setting.iconOrText == "Icon" and self:renderEntriesBySubcategories({}, ele) then
-			Styler:EnableToggleButton(ele, "Show SubCategories Under Levels", false, function (swap)
+		if self.settings.iconOrText == "Icon" and self:renderEntriesBySubcategories({}, ele) then
+			Styler:EnableToggleButton(ele, "Show SubCategories Under Levels", false, function(swap)
 				if swap then
-					setting.showSeperatorsInMain = not setting.showSeperatorsInMain
+					self.settings.showSeperatorsInMain = not self.settings.showSeperatorsInMain
 					self:buildDesigner()
 				end
-				return setting.showSeperatorsInMain
+				return self.settings.showSeperatorsInMain
 			end)
 		end
+
+		ele:AddText("(?) Distribute By: "):Tooltip():AddText([[
+	Changing this option will clear your list as the two options are not compatible with each other.
+Using game level will distribute all entries in the same level that the entity is in and all the ones that come before (i.e. TUT, WLD, CRE, SCL if they're in SCL).
+You can't link progressions when using Game Level, as progressions are distributed by character level.
+Using entity level will use the entity's character level, post Character Level Mutators if applicable.]])
+		Styler:DualToggleButton(ele, "Entity Level", "Game Level", true, function(swap)
+			if swap then
+				self.activeList.useGameLevel = not self.activeList.useGameLevel
+				self.activeList.levels.delete = true
+				self.activeList.levels = {}
+				if self.activeList.useGameLevel then
+					for level in ipairs(EntityRecorder.Levels) do
+						self.activeList.levels[level] = {
+							manuallySelectedEntries = {}
+						}
+					end
+				end
+				self:buildDesigner()
+			end
+			return not self.activeList.useGameLevel
+		end)
 	end)
 
 	local leveledListGroup = self.designerSection:AddGroup("leveledLists")
 
-	for level = (self.configKey == "spellLists" and 0 or 1), 30 do
+	self:iterateLevels(function(level)
 		local listGroup = leveledListGroup:AddGroup("list" .. level)
 		listGroup:SetColor("Border", { 1, 0, 0, 1 })
-		listGroup:AddText(tostring(level) .. (level < 10 and "  " or "")).Font = "Big"
+		listGroup:AddText(tostring(self.activeList.useGameLevel and EntityRecorder.Levels[level] or level) .. (level < 10 and "  " or "")).Font = "Big"
 		listGroup.UserData = level
 		if not self.activeList.modId then
 			listGroup.DragDropType = "EntryReorder"
@@ -480,7 +523,7 @@ function ListDesignerBaseClass:buildDesigner()
 		---@class EntryHandle
 		---@field entryName EntryName
 		---@field subListName string?
-		---@field level number?
+		---@field level (number|GameLevel)?
 		---@field progressionTableId Guid?
 
 		---@param group ExtuiGroup
@@ -534,23 +577,23 @@ function ListDesignerBaseClass:buildDesigner()
 		end
 
 		if #entryGroup.Children == 0 then
-			entryGroup:AddDummy(56, 56)
+			entryGroup:AddDummy(self.designerSection.LastSize[1], 56)
 		end
 
 		listGroup:AddNewLine()
-	end
+	end)
 end
 
 ---@param parentGroup ExtuiGroup
 ---@param subLists CustomSubList
----@param level number
+---@param level number|GameLevel
 ---@param progressionTableId string?
 function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, level, progressionTableId)
 	if progressionTableId and not subLists.randomized then
 		subLists.randomized = {}
 	end
 
-	local useIcons = ConfigurationStructure.config.mutations.settings.customLists.iconOrText == "Icon"
+	local useIcons = self.settings.iconOrText == "Icon"
 	local displayTable = parentGroup:AddTable("display", useIcons and 1 or 3)
 
 	local row = displayTable:AddRow()
@@ -589,7 +632,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 
 		---@cast subList EntryName[]
 		local groupFunc
-		if useIcons and ConfigurationStructure.config.mutations.settings.customLists.showSeperatorsInMain then
+		if useIcons and self.settings.showSeperatorsInMain then
 			groupFunc = self:renderEntriesBySubcategories(subList, row.Children[1])
 		end
 
@@ -845,7 +888,9 @@ function ListDesignerBaseClass:buildStatBrowser(statType)
 						---@type SpellData|PassiveData|StatusData
 						local stat = Ext.Stats.Get(statName)
 
-						local level = (stat.ModifierList == "SpellData" and stat.Level ~= "" and stat.Level > 0) and stat.Level or 1
+						local level = self.activeList.useGameLevel and 1 or
+							((stat.ModifierList == "SpellData" and stat.Level ~= "" and stat.Level > 0) and stat.Level or 1)
+
 						self.activeList.levels = self.activeList.levels or {}
 						self.activeList.levels[level] = self.activeList.levels[level] or {}
 						local subLevelList = self.activeList.levels[level]
@@ -869,11 +914,11 @@ function ListDesignerBaseClass:buildStatBrowser(statType)
 			return pos % (math.floor(self.browserTabs[statType].LastSize[1] / (58 * Styler:ScaleFactor()))) ~= 0
 		end,
 		function(statName)
-			for l = 1, 30 do
-				if self.activeList.levels and self.activeList.levels[l] and self:CheckIfEntryIsInListLevel(self.activeList.levels[l], statName, l) then
+			return self:iterateLevels(function(level)
+				if self.activeList.levels and self.activeList.levels[level] and self:CheckIfEntryIsInListLevel(self.activeList.levels[level], statName, level) then
 					return true
 				end
-			end
+			end)
 		end,
 		function(statImage, statName)
 			statImage.CanDrag = true
@@ -995,6 +1040,9 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 									for level, lists in TableUtils:OrderedPairs(indexedProgLevelLists, function(key)
 										return tonumber(key)
 									end) do
+										if self.activeList.useGameLevel then
+											level = 1
+										end
 										self.activeList.levels = self.activeList.levels or {}
 										self.activeList.levels[level] = self.activeList.levels[level] or {}
 										local subLevelList = self.activeList.levels[level]
@@ -1004,9 +1052,11 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 										local leveledSubList = subLevelList.manuallySelectedEntries
 										leveledSubList.randomized = leveledSubList.randomized or {}
 
-										for _, spell in pairs(lists[self.name] or {}) do
-											if not self:CheckIfEntryIsInListLevel(subLevelList, spell, level) then
-												table.insert(leveledSubList.randomized, spell)
+										for node, entryList in pairs(lists[self.name]) do
+											for _, entry in pairs(entryList) do
+												if not self:CheckIfEntryIsInListLevel(subLevelList, entry, level) then
+													table.insert(leveledSubList.randomized, entry)
+												end
 											end
 										end
 									end
@@ -1018,31 +1068,33 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 									return value.linkedProgressions ~= nil and value.linkedProgressions[progressionTableUuid] ~= nil
 								end) ~= nil
 
-								local linkButton = ele:AddButton(hasProgression and "Unlink" or "Link (?)")
-								linkButton:Tooltip():AddText(
-									"\t (Un)Forms a link to this progression, dynamically pulling all entries from the ProgressionTable when needed. See SpellList wiki page.")
+								if not self.activeList.useGameLevel then
+									local linkButton = ele:AddButton(hasProgression and "Unlink" or "Link (?)")
+									linkButton:Tooltip():AddText(
+										"\t (Un)Forms a link to this progression, dynamically pulling all entries from the ProgressionTable when needed. See SpellList wiki page.")
 
-								linkButton.SameLine = true
-								linkButton.OnClick = function()
-									if hasProgression then
-										for _, subList in TableUtils:OrderedPairs(self.activeList.levels) do
-											if subList.linkedProgressions and subList.linkedProgressions[progressionTableUuid] then
-												subList.linkedProgressions[progressionTableUuid].delete = true
+									linkButton.SameLine = true
+									linkButton.OnClick = function()
+										if hasProgression then
+											for _, subList in TableUtils:OrderedPairs(self.activeList.levels) do
+												if subList.linkedProgressions and subList.linkedProgressions[progressionTableUuid] then
+													subList.linkedProgressions[progressionTableUuid].delete = true
+												end
 											end
+											linkButton.Label = "Link (?)"
+										else
+											self.activeList.levels = self.activeList.levels or {}
+											for level in pairs(self.progressions[progressionTableUuid]) do
+												self.activeList.levels[level] = self.activeList.levels[level] or {}
+												self.activeList.levels[level].linkedProgressions = self.activeList.levels[level].linkedProgressions or {}
+												self.activeList.levels[level].linkedProgressions[progressionTableUuid] =
+													TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
+											end
+											linkButton.Label = "Unlink"
 										end
-										linkButton.Label = "Link (?)"
-									else
-										self.activeList.levels = self.activeList.levels or {}
-										for level in pairs(self.progressions[progressionTableUuid]) do
-											self.activeList.levels[level] = self.activeList.levels[level] or {}
-											self.activeList.levels[level].linkedProgressions = self.activeList.levels[level].linkedProgressions or {}
-											self.activeList.levels[level].linkedProgressions[progressionTableUuid] =
-												TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
-										end
-										linkButton.Label = "Unlink"
+										hasProgression = not hasProgression
+										self:buildDesigner()
 									end
-									hasProgression = not hasProgression
-									self:buildDesigner()
 								end
 							end)
 
@@ -1276,7 +1328,7 @@ end
 
 ---@param leveledSubList LeveledSubList
 ---@param entryName string
----@param level number
+---@param level number|GameLevel
 ---@param ignoreProgressions boolean?
 ---@return boolean
 function ListDesignerBaseClass:CheckIfEntryIsInListLevel(leveledSubList, entryName, level, ignoreProgressions)
@@ -1292,7 +1344,7 @@ function ListDesignerBaseClass:CheckIfEntryIsInListLevel(leveledSubList, entryNa
 
 	if leveledSubList.manuallySelectedEntries and TableUtils:IndexOf({ leveledSubList.manuallySelectedEntries }, predicate) then
 		return true
-	elseif leveledSubList.linkedProgressions then
+	elseif not self.activeList.useGameLevel and leveledSubList.linkedProgressions then
 		if TableUtils:IndexOf(leveledSubList.linkedProgressions, predicate) then
 			return true
 		end

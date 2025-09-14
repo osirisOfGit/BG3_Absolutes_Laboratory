@@ -197,8 +197,10 @@ ConfigurationStructure.DynamicClassDefinitions.customLeveledList = {
 	spellListDependencies = nil,
 	---@type ModDependencies
 	modDependencies = nil,
+	useGameLevel = false
 }
 
+---@class CustomListsSettings
 ConfigurationStructure.config.mutations.settings.customLists = {
 	subListColours = {
 		guaranteed = { 0, 138, 172, 0.8 },
