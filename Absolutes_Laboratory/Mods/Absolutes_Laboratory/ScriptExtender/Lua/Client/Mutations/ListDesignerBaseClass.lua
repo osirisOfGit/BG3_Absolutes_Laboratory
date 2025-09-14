@@ -336,6 +336,7 @@ function ListDesignerBaseClass:buildModLists(activeListID)
 					return MutationModProxy.ModProxy[self.configKey][value].name
 				end) do
 					local list = MutationModProxy.ModProxy[self.configKey][guid]
+					list.useGameLevel = list.useGameLevel or false
 
 					---@type ExtuiSelectable
 					local spellListSelect = self.listSection:AddSelectable(list.name)
