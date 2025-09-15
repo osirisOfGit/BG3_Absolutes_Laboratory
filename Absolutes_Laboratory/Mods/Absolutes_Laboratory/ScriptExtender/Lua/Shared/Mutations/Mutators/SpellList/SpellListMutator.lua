@@ -991,7 +991,14 @@ function SpellListMutator:canBeAdditive()
 end
 
 local SPELL_MUTATOR_ON_COMBAT_START = ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME .. "SpellsOnCombatStart"
-Ext.Vars.RegisterUserVariable(ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME .. "SpellsOnCombatStart", {
+Ext.Vars.RegisterUserVariable(SPELL_MUTATOR_ON_COMBAT_START, {
+	Server = true,
+	Client = true,
+	SyncToClient = true
+})
+
+local SPELL_MUTATOR_ON_DEATH = ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME .. "SpellsOnDeath"
+Ext.Vars.RegisterUserVariable(SPELL_MUTATOR_ON_DEATH, {
 	Server = true,
 	Client = true,
 	SyncToClient = true
@@ -1024,6 +1031,31 @@ if Ext.IsServer() then
 				entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = entityVar
 				entity.Vars[SPELL_MUTATOR_ON_COMBAT_START] = nil
 			end
+		end
+	end)
+
+	Ext.Osiris.RegisterListener("Died", 1, "before", function(character)
+		---@type EntityHandle
+		local entity = Ext.Entity.Get(character)
+		if entity.Vars[SPELL_MUTATOR_ON_DEATH] then
+			---@type MutatorEntityVar
+			local entityVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME]
+
+			entityVar.originalValues[SpellListMutator.name].castedSpells = entityVar.originalValues[SpellListMutator.name].castedSpells or {}
+
+			local castedSpells = entityVar.originalValues[SpellListMutator.name].castedSpells
+
+			for _, spellName in pairs(entity.Vars[SPELL_MUTATOR_ON_DEATH]) do
+				Osi.UseSpell(entity.Uuid.EntityUuid, spellName, entity.Uuid.EntityUuid)
+				table.insert(castedSpells, spellName)
+
+				Logger:BasicDebug("%s cast On Death Spell %s",
+					entity.DisplayName and entity.DisplayName.Name:Get() or entity.ServerCharacter.Template.Name,
+					spellName)
+			end
+
+			entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = entityVar
+			entity.Vars[SPELL_MUTATOR_ON_DEATH] = nil
 		end
 	end)
 
@@ -1144,6 +1176,10 @@ if Ext.IsServer() then
 						table.insert(origValues.addedSpells, spellName)
 						Logger:BasicDebug("Added guaranteed spell %s", spellName)
 					end
+				elseif subListName == "onDeathOnly" then
+					entity.Vars[SPELL_MUTATOR_ON_DEATH] = entity.Vars[SPELL_MUTATOR_ON_DEATH] or {}
+
+					table.insert(entity.Vars[SPELL_MUTATOR_ON_DEATH], spellName)
 				elseif subListName == "startOfCombatOnly" then
 					if Osi.IsInCombat(entity.Uuid.EntityUuid) == 1 then
 						Osi.UseSpell(entity.Uuid.EntityUuid, spellName, entity.Uuid.EntityUuid)
