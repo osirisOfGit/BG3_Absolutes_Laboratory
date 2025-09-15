@@ -83,6 +83,7 @@ Using entity level will use the entity's character level, post Character Level M
 
 			if list.spellListDependencies and list.spellListDependencies() then
 				local sep = mutatorSection:AddCollapsingHeader("Spell List Dependencies ( ? )")
+				sep.IDContext = passiveListId
 				sep.Font = "Small"
 				sep:Tooltip():AddText([[
 	These lists are automatically added from the defined dependencies in the Passive List Designer - an entity must have been assigned at least one of these to be assigned this list,
@@ -558,7 +559,7 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 				end
 			else
 				Logger:BasicDebug("Skipping level %s for random passive assignment due to configured size being 0",
-				passiveList.useGameLevel and EntityRecorder.Levels[level] or level)
+					passiveList.useGameLevel and EntityRecorder.Levels[level] or level)
 			end
 		end
 	end

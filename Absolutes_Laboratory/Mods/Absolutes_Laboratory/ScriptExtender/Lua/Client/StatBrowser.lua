@@ -124,10 +124,10 @@ You can shift-click on images to pop out their tooltip into a new window, but th
 						local imageParent = settings.onlyIcons and resultsParent or resultsParent:AddRow()
 
 						---@type SpellData|PassiveData|StatusData
-						local spell = Ext.Stats.Get(statName)
+						local stat = Ext.Stats.Get(statName)
 
 						local imageRealParent = (settings.onlyIcons and imageParent or imageParent:AddCell())
-						local statImage = imageRealParent:AddImageButton(statName .. i, spell.Icon, { 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
+						local statImage = imageRealParent:AddImageButton(statName .. i, stat.Icon, { 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
 
 						statImage.AutoClosePopups = false
 						if statImage.Image.Icon == "" then
@@ -137,7 +137,11 @@ You can shift-click on images to pop out their tooltip into a new window, but th
 						statImage.SameLine = settings.onlyIcons and wrapFunc and wrapFunc(i - 1) or false
 						rowCounter = rowCounter + (statImage.SameLine and 0 or 1)
 
-						if shouldTint(statName) then
+						local altTooltip = string.format("%s\n%s", statName, Ext.Loca.GetTranslatedString(stat.DisplayName, statName))
+						if statType == "SpellData" and (Ext.Stats.GetCachedSpell(statName).AiFlags & Ext.Enums.AIFlags.CanNotUse) == Ext.Enums.AIFlags.CanNotUse then
+							statImage.Tint = { 1, 0, 0, 0.4 }
+							altTooltip = altTooltip .. "\n!!!! SPELL CAN'T BE USED BY AI!!!"
+						elseif shouldTint(statName) then
 							statImage.Tint = { 1, 1, 1, 0.2 }
 						end
 
@@ -149,9 +153,9 @@ You can shift-click on images to pop out their tooltip into a new window, but th
 							statName,
 							"Alt",
 							true,
-							string.format("%s\n%s", statName, Ext.Loca.GetTranslatedString(spell.DisplayName, statName)),
+							altTooltip,
 							function(parent)
-								ResourceManager:RenderDisplayWindow(spell, parent)
+								ResourceManager:RenderDisplayWindow(stat, parent)
 							end)
 
 						statImage.OnClick = function()
@@ -163,7 +167,7 @@ You can shift-click on images to pop out their tooltip into a new window, but th
 
 						if not settings.onlyIcons then
 							---@cast imageParent ExtuiTableRow
-							imageParent:AddCell():AddText(Ext.Loca.GetTranslatedString(spell.DisplayName, statName))
+							imageParent:AddCell():AddText(Ext.Loca.GetTranslatedString(stat.DisplayName, statName))
 							imageParent:AddCell():AddText(statName)
 						end
 					end

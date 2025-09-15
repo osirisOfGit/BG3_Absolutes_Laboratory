@@ -3,7 +3,7 @@ Ext.Require("Client/Mutations/ListDesignerBaseClass.lua")
 ---@class StatusListDesigner : ListDesignerBaseClass
 StatusListDesigner = ListDesignerBaseClass:new("Status List",
 	"statusLists",
-	{ "startOfCombatOnly", "onLoadOnly" }
+	{ "startOfCombatOnly", "onLoadOnly", "onDeathOnly" }
 )
 
 function StatusListDesigner:buildBrowser()

@@ -3,7 +3,7 @@ Ext.Require("Client/Mutations/ListDesignerBaseClass.lua")
 ---@class PassiveListDesigner : ListDesignerBaseClass
 PassiveListDesigner = ListDesignerBaseClass:new("Passive List",
 	"passiveLists",
-	{ "startOfCombatOnly", "onLoadOnly" },
+	{ "startOfCombatOnly", "onLoadOnly", "onDeathOnly" },
 	{ "PassivePrototypesAdded", "PassivePrototypesRemoved", "PassivesAdded", "PassivesRemoved" },
 	---@param passiveMeta ResourceProgressionPassive|StatsPassivePrototype
 	function(passiveMeta, addToListFunc)
@@ -18,7 +18,7 @@ PassiveListDesigner = ListDesignerBaseClass:new("Passive List",
 					addToListFunc(spellName)
 				end
 			else
-				error(string.format "UUID %s is not a valid PassiveList", passiveMeta.UUID)
+				error(string.format("UUID %s is not a valid PassiveList", passiveMeta.UUID))
 			end
 		else
 			addToListFunc(passiveMeta.Name)

@@ -61,6 +61,7 @@ ListDesignerBaseClass = {
 		["guaranteed"] = { name = "Guaranteed", description = "Will always be assigned to an enemy that is the assigned level or higher", colour = {} },
 		["randomized"] = { name = "Randomized", description = "Will be placed into a pool of spells assigned to the same level to be randomly chosen per the mutator's config", colour = {} },
 		["startOfCombatOnly"] = { name = "Cast On Combat Start", description = "Will only be cast on combat start - will not be added to the entity's spellList", colour = {} },
+		["onDeathOnly"] = { name = "Cast On Death", description = "Will only be cast when the entity dies, targeting itself - will not be added to the entity's spellList.", colour = {} },
 		["onLoadOnly"] = { name = "Cast On Level Load", description = "Will be cast as soon as the mutator is applied - will not be added to the entity's spellList", colour = {} },
 		["blackListed"] = { name = "Blacklisted", description = "Only available for spells added via a linked progression - will prevent this spell from being added to the entity's spellList or cast by the entity", colour = {} }
 	}
@@ -68,7 +69,7 @@ ListDesignerBaseClass = {
 
 ---@param name string
 ---@param configKey string
----@param subListTypesToExclude ("guaranteed"|"randomized"|"startOfCombatOnly"|"onLoadOnly"|"blackListed")[]?
+---@param subListTypesToExclude ("guaranteed"|"randomized"|"startOfCombatOnly"|"onLoadOnly"|"blackListed"|"onDeathOnly")[]?
 ---@param progressionLinkedNodes string[]?
 ---@param iterateProgressionEntriesFunc fun(resource: any, addToListFunc: fun(name: string))?
 ---@return ListDesignerBaseClass
@@ -731,6 +732,11 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 					altTooltip = altTooltip .. "\n\t  Linked from Progression " .. self.progressionTranslations[progressionTableId]
 				end
 
+				if self.name == SpellListDesigner.name and (Ext.Stats.GetCachedSpell(entryName).AiFlags & Ext.Enums.AIFlags.CanNotUse) == Ext.Enums.AIFlags.CanNotUse then
+					entryImageButton.Tint = { 1, 0, 0, 0.4 }
+					altTooltip = altTooltip .. "\n !!!! SPELL CAN'T BE USED BY AI !!!!"
+				end
+
 				local showedTooltip = Styler:HyperlinkRenderable(entryImageButton, entryName, "Alt", true, altTooltip, function(parent)
 					ResourceManager:RenderDisplayWindow(entryData, parent)
 				end)
@@ -1321,9 +1327,6 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 											local entryImageButton = buttonParent:AddImageButton(entryName .. totalChildren,
 												entryData.Icon ~= "" and entryData.Icon or "Item_Unknown", { 48, 48 })
 
-											local tooltipFunction = Styler:HyperlinkRenderable(entryImageButton, entryName, "Alt", true, entryName, function(parent)
-												ResourceManager:RenderDisplayWindow(entryData, parent)
-											end)
 											entryImageButton.SameLine = totalChildren > 1 and
 												((totalChildren - 1) % (math.floor(self.browserTabs["Progressions"].LastSize[1] / 64)) ~= 0)
 											entryImageButton.CanDrag = true
@@ -1339,6 +1342,15 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 												end
 											end
 
+											local altTooltip = entryName
+											if self.name == SpellListDesigner.name and (Ext.Stats.GetCachedSpell(entryName).AiFlags & Ext.Enums.AIFlags.CanNotUse) == Ext.Enums.AIFlags.CanNotUse then
+												entryImageButton.Tint = { 1, 0, 0, 0.4 }
+												altTooltip = altTooltip .. "\n !!!! SPELL CAN'T BE USED BY AI !!!!"
+											end
+
+											local tooltipFunction = Styler:HyperlinkRenderable(entryImageButton, entryName, "Alt", true, altTooltip, function(parent)
+												ResourceManager:RenderDisplayWindow(entryData, parent)
+											end)
 											---@param preview ExtuiTreeParent
 											entryImageButton.OnDragStart = function(_, preview)
 												if self.selectedEntries.context ~= "Browser" then

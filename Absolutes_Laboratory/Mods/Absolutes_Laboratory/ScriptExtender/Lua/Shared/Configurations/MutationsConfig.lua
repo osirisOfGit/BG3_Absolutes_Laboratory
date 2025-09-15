@@ -178,7 +178,9 @@ ConfigurationStructure.DynamicClassDefinitions.customSubList = {
 	---@type EntryName[]?
 	onLoadOnly = nil,
 	---@type EntryName[]?
-	blackListed = nil
+	blackListed = nil,
+	---@type EntryName[]?
+	onDeathOnly = nil
 }
 
 ---@class LeveledSubList
@@ -208,6 +210,7 @@ ConfigurationStructure.config.mutations.settings.customLists = {
 		startOfCombatOnly = { 217, 118, 6, 0.8 },
 		onLoadOnly = { 217, 179, 6, 0.8 },
 		blackListed = { .5, .5, .5, 1 },
+		onDeathOnly = { 0.51, 0.24, 0.75, 1.0 },
 	},
 	---@type "Icon"|"Text"
 	iconOrText = "Icon",
