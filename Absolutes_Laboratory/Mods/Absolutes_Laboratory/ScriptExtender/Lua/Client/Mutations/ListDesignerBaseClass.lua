@@ -609,6 +609,7 @@ end
 ---@param level number|GameLevel
 ---@param progressionTableId string?
 function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, level, progressionTableId)
+	subLists = subLists._real or subLists
 	if progressionTableId and not subLists.randomized then
 		subLists.randomized = {}
 	end
@@ -623,17 +624,12 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 
 	local count = 0
 
-	for subListName, subList in TableUtils:OrderedPairs(subLists, function(key)
-		return self.subListIndex[key].name
-	end) do
+	local function buildSubList(subListName, subList)
 		if subListName == "randomized" and progressionTableId then
 			local progressionEntry = self.progressions[progressionTableId]
 			if progressionEntry
 				and progressionEntry[level]
 				and progressionEntry[level][self.name] then
-				-- So additions to linked progressions don't get stored to the config
-				subList = {}
-
 				for nodeName, entryList in pairs(progressionEntry[level][self.name]) do
 					for _, entryName in pairs(entryList) do
 						if not self:CheckIfEntryIsInListLevel(self.activeList.levels[level], entryName, level, true) then
@@ -647,12 +643,28 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 				end
 			end
 		end
+	end
+
+	local groupFunc
+	local listForGroupFunc = {}
+	if useIcons and self.settings.showSeperatorsInMain then
+		for subListName, subList in TableUtils:OrderedPairs(subLists, function(key)
+			return self.subListIndex[key].name
+		end) do
+			for _, entry in pairs(subList) do
+				table.insert(listForGroupFunc, entry)
+			end
+			buildSubList(subListName, listForGroupFunc)
+		end
+		groupFunc = self:renderEntriesBySubcategories(listForGroupFunc, row.Children[1])
+	end
+
+	for subListName, subList in TableUtils:OrderedPairs(subLists, function(key)
+		return self.subListIndex[key].name
+	end) do
+		buildSubList(subListName, subList)
 
 		---@cast subList EntryName[]
-		local groupFunc
-		if useIcons and self.settings.showSeperatorsInMain then
-			groupFunc = self:renderEntriesBySubcategories(subList, row.Children[1])
-		end
 
 		for _, entryName in TableUtils:OrderedPairs(subList, function(key)
 			return subList[key]
@@ -660,6 +672,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 			count = count + 1
 			---@type ExtuiTreeParent
 			local parent = useIcons and row.Children[1] or row:AddCell()
+
 
 			---@type SpellData|PassiveData|StatusData
 			local entryData = Ext.Stats.Get(entryName)
