@@ -232,16 +232,10 @@ function MutationDesigner:RenderSelectors(parent, existingSelector, prepPhase)
 		local sideCell = row:AddCell()
 
 		local delete = Styler:ImageButton(sideCell:AddImageButton("delete", "ico_red_x", Styler:ScaleFactor({ 16, 16 })))
+		delete.UserData = i
 		delete.OnClick = function()
-			for x = i, TableUtils:CountElements(existingSelector), 2 do
-				if x > 0 then
-					existingSelector[x] = nil
-					existingSelector[x] = existingSelector[x + 2]
-				end
-
-				existingSelector[x + 1].delete = true
-				existingSelector[x + 1] = TableUtils:DeeplyCopyTable(existingSelector._real[x + 3])
-			end
+			existingSelector[i] = nil
+			existingSelector[i + 1].delete = true
 
 			TableUtils:ReindexNumericTable(existingSelector)
 

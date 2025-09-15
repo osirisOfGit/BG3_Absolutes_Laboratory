@@ -114,8 +114,7 @@ function PrepPhaseMarkerMutator:renderMutator(parent, mutator)
 			---@param selectable ExtuiSelectable
 			menu:AddSelectable("Delete", "DontClosePopups").OnClick = function(selectable)
 				if selectable.Label ~= "Delete" then
-					prepPhaseCategories[i].delete = true
-					TableUtils:ReindexNumericTable(prepPhaseCategories)
+					ConfigurationStructure.config.mutations.prepPhaseMarkers[categoryId].delete = true
 
 					for _, folder in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.folders) do
 						for _, mutation in TableUtils:OrderedPairs(folder.mutations) do
@@ -135,17 +134,17 @@ function PrepPhaseMarkerMutator:renderMutator(parent, mutator)
 					self:renderMutator(parent, mutator)
 				else
 					selectable.Label = "Are you sure?"
+					Styler:Color(selectable, "ErrorText")
 					selectable.DontClosePopups = false
 				end
 			end
 		end
 
 		FormBuilder:CreateForm(popup:AddMenu("Create New"), function(formResults)
-			table.insert(prepPhaseCategories, {
+			ConfigurationStructure.config.mutations.prepPhaseMarkers[FormBuilder:generateGUID()] = {
 				name = formResults.Name,
-				description = formResults.Description,
-				id = FormBuilder:generateGUID()
-			} --[[@as PrepMarkerCategory]])
+				description = formResults.Description
+			} --[[@as PrepMarkerCategory]]
 			self:renderMutator(parent, mutator)
 		end, {
 			{

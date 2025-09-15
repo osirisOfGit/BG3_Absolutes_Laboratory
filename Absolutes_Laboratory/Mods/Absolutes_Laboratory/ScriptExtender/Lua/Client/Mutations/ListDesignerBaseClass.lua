@@ -763,6 +763,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 									end
 									if lastEntryParent.Handle == buttonParent.Handle then
 										local startSelecting = false
+										local deselect = false
 										---@param func fun(child: ExtuiStyledRenderable)
 										local function iterateFunc(func)
 											for _, child in ipairs(buttonParent.Children) do
@@ -795,9 +796,20 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 													table.insert(self.selectedEntries.handles, child)
 													child:SetColor("Button", { 0, 1, 0, .8 })
 													child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+												elseif deselect then
+													self.selectedEntries.entries[index] = nil
+													self.selectedEntries.handles[index] = nil
+													child:SetColor("Button", { 0, 1, 0, .8 })
+													child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
 												end
 											elseif child.Handle == lastEntry.Handle then
-												startSelecting = true
+												if deselect then
+													return
+												else
+													startSelecting = true
+												end
+											elseif child.Handle == entryImageButton.Handle then
+												deselect = true
 											end
 										end)
 									end

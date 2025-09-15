@@ -35,7 +35,7 @@ end
 ---@param mutator LevelMutator
 function LevelMutator:renderMutator(parent, mutator)
 	mutator.values = mutator.values or 0
-	mutator.usePlayerLevel = mutator.usePlayerLevel or true
+	mutator.usePlayerLevel = mutator.usePlayerLevel or (mutator.usePlayerLevel == nil and false) or mutator.usePlayerLevel
 	mutator.levelThreshold = mutator.levelThreshold or {
 		comparator = ">=",
 		level = 1,
