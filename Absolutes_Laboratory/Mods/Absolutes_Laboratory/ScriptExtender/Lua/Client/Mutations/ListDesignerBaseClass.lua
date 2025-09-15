@@ -660,6 +660,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 		groupFunc = self:renderEntriesBySubcategories(listForGroupFunc, row.Children[1])
 	end
 
+	self.entryCacheForProgressions[level] = nil
 	for subListName, subList in TableUtils:OrderedPairs(subLists, function(key)
 		return self.subListIndex[key].name
 	end) do
@@ -968,9 +969,9 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 	end
 
 	if not useIcons then
-		if #row.Children[2].Children == 0 then
+		if row.Children[2] and #row.Children[2].Children == 0 then
 			displayTable.Columns = 1
-		elseif #row.Children[3].Children == 0 then
+		elseif row.Children[3] and #row.Children[3].Children == 0 then
 			displayTable.Columns = 2
 		end
 	end
