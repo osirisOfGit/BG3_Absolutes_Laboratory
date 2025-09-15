@@ -815,9 +815,6 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 													table.insert(self.selectedEntries.handles, child)
 													child:SetColor("Button", { 0, 1, 0, .8 })
 													child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
-													if child.Handle == entryImageButton.Handle then
-														return true
-													end
 												elseif deselect then
 													if self.selectedEntries.entries[index].subListName then
 														child:SetColor("Button", self.subListIndex[self.selectedEntries.entries[index].subListName].colour)
@@ -828,32 +825,33 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 													self.selectedEntries.handles[index] = nil
 													TableUtils:ReindexNumericTable(self.selectedEntries.entries)
 													TableUtils:ReindexNumericTable(self.selectedEntries.handles)
-
-													if child.Handle == lastEntry.Handle then
-														return true
-													end
+												end
+												if child.Handle == lastEntry.Handle or child.Handle == entryImageButton.Handle then
+													return true
 												end
 											elseif child.Handle == lastEntry.Handle then
 												startSelecting = true
 											elseif child.Handle == entryImageButton.Handle then
-												if not startSelecting then
-													local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-														return value.entryName == child.UserData.entryName
-													end)
-													if index then
-														if self.selectedEntries.entries[index].subListName then
-															child:SetColor("Button", self.subListIndex[self.selectedEntries.entries[index].subListName].colour)
-														end
-														child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
-
-														self.selectedEntries.entries[index] = nil
-														self.selectedEntries.handles[index] = nil
-														TableUtils:ReindexNumericTable(self.selectedEntries.entries)
-														TableUtils:ReindexNumericTable(self.selectedEntries.handles)
+												local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+													return value.entryName == child.UserData.entryName
+												end)
+												if index then
+													if self.selectedEntries.entries[index].subListName then
+														child:SetColor("Button", self.subListIndex[self.selectedEntries.entries[index].subListName].colour)
 													end
+													child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+
+													self.selectedEntries.entries[index] = nil
+													self.selectedEntries.handles[index] = nil
+													TableUtils:ReindexNumericTable(self.selectedEntries.entries)
+													TableUtils:ReindexNumericTable(self.selectedEntries.handles)
 													deselect = true
 												else
-													return true
+													startSelecting = true
+													table.insert(self.selectedEntries.entries, child.UserData)
+													table.insert(self.selectedEntries.handles, child)
+													child:SetColor("Button", { 0, 1, 0, .8 })
+													child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
 												end
 											end
 										end)
@@ -1110,9 +1108,6 @@ function ListDesignerBaseClass:buildStatBrowser(statType)
 											table.insert(self.selectedEntries.handles, child)
 											child:SetColor("Button", { 0, 1, 0, .8 })
 											child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
-											if child.Handle == statImage.Handle then
-												break
-											end
 										elseif deselect then
 											child:SetColor("Button", { 1, 1, 1, 0 })
 											child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
@@ -1121,27 +1116,32 @@ function ListDesignerBaseClass:buildStatBrowser(statType)
 											self.selectedEntries.handles[index] = nil
 											TableUtils:ReindexNumericTable(self.selectedEntries.entries)
 											TableUtils:ReindexNumericTable(self.selectedEntries.handles)
-
-											if child.Handle == lastEntry.Handle then
-												break
-											end
+										end
+										if child.Handle == lastEntry.Handle or child.Handle == statImage.Handle then
+											return true
 										end
 									elseif child.Handle == lastEntry.Handle then
 										startSelecting = true
 									elseif child.Handle == statImage.Handle then
-										child:SetColor("Button", { 1, 1, 1, 0 })
-										child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
-
 										local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
 											return value.entryName == child.UserData.entryName
 										end)
 										if index then
+											child:SetColor("Button", { 1, 1, 1, 0 })
+											child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+
 											self.selectedEntries.entries[index] = nil
 											self.selectedEntries.handles[index] = nil
 											TableUtils:ReindexNumericTable(self.selectedEntries.entries)
 											TableUtils:ReindexNumericTable(self.selectedEntries.handles)
+											deselect = true
+										else
+											startSelecting = true
+											table.insert(self.selectedEntries.entries, child.UserData)
+											table.insert(self.selectedEntries.handles, child)
+											child:SetColor("Button", { 0, 1, 0, .8 })
+											child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
 										end
-										deselect = true
 									end
 								end
 							end
@@ -1442,9 +1442,6 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 																			table.insert(self.selectedEntries.handles, child)
 																			child:SetColor("Button", { 0, 1, 0, .8 })
 																			child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
-																			if child.Handle == entryImageButton.Handle then
-																				return true
-																			end
 																		elseif deselect then
 																			child:SetColor("Button", { 1, 1, 1, 0 })
 																			child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
@@ -1453,30 +1450,31 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 																			self.selectedEntries.handles[index] = nil
 																			TableUtils:ReindexNumericTable(self.selectedEntries.entries)
 																			TableUtils:ReindexNumericTable(self.selectedEntries.handles)
-
-																			if child.Handle == lastEntry.Handle then
-																				return true
-																			end
+																		end
+																		if child.Handle == lastEntry.Handle or child.Handle == entryImageButton.Handle then
+																			return true
 																		end
 																	elseif child.Handle == lastEntry.Handle then
 																		startSelecting = true
 																	elseif child.Handle == entryImageButton.Handle then
-																		if not startSelecting then
-																			deselect = true
-																			local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-																				return value.entryName == child.UserData.entryName
-																			end)
+																		local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+																			return value.entryName == child.UserData.entryName
+																		end)
+																		if index then
 																			child:SetColor("Button", { 1, 1, 1, 0 })
 																			child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
 
-																			if index then
-																				self.selectedEntries.entries[index] = nil
-																				self.selectedEntries.handles[index] = nil
-																				TableUtils:ReindexNumericTable(self.selectedEntries.entries)
-																				TableUtils:ReindexNumericTable(self.selectedEntries.handles)
-																			end
+																			self.selectedEntries.entries[index] = nil
+																			self.selectedEntries.handles[index] = nil
+																			TableUtils:ReindexNumericTable(self.selectedEntries.entries)
+																			TableUtils:ReindexNumericTable(self.selectedEntries.handles)
+																			deselect = true
 																		else
-																			return true
+																			startSelecting = true
+																			table.insert(self.selectedEntries.entries, child.UserData)
+																			table.insert(self.selectedEntries.handles, child)
+																			child:SetColor("Button", { 0, 1, 0, .8 })
+																			child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
 																		end
 																	end
 																end)
