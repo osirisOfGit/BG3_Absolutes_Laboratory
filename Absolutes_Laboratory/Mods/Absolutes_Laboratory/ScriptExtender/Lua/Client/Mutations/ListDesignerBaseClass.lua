@@ -1118,7 +1118,7 @@ function ListDesignerBaseClass:buildStatBrowser(statType)
 											TableUtils:ReindexNumericTable(self.selectedEntries.handles)
 										end
 										if child.Handle == lastEntry.Handle or child.Handle == statImage.Handle then
-											return true
+											break
 										end
 									elseif child.Handle == lastEntry.Handle then
 										startSelecting = true
