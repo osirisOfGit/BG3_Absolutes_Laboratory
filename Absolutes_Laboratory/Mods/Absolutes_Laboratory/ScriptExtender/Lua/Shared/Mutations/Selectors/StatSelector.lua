@@ -167,6 +167,8 @@ function StatSelector:renderSelector(parent, existingSelector)
 					select.Selected = TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
 						return value.id == statName
 					end) ~= nil
+					-- Header is also the main color property of the group, which is set to hide it, which gets inherited by its kids, so have to reset it
+					select:SetColor("Header", { 0.36, 0.30, 0.27, 0.76 })
 
 					local tooltip = select:Tooltip()
 					tooltip.Visible = false

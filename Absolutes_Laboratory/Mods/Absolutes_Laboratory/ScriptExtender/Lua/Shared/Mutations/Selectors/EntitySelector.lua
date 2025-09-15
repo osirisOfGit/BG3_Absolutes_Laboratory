@@ -69,8 +69,8 @@ function EntitySelector:renderSelector(parent, existingSelector)
 
 	---@param filter string?
 	local function buildSelects(filter)
+		Helpers:KillChildren(entityGroup)
 		if filter and #filter >= 2 then
-			Helpers:KillChildren(entityGroup)
 			for level, entities in pairs(EntityRecorder:GetEntities()) do
 				for _, entity in TableUtils:OrderedPairs(entities, function(key, value)
 						return value.Name
@@ -82,8 +82,8 @@ function EntitySelector:renderSelector(parent, existingSelector)
 					end) do
 					---@type ExtuiSelectable
 					local select = entityGroup:AddSelectable(("%s (%s)"):format(entity.Name, string.sub(entity.Id, -6)))
-					select.IDContext = entity.Id
-					select.UserData = entity.Id
+					-- Header is also the main color property of the group, which is set to hide it, which gets inherited by its kids, so have to reset it
+					select:SetColor("Header", {0.36, 0.30, 0.27, 0.76})
 					select.Selected = TableUtils:IndexOf(existingSelector.criteriaValue, entity.Id) ~= nil
 
 					Styler:HyperlinkRenderable(select, entity.Id, "Shift", true, nil, function(parent)

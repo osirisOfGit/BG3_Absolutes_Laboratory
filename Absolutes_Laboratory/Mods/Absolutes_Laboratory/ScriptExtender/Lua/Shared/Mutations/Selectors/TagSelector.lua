@@ -82,34 +82,33 @@ function TagSelector:renderSelector(parent, existingSelector)
 	local function buildSelects(filter)
 		Helpers:KillChildren(tagGroup)
 		-- if filter and #filter >= 3 then
-			for _, tag in ipairs(tags) do
-				if not (filter and #filter > 0)
-					or string.upper(translationMap[tag]):find(filter)
-					or string.upper(tag):find(filter)
-				then
-					---@type ExtuiSelectable
-					local select = tagGroup:AddSelectable(translationMap[tag])
-					select.UserData = tag
-					ResourceManager:RenderDisplayWindow(Ext.StaticData.Get(tag, "Tag"), select:Tooltip())
+		for _, tag in ipairs(tags) do
+			if not (filter and #filter > 0)
+				or string.upper(translationMap[tag]):find(filter)
+				or string.upper(tag):find(filter)
+			then
+				---@type ExtuiSelectable
+				local select = tagGroup:AddSelectable(translationMap[tag])
+				select.UserData = tag
+				ResourceManager:RenderDisplayWindow(Ext.StaticData.Get(tag, "Tag"), select:Tooltip())
+				-- Header is also the main color property of the group, which is set to hide it, which gets inherited by its kids, so have to reset it
+				select:SetColor("Header", { 0.36, 0.30, 0.27, 0.76 })
+				select.Selected = TableUtils:IndexOf(existingSelector.criteriaValue, tag) ~= nil
 
-					if TableUtils:IndexOf(existingSelector.criteriaValue, tag) then
-						select.Selected = true
+				select.OnClick = function()
+					if select.Selected then
+						table.insert(existingSelector.criteriaValue, tag)
+						table.sort(existingSelector.criteriaValue, function(a, b)
+							return translationMap[a] < translationMap[b]
+						end)
+					else
+						table.remove(existingSelector.criteriaValue, TableUtils:IndexOf(existingSelector.criteriaValue, tag))
 					end
-
-					select.OnClick = function()
-						if select.Selected then
-							table.insert(existingSelector.criteriaValue, tag)
-							table.sort(existingSelector.criteriaValue, function(a, b)
-								return translationMap[a] < translationMap[b]
-							end)
-						else
-							table.remove(existingSelector.criteriaValue, TableUtils:IndexOf(existingSelector.criteriaValue, tag))
-						end
-						displaySelectedTags()
-						updateFunc(#existingSelector.criteriaValue)
-					end
+					displaySelectedTags()
+					updateFunc(#existingSelector.criteriaValue)
 				end
 			end
+		end
 		-- end
 	end
 	buildSelects()
