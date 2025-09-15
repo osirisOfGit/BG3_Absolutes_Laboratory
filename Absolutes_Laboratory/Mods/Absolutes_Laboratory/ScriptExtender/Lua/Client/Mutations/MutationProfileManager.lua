@@ -341,6 +341,10 @@ function MutationProfileManager:BuildFolderManager()
 				mutationSelectable:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
 
 				mutationSelectable:OnClick()
+				for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
+					TableUtils:ReindexNumericTable(profile.mutationRules)
+					TableUtils:ReindexNumericTable(profile.prepPhaseMutations)
+				end
 				self:BuildFolderManager()
 			end
 			mutationPopup:AddSelectable("Edit Details").OnClick = function()

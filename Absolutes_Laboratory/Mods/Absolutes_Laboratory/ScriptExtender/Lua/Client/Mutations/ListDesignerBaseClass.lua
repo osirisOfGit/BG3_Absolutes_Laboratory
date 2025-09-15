@@ -101,6 +101,18 @@ function ListDesignerBaseClass:new(name, configKey, subListTypesToExclude, progr
 	return instance
 end
 
+function ListDesignerBaseClass:clearSelectedEntries()
+	for i in ipairs(self.selectedEntries.entries) do
+		if self.selectedEntries.entries[i].subListName then
+			self.selectedEntries.handles[i]:SetColor("Button", self.subListIndex[self.selectedEntries.entries[i].subListName].colour)
+		end
+		self.selectedEntries.handles[i]:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+
+		self.selectedEntries.entries[i] = nil
+		self.selectedEntries.handles[i] = nil
+	end
+end
+
 ---@param activeListId Guid?
 function ListDesignerBaseClass:launch(activeListId)
 	if not self.mainWindow then
@@ -397,6 +409,8 @@ function ListDesignerBaseClass:buildDesigner()
 		self:buildProgressionIndex()
 	end
 
+	self:clearSelectedEntries()
+
 	self.entryCacheForProgressions = {}
 	Helpers:KillChildren(self.designerSection)
 	self.designerSection:AddNewLine()
@@ -438,6 +452,7 @@ function ListDesignerBaseClass:buildDesigner()
 					leveledSubList.manuallySelectedEntries.delete = true
 				end
 			end
+
 			self:buildDesigner()
 		end
 	end)
@@ -764,7 +779,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 									if lastEntryParent.Handle == buttonParent.Handle then
 										local startSelecting = false
 										local deselect = false
-										---@param func fun(child: ExtuiStyledRenderable)
+										---@param func fun(child: ExtuiStyledRenderable): boolean?
 										local function iterateFunc(func)
 											for _, child in ipairs(buttonParent.Children) do
 												---@cast child ExtuiTreeParent
@@ -775,41 +790,71 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 													then
 														for _, actualChild in ipairs(child.Children) do
 															if type(actualChild.UserData) == "table" then
-																func(actualChild)
+																if func(actualChild) then
+																	return
+																end
 															end
 														end
 													end
 												else
 													if type(child.UserData) == "table" then
-														func(child)
+														if func(child) then
+															return
+														end
 													end
 												end
 											end
 										end
 										iterateFunc(function(child)
-											if startSelecting then
+											if startSelecting or deselect then
 												local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-													return value.entryName == entryName
+													return value.entryName == child.UserData.entryName
 												end)
 												if not index then
 													table.insert(self.selectedEntries.entries, child.UserData)
 													table.insert(self.selectedEntries.handles, child)
 													child:SetColor("Button", { 0, 1, 0, .8 })
 													child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+													if child.Handle == entryImageButton.Handle then
+														return true
+													end
 												elseif deselect then
+													if self.selectedEntries.entries[index].subListName then
+														child:SetColor("Button", self.subListIndex[self.selectedEntries.entries[index].subListName].colour)
+													end
+													child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+
 													self.selectedEntries.entries[index] = nil
 													self.selectedEntries.handles[index] = nil
-													child:SetColor("Button", { 0, 1, 0, .8 })
-													child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+													TableUtils:ReindexNumericTable(self.selectedEntries.entries)
+													TableUtils:ReindexNumericTable(self.selectedEntries.handles)
+
+													if child.Handle == lastEntry.Handle then
+														return true
+													end
 												end
 											elseif child.Handle == lastEntry.Handle then
-												if deselect then
-													return
-												else
-													startSelecting = true
-												end
+												startSelecting = true
 											elseif child.Handle == entryImageButton.Handle then
-												deselect = true
+												if not startSelecting then
+													local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+														return value.entryName == child.UserData.entryName
+													end)
+													if index then
+														if self.selectedEntries.entries[index].subListName then
+															child:SetColor("Button", self.subListIndex[self.selectedEntries.entries[index].subListName].colour)
+														end
+														child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+
+														self.selectedEntries.entries[index] = nil
+														self.selectedEntries.handles[index] = nil
+														TableUtils:ReindexNumericTable(self.selectedEntries.entries)
+														TableUtils:ReindexNumericTable(self.selectedEntries.handles)
+													end
+													deselect = true
+												else
+													return true
+												end
 											end
 										end)
 									end
@@ -925,6 +970,8 @@ end
 
 function ListDesignerBaseClass:buildStatBrowser(statType)
 	Helpers:KillChildren(self.browserTabs[statType])
+
+	self:clearSelectedEntries()
 
 	StatBrowser:Render(statType,
 		self.browserTabs[statType],
@@ -1051,20 +1098,50 @@ function ListDesignerBaseClass:buildStatBrowser(statType)
 
 						if lastEntry.ParentElement.Handle == buttonParent.Handle then
 							local startSelecting = false
+							local deselect = false
 							for _, child in ipairs(buttonParent.Children) do
 								if child.UserData then
-									if startSelecting then
+									if startSelecting or deselect then
 										local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-											return value.entryName == statName
+											return value.entryName == child.UserData.entryName
 										end)
 										if not index then
 											table.insert(self.selectedEntries.entries, child.UserData)
 											table.insert(self.selectedEntries.handles, child)
 											child:SetColor("Button", { 0, 1, 0, .8 })
 											child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+											if child.Handle == statImage.Handle then
+												break
+											end
+										elseif deselect then
+											child:SetColor("Button", { 1, 1, 1, 0 })
+											child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+
+											self.selectedEntries.entries[index] = nil
+											self.selectedEntries.handles[index] = nil
+											TableUtils:ReindexNumericTable(self.selectedEntries.entries)
+											TableUtils:ReindexNumericTable(self.selectedEntries.handles)
+
+											if child.Handle == lastEntry.Handle then
+												break
+											end
 										end
 									elseif child.Handle == lastEntry.Handle then
 										startSelecting = true
+									elseif child.Handle == statImage.Handle then
+										child:SetColor("Button", { 1, 1, 1, 0 })
+										child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+
+										local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+											return value.entryName == child.UserData.entryName
+										end)
+										if index then
+											self.selectedEntries.entries[index] = nil
+											self.selectedEntries.handles[index] = nil
+											TableUtils:ReindexNumericTable(self.selectedEntries.entries)
+											TableUtils:ReindexNumericTable(self.selectedEntries.handles)
+										end
+										deselect = true
 									end
 								end
 							end
@@ -1093,6 +1170,16 @@ end
 
 function ListDesignerBaseClass:buildProgressionBrowser()
 	if self.browserTabs["Progressions"] then
+		self:clearSelectedEntries()
+		for i in ipairs(self.selectedEntries.entries) do
+			if self.selectedEntries.entries[i].subListName then
+				self.selectedEntries.handles[i]:SetColor("Button", self.subListIndex[self.selectedEntries.entries[i].subListName].colour)
+			end
+			self.selectedEntries.handles[i]:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+
+			self.selectedEntries.entries[i] = nil
+			self.selectedEntries.handles[i] = nil
+		end
 		Helpers:KillChildren(self.browserTabs["Progressions"])
 
 		local searchBox = self.browserTabs["Progressions"]:AddInputText("")
@@ -1307,25 +1394,92 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 													elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
 														if #self.selectedEntries.entries >= 1 and self.selectedEntries.context == "Browser" then
 															local lastEntry = self.selectedEntries.handles[#self.selectedEntries.handles]
-															if lastEntry.ParentElement.Handle == buttonParent.Handle then
+															local lastEntryParent = lastEntry.ParentElement
+															---@type ExtuiTreeParent
+															local buttonParent = buttonParent
+															if groupFunc then
+																lastEntryParent = lastEntryParent.ParentElement
+																buttonParent = buttonParent.ParentElement
+															end
+															if lastEntryParent.Handle == buttonParent.Handle then
 																local startSelecting = false
-																for _, child in ipairs(buttonParent.Children) do
-																	if child.UserData then
-																		if startSelecting then
-																			local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-																				return value.entryName == entryName
-																			end)
-																			if not index then
-																				table.insert(self.selectedEntries.entries, child.UserData)
-																				table.insert(self.selectedEntries.handles, child)
-																				child:SetColor("Button", { 0, 1, 0, .8 })
-																				child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+																local deselect = false
+
+																---@param func fun(child: ExtuiStyledRenderable): boolean?
+																local function iterateFunc(func)
+																	for _, child in ipairs(buttonParent.Children) do
+																		---@cast child ExtuiTreeParent
+																		if groupFunc then
+																			if pcall(function()
+																					return child.Children
+																				end)
+																			then
+																				for _, actualChild in ipairs(child.Children) do
+																					if type(actualChild.UserData) == "table" then
+																						if func(actualChild) then
+																							return
+																						end
+																					end
+																				end
 																			end
-																		elseif child.Handle == lastEntry.Handle then
-																			startSelecting = true
+																		else
+																			if type(child.UserData) == "table" then
+																				if func(child) then
+																					return
+																				end
+																			end
 																		end
 																	end
 																end
+
+																iterateFunc(function(child)
+																	if startSelecting or deselect then
+																		local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+																			return value.entryName == child.UserData.entryName
+																		end)
+																		if not index then
+																			table.insert(self.selectedEntries.entries, child.UserData)
+																			table.insert(self.selectedEntries.handles, child)
+																			child:SetColor("Button", { 0, 1, 0, .8 })
+																			child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+																			if child.Handle == entryImageButton.Handle then
+																				return true
+																			end
+																		elseif deselect then
+																			child:SetColor("Button", { 1, 1, 1, 0 })
+																			child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+
+																			self.selectedEntries.entries[index] = nil
+																			self.selectedEntries.handles[index] = nil
+																			TableUtils:ReindexNumericTable(self.selectedEntries.entries)
+																			TableUtils:ReindexNumericTable(self.selectedEntries.handles)
+
+																			if child.Handle == lastEntry.Handle then
+																				return true
+																			end
+																		end
+																	elseif child.Handle == lastEntry.Handle then
+																		startSelecting = true
+																	elseif child.Handle == entryImageButton.Handle then
+																		if not startSelecting then
+																			deselect = true
+																			local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+																				return value.entryName == child.UserData.entryName
+																			end)
+																			child:SetColor("Button", { 1, 1, 1, 0 })
+																			child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+
+																			if index then
+																				self.selectedEntries.entries[index] = nil
+																				self.selectedEntries.handles[index] = nil
+																				TableUtils:ReindexNumericTable(self.selectedEntries.entries)
+																				TableUtils:ReindexNumericTable(self.selectedEntries.handles)
+																			end
+																		else
+																			return true
+																		end
+																	end
+																end)
 															end
 														else
 															local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
