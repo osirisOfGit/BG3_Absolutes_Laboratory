@@ -1085,13 +1085,28 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 		else
 			self.rulesOrderGroup:AddSeparatorText("Main Mutations"):SetStyle("SeparatorTextAlign", 0.5)
 		end
+		local hideButton = Styler:ImageButton(self.rulesOrderGroup:AddImageButton("hideLevel" .. (prepPhase and "prep" or "not"), "Action_Hide", Styler:ScaleFactor({ 28, 28 })))
+		hideButton.Visible = true
+		local showButton = Styler:ImageButton(self.rulesOrderGroup:AddImageButton("showLevel" .. (prepPhase and "prep" or "not"), "ico_concentration", Styler:ScaleFactor({ 28, 28 })))
+		showButton.Visible = false
+
+		local group = self.rulesOrderGroup:AddGroup("Mutations" .. (prepPhase and "prep" or "not prep"))
+
+		hideButton.OnClick = function()
+			group.Visible = not group.Visible
+			hideButton.Visible = not hideButton.Visible
+			showButton.Visible = not showButton.Visible
+		end
+
+		showButton.OnClick = hideButton.OnClick
+
 		if prepPhase then
 			activeProfile.prepPhaseMutations = activeProfile.prepPhaseMutations or {}
 		end
 
 		local rulesToUse = prepPhase and activeProfile.prepPhaseMutations or activeProfile.mutationRules
 		for counter = 1, numOfMutations do
-			local row = self.rulesOrderGroup:AddGroup("MutationGroup" .. counter .. (prepPhase and "prep" or "main"))
+			local row = group:AddGroup("MutationGroup" .. counter .. (prepPhase and "prep" or "main"))
 
 			row.UserData = counter
 			if not activeProfile.modId then
