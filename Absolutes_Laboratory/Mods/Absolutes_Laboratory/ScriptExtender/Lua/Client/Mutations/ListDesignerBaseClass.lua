@@ -1032,7 +1032,10 @@ function ListDesignerBaseClass:buildStatBrowser(statType)
 						self.activeList.levels[level] = self.activeList.levels[level] or {}
 						local subLevelList = self.activeList.levels[level]
 
-						if not self:CheckIfEntryIsInListLevel(subLevelList, statName, level) then
+						if not self:CheckIfEntryIsInListLevel(subLevelList, statName, level)
+							and (stat.ModifierList ~= "SpellData"
+								or (Ext.Stats.GetCachedSpell(statName).AiFlags & Ext.Enums.AIFlags.CanNotUse) ~= Ext.Enums.AIFlags.CanNotUse)
+						then
 							subLevelList.manuallySelectedEntries = subLevelList.manuallySelectedEntries or
 								TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
 
@@ -1278,7 +1281,12 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 
 										for node, entryList in pairs(lists[self.name]) do
 											for _, entry in pairs(entryList) do
-												if not self:CheckIfEntryIsInListLevel(subLevelList, entry, level) then
+												---@type SpellData|PassiveData|StatusData
+												local stat = Ext.Stats.Get(entry)
+												if not self:CheckIfEntryIsInListLevel(subLevelList, entry, level) and
+													(stat.ModifierList ~= "SpellData"
+														or (Ext.Stats.GetCachedSpell(entry).AiFlags & Ext.Enums.AIFlags.CanNotUse) ~= Ext.Enums.AIFlags.CanNotUse)
+												then
 													table.insert(leveledSubList.randomized, entry)
 												end
 											end
