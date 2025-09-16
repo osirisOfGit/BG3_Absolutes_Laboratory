@@ -656,9 +656,15 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 					for _, entryName in pairs(entryList) do
 						if not self:CheckIfEntryIsInListLevel(self.activeList.levels[level], entryName, level, false) then
 							if not TableUtils:IndexOf(self.entryCacheForProgressions[level], entryName) then
-								table.insert(subList, entryName)
 								self.entryCacheForProgressions[level] = self.entryCacheForProgressions[level] or {}
 								table.insert(self.entryCacheForProgressions[level], entryName)
+								if not progressionTableId then
+									table.insert(subList, entryName)
+								elseif (self.name == SpellListDesigner.name and (Ext.Stats.GetCachedSpell(entryName).AiFlags & Ext.Enums.AIFlags.CanNotUse) == Ext.Enums.AIFlags.CanNotUse) then
+									table.insert(subLists.blackListed)
+								else
+									table.insert(subList, entryName)
+								end
 							end
 						end
 					end
@@ -695,7 +701,6 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 			count = count + 1
 			---@type ExtuiTreeParent
 			local parent = useIcons and row.Children[1] or row:AddCell()
-
 
 			---@type SpellData|PassiveData|StatusData
 			local entryData = Ext.Stats.Get(entryName)
@@ -754,158 +759,212 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 					altTooltip = altTooltip .. "\n\t  Linked from Progression " .. self.progressionTranslations[progressionTableId]
 				end
 
+				local aiCantUse = false
 				if self.name == SpellListDesigner.name and (Ext.Stats.GetCachedSpell(entryName).AiFlags & Ext.Enums.AIFlags.CanNotUse) == Ext.Enums.AIFlags.CanNotUse then
 					entryImageButton.Tint = { 1, 0, 0, 0.4 }
 					altTooltip = altTooltip .. "\n !!!! SPELL CAN'T BE USED BY AI !!!!"
+					aiCantUse = true
 				end
 
 				local showedTooltip = Styler:HyperlinkRenderable(entryImageButton, entryName, "Alt", true, altTooltip, function(parent)
 					ResourceManager:RenderDisplayWindow(entryData, parent)
 				end)
-				entryImageButton.OnClick = function()
-					if not showedTooltip() then
-						local function onCtrl()
-							if self.selectedEntries.context ~= "Main"
-								or (self.selectedEntries.linkedSpells and not progressionTableId)
-								or (not self.selectedEntries.linkedSpells and progressionTableId)
-							then
-								self.selectedEntries.context = "Main"
-								self.selectedEntries.entries = {}
-								for _, handle in pairs(self.selectedEntries.handles) do
-									if handle.UserData.subListName then
-										handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
-									else
-										handle:SetColor("Button", { 1, 1, 1, 0 })
+				if not progressionTableId or not aiCantUse then
+					entryImageButton.OnClick = function()
+						if not showedTooltip() then
+							local function onCtrl()
+								if self.selectedEntries.context ~= "Main"
+									or (self.selectedEntries.linkedSpells and not progressionTableId)
+									or (not self.selectedEntries.linkedSpells and progressionTableId)
+								then
+									self.selectedEntries.context = "Main"
+									self.selectedEntries.entries = {}
+									for _, handle in pairs(self.selectedEntries.handles) do
+										if handle.UserData.subListName then
+											handle:SetColor("Button", self.subListIndex[handle.UserData.subListName].colour)
+										else
+											handle:SetColor("Button", { 1, 1, 1, 0 })
+										end
 									end
+									self.selectedEntries.handles = {}
 								end
-								self.selectedEntries.handles = {}
+
+								if progressionTableId then
+									self.selectedEntries.linkedSpells = true
+								else
+									self.selectedEntries.linkedSpells = false
+								end
+
+								local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+									return value.entryName == entryName
+								end)
+								if not index then
+									table.insert(self.selectedEntries.entries, entryImageButton.UserData)
+									table.insert(self.selectedEntries.handles, entryImageButton)
+									entryImageButton:SetColor("Button", { 0, 1, 0, .8 })
+									entryImageButton:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+								else
+									table.remove(self.selectedEntries.entries, index)
+									table.remove(self.selectedEntries.handles, index)
+
+									entryImageButton:SetColor("Button", { 1, 1, 1, 0 })
+									entryImageButton:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+								end
 							end
 
-							if progressionTableId then
-								self.selectedEntries.linkedSpells = true
-							else
-								self.selectedEntries.linkedSpells = false
-							end
-
-							local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-								return value.entryName == entryName
-							end)
-							if not index then
-								table.insert(self.selectedEntries.entries, entryImageButton.UserData)
-								table.insert(self.selectedEntries.handles, entryImageButton)
-								entryImageButton:SetColor("Button", { 0, 1, 0, .8 })
-								entryImageButton:SetColor("ButtonHovered", { 0, 1, 0, .8 })
-							else
-								table.remove(self.selectedEntries.entries, index)
-								table.remove(self.selectedEntries.handles, index)
-
-								entryImageButton:SetColor("Button", { 1, 1, 1, 0 })
-								entryImageButton:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
-							end
-						end
-
-						if not self.activeList.modId then
-							if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
-								onCtrl()
-							elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
-								if #self.selectedEntries.entries >= 1 and self.selectedEntries.context == "Main" then
-									local lastEntry = self.selectedEntries.handles[#self.selectedEntries.handles]
-									local lastEntryParent = lastEntry.ParentElement
-									---@type ExtuiTreeParent
-									local buttonParent = entryImageButton.ParentElement
-									if not useIcons or self.settings.showSeperatorsInMain then
-										buttonParent = buttonParent.ParentElement
-										lastEntryParent = lastEntryParent.ParentElement
-									end
-									if lastEntryParent.Handle == buttonParent.Handle then
-										local startSelecting = false
-										local deselect = false
-										---@param func fun(child: ExtuiStyledRenderable): boolean?
-										local function iterateFunc(func)
-											for _, child in ipairs(buttonParent.Children) do
-												---@cast child ExtuiTreeParent
-												if not useIcons or self.settings.showSeperatorsInMain then
-													if pcall(function()
-															return child.Children
-														end)
-													then
-														for _, actualChild in ipairs(child.Children) do
-															if type(actualChild.UserData) == "table" then
-																if func(actualChild) then
-																	return
+							if not self.activeList.modId then
+								if Ext.ClientInput.GetInputManager().PressedModifiers == "Ctrl" then
+									onCtrl()
+								elseif Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
+									if #self.selectedEntries.entries >= 1 and self.selectedEntries.context == "Main" then
+										local lastEntry = self.selectedEntries.handles[#self.selectedEntries.handles]
+										local lastEntryParent = lastEntry.ParentElement
+										---@type ExtuiTreeParent
+										local buttonParent = entryImageButton.ParentElement
+										if not useIcons or self.settings.showSeperatorsInMain then
+											buttonParent = buttonParent.ParentElement
+											lastEntryParent = lastEntryParent.ParentElement
+										end
+										if lastEntryParent.Handle == buttonParent.Handle then
+											local startSelecting = false
+											local deselect = false
+											---@param func fun(child: ExtuiStyledRenderable): boolean?
+											local function iterateFunc(func)
+												for _, child in ipairs(buttonParent.Children) do
+													---@cast child ExtuiTreeParent
+													if not useIcons or self.settings.showSeperatorsInMain then
+														if pcall(function()
+																return child.Children
+															end)
+														then
+															for _, actualChild in ipairs(child.Children) do
+																if type(actualChild.UserData) == "table" then
+																	if func(actualChild) then
+																		return
+																	end
 																end
 															end
 														end
-													end
-												else
-													if type(child.UserData) == "table" then
-														if func(child) then
-															return
+													else
+														if type(child.UserData) == "table" then
+															if func(child) then
+																return
+															end
 														end
 													end
 												end
 											end
+											iterateFunc(function(child)
+												if self.name ~= SpellListDesigner.name or (Ext.Stats.GetCachedSpell(child.UserData.entryName).AiFlags & Ext.Enums.AIFlags.CanNotUse) ~= Ext.Enums.AIFlags.CanNotUse then
+													if startSelecting or deselect then
+														local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+															return value.entryName == child.UserData.entryName
+														end)
+														if not index then
+															table.insert(self.selectedEntries.entries, child.UserData)
+															table.insert(self.selectedEntries.handles, child)
+															child:SetColor("Button", { 0, 1, 0, .8 })
+															child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+														elseif deselect then
+															if self.selectedEntries.entries[index].subListName then
+																child:SetColor("Button", self.subListIndex[self.selectedEntries.entries[index].subListName].colour)
+															end
+															child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+
+															self.selectedEntries.entries[index] = nil
+															self.selectedEntries.handles[index] = nil
+															TableUtils:ReindexNumericTable(self.selectedEntries.entries)
+															TableUtils:ReindexNumericTable(self.selectedEntries.handles)
+														end
+														if child.Handle == lastEntry.Handle or child.Handle == entryImageButton.Handle then
+															return true
+														end
+													elseif child.Handle == lastEntry.Handle then
+														startSelecting = true
+													elseif child.Handle == entryImageButton.Handle then
+														local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+															return value.entryName == child.UserData.entryName
+														end)
+														if index then
+															if self.selectedEntries.entries[index].subListName then
+																child:SetColor("Button", self.subListIndex[self.selectedEntries.entries[index].subListName].colour)
+															end
+															child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+
+															self.selectedEntries.entries[index] = nil
+															self.selectedEntries.handles[index] = nil
+															TableUtils:ReindexNumericTable(self.selectedEntries.entries)
+															TableUtils:ReindexNumericTable(self.selectedEntries.handles)
+															deselect = true
+														else
+															startSelecting = true
+															table.insert(self.selectedEntries.entries, child.UserData)
+															table.insert(self.selectedEntries.handles, child)
+															child:SetColor("Button", { 0, 1, 0, .8 })
+															child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+														end
+													end
+												end
+											end)
 										end
-										iterateFunc(function(child)
-											if startSelecting or deselect then
-												local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-													return value.entryName == child.UserData.entryName
-												end)
-												if not index then
-													table.insert(self.selectedEntries.entries, child.UserData)
-													table.insert(self.selectedEntries.handles, child)
-													child:SetColor("Button", { 0, 1, 0, .8 })
-													child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
-												elseif deselect then
-													if self.selectedEntries.entries[index].subListName then
-														child:SetColor("Button", self.subListIndex[self.selectedEntries.entries[index].subListName].colour)
-													end
-													child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
-
-													self.selectedEntries.entries[index] = nil
-													self.selectedEntries.handles[index] = nil
-													TableUtils:ReindexNumericTable(self.selectedEntries.entries)
-													TableUtils:ReindexNumericTable(self.selectedEntries.handles)
-												end
-												if child.Handle == lastEntry.Handle or child.Handle == entryImageButton.Handle then
-													return true
-												end
-											elseif child.Handle == lastEntry.Handle then
-												startSelecting = true
-											elseif child.Handle == entryImageButton.Handle then
-												local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-													return value.entryName == child.UserData.entryName
-												end)
-												if index then
-													if self.selectedEntries.entries[index].subListName then
-														child:SetColor("Button", self.subListIndex[self.selectedEntries.entries[index].subListName].colour)
-													end
-													child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
-
-													self.selectedEntries.entries[index] = nil
-													self.selectedEntries.handles[index] = nil
-													TableUtils:ReindexNumericTable(self.selectedEntries.entries)
-													TableUtils:ReindexNumericTable(self.selectedEntries.handles)
-													deselect = true
-												else
-													startSelecting = true
-													table.insert(self.selectedEntries.entries, child.UserData)
-													table.insert(self.selectedEntries.handles, child)
-													child:SetColor("Button", { 0, 1, 0, .8 })
-													child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
-												end
-											end
-										end)
+									else
+										onCtrl()
 									end
-								else
-									onCtrl()
-								end
-							else
-								Helpers:KillChildren(self.popup)
-								self.popup:Open()
-								for subListCategory, index in TableUtils:OrderedPairs(self.subListIndex) do
-									if subListCategory ~= subListName and (subListCategory ~= "blackListed" or progressionTableId) and (subListCategory ~= "randomized" or not progressionTableId) then
-										self.popup:AddSelectable("Set As " .. index.name .. "##" .. level).OnClick = function()
+								elseif not progressionTableId or not aiCantUse then
+									Helpers:KillChildren(self.popup)
+									self.popup:Open()
+									for subListCategory, index in TableUtils:OrderedPairs(self.subListIndex) do
+										if subListCategory ~= subListName and (subListCategory ~= "blackListed" or progressionTableId) and (subListCategory ~= "randomized" or not progressionTableId) then
+											self.popup:AddSelectable("Set As " .. index.name .. "##" .. level).OnClick = function()
+												---@type EntryHandle[]
+												local handles = {}
+												if self.selectedEntries.context == "Main" and #self.selectedEntries.entries > 0 then
+													handles = self.selectedEntries.entries
+												end
+
+												if not TableUtils:IndexOf(handles, function(value)
+														return value.entryName == entryName
+													end)
+												then
+													table.insert(handles, entryImageButton.UserData)
+												end
+
+												for _, handle in pairs(handles) do
+													---@type CustomSubList
+													local subList =
+														self.activeList.levels[handle.level][handle.progressionTableId and "linkedProgressions" or "manuallySelectedEntries"]
+
+													if handle.progressionTableId then
+														subList = subList[handle.progressionTableId]
+													end
+
+													if subListCategory ~= "randomized" or not progressionTableId then
+														subList[subListCategory] = subList[subListCategory] or {}
+														table.insert(subList[subListCategory], handle.entryName)
+													end
+													if handle.subListName then
+														local index = TableUtils:IndexOf(subList[handle.subListName], handle.entryName)
+														if index then
+															subList[handle.subListName][index] = nil
+															if not subList[handle.subListName]() then
+																subList[handle.subListName].delete = true
+															end
+
+															if subList[handle.subListName] then
+																TableUtils:ReindexNumericTable(subList[handle.subListName])
+															end
+														end
+													end
+												end
+												self.selectedEntries.handles = {}
+												self.selectedEntries.entries = {}
+												self:buildDesigner()
+											end
+										end
+									end
+
+									if not progressionTableId then
+										self.popup:AddSelectable("Remove").OnClick = function()
 											---@type EntryHandle[]
 											local handles = {}
 											if self.selectedEntries.context == "Main" and #self.selectedEntries.entries > 0 then
@@ -921,28 +980,13 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 
 											for _, handle in pairs(handles) do
 												---@type CustomSubList
-												local subList =
-													self.activeList.levels[handle.level][handle.progressionTableId and "linkedProgressions" or "manuallySelectedEntries"]
+												local subList = self.activeList.levels[handle.level].manuallySelectedEntries
 
-												if handle.progressionTableId then
-													subList = subList[handle.progressionTableId]
-												end
-
-												if subListCategory ~= "randomized" or not progressionTableId then
-													subList[subListCategory] = subList[subListCategory] or {}
-													table.insert(subList[subListCategory], handle.entryName)
-												end
-												if handle.subListName then
-													local index = TableUtils:IndexOf(subList[handle.subListName], handle.entryName)
-													if index then
-														subList[handle.subListName][index] = nil
-														if not subList[handle.subListName]() then
-															subList[handle.subListName].delete = true
-														end
-
-														if subList[handle.subListName] then
-															TableUtils:ReindexNumericTable(subList[handle.subListName])
-														end
+												local index = TableUtils:IndexOf(subList[handle.subListName], handle.entryName)
+												if index then
+													subList[handle.subListName][index] = nil
+													if not subList[handle.subListName]() then
+														subList[handle.subListName].delete = true
 													end
 												end
 											end
@@ -950,39 +994,6 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 											self.selectedEntries.entries = {}
 											self:buildDesigner()
 										end
-									end
-								end
-
-								if not progressionTableId then
-									self.popup:AddSelectable("Remove").OnClick = function()
-										---@type EntryHandle[]
-										local handles = {}
-										if self.selectedEntries.context == "Main" and #self.selectedEntries.entries > 0 then
-											handles = self.selectedEntries.entries
-										end
-
-										if not TableUtils:IndexOf(handles, function(value)
-												return value.entryName == entryName
-											end)
-										then
-											table.insert(handles, entryImageButton.UserData)
-										end
-
-										for _, handle in pairs(handles) do
-											---@type CustomSubList
-											local subList = self.activeList.levels[handle.level].manuallySelectedEntries
-
-											local index = TableUtils:IndexOf(subList[handle.subListName], handle.entryName)
-											if index then
-												subList[handle.subListName][index] = nil
-												if not subList[handle.subListName]() then
-													subList[handle.subListName].delete = true
-												end
-											end
-										end
-										self.selectedEntries.handles = {}
-										self.selectedEntries.entries = {}
-										self:buildDesigner()
 									end
 								end
 							end
@@ -1147,48 +1158,50 @@ function ListDesignerBaseClass:buildStatBrowser(statType)
 							local deselect = false
 							for _, child in ipairs(buttonParent.Children) do
 								if child.UserData then
-									if startSelecting or deselect then
-										local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-											return value.entryName == child.UserData.entryName
-										end)
-										if not index then
-											table.insert(self.selectedEntries.entries, child.UserData)
-											table.insert(self.selectedEntries.handles, child)
-											child:SetColor("Button", { 0, 1, 0, .8 })
-											child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
-										elseif deselect then
-											child:SetColor("Button", { 1, 1, 1, 0 })
-											child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+									if self.name ~= SpellListDesigner.name or (Ext.Stats.GetCachedSpell(child.UserData.entryName).AiFlags & Ext.Enums.AIFlags.CanNotUse) ~= Ext.Enums.AIFlags.CanNotUse then
+										if startSelecting or deselect then
+											local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+												return value.entryName == child.UserData.entryName
+											end)
+											if not index then
+												table.insert(self.selectedEntries.entries, child.UserData)
+												table.insert(self.selectedEntries.handles, child)
+												child:SetColor("Button", { 0, 1, 0, .8 })
+												child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+											elseif deselect then
+												child:SetColor("Button", { 1, 1, 1, 0 })
+												child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
 
-											self.selectedEntries.entries[index] = nil
-											self.selectedEntries.handles[index] = nil
-											TableUtils:ReindexNumericTable(self.selectedEntries.entries)
-											TableUtils:ReindexNumericTable(self.selectedEntries.handles)
-										end
-										if child.Handle == lastEntry.Handle or child.Handle == statImage.Handle then
-											break
-										end
-									elseif child.Handle == lastEntry.Handle then
-										startSelecting = true
-									elseif child.Handle == statImage.Handle then
-										local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-											return value.entryName == child.UserData.entryName
-										end)
-										if index then
-											child:SetColor("Button", { 1, 1, 1, 0 })
-											child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
-
-											self.selectedEntries.entries[index] = nil
-											self.selectedEntries.handles[index] = nil
-											TableUtils:ReindexNumericTable(self.selectedEntries.entries)
-											TableUtils:ReindexNumericTable(self.selectedEntries.handles)
-											deselect = true
-										else
+												self.selectedEntries.entries[index] = nil
+												self.selectedEntries.handles[index] = nil
+												TableUtils:ReindexNumericTable(self.selectedEntries.entries)
+												TableUtils:ReindexNumericTable(self.selectedEntries.handles)
+											end
+											if child.Handle == lastEntry.Handle or child.Handle == statImage.Handle then
+												break
+											end
+										elseif child.Handle == lastEntry.Handle then
 											startSelecting = true
-											table.insert(self.selectedEntries.entries, child.UserData)
-											table.insert(self.selectedEntries.handles, child)
-											child:SetColor("Button", { 0, 1, 0, .8 })
-											child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+										elseif child.Handle == statImage.Handle then
+											local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+												return value.entryName == child.UserData.entryName
+											end)
+											if index then
+												child:SetColor("Button", { 1, 1, 1, 0 })
+												child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+
+												self.selectedEntries.entries[index] = nil
+												self.selectedEntries.handles[index] = nil
+												TableUtils:ReindexNumericTable(self.selectedEntries.entries)
+												TableUtils:ReindexNumericTable(self.selectedEntries.handles)
+												deselect = true
+											else
+												startSelecting = true
+												table.insert(self.selectedEntries.entries, child.UserData)
+												table.insert(self.selectedEntries.handles, child)
+												child:SetColor("Button", { 0, 1, 0, .8 })
+												child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+											end
 										end
 									end
 								end
@@ -1490,48 +1503,50 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 																end
 
 																iterateFunc(function(child)
-																	if startSelecting or deselect then
-																		local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-																			return value.entryName == child.UserData.entryName
-																		end)
-																		if not index then
-																			table.insert(self.selectedEntries.entries, child.UserData)
-																			table.insert(self.selectedEntries.handles, child)
-																			child:SetColor("Button", { 0, 1, 0, .8 })
-																			child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
-																		elseif deselect then
-																			child:SetColor("Button", { 1, 1, 1, 0 })
-																			child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+																	if self.name ~= SpellListDesigner.name or (Ext.Stats.GetCachedSpell(child.UserData.entryName).AiFlags & Ext.Enums.AIFlags.CanNotUse) ~= Ext.Enums.AIFlags.CanNotUse then
+																		if startSelecting or deselect then
+																			local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+																				return value.entryName == child.UserData.entryName
+																			end)
+																			if not index then
+																				table.insert(self.selectedEntries.entries, child.UserData)
+																				table.insert(self.selectedEntries.handles, child)
+																				child:SetColor("Button", { 0, 1, 0, .8 })
+																				child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+																			elseif deselect then
+																				child:SetColor("Button", { 1, 1, 1, 0 })
+																				child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
 
-																			self.selectedEntries.entries[index] = nil
-																			self.selectedEntries.handles[index] = nil
-																			TableUtils:ReindexNumericTable(self.selectedEntries.entries)
-																			TableUtils:ReindexNumericTable(self.selectedEntries.handles)
-																		end
-																		if child.Handle == lastEntry.Handle or child.Handle == entryImageButton.Handle then
-																			return true
-																		end
-																	elseif child.Handle == lastEntry.Handle then
-																		startSelecting = true
-																	elseif child.Handle == entryImageButton.Handle then
-																		local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
-																			return value.entryName == child.UserData.entryName
-																		end)
-																		if index then
-																			child:SetColor("Button", { 1, 1, 1, 0 })
-																			child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
-
-																			self.selectedEntries.entries[index] = nil
-																			self.selectedEntries.handles[index] = nil
-																			TableUtils:ReindexNumericTable(self.selectedEntries.entries)
-																			TableUtils:ReindexNumericTable(self.selectedEntries.handles)
-																			deselect = true
-																		else
+																				self.selectedEntries.entries[index] = nil
+																				self.selectedEntries.handles[index] = nil
+																				TableUtils:ReindexNumericTable(self.selectedEntries.entries)
+																				TableUtils:ReindexNumericTable(self.selectedEntries.handles)
+																			end
+																			if child.Handle == lastEntry.Handle or child.Handle == entryImageButton.Handle then
+																				return true
+																			end
+																		elseif child.Handle == lastEntry.Handle then
 																			startSelecting = true
-																			table.insert(self.selectedEntries.entries, child.UserData)
-																			table.insert(self.selectedEntries.handles, child)
-																			child:SetColor("Button", { 0, 1, 0, .8 })
-																			child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+																		elseif child.Handle == entryImageButton.Handle then
+																			local index = TableUtils:IndexOf(self.selectedEntries.entries, function(value)
+																				return value.entryName == child.UserData.entryName
+																			end)
+																			if index then
+																				child:SetColor("Button", { 1, 1, 1, 0 })
+																				child:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+
+																				self.selectedEntries.entries[index] = nil
+																				self.selectedEntries.handles[index] = nil
+																				TableUtils:ReindexNumericTable(self.selectedEntries.entries)
+																				TableUtils:ReindexNumericTable(self.selectedEntries.handles)
+																				deselect = true
+																			else
+																				startSelecting = true
+																				table.insert(self.selectedEntries.entries, child.UserData)
+																				table.insert(self.selectedEntries.handles, child)
+																				child:SetColor("Button", { 0, 1, 0, .8 })
+																				child:SetColor("ButtonHovered", { 0, 1, 0, .8 })
+																			end
 																		end
 																	end
 																end)
