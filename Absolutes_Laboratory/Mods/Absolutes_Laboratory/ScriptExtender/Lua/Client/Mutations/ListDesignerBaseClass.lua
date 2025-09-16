@@ -104,10 +104,12 @@ end
 
 function ListDesignerBaseClass:clearSelectedEntries()
 	for i in ipairs(self.selectedEntries.entries) do
-		if self.selectedEntries.entries[i].subListName then
-			self.selectedEntries.handles[i]:SetColor("Button", self.subListIndex[self.selectedEntries.entries[i].subListName].colour)
-		end
-		self.selectedEntries.handles[i]:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+		pcall(function(...)
+			if self.selectedEntries.entries[i].subListName then
+				self.selectedEntries.handles[i]:SetColor("Button", self.subListIndex[self.selectedEntries.entries[i].subListName].colour)
+			end
+			self.selectedEntries.handles[i]:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
+		end)
 
 		self.selectedEntries.entries[i] = nil
 		self.selectedEntries.handles[i] = nil
