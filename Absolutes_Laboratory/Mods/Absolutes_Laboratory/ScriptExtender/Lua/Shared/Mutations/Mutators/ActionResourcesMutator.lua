@@ -137,7 +137,7 @@ i.e if Base is 5 and this is 2, the next value given will be 3 - if this is 0.3,
 		Helpers:KillChildren(popup)
 		local popWin = popup:AddChildWindow("")
 
-		-- Some weird stuff with childwindows as the first child of popups
+		-- Some weird stuff with childwindows as the first child of popups, starts as 1px, iunno
 		Ext.OnNextTick(function(e)
 			popup:Open()
 		end)

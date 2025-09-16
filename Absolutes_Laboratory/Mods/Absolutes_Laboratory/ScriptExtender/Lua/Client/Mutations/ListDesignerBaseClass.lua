@@ -654,7 +654,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 				and progressionEntry[level][self.name] then
 				for nodeName, entryList in pairs(progressionEntry[level][self.name]) do
 					for _, entryName in pairs(entryList) do
-						if not self:CheckIfEntryIsInListLevel(self.activeList.levels[level], entryName, level, true) then
+						if not self:CheckIfEntryIsInListLevel(self.activeList.levels[level], entryName, level, false) then
 							if not TableUtils:IndexOf(self.entryCacheForProgressions[level], entryName) then
 								table.insert(subList, entryName)
 								self.entryCacheForProgressions[level] = self.entryCacheForProgressions[level] or {}
@@ -904,7 +904,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 								Helpers:KillChildren(self.popup)
 								self.popup:Open()
 								for subListCategory, index in TableUtils:OrderedPairs(self.subListIndex) do
-									if subListCategory ~= subListName and (subListCategory ~= "blackListed" or progressionTableId) then
+									if subListCategory ~= subListName and (subListCategory ~= "blackListed" or progressionTableId) and (subListCategory ~= "randomized" or not progressionTableId) then
 										self.popup:AddSelectable("Set As " .. index.name .. "##" .. level).OnClick = function()
 											---@type EntryHandle[]
 											local handles = {}
@@ -938,6 +938,10 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 														subList[handle.subListName][index] = nil
 														if not subList[handle.subListName]() then
 															subList[handle.subListName].delete = true
+														end
+
+														if subList[handle.subListName] then
+															TableUtils:ReindexNumericTable(subList[handle.subListName])
 														end
 													end
 												end
