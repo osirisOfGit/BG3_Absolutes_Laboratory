@@ -405,6 +405,7 @@ function ListDesignerBaseClass:iterateLevels(createListFunc)
 	end
 end
 
+local isHidden = {}
 function ListDesignerBaseClass:buildDesigner()
 	if self.progressionLinkedNodes then
 		self:buildProgressionIndex()
@@ -511,15 +512,35 @@ Using entity level will use the entity's character level, post Character Level M
 
 	self:iterateLevels(function(level)
 		local listGroup = leveledListGroup:AddGroup("list" .. level)
+
 		listGroup:SetColor("Border", { 1, 0, 0, 1 })
-		listGroup:AddText(tostring(self.activeList.useGameLevel and EntityRecorder.Levels[level] or level) .. (level < 10 and "  " or "")).Font = "Big"
+		local listNumberGroup = listGroup:AddGroup("number")
+		listNumberGroup:AddText(tostring(self.activeList.useGameLevel and EntityRecorder.Levels[level] or level) .. (level < 10 and "  " or "")).Font = "Big"
+		local hideButton = Styler:ImageButton(listNumberGroup:AddImageButton("hideLevel" .. level, "Action_Hide", Styler:ScaleFactor({ 28, 28 })))
+		local showButton = Styler:ImageButton(listNumberGroup:AddImageButton("showLevel" .. level, "ico_concentration", Styler:ScaleFactor({ 28, 28 })))
 		listGroup.UserData = level
 		if not self.activeList.modId then
 			listGroup.DragDropType = "EntryReorder"
 		end
 
-		local entryGroup = listGroup:AddGroup("entries")
+		local entryGroup = listGroup:AddGroup("entries" .. level)
 		entryGroup.SameLine = true
+		entryGroup.Visible = isHidden[entryGroup.Label] ~= "false"
+		hideButton.Visible = entryGroup.Visible
+		showButton.Visible = not entryGroup.Visible
+		hideButton.OnClick = function()
+			if entryGroup.Visible then
+				isHidden[entryGroup.Label] = true
+				hideButton.Visible = false
+				showButton.Visible = true
+			else
+				isHidden[entryGroup.Label] = nil
+				hideButton.Visible = true
+				showButton.Visible = false
+			end
+			entryGroup.Visible = not entryGroup.Visible
+		end
+		showButton.OnClick = hideButton.OnClick
 
 		if self.activeList.levels and self.activeList.levels[level] then
 			if self.activeList.levels[level].manuallySelectedEntries then
