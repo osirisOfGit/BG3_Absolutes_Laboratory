@@ -1281,10 +1281,8 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 
 										for node, entryList in pairs(lists[self.name]) do
 											for _, entry in pairs(entryList) do
-												---@type SpellData|PassiveData|StatusData
-												local stat = Ext.Stats.Get(entry)
 												if not self:CheckIfEntryIsInListLevel(subLevelList, entry, level) and
-													(stat.ModifierList ~= "SpellData"
+													(self.name ~= SpellListDesigner.name
 														or (Ext.Stats.GetCachedSpell(entry).AiFlags & Ext.Enums.AIFlags.CanNotUse) ~= Ext.Enums.AIFlags.CanNotUse)
 												then
 													table.insert(leveledSubList.randomized, entry)
