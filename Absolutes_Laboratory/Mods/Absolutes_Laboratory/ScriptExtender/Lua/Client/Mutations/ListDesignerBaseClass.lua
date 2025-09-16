@@ -632,8 +632,12 @@ end
 ---@param progressionTableId string?
 function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, level, progressionTableId)
 	subLists = subLists._real or subLists
-	if progressionTableId and not subLists.randomized then
-		subLists.randomized = {}
+	if progressionTableId then
+		local sep = parentGroup:AddSeparatorText(self.progressionTranslations[progressionTableId])
+		sep:SetStyle("SeparatorTextAlign", 0.05)
+		if not subLists.randomized then
+			subLists.randomized = {}
+		end
 	end
 
 	local useIcons = self.settings.iconOrText == "Icon"
@@ -654,14 +658,15 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 				and progressionEntry[level][self.name] then
 				for nodeName, entryList in pairs(progressionEntry[level][self.name]) do
 					for _, entryName in pairs(entryList) do
-						if not self:CheckIfEntryIsInListLevel(self.activeList.levels[level], entryName, level, false) then
+						if not self:CheckIfEntryIsInListLevel(self.activeList.levels[level], entryName, level, true) then
 							if not TableUtils:IndexOf(self.entryCacheForProgressions[level], entryName) then
 								self.entryCacheForProgressions[level] = self.entryCacheForProgressions[level] or {}
 								table.insert(self.entryCacheForProgressions[level], entryName)
 								if not progressionTableId then
 									table.insert(subList, entryName)
 								elseif (self.name == SpellListDesigner.name and (Ext.Stats.GetCachedSpell(entryName).AiFlags & Ext.Enums.AIFlags.CanNotUse) == Ext.Enums.AIFlags.CanNotUse) then
-									table.insert(subLists.blackListed)
+									subLists.blackListed = subLists.blackListed or {}
+									table.insert(subLists.blackListed, entryName)
 								else
 									table.insert(subList, entryName)
 								end
