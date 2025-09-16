@@ -136,14 +136,11 @@ i.e if Base is 5 and this is 2, the next value given will be 3 - if this is 0.3,
 	local function resourcePopup(config, onSelectFunc)
 		Helpers:KillChildren(popup)
 		local popWin = popup:AddChildWindow("")
-		popup:Open()
 
-		if not popWin.LastSize then
-			popup:SetCollapsed(true)
-			Ext.OnNextTick(function (e)
-				popup:Open()
-			end)
-		end
+		-- Some weird stuff with childwindows as the first child of popups
+		Ext.OnNextTick(function(e)
+			popup:Open()
+		end)
 
 		for _, actionResourceId in TableUtils:OrderedPairs(Ext.StaticData.GetAll("ActionResource"), function(key, value)
 			return Ext.StaticData.Get(value, "ActionResource").Name
