@@ -33,6 +33,9 @@ MutationProfileManager = {
 
 Ext.Require("Client/Mutations/MutationDesigner.lua")
 
+---@type MazzleDocsDocumentation
+local Profiles_Docs = {}
+
 ---@type string?
 local activeProfileId
 
@@ -695,7 +698,12 @@ function MutationProfileManager:BuildProfileManager()
 	local profiles = ConfigurationStructure.config.mutations.profiles
 	Helpers:KillChildren(self.profileManagerParent, self.rulesOrderGroup, self.mutationDesigner)
 
-	Styler:CheapTextAlign("Active Profile", self.profileManagerParent, "Large")
+	Styler:MiddleAlignedColumnLayout(self.profileManagerParent, function (ele)
+		MazzleDocs:addDocButton(ele, Profiles_Docs)
+		local title = ele:AddText("Active Profile")
+		title.Font = "Large"
+		title.SameLine = true
+	end)
 
 	local profileCombo = self.profileManagerParent:AddCombo("")
 	profileCombo.WidthFitPreview = true
@@ -1325,3 +1333,20 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 	buildSlots(numOfPrepMutations, true)
 	buildSlots(numOfMutations)
 end
+
+Profiles_Docs = {
+	{
+		Topic = "Profile Manager",
+		SubTopic = "What Are Profiles?",
+		content = {
+			{
+				type = "Heading",
+				text = "What Are Profiles?"
+			},
+			{
+				type = "SubHeading",
+				text = "In this documentary, we will explore these _fascinating_ creatures and how they'll ruin your life :D"
+			}
+		}
+	}
+}
