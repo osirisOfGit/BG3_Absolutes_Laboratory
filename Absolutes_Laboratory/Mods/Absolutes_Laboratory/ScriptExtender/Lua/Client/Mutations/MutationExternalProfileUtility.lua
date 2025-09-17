@@ -157,24 +157,11 @@ local dependencyBlock = [[
 </node>
 ]]
 
----@param mutationConfig MutationsConfig
----@param extraDependencies ModDependency[]
----@return string?
-function MutationExternalProfileUtility:BuildMetaDependencyBlock(mutationConfig, extraDependencies)
-	local mods = self:ValidateMutations(TableUtils:DeeplyCopyTable(mutationConfig))
-
-	local lab = Ext.Mod.GetMod(ModuleUUID).Info
-	mods[ModuleUUID] = {
-		modId = ModuleUUID,
-		modName = lab.Name,
-		modAuthor = lab.Author,
-		modVersion = lab.ModVersion,
-		packagedItems = nil
-	}
-
-	if next(mods) then
+---@param modList string[]
+local function buildMetaBlock(modList)
+	if next(modList) then
 		local output = ""
-		for modId in TableUtils:CombinedPairs(mods, extraDependencies) do
+		for _, modId in TableUtils:CombinedPairs(modList) do
 			local modInfo = Ext.Mod.GetMod(modId)
 			if modInfo then
 				local modInfo = modInfo.Info
@@ -200,6 +187,33 @@ function MutationExternalProfileUtility:BuildMetaDependencyBlock(mutationConfig,
 			return output
 		end
 	end
+end
+
+Ext.RegisterConsoleCommand("Lab_MetaBlock", function (cmd, ...)
+	print(buildMetaBlock({...}))
+end)
+
+---@param mutationConfig MutationsConfig
+---@param extraDependencies ModDependency[]
+---@return string?
+function MutationExternalProfileUtility:BuildMetaDependencyBlock(mutationConfig, extraDependencies)
+	local mods = self:ValidateMutations(TableUtils:DeeplyCopyTable(mutationConfig))
+
+	local lab = Ext.Mod.GetMod(ModuleUUID).Info
+	mods[ModuleUUID] = {
+		modId = ModuleUUID,
+		modName = lab.Name,
+		modAuthor = lab.Author,
+		modVersion = lab.ModVersion,
+		packagedItems = nil
+	}
+
+	local extraDependencies = TableUtils:DeeplyCopyTable(extraDependencies)
+	for modId in pairs(mods) do
+		table.insert(extraDependencies, modId)
+	end
+
+	return buildMetaBlock(extraDependencies)
 end
 
 ---@param forMod boolean

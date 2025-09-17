@@ -100,7 +100,7 @@ if Ext.IsClient() then
 	---@param parent ExtuiTreeParent
 	function EntityRecorder:BuildButton(parent)
 		if Ext.ClientNet.IsHost() then
-			local indexAllEntities = parent:AddButton("Index All Alive Character Entities")
+			local indexAllEntities = parent:AddButton("Scan All Living Entities Across All Levels")
 			indexAllEntities:Tooltip():AddText([[
 	 This will teleport you to each level in the game and record all the entities loaded onto the server for that level
 You only need to do this once or after you install mods that would add new entities - a local file will be written containing the results.

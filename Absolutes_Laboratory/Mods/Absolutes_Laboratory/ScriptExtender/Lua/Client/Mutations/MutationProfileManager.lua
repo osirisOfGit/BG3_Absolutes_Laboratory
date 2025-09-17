@@ -1338,9 +1338,11 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 	buildSlots(numOfMutations)
 end
 
+local topic = "Profiles, Mutations, and Selectors"
+
 Profiles_Docs = {
 	{
-		Topic = "Profiles, Mutations, and Selectors",
+		Topic = topic,
 		SubTopic = "Profiles",
 		content = {
 			{
@@ -1348,7 +1350,7 @@ Profiles_Docs = {
 				text = "What Are Profiles?"
 			},
 			{
-				type = "Section",
+				type = "Content",
 				text = [[
 Profiles represent an ordered group of Mutations that should run during the LevelGameplayReady Osiris Event.
 
@@ -1369,6 +1371,34 @@ The details of what this means are specified in each applicable mutator's page, 
 					"Mutations included in profiles are not unique to that profile - deleting or changing them in one profile will change them in every profile they're included in"
 				}
 			},
+			{
+				type = "Section",
+				text = "Key Terms",
+				left_indent = true
+			},
+			{
+				type = "Bullet",
+				text = {
+					"Mutations: A group of Mutators and Selectors",
+					"Mutators: Defines how the NPC should be changed (mutated) if selected by the Selectors. Each Mutation can only have one of each type of Mutator. Order doesn't matter within the context of a Mutation",
+					"Selectors: Defines what NPCs should be targeted for the Mutators - must run the Scanner in the Inspector tab for the Dry Run to work. Order matters - see Selectors page."
+				}
+			}
+		}
+	},
+	{
+		Topic = topic,
+		SubTopic = "Profiles",
+		content = {
+			{
+				type = "Heading",
+				text = "Preparation Phase"
+			},
+			{
+				type = "Content",
+				text = [[The Preparation phase has a unique purpose - it runs Prep Mutations, which are Mutations that only support the Prep Phase Mutator and don't support the Prep Marker Selector.
+The intent of these mutations is consolidate the Main Mutations in a way that otherwise wouldn't be possible - for example, *CAHOOT AND GOON EXPLANATION HERE* ]]
+			}
 		}
 	}
 }
