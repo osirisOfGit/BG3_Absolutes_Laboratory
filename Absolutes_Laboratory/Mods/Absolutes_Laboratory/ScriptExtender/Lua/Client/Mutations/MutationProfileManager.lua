@@ -145,13 +145,17 @@ function MutationProfileManager:init(parent)
 		self.profileRulesParent = Styler:TwoColumnTable(rightPanel)
 		self.profileRulesParent.Borders = false
 		self.profileRulesParent.Resizable = false
-		self.profileRulesParent.ColumnDefs[1].Width = 400 * Styler:ScaleFactor()
+		self.profileRulesParent.ColumnDefs[1].Width = 600 * Styler:ScaleFactor()
 
 		local profileRulesRow = self.profileRulesParent:AddRow()
 
-		self.rulesOrderGroup = profileRulesRow:AddCell():AddChildWindow("RulesOrder")
+		self.rulesOrderGroup = profileRulesRow:AddCell()
+		self.rulesOrderGroup.UserData = "keep"
 		self.profileManagerParent = nil
-		Styler:MiddleAlignedColumnLayout(self.rulesOrderGroup, function(ele)
+		local profilerManagerwindow = self.rulesOrderGroup:AddChildWindow("RulesOrder")
+		profilerManagerwindow.Size = Styler:ScaleFactor({ 600, 120 })
+		profilerManagerwindow.UserData = "keep"
+		Styler:MiddleAlignedColumnLayout(profilerManagerwindow, function(ele)
 			self.profileManagerParent = ele
 		end).UserData = "keep"
 
@@ -162,7 +166,7 @@ function MutationProfileManager:init(parent)
 		collapseExpandRulesOrderButton.OnClick = function()
 			Helpers:CollapseExpand(
 				collapseExpandRulesOrderButton.Label == "<<",
-				400 * Styler:ScaleFactor(),
+				600 * Styler:ScaleFactor(),
 				function(width)
 					if width then
 						self.profileRulesParent.ColumnDefs[1].Width = width
@@ -698,12 +702,12 @@ function MutationProfileManager:BuildProfileManager()
 	local profiles = ConfigurationStructure.config.mutations.profiles
 	Helpers:KillChildren(self.profileManagerParent, self.rulesOrderGroup, self.mutationDesigner)
 
-	Styler:MiddleAlignedColumnLayout(self.profileManagerParent, function (ele)
+	Styler:MiddleAlignedColumnLayout(self.profileManagerParent, function(ele)
 		MazzleDocs:addDocButton(ele, Profiles_Docs)
 		local title = ele:AddText("Active Profile")
 		title.Font = "Large"
 		title.SameLine = true
-	end)
+	end).UserData = "keep"
 
 	local profileCombo = self.profileManagerParent:AddCombo("")
 	profileCombo.WidthFitPreview = true
@@ -1336,17 +1340,35 @@ end
 
 Profiles_Docs = {
 	{
-		Topic = "Profile Manager",
-		SubTopic = "What Are Profiles?",
+		Topic = "Profiles, Mutations, and Selectors",
+		SubTopic = "Profiles",
 		content = {
 			{
 				type = "Heading",
 				text = "What Are Profiles?"
 			},
 			{
-				type = "SubHeading",
-				text = "In this documentary, we will explore these _fascinating_ creatures and how they'll ruin your life :D"
-			}
+				type = "Section",
+				text = [[
+Profiles represent an ordered group of Mutations that should run during the LevelGameplayReady Osiris Event.
+
+You can have any number of profiles using any number of mutations, but only one profile can be active for a given save.
+
+The active Profiles is saved to a ModVar, so it will only be available in saves created once it was activated and afterwards - loading a save before you activated a profile will not have it loaded (unless it's your default profile and you haven't disabled the default for that save).
+
+Mutations are applied in the order specified - later Mutations override earlier ones, but certain mutators have an additive property.
+
+The details of what this means are specified in each applicable mutator's page, but you can allow these mutators to be additive by checking the checkbox next to the mutation - if this is not checked, simple override behavior will be used instead.]]
+			},
+			{
+				type = "CallOut",
+				centered = true,
+				text = {
+					"The ProfileExecutor will undo all non-transient mutators before executing all the mutations every time it runs (each LevelGameplayReady event or every player level up (see Level Mutator))!",
+					"",
+					"Mutations included in profiles are not unique to that profile - deleting or changing them in one profile will change them in every profile they're included in"
+				}
+			},
 		}
 	}
 }
