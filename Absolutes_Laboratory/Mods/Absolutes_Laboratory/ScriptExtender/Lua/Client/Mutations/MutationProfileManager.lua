@@ -149,7 +149,7 @@ function MutationProfileManager:init(parent)
 
 		local profileRulesRow = self.profileRulesParent:AddRow()
 
-		self.rulesOrderGroup = profileRulesRow:AddCell()
+		self.rulesOrderGroup = profileRulesRow:AddCell():AddGroup("rulesOrderGroup")
 		self.rulesOrderGroup.UserData = "keep"
 		self.profileManagerParent = nil
 		local profilerManagerwindow = self.rulesOrderGroup:AddChildWindow("RulesOrder")
@@ -166,7 +166,7 @@ function MutationProfileManager:init(parent)
 		collapseExpandRulesOrderButton.OnClick = function()
 			Helpers:CollapseExpand(
 				collapseExpandRulesOrderButton.Label == "<<",
-				600 * Styler:ScaleFactor(),
+				profilerManagerwindow.Size[1],
 				function(width)
 					if width then
 						self.profileRulesParent.ColumnDefs[1].Width = width
@@ -707,7 +707,7 @@ function MutationProfileManager:BuildProfileManager()
 		local title = ele:AddText("Active Profile")
 		title.Font = "Large"
 		title.SameLine = true
-	end).UserData = "keep"
+	end)
 
 	local profileCombo = self.profileManagerParent:AddCombo("")
 	profileCombo.WidthFitPreview = true
@@ -1374,7 +1374,6 @@ The details of what this means are specified in each applicable mutator's page, 
 			{
 				type = "Section",
 				text = "Key Terms",
-				left_indent = true
 			},
 			{
 				type = "Bullet",
@@ -1396,9 +1395,11 @@ The details of what this means are specified in each applicable mutator's page, 
 			},
 			{
 				type = "Content",
-				text = [[The Preparation phase has a unique purpose - it runs Prep Mutations, which are Mutations that only support the Prep Phase Mutator and don't support the Prep Marker Selector.
-The intent of these mutations is consolidate the Main Mutations in a way that otherwise wouldn't be possible - for example, *CAHOOT AND GOON EXPLANATION HERE* ]]
+				text = [[The Preparation phase has a unique purpose - it runs Prep Mutations, which are Mutations that only support the Prep Phase Mutator and don't support the Prep Marker Selector, with the intent being to reduce duplication of common Selectors in Main Mutations. 
+
+For example, if you find yourself defining the same set of Selectors over and over again (i.e. all bosses) + some specific additions, you can create a Prep Phase Mutation to mark all entities that are common between those Selectors, change your Main selector to just look at that marker, and simply add whatever extra selectors you want on top - e.g. All Bosses that are Humanoids, or all Devils that aren't bosses.]]
 			}
 		}
 	}
+
 }

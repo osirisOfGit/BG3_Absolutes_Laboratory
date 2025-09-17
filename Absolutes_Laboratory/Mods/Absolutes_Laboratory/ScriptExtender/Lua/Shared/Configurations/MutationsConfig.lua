@@ -212,6 +212,7 @@ ConfigurationStructure.config.mutations.settings.customLists = {
 		blackListed = { .5, .5, .5, 1 },
 		onDeathOnly = { 0.51, 0.24, 0.75, 1.0 },
 	},
+	autoCollapseFoldersSection = false,
 	---@type "Icon"|"Text"
 	iconOrText = "Icon",
 	showSeperatorsInMain = true,

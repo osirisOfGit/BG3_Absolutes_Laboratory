@@ -133,6 +133,7 @@ function ListDesignerBaseClass:launch(activeListId)
 		self.layoutTable.ColumnDefs[1].Width = 300 * Styler:ScaleFactor()
 		self.layoutTable.ColumnDefs[3].Width = 400 * Styler:ScaleFactor()
 
+
 		local row = self.layoutTable:AddRow()
 
 		self.listSection = row:AddCell():AddChildWindow("List")
@@ -144,7 +145,7 @@ function ListDesignerBaseClass:launch(activeListId)
 		collapseExpandUserFoldersButton.OnClick = function()
 			Helpers:CollapseExpand(
 				collapseExpandUserFoldersButton.Label == "<<",
-				300 * Styler:ScaleFactor(),
+				self.layoutTable.ColumnDefs[1].Width,
 				function(width)
 					if width then
 						self.layoutTable.ColumnDefs[1].Width = width
@@ -160,6 +161,12 @@ function ListDesignerBaseClass:launch(activeListId)
 					end
 				end)
 		end
+		self.mainWindow.OnClose = function()
+			self.layoutTable.ColumnDefs[1].Width = 300 * Styler:ScaleFactor()
+			collapseExpandUserFoldersButton.Label = "<<"
+			self.listSection.Visible = true
+		end
+
 		if self.progressionLinkedNodes then
 			self.browserTabs["Progressions"] = self.browserTabParent:AddTabItem("Progressions"):AddChildWindow("Progression Browser")
 			self.browserTabs["Progressions"].NoSavedSettings = true
@@ -272,7 +279,9 @@ function ListDesignerBaseClass:buildLists(activeListId)
 			end
 			self.designerSection.Visible = true
 
-			self.designerSection.Children[1]:OnClick()
+			if self.settings.autoCollapseFoldersSection then
+				self.designerSection.Children[1]:OnClick()
+			end
 
 			self.activeListHandle = listSelectable
 
@@ -448,6 +457,13 @@ function ListDesignerBaseClass:buildDesigner()
 	local extraOptionsRow = extraOptions:AddRow()
 
 	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function(ele)
+		Styler:EnableToggleButton(ele, "Auto-Collapse Folder View", false, function (swap)
+			if swap then 
+				self.settings.autoCollapseFoldersSection = not self.settings.autoCollapseFoldersSection
+			end
+			return self.settings.autoCollapseFoldersSection
+		end)
+
 		local deleteAllButton = ele:AddButton("Delete All Non-Linked Entries")
 		deleteAllButton.Disabled = self.activeList.modId ~= nil
 		deleteAllButton.OnClick = function()
@@ -459,6 +475,7 @@ function ListDesignerBaseClass:buildDesigner()
 
 			self:buildDesigner()
 		end
+
 	end)
 
 	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function(ele)
@@ -554,7 +571,9 @@ Using entity level will use the entity's character level, post Character Level M
 				local progGroup = entryGroup:AddGroup("linkedProg")
 
 				for progressionTableId, subLists in TableUtils:OrderedPairs(self.activeList.levels[level].linkedProgressions) do
-					self:buildEntryListFromSubList(progGroup, subLists, level, progressionTableId)
+					if not self.activeList.modId and self:buildEntryListFromSubList(progGroup, subLists, level, progressionTableId) then
+						self.activeList.levels[level].linkedProgressions[progressionTableId].delete = true
+					end
 				end
 
 				if #progGroup.Children == 0 then
@@ -635,10 +654,15 @@ end
 function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, level, progressionTableId)
 	subLists = subLists._real or subLists
 	if progressionTableId then
-		local sep = parentGroup:AddSeparatorText(self.progressionTranslations[progressionTableId])
-		sep:SetStyle("SeparatorTextAlign", 0.05)
-		if not subLists.randomized then
-			subLists.randomized = {}
+		if not self.progressionTranslations[progressionTableId] then
+			Logger:BasicError("Progression Table UUID %s was not found in the index - removing from the config", progressionTableId)
+			return true
+		else
+			local sep = parentGroup:AddSeparatorText(self.progressionTranslations[progressionTableId])
+			sep:SetStyle("SeparatorTextAlign", 0.05)
+			if not subLists.randomized then
+				subLists.randomized = {}
+			end
 		end
 	end
 
@@ -691,7 +715,9 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 			end
 			buildSubList(subListName, listForGroupFunc)
 		end
-		groupFunc = self:renderEntriesBySubcategories(listForGroupFunc, row.Children[1])
+		local success, childParent = pcall(function() return row.Children[1].Children[1] end)
+		local parentContainer = success and childParent or row.Children[1]
+		groupFunc = self:renderEntriesBySubcategories(listForGroupFunc, parentContainer)
 	end
 
 	self.entryCacheForProgressions[level] = nil
@@ -917,7 +943,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 									else
 										onCtrl()
 									end
-								elseif not progressionTableId or not aiCantUse then
+								elseif not aiCantUse then
 									Helpers:KillChildren(self.popup)
 									self.popup:Open()
 									for subListCategory, index in TableUtils:OrderedPairs(self.subListIndex) do
@@ -953,7 +979,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 														local index = TableUtils:IndexOf(subList[handle.subListName], handle.entryName)
 														if index then
 															subList[handle.subListName][index] = nil
-															if not subList[handle.subListName]() then
+															if subList[handle.subListName] and not next(subList[handle.subListName]._real or subList[handle.subListName]) then
 																subList[handle.subListName].delete = true
 															end
 
