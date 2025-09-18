@@ -457,8 +457,8 @@ function ListDesignerBaseClass:buildDesigner()
 	local extraOptionsRow = extraOptions:AddRow()
 
 	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function(ele)
-		Styler:EnableToggleButton(ele, "Auto-Collapse Folder View", false, function (swap)
-			if swap then 
+		Styler:EnableToggleButton(ele, "Auto-Collapse Folder View", false, function(swap)
+			if swap then
 				self.settings.autoCollapseFoldersSection = not self.settings.autoCollapseFoldersSection
 			end
 			return self.settings.autoCollapseFoldersSection
@@ -475,7 +475,6 @@ function ListDesignerBaseClass:buildDesigner()
 
 			self:buildDesigner()
 		end
-
 	end)
 
 	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function(ele)
@@ -652,7 +651,6 @@ end
 ---@param level number|GameLevel
 ---@param progressionTableId string?
 function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, level, progressionTableId)
-	subLists = subLists._real or subLists
 	if progressionTableId then
 		if not self.progressionTranslations[progressionTableId] then
 			Logger:BasicError("Progression Table UUID %s was not found in the index - removing from the config", progressionTableId)
@@ -660,11 +658,10 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 		else
 			local sep = parentGroup:AddSeparatorText(self.progressionTranslations[progressionTableId])
 			sep:SetStyle("SeparatorTextAlign", 0.05)
-			if not subLists.randomized then
-				subLists.randomized = {}
-			end
+			subLists.randomized = {}
 		end
 	end
+	subLists = TableUtils:DeeplyCopyTable(subLists._real or subLists)
 
 	local useIcons = self.settings.iconOrText == "Icon"
 	local displayTable = parentGroup:AddTable("display", useIcons and 1 or 3)
@@ -947,7 +944,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 									Helpers:KillChildren(self.popup)
 									self.popup:Open()
 									for subListCategory, index in TableUtils:OrderedPairs(self.subListIndex) do
-										if subListCategory ~= subListName and (subListCategory ~= "blackListed" or progressionTableId) and (subListCategory ~= "randomized" or not progressionTableId) then
+										if subListCategory ~= subListName and (subListCategory ~= "blackListed" or progressionTableId) then
 											self.popup:AddSelectable("Set As " .. index.name .. "##" .. level).OnClick = function()
 												---@type EntryHandle[]
 												local handles = {}
@@ -974,6 +971,8 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 													if subListCategory ~= "randomized" or not progressionTableId then
 														subList[subListCategory] = subList[subListCategory] or {}
 														table.insert(subList[subListCategory], handle.entryName)
+													elseif subList[subListCategory] then
+														subList[subListCategory].delete = true
 													end
 													if handle.subListName then
 														local index = TableUtils:IndexOf(subList[handle.subListName], handle.entryName)
