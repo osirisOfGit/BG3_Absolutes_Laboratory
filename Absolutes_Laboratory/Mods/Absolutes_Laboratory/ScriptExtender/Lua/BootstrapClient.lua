@@ -32,10 +32,10 @@ Absolutes_Lab_Doc_Config = {
 	window_height = Ext.IMGUI.GetViewportSize()[2] / 3,
 	image_config = {
 		atlas_key = "Lab_Docs",
-		columns = 3,
-		rows = 2,
-		image_width = 840,
-		image_height = 420
+		columns = 4,
+		rows = 3,
+		image_width = 860,
+		image_height = 484
 	},
 	theme_override = {
 		-- Window / Frame
