@@ -22,11 +22,19 @@ Ext.Require("Shared/Mutations/MutationConfigurationProxy.lua")
 Ext.Require("Client/Mutations/MutationExternalProfileUtility.lua")
 Ext.Require("Client/Mutations/MutationProfileManager.lua")
 
+---@type MazzleDocsConfig
 Absolutes_Lab_Doc_Config = {
 	mod_name = "Absolute's Laboratory",
 	documentation_name = "Absolute's Laboratory",
 	window_title = "Welcome to the Lab!",
 	type = "documentation",
+	image_config = {
+		atlas_key = "8921530d-7671-46fb-bbf2-e4c2b81c1d24-PrepPhaseMutatorTutorial",
+		columns = 1,
+		rows = 1,
+		image_width = 2600,
+		image_height = 900
+	},
 	theme_override = {
 		-- Window / Frame
 		background         = { 0.07, 0.07, 0.07, 0.90 }, -- WindowBg
@@ -38,18 +46,40 @@ Absolutes_Lab_Doc_Config = {
 		border_shadow      = { 0.07, 0.07, 0.07, 0.78 }, -- BorderShadow
 
 		-- Navigation
-		nav_button_hovered = { 0.38, 0.26, 0.21, 0.78 }, -- HeaderHovered / BoxHoverColor
-		nav_button_active  = { 0.32, 0.24, 0.16, 0.78 }, -- HeaderActive / BoxActiveColor
-		nav_area_bg        = { 0.07, 0.07, 0.07, 0.47 }, -- MenuBarBg
+		nav_button_hovered = { 0.80, 0.60, 0.30, 0.80 }, -- Approx. hovered accent in BG3SE UI
+		nav_button_active  = { 0.90, 0.70, 0.40, 0.90 }, -- Active accent
+		nav_area_bg        = { 0.05, 0.05, 0.05, 0.95 }, -- Sidebar/area background
+		nav_header_text    = { 0.86, 0.79, 0.68, 0.95 }, -- Header text
+		nav_topic_text     = { 0.86, 0.79, 0.68, 0.90 }, -- Topic text
+		nav_subtopic_text  = { 0.80, 0.74, 0.64, 0.90 }, -- Subtopic text
+		nav_slide_text     = { 0.86, 0.79, 0.68, 0.90 }, -- Slide text
+		slide_index_text   = { 0.86, 0.79, 0.68, 0.90 }, -- Slide index numbers
+		nav_button_text    = { 0.10, 0.10, 0.10, 1.00 }, -- Expand/collapse glyphs
 
-		-- Content text colors
-		content_text       = { 0.86, 0.79, 0.68, 0.78 }, -- Text
-		heading_text       = { 0.86, 0.79, 0.68, 0.78 }, -- reuse Text
-		subheading_text    = { 0.86, 0.79, 0.68, 0.63 }, -- PlotLines as subtler text
-		note_text          = { 0.86, 0.79, 0.68, 0.63 }, -- PlotHistogram similar subtle emphasis
-		callout_text       = { 0.86, 0.79, 0.68, 1.00 }, -- PlotLinesHovered (fully opaque)
-		code_text          = { 0.95, 0.82, 0.60, 0.14 }, -- SliderGrab (faint accent)
-		bullet_text        = { .86, 0.79, 0.68, 0.78 }, -- TableBorderStrong as accent bullets
-		separator_text     = { 0.86, 0.79, 0.68, 0.78 }
+		-- Content text hierarchy
+		content_text       = { 0.86, 0.79, 0.68, 0.95 },
+		heading_text       = { 0.95, 0.88, 0.75, 1.00 },
+		subheading_text    = { 0.90, 0.83, 0.72, 0.95 },
+		section_text       = { 0.90, 0.83, 0.72, 0.95 },
+		note_text          = { 0.80, 0.72, 0.58, 0.95 },
+		callout_text       = { 0.95, 0.88, 0.75, 1.00 },
+
+		-- Code blocks
+		code_text          = { 0.95, 0.95, 0.95, 1.00 },
+		code_bg            = { 0.09, 0.09, 0.09, 1.00 },
+
+		-- Lists / separators
+		bullet_text        = { 0.86, 0.79, 0.68, 0.95 },
+		separator_color    = { 0.24, 0.15, 0.08, 0.60 },
+
+		-- Buttons
+		button_bg          = { 0.32, 0.24, 0.16, 0.78 }, -- BoxActiveColor base
+		button_text        = { 0.95, 0.88, 0.75, 1.00 },
+		button_hover       = { 0.37, 0.28, 0.20, 0.85 },
+		button_active      = { 0.27, 0.20, 0.14, 0.90 },
+
+		-- Scrollbar
+		scrollbar_bg       = { 0.05, 0.05, 0.05, 0.60 },
+		scrollbar_grab     = { 0.32, 0.24, 0.16, 0.90 },
 	}
 }

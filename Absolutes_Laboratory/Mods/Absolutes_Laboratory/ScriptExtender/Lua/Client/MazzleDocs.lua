@@ -26,14 +26,23 @@ end
 ---@field [integer] MazzleDocsSlide Array of slides that make up the documentation
 
 ---@class MazzleDocsConfig
----@field window_name string Display name for the documentation window
+---@field window_title string Display name for the documentation window
 ---@field type "documentation"|"tutorial" Type of window to create
 ---@field window_height? integer Height of the window in pixels (default: 980)
 ---@field window_width? integer Width of the window in pixels (default: 1200)
 ---@field ToC_Starts_Hidden? boolean Whether Table of Contents starts hidden (default: false)
 ---@field mod_name string Internal name used for the mod
 ---@field documentation_name string Variable name for the documentation table
----@field theme_override? MazzleDocsThemeOverride Optional theme customizations
+---@field theme_preset? "c64"|"gallery"|"undead"|"pastel" Built-in theme preset name
+---@field theme_override? MazzleDocsThemeOverride Optional theme customizations (applied on top of preset)
+---@field image_config? MazzleDocsImageConfig Optional image configuration for Image widgets
+
+---@class MazzleDocsImageConfig
+---@field atlas_key string Name of the image atlas
+---@field columns integer Number of images in each row
+---@field rows integer Number of images in each column  
+---@field image_width integer Width of each individual image
+---@field image_height integer Height of each individual image
 
 ---@class MazzleDocsThemeOverride
 ---@field background? [number, number, number, number] Main window background color {r, g, b, a}
@@ -46,18 +55,28 @@ end
 ---@field nav_button_hovered? [number, number, number, number] Navigation buttons hover state color {r, g, b, a}
 ---@field nav_button_active? [number, number, number, number] Navigation buttons active state color {r, g, b, a}
 ---@field nav_area_bg? [number, number, number, number] Navigation area background color {r, g, b, a}
+---@field nav_header_text? [number, number, number, number] Navigation section header text color {r, g, b, a}
 ---@field nav_topic_text? [number, number, number, number] Top-level topic tree node text color {r, g, b, a}
 ---@field nav_subtopic_text? [number, number, number, number] Subtopic tree node text color {r, g, b, a}
 ---@field nav_slide_text? [number, number, number, number] Individual slide button text color {r, g, b, a}
+---@field slide_index_text? [number, number, number, number] Slide index number text color {r, g, b, a}
 ---@field nav_button_text? [number, number, number, number] Expand/collapse button text color {r, g, b, a}
 ---@field content_text? [number, number, number, number] Standard content paragraph text {r, g, b, a}
 ---@field heading_text? [number, number, number, number] Heading text color {r, g, b, a}
 ---@field subheading_text? [number, number, number, number] Subheading text color {r, g, b, a}
+---@field section_text? [number, number, number, number] Section header text color {r, g, b, a}
 ---@field note_text? [number, number, number, number] Note text color {r, g, b, a}
 ---@field callout_text? [number, number, number, number] CallOut content text color {r, g, b, a}
 ---@field code_text? [number, number, number, number] Code block text color {r, g, b, a}
+---@field code_bg? [number, number, number, number] Code block background color {r, g, b, a}
 ---@field bullet_text? [number, number, number, number] Bullet point text color {r, g, b, a}
 ---@field separator_color? [number, number, number, number] Horizontal separator line color {r, g, b, a}
+---@field button_bg? [number, number, number, number] Button background color {r, g, b, a}
+---@field button_text? [number, number, number, number] Button text color {r, g, b, a}
+---@field button_hover? [number, number, number, number] Button hover state color {r, g, b, a}
+---@field button_active? [number, number, number, number] Button active state color {r, g, b, a}
+---@field scrollbar_bg? [number, number, number, number] Scrollbar background color {r, g, b, a}
+---@field scrollbar_grab? [number, number, number, number] Scrollbar grab handle color {r, g, b, a}
 
 -- Base content item interface
 ---@class MazzleDocsContentItem
@@ -85,7 +104,7 @@ end
 
 ---@alias MazzleDoctsFontSize
 ---| "Tiny"
----| "Small"
+---| "Small" 
 ---| "Normal"
 ---| "Medium"
 ---| "Large"
@@ -98,7 +117,7 @@ end
 ---@field highlighted? boolean Display on dark red banner for tutorial goals
 
 ---@class MazzleDocsSubHeading : MazzleDocsContentItem
----@field type "SubHeading"
+---@field type "SubHeading" 
 ---@field text string The subheading text content
 
 ---@class MazzleDocsContent : MazzleDocsContentItem

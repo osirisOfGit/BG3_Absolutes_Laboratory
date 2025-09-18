@@ -1395,11 +1395,16 @@ The details of what this means are specified in each applicable mutator's page, 
 			},
 			{
 				type = "Content",
-				text = [[The Preparation phase has a unique purpose - it runs Prep Mutations, which are Mutations that only support the Prep Phase Mutator and don't support the Prep Marker Selector, with the intent being to reduce duplication of common Selectors in Main Mutations. 
+				text =
+				[[The Preparation phase has a unique purpose - it runs Prep Mutations, which are Mutations that only support the Prep Phase Mutator and don't support the Prep Marker Selector, with the intent being to reduce duplication of common Selectors in Main Mutations.
 
 For example, if you find yourself defining the same set of Selectors over and over again (i.e. all bosses) + some specific additions, you can create a Prep Phase Mutation to mark all entities that are common between those Selectors, change your Main selector to just look at that marker, and simply add whatever extra selectors you want on top - e.g. All Bosses that are Humanoids, or all Devils that aren't bosses.]]
-			}
+			},
+			{
+				type = "Image",
+				image_index = 1,
+				image_width = 2600
+			} --[[@as MazzleDocsImage]]
 		}
 	}
-
 }

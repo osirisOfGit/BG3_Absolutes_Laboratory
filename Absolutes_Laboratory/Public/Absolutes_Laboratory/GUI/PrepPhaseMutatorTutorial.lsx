@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<save>
+	<version major="4" minor="0" revision="9" build="322"/>
+	<region id="TextureAtlasInfo">
+		<node id="root">
+			<children>
+				<node id="TextureAtlasIconSize">
+					<attribute id="Height" value="900" type="int32"/>
+					<attribute id="Width" value="2600" type="int32"/>
+				</node>
+				<node id="TextureAtlasPath">
+					<attribute id="Path" value="Assets/Textures/PrepPhaseMutatorTutorial.dds" type="string"/>
+					<attribute id="UUID" value="8921530d-7671-46fb-bbf2-e4c2b81c1d24" type="FixedString"/>
+				</node>
+				<node id="TextureAtlasTextureSize">
+					<attribute id="Height" value="900" type="int32"/>
+					<attribute id="Width" value="2600" type="int32"/>
+				</node>
+			</children>
+		</node>
+	</region>
+	<region id="IconUVList">
+		<node id="root">
+			<children>
+				<node id="IconUV">
+					<attribute id="MapKey" value="8921530d-7671-46fb-bbf2-e4c2b81c1d24-PrepPhaseMutatorTutorial" type="FixedString"/>
+					<attribute id="U1" value="0" type="float"/>
+					<attribute id="V1" value="0" type="float"/>
+					<attribute id="U2" value="0.2" type="float"/>
+					<attribute id="V2" value="0.2" type="float"/>
+				</node>
+			</children>
+		</node>
+	</region>
+</save>
