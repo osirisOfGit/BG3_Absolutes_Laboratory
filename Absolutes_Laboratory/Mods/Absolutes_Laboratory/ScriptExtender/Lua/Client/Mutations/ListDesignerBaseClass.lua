@@ -658,7 +658,10 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 		else
 			local sep = parentGroup:AddSeparatorText(self.progressionTranslations[progressionTableId])
 			sep:SetStyle("SeparatorTextAlign", 0.05)
-			subLists.randomized = {}
+			if not self.activeList.modId then
+				subLists.randomized.delete = true
+				subLists.randomized = {}
+			end
 		end
 	end
 	subLists = TableUtils:DeeplyCopyTable(subLists._real or subLists)
