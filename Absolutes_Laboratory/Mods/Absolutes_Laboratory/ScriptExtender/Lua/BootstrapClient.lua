@@ -28,12 +28,14 @@ Absolutes_Lab_Doc_Config = {
 	documentation_name = "Absolute's Laboratory",
 	window_title = "Welcome to the Lab!",
 	type = "documentation",
+	window_width = Ext.IMGUI.GetViewportSize()[1] / 3,
+	window_height = Ext.IMGUI.GetViewportSize()[2] / 3,
 	image_config = {
 		atlas_key = "Lab_Docs",
-		columns = 2,
-		rows = 1,
+		columns = 3,
+		rows = 2,
 		image_width = 840,
-		image_height = 440
+		image_height = 420
 	},
 	theme_override = {
 		-- Window / Frame

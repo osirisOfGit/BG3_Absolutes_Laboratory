@@ -11,9 +11,9 @@
 					<attribute id="Template" type="FixedString" value="Lab_Docs" />
 					<attribute id="Streaming" type="bool" value="True" />
 					<attribute id="Type" type="int32" value="1" />
-					<attribute id="SRGB" type="bool" value="False" />
-					<attribute id="Width" type="int32" value="1680" />
-					<attribute id="Height" type="int32" value="440" />
+					<attribute id="SRGB" type="bool" value="True" />
+					<attribute id="Width" type="int32" value="2520" />
+					<attribute id="Height" type="int32" value="840" />
 					<attribute id="Depth" type="int32" value="1" />
 				</node>
 			</children>

@@ -328,7 +328,7 @@ local window
 ---@return { [string]: DependencyFailure[] }? failedDependencies
 ---@return fun()? dependencyWindow
 function MutationExternalProfileUtility:importProfile(export)
-	local importedMutations = export["mutations"]
+	local importedMutations = TableUtils:DeeplyCopyTable(export["mutations"])
 	local mutationConfig = ConfigurationStructure.config.mutations
 
 	local modCache, failedDependencies = self:ValidateMutations(mutationConfig)

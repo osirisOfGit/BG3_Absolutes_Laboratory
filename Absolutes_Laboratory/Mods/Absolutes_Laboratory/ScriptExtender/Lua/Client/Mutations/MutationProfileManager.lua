@@ -1339,11 +1339,12 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 end
 
 local topic = "Profiles, Mutations, and Selectors"
+local subTopic = "Profiles"
 
 Profiles_Docs = {
 	{
 		Topic = topic,
-		SubTopic = "Profiles",
+		SubTopic = subTopic,
 		content = {
 			{
 				type = "Heading",
@@ -1360,13 +1361,16 @@ The active Profiles is saved to a ModVar, so it will only be available in saves 
 
 Mutations are applied in the order specified - later Mutations override earlier ones, but certain mutators have an additive property.
 
-The details of what this means are specified in each applicable mutator's page, but you can allow these mutators to be additive by checking the checkbox next to the mutation - if this is not checked, simple override behavior will be used instead.]]
+The details of what this means are specified in each applicable mutator's page, but you can allow these mutators to be additive by checking the checkbox next to the mutation - if this is not checked, simple override behavior will be used instead.
+
+Create your profile using the Gear icon next to the dropdown - once your profile is created, drag and drop mutations from the left sidebar into the profile section, onto the buttons - you can do it for blank or populated buttons.]]
 			},
 			{
 				type = "CallOut",
 				centered = true,
 				text = {
 					"The ProfileExecutor will undo all non-transient mutators before executing all the mutations every time it runs (each LevelGameplayReady event or every player level up (see Level Mutator))!",
+					"Users should only really notice this if they save in the middle of combat, then reload, and even then most mutators shouldn't cause any differences an average user would notice. This is an untested theory though, so please provide feedback!",
 					"",
 					"Mutations included in profiles are not unique to that profile - deleting or changing them in one profile will change them in every profile they're included in"
 				}
@@ -1380,14 +1384,141 @@ The details of what this means are specified in each applicable mutator's page, 
 				text = {
 					"Mutations: A group of Mutators and Selectors",
 					"Mutators: Defines how the NPC should be changed (mutated) if selected by the Selectors. Each Mutation can only have one of each type of Mutator. Order doesn't matter within the context of a Mutation",
-					"Selectors: Defines what NPCs should be targeted for the Mutators - must run the Scanner in the Inspector tab for the Dry Run to work. Order matters - see Selectors page."
+					"Selectors: Defines what NPCs should be targeted for the Mutators - must run the Scanner in the Inspector tab for the Dry Run to work. Can have duplicate Selector types, but order matters - see Selectors page."
 				}
 			}
 		}
 	},
 	{
 		Topic = topic,
-		SubTopic = "Profiles",
+		SubTopic = subTopic,
+		content = {
+			{
+				type = "Heading",
+				text = "Exporting Profiles and Everything Associated",
+				centered = true
+			},
+			{
+				type = "CallOut",
+				prefix = "Highlights:",
+				prefix_color = "Green",
+				text = [[
+- Loose Exports are for sharing with individuals, Mod Exports are for sharing with the Community (make sure to list Lab as a dependency on Nexus)
+- Exported Mutations will record any and all mods that they depend on
+- You can't export another mod's mutations/lists without copying it to your machine first - this breaks the link with that mod (otherwise, their mod will become a dependency)
+- When updating your Mod Export, copy the Dependency Nodes over as well, to ensure the dependencies list the latest versions]]
+			} --[[@as MazzleDocsCallOut]],
+			{
+				type = "SubHeading",
+				text = "Loose Files",
+				fontsize = "Large"
+			},
+			{
+				type = "Content",
+				text = [[
+Choosing to export a Profile (not Export For Mod) will create a JSON file under `%localappdata%\Larian Studios\Baldur's Gate 3\Script Extender\Absolutes_Laboratory\ExportedProfiles\`, named using the profile name(s), which includes all mutations, mutators, selectors, and lists used in that profile.
+
+This file can be reimported immediately by you if you want to check what was exported - Lab will prevent duplication of Mutations and Profile names where necessary by assigning new UUIDs to things that have them, and appending `- Imported` or the first 3 characters of the UUID to the Name of the artifact.
+
+Lab will also record any mods used for resources/stats in the packaged mutations in the export itself, validating that these mods are present when the user imports the file. If any are missing, the user is presented with a warning, a detailed report, and the option to continue.
+
+If they choose to continue without first loading the mod, Lab will scrub all references to that resource/stat in the relevant selectors/mutators, proactively removing any possible runtime errors - the file itself will be untouched, allowing it to be reimported later (though the original import will need to be deleted via the menu so it isn't renamed on top of the original renaming, causing an - Imported - Imported situation).]]
+			},
+			{
+				type = "Image",
+				image_index = 2
+			} --[[@as MazzleDocsImage]],
+			{
+				type = "Image",
+				image_index = 3
+			} --[[@as MazzleDocsImage]],
+			{
+				type = "Content",
+				text = [[
+If any mutations from Mods are used (see below), those mutations will not be exported - instead, a dependency on the mod providing those mutations will be recorded, preserving the link to that mod.
+
+If you want to package the mutation separately, copy it to your own folder first, use that in your profile, then export.]]
+			},
+			{
+				type = "Separator"
+			},
+			{
+				type = "SubHeading",
+				text = "Packaging With A Mod",
+				fontsize = "Large"
+			},
+			{
+				type = "Content",
+				text = [[
+Choosing the Export For Mod option will instead create two files in the same location - `AbsolutesLaboratory_ProfilesAndMutations.json` and `ExportedModMetaLsxDependencies.lsx`
+
+The .json file is named this way because that is what Lab looks for in every active mod to determine if there're profiles/mutations to load. Simply place this file next to your meta.lsx and you're good to go - see the Example Mod
+
+Profiles/Mutations/Lists loaded by users this way won't be renamed - they're stored separately in-memory from the users ones, so there won't be any kind of conflict. You can use Mod-added mutations/lists in your own profiles, but same rules as above apply: You can't export another mod's mutations/lists without copying it to your machine first (which is usually desirable, in case the original author updates them to work better in relevant circumstances).
+
+The contents of the second file, ExportedModMetaLsxDependencies.lsx, should be used in the meta.lsx to document your mod's dependency on the relevant mods (including Lab!), allowing those dependencies to show up in Mod Managers for user convenience.
+Simply copy the contents into your meta.lsx under the Dependencies node, and you're good to go (see the Example Mod in Github again for a full file example).
+
+I recommend repeating this process every time you update your mod's export file, as these blocks also contain the versions of the mods you were using when you exported, so copying it over again will update the versions even if the mod list itself hasn't changed.
+
+What it'll look like in BG3MM, followed by an example meta.lsx with the ExportedModMetaLsxDependencies.lsx copied over:]]
+			},
+			{
+				type = "Image",
+				image_index = 4,
+
+			} --[[@as MazzleDocsImage]],
+			{
+				type = "Code",
+				text = [[
+<?xml version="1.0" encoding="utf-8"?>
+<save>
+  <version major="4" minor="0" revision="9" build="328" />
+  <region id="Config">
+    <node id="root">
+      <children>
+        <node id="Dependencies">
+          <children>
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Absolutes_Laboratory" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Absolute's Laboratory" />
+              <attribute id="UUID" type="FixedString" value="a17a3a3d-5c16-404a-910a-68ae9e47f247" />
+              <attribute id="Version64" type="int64" value="36873221949095936" />
+            </node>
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Attunement" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Attunement" />
+              <attribute id="UUID" type="FixedString" value="7a526492-f5f4-44a0-ab25-ddcc4c6c1e7e" />
+              <attribute id="Version64" type="int64" value="36451020221448192" />
+            </node>
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Valkrana's Skeleton Crew Feat" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Valkrana's Skeleton Crew Feat" />
+              <attribute id="UUID" type="FixedString" value="d76ff1e5-e09e-4565-a9d2-a035037f6134" />
+              <attribute id="Version64" type="int64" value="38702811445198848" />
+            </node>
+          </children>
+        </node>
+        <node id="ModuleInfo">
+          <attribute id="Author" type="LSString" value="osirisofinternet" />
+          <attribute id="Description" type="LSString" value="Example of how to package a Mutation Export" />
+          <attribute id="Folder" type="LSString" value="Export_Mod_Example" />
+		  ...
+        </node>
+      </children>
+    </node>
+  </region>
+</save>]],
+				centered = true
+			}
+		}
+	},
+	{
+		Topic = topic,
+		SubTopic = "Mutations",
 		content = {
 			{
 				type = "Heading",
@@ -1396,17 +1527,19 @@ The details of what this means are specified in each applicable mutator's page, 
 			{
 				type = "Content",
 				text =
-				[[The Preparation phase has a unique purpose - it runs Prep Mutations, which are Mutations that only support the Prep Phase Mutator and don't support the Prep Marker Selector, with the intent being to reduce duplication of common Selectors in Main Mutations.
+				[[The Preparation phase has a unique purpose - it runs Prep Mutations (and only these mutations), which are Mutations that only support the Prep Phase Mutator and don't support the Prep Marker Selector, with the intent being to reduce duplication of common Selectors in Main Mutations.
 
-For example, if you find yourself defining the same set of Selectors over and over again (i.e. all bosses) + some specific additions, you can create a Prep Phase Mutation to mark all entities that are common between those Selectors, change your Main selector to just look at that marker, and simply add whatever extra selectors you want on top - e.g. All Bosses that are Humanoids, or all Devils that aren't bosses.]]
+For example, if you find yourself defining the same set of Selectors over and over again (i.e. all bosses) + some specific additions, you can create a Prep Phase Mutation to mark all entities that are common between those Selectors, change your Main selector to just look at that marker, and simply add whatever extra selectors you want on top - e.g. All Bosses that are Humanoids, or all Devils that aren't bosses.
+
+Lab pre-packages a number of Markers that can be used by anyone - these shouldn't be deleted and replaced, as each Marker has a UUID assigned to them, which is used by the Mutator, so recreating them will cause irreversible duplication for anyone importing your profile.]]
 			},
 			{
 				type = "Image",
-				image_index = 1,
-			}, --[[@as MazzleDocsImage]]
+				image_index = 0,
+			} --[[@as MazzleDocsImage]],
 			{
 				type = "Image",
-				image_index = 2,
+				image_index = 1,
 			} --[[@as MazzleDocsImage]]
 		}
 	}
