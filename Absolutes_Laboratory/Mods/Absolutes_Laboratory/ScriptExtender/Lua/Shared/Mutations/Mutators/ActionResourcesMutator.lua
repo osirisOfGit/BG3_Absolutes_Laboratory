@@ -438,7 +438,7 @@ function ActionResourcesMutator:applyMutator(entity, entityVar)
 			for _, classConfig in ipairs(actionResourceMutator.values.classDependent) do
 				---@type {[Guid]: ActionResourceConfig}
 				local config = {}
-				for _, classId in pairs(classConfig.requiresClasses) do
+				for _, classId in pairs(classConfig.requiresClasses or {}) do
 					for _, classOnEntity in pairs(entity.Classes.Classes) do
 						if classOnEntity.ClassUUID == classId or classOnEntity.SubClassUUID == classId then
 							Logger:BasicDebug("Class %s is present on the entity - adding resources", Ext.StaticData.Get(classId, "ClassDescription").Name)

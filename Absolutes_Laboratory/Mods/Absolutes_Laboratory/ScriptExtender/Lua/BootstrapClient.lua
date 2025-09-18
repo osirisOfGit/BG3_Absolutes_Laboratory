@@ -29,11 +29,11 @@ Absolutes_Lab_Doc_Config = {
 	window_title = "Welcome to the Lab!",
 	type = "documentation",
 	image_config = {
-		atlas_key = "8921530d-7671-46fb-bbf2-e4c2b81c1d24-PrepPhaseMutatorTutorial",
-		columns = 1,
+		atlas_key = "Lab_Docs",
+		columns = 2,
 		rows = 1,
-		image_width = 2600,
-		image_height = 900
+		image_width = 840,
+		image_height = 440
 	},
 	theme_override = {
 		-- Window / Frame

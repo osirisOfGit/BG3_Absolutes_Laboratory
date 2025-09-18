@@ -1403,7 +1403,10 @@ For example, if you find yourself defining the same set of Selectors over and ov
 			{
 				type = "Image",
 				image_index = 1,
-				image_width = 2600
+			}, --[[@as MazzleDocsImage]]
+			{
+				type = "Image",
+				image_index = 2,
 			} --[[@as MazzleDocsImage]]
 		}
 	}
