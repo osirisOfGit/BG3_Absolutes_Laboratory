@@ -74,6 +74,7 @@ function ConfigurationStructure:generate_recursive_metatable(proxy_table, real_t
 					-- so instead of serializing and sending it via NetMessages we'll just have the client handle
 					-- the file updates and let the server know when to read from it
 					FileUtils:SaveTableToFile("config.json", real_config_table)
+					FileUtils:SaveTableToFile("config-BACKUP.json", real_config_table)
 					Logger:BasicDebug("Configuration updates made - sending updated table to server")
 
 					if Ext.ClientNet.IsHost() then

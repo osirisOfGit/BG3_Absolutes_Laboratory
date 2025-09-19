@@ -652,19 +652,23 @@ end
 ---@param progressionTableId string?
 function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, level, progressionTableId)
 	if progressionTableId then
-		if not self.progressionTranslations[progressionTableId] then
-			Logger:BasicError("Progression Table UUID %s was not found in the index - removing from the config", progressionTableId)
+		if not self.progressionTranslations[progressionTableId] or (not self.progressions[progressionTableId] or not self.progressions[progressionTableId][level]) then
+			Logger:BasicWarning("Progression Table UUID %s was not found in the index for level %s - removing from the config", progressionTableId, level)
 			return true
 		else
 			local sep = parentGroup:AddSeparatorText(self.progressionTranslations[progressionTableId])
 			sep:SetStyle("SeparatorTextAlign", 0.05)
 			if not self.activeList.modId then
-				subLists.randomized.delete = true
-				subLists.randomized = {}
+				if subLists.randomized and subLists.randomized._real and next(subLists.randomized._real) then
+					subLists.randomized.delete = true
+					subLists.randomized = {}
+				else
+					subLists.randomized = {}
+				end
 			end
 		end
 	end
-	subLists = TableUtils:DeeplyCopyTable(subLists._real or subLists)
+	local subListsClone = TableUtils:DeeplyCopyTable(subLists._real or subLists)
 
 	local useIcons = self.settings.iconOrText == "Icon"
 	local displayTable = parentGroup:AddTable("display", useIcons and 1 or 3)
@@ -681,7 +685,8 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 			local progressionEntry = self.progressions[progressionTableId]
 			if progressionEntry
 				and progressionEntry[level]
-				and progressionEntry[level][self.name] then
+				and progressionEntry[level][self.name]
+			then
 				for nodeName, entryList in pairs(progressionEntry[level][self.name]) do
 					for _, entryName in pairs(entryList) do
 						if not self:CheckIfEntryIsInListLevel(self.activeList.levels[level], entryName, level, true) then
@@ -691,8 +696,8 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 								if not progressionTableId then
 									table.insert(subList, entryName)
 								elseif (self.name == SpellListDesigner.name and (Ext.Stats.GetCachedSpell(entryName).AiFlags & Ext.Enums.AIFlags.CanNotUse) == Ext.Enums.AIFlags.CanNotUse) then
-									subLists.blackListed = subLists.blackListed or {}
-									table.insert(subLists.blackListed, entryName)
+									subListsClone.blackListed = subListsClone.blackListed or {}
+									table.insert(subListsClone.blackListed, entryName)
 								else
 									table.insert(subList, entryName)
 								end
@@ -700,6 +705,8 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 						end
 					end
 				end
+			elseif subLists._real then
+				subLists.delete = true
 			end
 		end
 	end
@@ -707,7 +714,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 	local groupFunc
 	local listForGroupFunc = {}
 	if useIcons and self.settings.showSeperatorsInMain then
-		for subListName, subList in TableUtils:OrderedPairs(subLists, function(key)
+		for subListName, subList in TableUtils:OrderedPairs(subListsClone, function(key)
 			return self.subListIndex[key].name
 		end) do
 			for _, entry in pairs(subList) do
@@ -721,7 +728,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 	end
 
 	self.entryCacheForProgressions[level] = nil
-	for subListName, subList in TableUtils:OrderedPairs(subLists, function(key)
+	for subListName, subList in TableUtils:OrderedPairs(subListsClone, function(key)
 		return self.subListIndex[key].name
 	end) do
 		buildSubList(subListName, subList)
