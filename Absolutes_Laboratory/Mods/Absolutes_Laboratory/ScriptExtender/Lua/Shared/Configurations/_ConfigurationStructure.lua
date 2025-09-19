@@ -7,6 +7,18 @@ local updateTimer
 
 local informedUserOfHostRestriction = false
 
+local i = 0
+local createRevolvingBackups = coroutine.wrap(function(...)
+	while true do
+		i = i + 1
+		FileUtils:SaveTableToFile(("config-BACKUP-%s.json"):format(i), real_config_table)
+		if i == 5 then
+			i = 0
+		end
+		coroutine.yield()
+	end
+end)
+
 -- This allows us to react to any changes made to fields at any level in the structure and send a NetMessage
 -- just by defining the base table, ConfigurationStructure.config. Client/* implementations can now
 -- reference any slice of this table and allow their IMGUI elements to modify the table without
@@ -74,7 +86,7 @@ function ConfigurationStructure:generate_recursive_metatable(proxy_table, real_t
 					-- so instead of serializing and sending it via NetMessages we'll just have the client handle
 					-- the file updates and let the server know when to read from it
 					FileUtils:SaveTableToFile("config.json", real_config_table)
-					FileUtils:SaveTableToFile("config-BACKUP.json", real_config_table)
+					createRevolvingBackups()
 					Logger:BasicDebug("Configuration updates made - sending updated table to server")
 
 					if Ext.ClientNet.IsHost() then
