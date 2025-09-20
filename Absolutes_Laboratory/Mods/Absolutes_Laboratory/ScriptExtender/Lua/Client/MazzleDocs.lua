@@ -188,5 +188,5 @@ end
 
 ---@class MazzleDocsImage : MazzleDocsContentItem
 ---@field type "Image"
----@field image_index integer Index of the image to display
+---@field image_index integer Index of the image to display (starts at 1)
 ---@field image_width? integer Width override in pixels

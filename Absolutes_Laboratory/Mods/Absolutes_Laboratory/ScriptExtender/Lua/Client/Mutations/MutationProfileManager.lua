@@ -1426,11 +1426,11 @@ If they choose to continue without first loading the mod, Lab will scrub all ref
 			},
 			{
 				type = "Image",
-				image_index = 2
+				image_index = 3
 			} --[[@as MazzleDocsImage]],
 			{
 				type = "Image",
-				image_index = 3
+				image_index = 4
 			} --[[@as MazzleDocsImage]],
 			{
 				type = "Content",
@@ -1465,7 +1465,7 @@ What it'll look like in BG3MM, followed by an example meta.lsx with the Exported
 			},
 			{
 				type = "Image",
-				image_index = 4,
+				image_index = 5,
 
 			} --[[@as MazzleDocsImage]],
 			{
@@ -1536,12 +1536,12 @@ Lab pre-packages a number of Markers that can be used by anyone - these shouldn'
 			},
 			{
 				type = "Image",
-				image_index = 0,
+				image_index = 1,
 				centered = false
 			} --[[@as MazzleDocsImage]],
 			{
 				type = "Image",
-				image_index = 1,
+				image_index = 2,
 				centered = false
 			} --[[@as MazzleDocsImage]]
 		}
@@ -1573,7 +1573,7 @@ Let's start with the below:]]
 			},
 			{
 				type = "Image",
-				image_index = 5
+				image_index = 6
 			} --[[@as MazzleDocsImage]],
 			{
 				type = "Content",
@@ -1607,7 +1607,7 @@ WHERE
 			},
 			{
 				type = "Image",
-				image_index = 6
+				image_index = 7
 			} --[[@as MazzleDocsImage]],
 			{
 				type = "Content",
@@ -1616,7 +1616,7 @@ WHERE
 			},
 			{
 				type = "Image",
-				image_index = 7
+				image_index = 8
 			} --[[@as MazzleDocsImage]],
 			{
 				type = "Content",
@@ -1638,7 +1638,7 @@ WHERE
 			},
 			{
 				type = "Image",
-				image_index = 8
+				image_index = 9
 			} --[[@as MazzleDocsImage]],
 			{
 				type = "Content",

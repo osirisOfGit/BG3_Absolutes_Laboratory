@@ -459,23 +459,23 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 			local randomPool = {}
 			if leveledLists then
 				if leveledLists.linkedProgressions then
-					for progressionId, subLists in pairs(leveledLists.linkedProgressions) do
+					for progressionTableId, subLists in pairs(leveledLists.linkedProgressions) do
 						if subLists.guaranteed and next(subLists.guaranteed) then
 							for _, passiveId in pairs(subLists.guaranteed) do
 								if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
-									Logger:BasicDebug("Adding guaranteed passive %s from progression %s", passiveId, progressionId)
+									Logger:BasicDebug("Adding guaranteed passive %s from progression %s", passiveId, progressionTableId)
 									table.insert(appliedPassives, passiveId)
 								else
 									---@type ResourceProgression
-									local progressionResource = Ext.StaticData.Get(progressionId, "Progression")
+									local progressionResource = Ext.StaticData.Get(PassiveListDesigner.progressionTableToProgression[progressionTableId][level], "Progression")
 
-									Logger:BasicDebug("Guaranteed passive %s from progression %s (%s - level %s) is already known", passiveId, progressionId,
+									Logger:BasicDebug("Guaranteed passive %s from progression %s (%s - level %s) is already known", passiveId, progressionTableId,
 										progressionResource.Name, progressionResource.Level)
 								end
 							end
 						end
 
-						local progressionTable = PassiveListDesigner.progressions[progressionId]
+						local progressionTable = PassiveListDesigner.progressions[progressionTableId]
 						if progressionTable and progressionTable[level] and progressionTable[level][PassiveListDesigner.name] then
 							for _, passives in pairs(progressionTable[level][PassiveListDesigner.name]) do
 								for _, passiveId in pairs(passives) do
@@ -484,8 +484,8 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 											table.insert(randomPool, passiveId)
 										else
 											---@type ResourceProgression
-											local progressionResource = Ext.StaticData.Get(PassiveListDesigner.progressionTableToProgression[progressionId][level], "Progression")
-											Logger:BasicDebug("%s from progression %s (%s - level %s) is already known, not adding to the random pool", passiveId, progressionId,
+											local progressionResource = Ext.StaticData.Get(PassiveListDesigner.progressionTableToProgression[progressionTableId][level], "Progression")
+											Logger:BasicDebug("%s from progression %s (%s - level %s) is already known, not adding to the random pool", passiveId, progressionTableId,
 												progressionResource.Name, progressionResource.Level)
 										end
 									end
