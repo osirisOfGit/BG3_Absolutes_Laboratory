@@ -44,6 +44,9 @@ ListDesignerBaseClass = {
 	---@type CustomList?
 	activeList = nil,
 
+	---@type ListEntryReplaceMap
+	replaceMap = {},
+
 	--- For Multiselect Drag/Drop tracking
 	selectedEntries = {
 		---@type EntryHandle[]
@@ -422,6 +425,12 @@ function ListDesignerBaseClass:buildDesigner()
 		self:buildProgressionIndex()
 	end
 
+	---@type {[string] : string[]}
+	self.replaceMap = ConfigurationStructure.config.mutations.listEntryReplaceMap[self.configKey]
+	if self.activeList.modId then
+		self.replaceMap = MutationConfigurationProxy.listEntryReplaceMap[self.activeList.modId]
+	end
+
 	self:clearSelectedEntries()
 
 	self.entryCacheForProgressions = {}
@@ -705,8 +714,6 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 						end
 					end
 				end
-			elseif subLists._real then
-				subLists.delete = true
 			end
 		end
 	end
@@ -752,6 +759,11 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 
 				local entryImageButton = parent:AddImageButton(entryName .. "##" .. level, entryData.Icon ~= "" and entryData.Icon or "Item_Unknown",
 					{ 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
+				if self.replaceMap[entryName] and next(self.replaceMap[entryName]._real or self.replaceMap[entryName]) then
+					local replacesText = parent:AddText("R")
+					replacesText.Font = "Tiny"
+					replacesText.SameLine = true
+				end
 				if entryImageButton.Image.Icon == "" then
 					entryImageButton:Destroy()
 					entryImageButton = parent:AddImageButton(entryName .. "##" .. level, "Item_Unknown", { 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
@@ -1004,6 +1016,87 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 											end
 										end
 									end
+
+									---@type ExtuiMenu
+									local replaceMenu = self.popup:AddMenu("Replaces:")
+									Helpers:KillChildren(replaceMenu)
+									replaceMenu:AddText([[Any entries listed below will be removed from the Entity if this entry is applied.
+These fields are universal, applying to every list of the same type (i.e. Passive Lists).
+If the List is from a mod, only that mod's map will be referenced, both here and during Profile Execution
+Entries that replaces other entries are marked in the Main List view with a tiny 'R']])
+
+									local displayGroup = replaceMenu:AddGroup("")
+									local function buildEntryTable()
+										Helpers:KillChildren(displayGroup)
+										local displayRow = displayGroup:AddTable("entryDisplay", 2):AddRow()
+
+										if self.replaceMap[entryName] and self.replaceMap[entryName]() then
+											displayGroup:AddSeparatorText("Entries that will be removed:"):SetStyle("SeparatorTextAlign", 0.5)
+											for i, entryBeingReplaced in ipairs(self.replaceMap[entryName]) do
+												---@type StatusData|SpellData|PassiveData
+												local stat = Ext.Stats.Get(entryBeingReplaced)
+												if stat then
+													local parent = displayRow:AddCell()
+													if not self.activeList.modId then
+														Styler:ImageButton(parent:AddImageButton("delete", "ico_red_x", Styler:ScaleFactor({ 20, 20 }))).OnClick = function()
+															self.replaceMap[entryName][i] = nil
+															TableUtils:ReindexNumericTable(self.replaceMap[entryName])
+															buildEntryTable()
+														end
+													end
+													parent:AddImage(stat.Icon ~= "" and stat.Icon or "Item_Unknown", Styler:ScaleFactor({ 32, 32 })).SameLine = true
+													Styler:HyperlinkText(parent, entryBeingReplaced, function(parent)
+														ResourceManager:RenderDisplayWindow(stat, parent)
+													end).SameLine = true
+												elseif not self.activeList.modId then
+													self.replaceMap[entryName][i] = nil
+													TableUtils:ReindexNumericTable(self.replaceMap[entryName])
+													Logger:BasicWarning("Removed %s from %s's Replacement map under the %s entries due to it not existing", entryBeingReplaced,
+														entryName,
+														self.configKey)
+													buildEntryTable()
+												end
+											end
+										end
+									end
+									buildEntryTable()
+
+									if not self.activeList.modId then
+										local statTypes = {
+											[PassiveListDesigner.configKey] = "PassiveData",
+											[SpellListDesigner.configKey] = "SpellData",
+											[StatusListDesigner.configKey] = "StatusData"
+										}
+										StatBrowser:Render(statTypes[self.configKey],
+											replaceMenu,
+											nil,
+											function(pos)
+												return pos % 7 ~= 0
+											end,
+											function(entryId)
+												return TableUtils:IndexOf(self.replaceMap[entryName], entryId) ~= nil
+											end,
+											nil,
+											function(_, entryId)
+												local index = TableUtils:IndexOf(self.replaceMap[entryName], entryId)
+												if not index then
+													self.replaceMap[entryName] = self.replaceMap[entryName] or {}
+
+													table.insert(self.replaceMap[entryName], entryId)
+												else
+													self.replaceMap[entryName][index] = nil
+													TableUtils:ReindexNumericTable(self.replaceMap[entryName])
+													if not self.replaceMap[entryName]() then
+														self.replaceMap[entryName].delete = true
+													end
+												end
+												Ext.OnNextTick(function(e)
+													buildEntryTable()
+												end)
+											end
+										)
+									end
+
 
 									if not progressionTableId then
 										self.popup:AddSelectable("Remove").OnClick = function()
@@ -1776,6 +1869,10 @@ function ListDesignerBaseClass:HandleDependences(export, mutator, lists, removeM
 
 	local progressionSources = Ext.StaticData.GetSources("Progression")
 
+	local replaceMap = removeMissingDependencies == true
+		and export.listEntryReplaceMap
+		or TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.listEntryReplaceMap._real)
+
 	---@param statName string
 	---@param container table?
 	---@return boolean?
@@ -1807,6 +1904,25 @@ function ListDesignerBaseClass:HandleDependences(export, mutator, lists, removeM
 			return true
 		else
 			return false
+		end
+	end
+
+	if not export.listEntryReplaceMap[self.configKey] and replaceMap[self.configKey] and replaceMap[self.configKey] and next(replaceMap[self.configKey]) then
+		if not removeMissingDependencies then
+			replaceMap.modDependencies = export.listEntryReplaceMap.modDependencies
+		end
+		for statName, entriesToReplace in pairs(replaceMap[self.configKey]) do
+			for i, statBeingReplaced in ipairs(entriesToReplace) do
+				if not buildStatDependency(statBeingReplaced, replaceMap) then
+					replaceMap[self.configKey][statName][i] = nil
+				end
+			end
+
+			TableUtils:ReindexNumericTable(replaceMap[self.configKey][statName])
+		end
+		if not removeMissingDependencies then
+			export.listEntryReplaceMap.modDependencies = replaceMap.modDependencies
+			export.listEntryReplaceMap[self.configKey] = replaceMap[self.configKey]
 		end
 	end
 

@@ -7,8 +7,8 @@ local updateTimer
 
 local informedUserOfHostRestriction = false
 
-local i = 0
 local createRevolvingBackups = coroutine.wrap(function(...)
+	local i = 0
 	while true do
 		i = i + 1
 		FileUtils:SaveTableToFile(("config-BACKUP-%s.json"):format(i), real_config_table)

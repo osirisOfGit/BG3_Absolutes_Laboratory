@@ -10,8 +10,9 @@ MutationModProxy.Filename = "AbsolutesLaboratory_ProfilesAndMutations"
 ---@field spellLists {[Guid] : string}
 ---@field passiveLists {[Guid] : string}
 ---@field statusLists {[Guid] : string}
+---@field listEntryReplaceMap {[string] : string[]}
 
----@type {[Guid] : +LocalModCache}
+---@type {[Guid] : LocalModCache}
 local modList = {}
 
 local function setModProxyFields(tbl, key, target)
@@ -60,6 +61,12 @@ local function setModProxyFields(tbl, key, target)
 			end
 		end
 
+		if mutationConfig.listEntryReplaceMap then
+			for entry, entriesBeingReplaced in pairs(mutationConfig.listEntryReplaceMap) do
+				rawset(MutationModProxy.ModProxy.listEntryReplaceMap, entry, entriesBeingReplaced)
+			end
+		end
+
 		return rawget(tbl, key)
 	end
 end
@@ -96,6 +103,19 @@ MutationModProxy.ModProxy = {
 		end,
 		__call = function(t)
 			MutationModProxy:ImportMutationsFromMods()
+			return TableUtils:CountElements(modList)
+		end,
+		__pairs = function(t)
+			return pairs(modList)
+		end
+	}),
+	listEntryReplaceMap = setmetatable({}, {
+		__mode = "k",
+		__index = function(t, k)
+			setModProxyFields(t, k, "listEntryReplaceMap")
+			return modList[k].listEntryReplaceMap
+		end,
+		__call = function(t)
 			return TableUtils:CountElements(modList)
 		end,
 		__pairs = function(t)

@@ -113,4 +113,9 @@ MutationConfigurationProxy = {
 			end)
 		end
 	}),
+	listEntryReplaceMap = setmetatable({}, {
+		__index = function(t, k)
+			return MutationModProxy.ModProxy.listEntryReplaceMap[k]
+		end
+	}),
 }

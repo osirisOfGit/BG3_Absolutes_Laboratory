@@ -250,6 +250,18 @@ ConfigurationStructure.config.mutations.settings.customLists = {
 ---@class SpellList : CustomList
 ---@field abilityPriorities AbilityPriorities
 
+---@class ListEntryReplaceMap
+ConfigurationStructure.config.mutations.listEntryReplaceMap = {
+	---@type {[string]: string[]}
+	spellLists = {},
+	---@type {[string]: string[]}
+	passiveLists = {},
+	---@type {[string]: string[]}
+	statusLists = {},
+	---@type ModDependencies
+	modDependencies = nil,
+}
+
 ---@type {[Guid]: SpellList}
 ConfigurationStructure.config.mutations.spellLists = {}
 

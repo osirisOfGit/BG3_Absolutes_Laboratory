@@ -189,8 +189,8 @@ local function buildMetaBlock(modList)
 	end
 end
 
-Ext.RegisterConsoleCommand("Lab_MetaBlock", function (cmd, ...)
-	print(buildMetaBlock({...}))
+Ext.RegisterConsoleCommand("Lab_MetaBlock", function(cmd, ...)
+	print(buildMetaBlock({ ... }))
 end)
 
 ---@param mutationConfig MutationsConfig
@@ -228,6 +228,7 @@ function MutationExternalProfileUtility:exportProfile(forMod, ...)
 		spellLists = {},
 		statusLists = {},
 		passiveLists = {},
+		listEntryReplaceMap = {}
 	}
 
 	for _, listType in pairs(MutationModProxy.listTypes) do
@@ -389,6 +390,24 @@ function MutationExternalProfileUtility:importProfile(export)
 				end
 
 				mutationConfig.prepPhaseMarkers[categoryId] = markerCategory
+			end
+		end
+
+		if importedMutations.listEntryReplaceMap then
+			for _, listType in pairs(MutationModProxy.listTypes) do
+				if importedMutations.listEntryReplaceMap[listType] and next(importedMutations.listEntryReplaceMap[listType]) then
+					mutationConfig.listEntryReplaceMap = mutationConfig.listEntryReplaceMap or {}
+					mutationConfig.listEntryReplaceMap[listType] = mutationConfig.listEntryReplaceMap[listType] or {}
+
+					for entryName, replacementMap in pairs(importedMutations.listEntryReplaceMap[listType]) do
+						mutationConfig.listEntryReplaceMap[listType][entryName] = mutationConfig.listEntryReplaceMap[listType][entryName] or {}
+						for _, replacement in ipairs(replacementMap) do
+							if not TableUtils:IndexOf(mutationConfig.listEntryReplaceMap[listType][entryName], replacement) then
+								table.insert(mutationConfig.listEntryReplaceMap[listType][entryName], replacement)
+							end
+						end
+					end
+				end
 			end
 		end
 

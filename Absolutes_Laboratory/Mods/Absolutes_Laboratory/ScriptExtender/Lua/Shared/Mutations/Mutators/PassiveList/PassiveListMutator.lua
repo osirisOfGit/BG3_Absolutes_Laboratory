@@ -464,7 +464,6 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 							for _, passiveId in pairs(subLists.guaranteed) do
 								if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
 									Logger:BasicDebug("Adding guaranteed passive %s from progression %s", passiveId, progressionId)
-									Osi.AddPassive(entity.Uuid.EntityUuid, passiveId)
 									table.insert(appliedPassives, passiveId)
 								else
 									---@type ResourceProgression
@@ -476,16 +475,16 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 							end
 						end
 
-						if PassiveListDesigner.progressionTranslations[progressionId] then
-							local progressionTable = PassiveListDesigner.progressions[PassiveListDesigner.progressionTranslations[progressionId]]
-							if progressionTable and progressionTable[level] and progressionTable[level][PassiveListDesigner.name] then
-								for _, passiveId in pairs(progressionTable[level][PassiveListDesigner.name]) do
+						local progressionTable = PassiveListDesigner.progressions[progressionId]
+						if progressionTable and progressionTable[level] and progressionTable[level][PassiveListDesigner.name] then
+							for _, passives in pairs(progressionTable[level][PassiveListDesigner.name]) do
+								for _, passiveId in pairs(passives) do
 									if not TableUtils:IndexOf(subLists.blackListed, passiveId) then
 										if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
 											table.insert(randomPool, passiveId)
 										else
 											---@type ResourceProgression
-											local progressionResource = Ext.StaticData.Get(progressionId, "Progression")
+											local progressionResource = Ext.StaticData.Get(PassiveListDesigner.progressionTableToProgression[progressionId][level], "Progression")
 											Logger:BasicDebug("%s from progression %s (%s - level %s) is already known, not adding to the random pool", passiveId, progressionId,
 												progressionResource.Name, progressionResource.Level)
 										end
@@ -510,7 +509,6 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 						for _, passiveId in pairs(leveledLists.manuallySelectedEntries.guaranteed) do
 							if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
 								Logger:BasicDebug("Adding guaranteed passive %s", passiveId)
-								Osi.AddPassive(entity.Uuid.EntityUuid, passiveId)
 								table.insert(appliedPassives, passiveId)
 							else
 								Logger:BasicDebug("Guaranteed passive %s is already present", passiveId)
@@ -553,9 +551,7 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 				end
 
 				for _, passiveId in pairs(passivesToGive) do
-					Osi.AddPassive(entity.Uuid.EntityUuid, passiveId)
 					table.insert(appliedPassives, passiveId)
-					Logger:BasicDebug("Added passive %s", passiveId)
 				end
 			else
 				Logger:BasicDebug("Skipping level %s for random passive assignment due to configured size being 0",
@@ -632,6 +628,11 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 		end
 	end
 
+	---@type ListEntryReplaceMap
+	local replaceMap = TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.listEntryReplaceMap._real)
+	replaceMap.passiveLists = replaceMap.passiveLists or {}
+	local replaceMap = replaceMap.passiveLists
+
 	if next(passiveListsPool) then
 		if not usingListsWithSpellListDeps then
 			local chosenIndex = math.random(TableUtils:CountElements(passiveListsPool))
@@ -664,12 +665,50 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 					end
 				end
 
+				if levelToUse > 0 and passiveList.modId then
+					---@type ListEntryReplaceMap
+					local modReplaceMap = MutationConfigurationProxy.listEntryReplaceMap[passiveList.modId]
+					if modReplaceMap.passiveLists then
+						for statReplacement, statsToReplace in pairs(modReplaceMap.passiveLists) do
+							if not replaceMap[statReplacement] then
+								replaceMap[statReplacement] = statsToReplace
+							else
+								for _, toReplace in ipairs(statsToReplace) do
+									if not TableUtils:IndexOf(replaceMap[statReplacement], toReplace) then
+										table.insert(replaceMap[statReplacement]) 
+									end
+								end
+							end
+						end
+						Logger:BasicDebug("Added Mod %'s replacement map to the overall replacement map, as one of it's lists was used", Ext.Mod.GetMod(passiveList.modId).Info.Name)
+					end
+				end
+
 				applyPassiveLists(entity, levelToUse, passiveList, numRandomPassivesPerLevel, appliedPassives)
 			end
 		end
 	end
 
 	if next(appliedPassives) then
+		for i = #appliedPassives, 1, -1 do
+			local passiveToApply = appliedPassives[i]
+			if passiveToApply and replaceMap[passiveToApply] then
+				for _, passiveToRemove in pairs(replaceMap[passiveToApply]) do
+					local index = TableUtils:IndexOf(appliedPassives, passiveToRemove)
+					if index then
+						appliedPassives[index] = nil
+						Logger:BasicDebug("Removed %s from list of passives to apply as it's marked to be removed by %s", passiveToRemove, passiveToApply)
+					end
+				end
+			end
+		end
+
+		TableUtils:ReindexNumericTable(appliedPassives)
+
+		Logger:BasicDebug("Applying the following passives: %s", appliedPassives)
+		for _, passiveToApply in ipairs(appliedPassives) do
+			Osi.AddPassive(entity.Uuid.EntityUuid, passiveToApply)
+		end
 		entityVar.originalValues[self.name] = appliedPassives
 	end
 end
