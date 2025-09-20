@@ -1414,20 +1414,24 @@ if Ext.IsServer() then
 											self:processSubLists(subLists, entity, addSpells, origValues)
 
 											if SpellListDesigner.progressionTranslations[progressionId] then
-												local progressionTable = SpellListDesigner.progressions[SpellListDesigner.progressionTranslations[progressionId]]
+												local progressionTable = SpellListDesigner.progressions[progressionId]
 												if progressionTable and progressionTable[i] and progressionTable[i][SpellListDesigner.name] then
-													for _, spellName in pairs(progressionTable[i][SpellListDesigner.name]) do
-														if not TableUtils:IndexOf(subLists.blackListed, spellName) then
-															if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
-																	return value.Id.OriginatorPrototype == spellName
-																end) then
-																table.insert(randomPool, spellName)
-															else
-																---@type ResourceProgression
-																local progressionResource = Ext.StaticData.Get(progressionId, "Progression")
+													for _, spells in pairs(progressionTable[i][SpellListDesigner.name]) do
+														for _, spellName in pairs(spells) do
+															if not TableUtils:IndexOf(subLists.blackListed, spellName) then
+																if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
+																		return value.Id.OriginatorPrototype == spellName
+																	end) then
+																	table.insert(randomPool, spellName)
+																else
+																	---@type ResourceProgression
+																	local progressionResource = Ext.StaticData.Get(
+																		PassiveListDesigner.progressionTableToProgression[progressionId][i], "Progression")
 
-																Logger:BasicDebug("%s from progression %s (%s - level %s) is already known, not adding to the random pool", spellName,
-																	progressionId, progressionResource.Name, progressionResource.Level)
+																	Logger:BasicDebug("%s from progression %s (%s - level %s) is already known, not adding to the random pool",
+																		spellName,
+																		progressionId, progressionResource.Name, progressionResource.Level)
+																end
 															end
 														end
 													end
