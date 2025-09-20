@@ -216,6 +216,11 @@ ConfigurationStructure.config.mutations.settings.customLists = {
 	---@type "Icon"|"Text"
 	iconOrText = "Icon",
 	showSeperatorsInMain = true,
+	defaultPool = {
+		spellLists = "randomized",
+		passiveLists = "guaranteed",
+		statusLists = "guaranteed"
+	},
 	savedSpellListSpreads = {
 		spellLists   = {
 			["Default"] = {
