@@ -1039,8 +1039,9 @@ if Ext.IsServer() then
 		local entity = Ext.Entity.Get(character)
 		if entity.Vars[SPELL_MUTATOR_ON_DEATH] then
 			---@type MutatorEntityVar
-			local entityVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME]
-
+			local entityVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] or {}
+			entityVar.originalValues = entityVar.originalValues or {}
+			entityVar.originalValues[SpellListMutator.name] = entityVar.originalValues[SpellListMutator.name] or {}
 			entityVar.originalValues[SpellListMutator.name].castedSpells = entityVar.originalValues[SpellListMutator.name].castedSpells or {}
 
 			local castedSpells = entityVar.originalValues[SpellListMutator.name].castedSpells
@@ -1223,6 +1224,11 @@ if Ext.IsServer() then
 			spellListMutators = { spellListMutators }
 		end
 
+		---@type ListEntryReplaceMap
+		local replaceMap = TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.listEntryReplaceMap._real)
+		replaceMap.passiveLists = replaceMap.spellLists or {}
+		local replaceMap = replaceMap.spellLists
+
 		---@cast spellListMutators SpellListMutator[]
 
 		spellSystem.AddSpells[entity] = spellSystem.AddSpells[entity] or {}
@@ -1404,6 +1410,26 @@ if Ext.IsServer() then
 								useGameLevel and EntityRecorder.Levels[startingSpellListLevel == 0 and 1 or startingSpellListLevel] or startingSpellListLevel,
 								useGameLevel and EntityRecorder.Levels[cLevel] or cLevel)
 
+							if spellList.modId then
+								---@type ListEntryReplaceMap?
+								local modMap = MutationConfigurationProxy.listEntryReplaceMap[spellList.modId]
+								if modMap and modMap.spellLists then
+									for replacer, toReplaceList in pairs(modMap.spellLists) do
+										if not replaceMap[replaceMap] then
+											replaceMap[replacer] = TableUtils:DeeplyCopyTable(toReplaceList)
+										else
+											for _, toReplace in ipairs(toReplaceList) do
+												if not TableUtils:IndexOf(replaceMap[replacer]) then
+													table.insert(replaceMap[replacer], toReplace)
+												end
+											end
+										end
+									end
+									Logger:BasicDebug("Added replacer map entries from Mod %s's replaceMap as it was chosen to be applied",
+										Ext.Mod.GetMod(spellList.modId).Info.Name)
+								end
+							end
+
 							for i = startingSpellListLevel, cLevel do
 								local leveledLists = spellList.levels[i]
 								---@type EntryName[]
@@ -1421,7 +1447,8 @@ if Ext.IsServer() then
 															if not TableUtils:IndexOf(subLists.blackListed, spellName) then
 																if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
 																		return value.Id.OriginatorPrototype == spellName
-																	end) then
+																	end)
+																then
 																	table.insert(randomPool, spellName)
 																else
 																	---@type ResourceProgression
@@ -1506,6 +1533,41 @@ if Ext.IsServer() then
 									Logger:BasicDebug("Skipping level %s for random spell assignment due to configured size being 0",
 										useGameLevel and EntityRecorder.Levels[maxAppliedLevel + i] or maxAppliedLevel + i)
 								end
+							end
+						end
+					end
+				end
+			end
+
+			for i = #origValues.addedSpells, 1, -1 do
+				local appliedSpell = origValues.addedSpells[i]
+
+				if replaceMap[appliedSpell] then
+					for _, toReplace in ipairs(entity.SpellBook.Spells) do
+						if TableUtils:IndexOf(replaceMap[appliedSpell], function(value)
+								return value == toReplace.Id.OriginatorPrototype
+							end)
+						then
+							if TableUtils:IndexOf(origValues.addedSpells, toReplace.Id.OriginatorPrototype) then
+								origValues.addedSpells[TableUtils:IndexOf(origValues.addedSpells, toReplace.Id.OriginatorPrototype)] = nil
+								TableUtils:ReindexNumericTable(origValues.addedSpells)
+							end
+							spellSystem.RemoveSpell[entity] = spellSystem.RemoveSpell[entity] or {}
+							spellSystem.RemoveSpell[entity][#spellSystem.RemoveSpell[entity] + 1] = toReplace.Id
+							Logger:BasicDebug("Removed %s from the spell book as it was set to be replaced by %s", toReplace.Id.OriginatorPrototype, appliedSpell)
+						end
+					end
+
+					if spellSystem.AddSpells[entity] then
+						for s, spellMeta in pairs(spellSystem.AddSpells[entity]) do
+							if TableUtils:IndexOf(replaceMap[appliedSpell], spellMeta.SpellId.OriginatorPrototype) then
+								if TableUtils:IndexOf(origValues.addedSpells, spellMeta.SpellId.OriginatorPrototype) then
+									origValues.addedSpells[TableUtils:IndexOf(origValues.addedSpells, spellMeta.SpellId.OriginatorPrototype)] = nil
+									TableUtils:ReindexNumericTable(origValues.addedSpells)
+								end
+
+								spellSystem.AddSpells[entity][s] = nil
+								Logger:BasicDebug("Cancelled adding %s to the spell book as it was set to be replaced by %s", spellMeta.SpellId.OriginatorPrototype, appliedSpell)
 							end
 						end
 					end

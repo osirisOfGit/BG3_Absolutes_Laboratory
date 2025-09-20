@@ -1040,6 +1040,7 @@ Entries that replaces other entries are marked in the Main List view with a tiny
 													if not self.activeList.modId then
 														Styler:ImageButton(parent:AddImageButton("delete", "ico_red_x", Styler:ScaleFactor({ 20, 20 }))).OnClick = function()
 															self.replaceMap[entryName][i] = nil
+															self:buildDesigner()
 															TableUtils:ReindexNumericTable(self.replaceMap[entryName])
 															buildEntryTable()
 														end
@@ -1093,6 +1094,7 @@ Entries that replaces other entries are marked in the Main List view with a tiny
 												Ext.OnNextTick(function(e)
 													buildEntryTable()
 												end)
+												self:buildDesigner()
 											end
 										)
 									end

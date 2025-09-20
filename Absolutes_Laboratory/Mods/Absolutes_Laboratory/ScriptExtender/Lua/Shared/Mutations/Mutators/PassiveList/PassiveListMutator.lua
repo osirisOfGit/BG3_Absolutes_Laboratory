@@ -675,7 +675,7 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 							else
 								for _, toReplace in ipairs(statsToReplace) do
 									if not TableUtils:IndexOf(replaceMap[statReplacement], toReplace) then
-										table.insert(replaceMap[statReplacement]) 
+										table.insert(replaceMap[statReplacement])
 									end
 								end
 							end
@@ -694,6 +694,10 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 			local passiveToApply = appliedPassives[i]
 			if passiveToApply and replaceMap[passiveToApply] then
 				for _, passiveToRemove in pairs(replaceMap[passiveToApply]) do
+					if Osi.HasPassive(entity.Uuid.EntityUuid, passiveToRemove) == 1 then
+						Osi.RemovePassive(entity.Uuid.EntityUuid, passiveToRemove)
+						Logger:BasicDebug("Removed %s from the entity as it's marked to be removed by %s", passiveToRemove, passiveToApply)
+					end
 					local index = TableUtils:IndexOf(appliedPassives, passiveToRemove)
 					if index then
 						appliedPassives[index] = nil
