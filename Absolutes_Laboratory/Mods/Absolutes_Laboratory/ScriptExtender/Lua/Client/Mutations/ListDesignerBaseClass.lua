@@ -606,7 +606,7 @@ Using entity level will use the entity's character level, post Character Level M
 															then
 																for _, entryList in pairs(progressionEntry[level][self.name]) do
 																	for _, entry in pairs(entryList) do
-																		if not lists.levels[level] or not self:CheckIfEntryIsInListLevel(lists.levels[level], entry, level, true) then
+																		if not lists.levels[level] or not self:CheckIfEntryIsInListLevel(levelSubList, entry, level, true) then
 																			if self.name ~= SpellListDesigner.name or (Ext.Stats.GetCachedSpell(entry).AiFlags & Ext.Enums.AIFlags.CanNotUse) ~= Ext.Enums.AIFlags.CanNotUse then
 																				table.insert(list[chosen], entry)
 																			end
@@ -838,20 +838,36 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 	for subListName, subList in TableUtils:OrderedPairs(subListsClone, function(key)
 		return self.subListIndex[key].name
 	end) do
+		if not self.subListIndex[subListName] then
+			local default = self.settings.defaultPool[self.configKey]
+			subLists[default] = subLists[default] or {}
+			for _, entry in pairs(subLists[subListName]) do
+				table.insert(subLists[default], entry)
+			end
+			subLists[subListName].delete = true
+			Helpers:KillChildren(parentGroup)
+			self:buildEntryListFromSubList(parentGroup, subLists, level, progressionTableId)
+			return
+		end
 		buildSubList(subListName, subList)
 
 		---@cast subList EntryName[]
 
-		for _, entryName in TableUtils:OrderedPairs(subList, function(key)
+		for i, entryName in TableUtils:OrderedPairs(subList, function(key)
 			return subList[key]
 		end) do
-			count = count + 1
-			---@type ExtuiTreeParent
-			local parent = useIcons and row.Children[1] or row:AddCell()
-
 			---@type SpellData|PassiveData|StatusData
 			local entryData = Ext.Stats.Get(entryName)
-			if entryData then
+			if not entryData then
+				if not self.activeList.modId then
+					Logger:BasicWarning("Removing %s from %s %s's %s pool at level %s due to it being a non-existent entry", entryName, self.name, self.activeList.name, subListName, level)
+					subLists[subListName][i] = nil
+					TableUtils:ReindexNumericTable(subLists[subListName])
+				end
+			else
+				count = count + 1
+				---@type ExtuiTreeParent
+				local parent = useIcons and row.Children[1] or row:AddCell()
 				if groupFunc then
 					parent = groupFunc(entryData)
 				end
