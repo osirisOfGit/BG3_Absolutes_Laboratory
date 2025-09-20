@@ -730,12 +730,14 @@ Using entity level will use the entity's character level, post Character Level M
 			self.activeList.levels[group.UserData] = self.activeList.levels[group.UserData] or {}
 			self.activeList.levels[group.UserData].manuallySelectedEntries = self.activeList.levels[group.UserData].manuallySelectedEntries or {}
 
+			local defaultPool = self.settings.defaultPool[self.configKey]
+
 			for _, spellHandle in pairs(entryHandles) do
 				if not self:CheckIfEntryIsInListLevel(self.activeList.levels[group.UserData], spellHandle.entryName, group.UserData) then
-					self.activeList.levels[group.UserData].manuallySelectedEntries[spellHandle.subListName or "randomized"] =
-						self.activeList.levels[group.UserData].manuallySelectedEntries[spellHandle.subListName or "randomized"] or {}
+					self.activeList.levels[group.UserData].manuallySelectedEntries[spellHandle.subListName or defaultPool] =
+						self.activeList.levels[group.UserData].manuallySelectedEntries[spellHandle.subListName or defaultPool] or {}
 
-					table.insert(self.activeList.levels[group.UserData].manuallySelectedEntries[spellHandle.subListName or "randomized"], spellHandle.entryName)
+					table.insert(self.activeList.levels[group.UserData].manuallySelectedEntries[spellHandle.subListName or defaultPool], spellHandle.entryName)
 
 					if spellHandle.subListName then
 						local index = TableUtils:IndexOf(self.activeList.levels[spellHandle.level].manuallySelectedEntries[spellHandle.subListName], spellHandle.entryName)
@@ -860,7 +862,8 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 			local entryData = Ext.Stats.Get(entryName)
 			if not entryData then
 				if not self.activeList.modId then
-					Logger:BasicWarning("Removing %s from %s %s's %s pool at level %s due to it being a non-existent entry", entryName, self.name, self.activeList.name, subListName, level)
+					Logger:BasicWarning("Removing %s from %s %s's %s pool at level %s due to it being a non-existent entry", entryName, self.name, self.activeList.name, subListName,
+						level)
 					subLists[subListName][i] = nil
 					TableUtils:ReindexNumericTable(subLists[subListName])
 				end
@@ -1307,10 +1310,11 @@ function ListDesignerBaseClass:buildStatBrowser(statType)
 							subLevelList.manuallySelectedEntries = subLevelList.manuallySelectedEntries or
 								TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
 
+							local defaultPool = self.settings.defaultPool[self.configKey]
 							local leveledSubList = subLevelList.manuallySelectedEntries
-							leveledSubList.randomized = leveledSubList.randomized or {}
+							leveledSubList[defaultPool] = leveledSubList[defaultPool] or {}
 
-							table.insert(leveledSubList.randomized, statName)
+							table.insert(leveledSubList[defaultPool], statName)
 						end
 					end
 
@@ -1531,6 +1535,7 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 							header:SetStyle("SeparatorTextAlign", 0.5)
 
 							Styler:MiddleAlignedColumnLayout(levelView, function(ele)
+								local defaultPool = self.settings.defaultPool[self.configKey]
 								local copyAllButton = ele:AddButton("Copy All")
 
 								copyAllButton.OnClick = function()
@@ -1547,7 +1552,7 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 											TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
 
 										local leveledSubList = subLevelList.manuallySelectedEntries
-										leveledSubList.randomized = leveledSubList.randomized or {}
+										leveledSubList[defaultPool] = leveledSubList[defaultPool] or {}
 
 										for node, entryList in pairs(lists[self.name]) do
 											for _, entry in pairs(entryList) do
@@ -1555,7 +1560,7 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 													(self.name ~= SpellListDesigner.name
 														or (Ext.Stats.GetCachedSpell(entry).AiFlags & Ext.Enums.AIFlags.CanNotUse) ~= Ext.Enums.AIFlags.CanNotUse)
 												then
-													table.insert(leveledSubList.randomized, entry)
+													table.insert(leveledSubList[defaultPool], entry)
 												end
 											end
 										end
@@ -1589,6 +1594,28 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 												self.activeList.levels[level].linkedProgressions = self.activeList.levels[level].linkedProgressions or {}
 												self.activeList.levels[level].linkedProgressions[progressionTableUuid] =
 													TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
+
+												self.activeList.levels[level].linkedProgressions[progressionTableUuid][defaultPool] = {}
+
+												if defaultPool ~= "randomized" then
+													local progressionEntry = self.progressions[progressionTableUuid]
+													if progressionEntry
+														and progressionEntry[level]
+														and progressionEntry[level][self.name]
+													then
+														for _, entryList in pairs(progressionEntry[level][self.name]) do
+															for _, entry in pairs(entryList) do
+																if not self:CheckIfEntryIsInListLevel(self.activeList.levels[level], entry, level, true) then
+																	if self.name ~= SpellListDesigner.name or (Ext.Stats.GetCachedSpell(entry).AiFlags & Ext.Enums.AIFlags.CanNotUse) ~= Ext.Enums.AIFlags.CanNotUse then
+																		table.insert(
+																			self.activeList.levels[level].linkedProgressions[progressionTableUuid][defaultPool],
+																			entry)
+																	end
+																end
+															end
+														end
+													end
+												end
 											end
 											linkButton.Label = "Unlink"
 										end
