@@ -136,8 +136,8 @@ and this list will use the sum of the assigned spell list levels to determine wh
 
 				if modCache.statusLists and next(modCache.statusLists) then
 					modStatusLists[modId] = {}
-					for passiveListId in pairs(modCache.statusLists) do
-						table.insert(modStatusLists[modId], passiveListId)
+					for statusListId in pairs(modCache.statusLists) do
+						table.insert(modStatusLists[modId], statusListId)
 					end
 				end
 			end
@@ -151,12 +151,12 @@ and this list will use the sum of the assigned spell list levels to determine wh
 					modGroup:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name).Font = "Small"
 
 					for _, statusListId in TableUtils:OrderedPairs(statusLists, function(key, value)
-						return MutationModProxy.ModProxy.passiveLists[value].name
+						return MutationModProxy.ModProxy.statusLists[value].name
 					end) do
-						local passiveList = MutationModProxy.ModProxy.spellLists[statusListId]
-						if mutator.useGameLevel == passiveList.useGameLevel then
+						local statusList = MutationModProxy.ModProxy.statusLists[statusListId]
+						if mutator.useGameLevel == statusList.useGameLevel then
 							---@type ExtuiSelectable
-							local select = modGroup:AddSelectable(passiveList.name, "DontClosePopups")
+							local select = modGroup:AddSelectable(statusList.name, "DontClosePopups")
 							select.Selected = TableUtils:IndexOf(mutator.values.statusLists, statusListId) ~= nil
 							select.OnClick = function()
 								local index = TableUtils:IndexOf(mutator.values.statusLists, statusListId)
@@ -472,7 +472,6 @@ local function applyStatusLists(entity, levelToUse, statusList, numRandomStatuse
 					for _, statusId in pairs(leveledLists.manuallySelectedEntries.guaranteed) do
 						if Osi.HasActiveStatus(entity.Uuid.EntityUuid, statusId) == 0 then
 							Logger:BasicDebug("Adding guaranteed status %s", statusId)
-							Osi.ApplyStatus(entity.Uuid.EntityUuid, statusId, -1)
 							table.insert(appliedStatuses, statusId)
 						else
 							Logger:BasicDebug("Guaranteed status %s is already present", statusId)
@@ -513,9 +512,7 @@ local function applyStatusLists(entity, levelToUse, statusList, numRandomStatuse
 			end
 
 			for _, statusId in pairs(statusesToGive) do
-				Osi.ApplyStatus(entity.Uuid.EntityUuid, statusId, -1)
 				table.insert(appliedStatuses, statusId)
-				Logger:BasicDebug("Added status %s", statusId)
 			end
 		else
 			Logger:BasicDebug("Skipping level %s for random status assignment due to configured size being 0", statusList.useGameLevel and EntityRecorder.Levels[level] or level)
@@ -580,13 +577,17 @@ function StatusListMutator:applyMutator(entity, entityVar)
 		for _, statusId in pairs(looseStatusesToApply) do
 			if Osi.HasActiveStatus(entity.Uuid.EntityUuid, statusId) == 0 then
 				Logger:BasicDebug("Adding loose status %s", statusId)
-				Osi.ApplyStatus(entity.Uuid.EntityUuid, statusId, -1)
 				table.insert(appliedStatuses, statusId)
 			else
 				Logger:BasicDebug("Loose status %s is already present", statusId)
 			end
 		end
 	end
+
+	---@type ListEntryReplaceMap
+	local replaceMap = TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.listEntryReplaceMap._real)
+	replaceMap.statusLists = replaceMap.statusLists or {}
+	local replaceMap = replaceMap.statusLists
 
 	if next(statusListsPool) then
 		if not usingListsWithSpellListDeps then
@@ -603,6 +604,27 @@ function StatusListMutator:applyMutator(entity, entityVar)
 						statusList.name .. (statusList.modId and (" from mod " .. Ext.Mod.GetMod(statusList.modId).Info.Name) or ""))
 
 					local levelToUse = statusList.useGameLevel and EntityRecorder.Levels[entity.Level.LevelName] or entity.EocLevel.Level
+
+					if levelToUse > 0 and statusList.modId then
+						---@type ListEntryReplaceMap
+						local modReplaceMap = MutationConfigurationProxy.listEntryReplaceMap[statusList.modId]
+						if modReplaceMap.statusLists then
+							for statReplacement, statsToReplace in pairs(modReplaceMap.statusLists) do
+								if not replaceMap[statReplacement] then
+									replaceMap[statReplacement] = statsToReplace
+								else
+									for _, toReplace in ipairs(statsToReplace) do
+										if not TableUtils:IndexOf(replaceMap[statReplacement], toReplace) then
+											table.insert(replaceMap[statReplacement])
+										end
+									end
+								end
+							end
+							Logger:BasicDebug("Added Mod %'s replacement map to the overall replacement map, as one of it's lists was used",
+								Ext.Mod.GetMod(statusList.modId).Info.Name)
+						end
+					end
+
 					applyStatusLists(entity, levelToUse, statusList, numRandomStatusesPerLevel, appliedStatuses)
 					break
 				end
@@ -620,12 +642,56 @@ function StatusListMutator:applyMutator(entity, entityVar)
 					end
 				end
 
+				if levelToUse > 0 and statusList.modId then
+					---@type ListEntryReplaceMap
+					local modReplaceMap = MutationConfigurationProxy.listEntryReplaceMap[statusList.modId]
+					if modReplaceMap.statusLists then
+						for statReplacement, statsToReplace in pairs(modReplaceMap.statusLists) do
+							if not replaceMap[statReplacement] then
+								replaceMap[statReplacement] = statsToReplace
+							else
+								for _, toReplace in ipairs(statsToReplace) do
+									if not TableUtils:IndexOf(replaceMap[statReplacement], toReplace) then
+										table.insert(replaceMap[statReplacement])
+									end
+								end
+							end
+						end
+						Logger:BasicDebug("Added Mod %'s replacement map to the overall replacement map, as one of its lists was used",
+							Ext.Mod.GetMod(statusList.modId).Info.Name)
+					end
+				end
+
 				applyStatusLists(entity, levelToUse, statusList, numRandomStatusesPerLevel, appliedStatuses)
 			end
 		end
 	end
 
 	if next(appliedStatuses) then
+		for i = #appliedStatuses, 1, -1 do
+			local statusToApply = appliedStatuses[i]
+			if statusToApply and replaceMap[statusToApply] then
+				for _, statusToRemove in pairs(replaceMap[statusToApply]) do
+					if Osi.HasActiveStatus(entity.Uuid.EntityUuid, statusToRemove) == 1 then
+						Osi.RemoveStatus(entity.Uuid.EntityUuid, statusToRemove, entity.Uuid.EntityUuid)
+						Logger:BasicDebug("Removed %s from the entity as it's marked to be removed by %s", statusToRemove, statusToApply)
+					end
+					local index = TableUtils:IndexOf(appliedStatuses, statusToRemove)
+					if index then
+						appliedStatuses[index] = nil
+						Logger:BasicDebug("Removed %s from list of statuses to apply as it's marked to be removed by %s", statusToRemove, statusToApply)
+					end
+				end
+			end
+		end
+
+		TableUtils:ReindexNumericTable(appliedStatuses)
+
+		Logger:BasicDebug("Applying the following statuses: %s", appliedStatuses)
+		for _, statusToApply in ipairs(appliedStatuses) do
+			Osi.ApplyStatus(entity.Uuid.EntityUuid, statusToApply, -1, 1)
+		end
+		
 		entityVar.originalValues[self.name] = appliedStatuses
 	end
 end
