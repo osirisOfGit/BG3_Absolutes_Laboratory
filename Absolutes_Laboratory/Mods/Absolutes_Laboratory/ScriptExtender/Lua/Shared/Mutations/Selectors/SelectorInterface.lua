@@ -173,8 +173,8 @@ function SelectorInterface:generateDocs(existingSlides)
 	end
 
 	table.insert(existingSlides, {
-		Topic = "Mutations",
-		SubTopic = "Selectors",
+		Topic = self.topic,
+		SubTopic = self.subTopic,
 		content = {
 			{
 				type = "Heading",
@@ -297,7 +297,98 @@ WHERE
 				text = "Choosing OR instead would have the expected effect - either the first or second 'clause' must match for the entity to be selected."
 			}
 		}
-	})
+	} --[[@as MazzleDocsSlide]])
+
+	table.insert(existingSlides, {
+		Topic = self.topic,
+		SubTopic = self.subTopic,
+		content = {
+			{
+				type = "Heading",
+				text = "Best Practices"
+			},
+			{
+				type = "Note",
+				text = "Due to the simplistic nature of Selectors, there likely won't be individual docs each one - instead, general good practices will be documented here"
+			},
+			{
+				type = "SubHeading",
+				text = "Build your Mutations to be General -> Specific",
+				size = "Large",
+				color = "Orange"
+			},
+			{
+				type = "Content",
+				text = [[
+Referring back to Profiles quickly, Mutations are ordered so that later mutators override earlier ones (with extra behavior for additive mutators), so it's generally best to start with wide-sweeping selectors in your top most mutations and end with hyper-specific ones at the end.
+
+An example set of Selectors in separate Mutations would be:
+1. All Spiders
+2. All Small Spiders
+3. All Large Spiders
+4. All Phase Spiders
+5. Spider Matriarch
+
+This allows you to make general changes up top that cascade down, presuming different mutators are used (i.e. Level and Health Mutators in 1, Phase-specific Boost mutators in 4)
+]]
+			},
+			{
+				type = "SubHeading",
+				text = "When Should You Use Nested Queries?",
+				size = "Large",
+				color = "Orange"
+			},
+			{
+				type = "Content",
+				text = [[
+Nested queries are a powerful tool (explained in the Selectors slide) that allow you (theoretically) infinite flexibility in how you structure you queries, ensuring they function correctly and cleanly in any use-case.
+
+For example, say you wanted a mutation that targets all Cambions in TUT_Avernus_C. That's easy enough - a selector that just uses Race AND Game Level will do that.
+
+But what if you wanted to target that same set OR all Fiends?
+You could do that with a chain of AND/ORs:]]
+			},
+			{
+				type = "Code",
+				text = "Race: Cambions AND GameLevel: TUT_Avernus_C OR Race: Fiend"
+			},
+			{ type = "Content", text = "But that's pretty hard to read, right? Functionally it works because Lab forms a boundary every time the AND changes to OR (and vice-versa), so it's processed as:" },
+			{ type = "Code",    text = "(Race: Cambions AND GameLevel: TUT_Avernus_C) OR (Race: Fiend)" },
+			{ type = "Content", text = "However, this won't work if you wanted to find all Cambions that are in TUT_Avernus_C OR have the Miniboss XPReward category AND all Fiends that have the Boss XPReward, because that query now becomes:" },
+			{ type = "Code",    text = "((Race: Cambions AND GameLevel: TUT_Avernus_C) OR XPReward: Miniboss OR Race: Fiend) AND (XPReward: Boss)" },
+			{
+				type = "Content",
+				text = [[
+Which means it'll pick up all Cambions in Avernus or all MiniBosses or all Fiends, all of which have to also have the Boss XPReward (only Raphael).
+
+The way to clean it up and ensure boundaries are at the right places is to nest them:]]
+			},
+			{
+				type = "Code",
+				text = [[
+- Race: Cambions
+	|- GameLevel: TUT_Avernus_C
+	OR
+	|- XPReward: Miniboss
+OR
+- Race: Devils
+	|- XPReward: Boss]]
+			},
+			{
+				type = "Content",
+				text = "Now this works because the query is:"
+			},
+			{
+				type = "Code",
+				text = "(Race: Cambions AND (GameLevel: TUT_Avernus_C OR XPReward: Miniboss)) OR (Race: Fiend AND XPReward: Boss)"
+			},
+			{
+				type = "Content",
+				text =
+				"Now it's both correct and clean - this will scale as much as you need while remaining easy to read, and can easily be turned into Templates to reuse in other mutations (if it doesn't fit as a Prep Marker Selector)"
+			}
+		}
+	} --[[@as MazzleDocsSlide]])
 
 	for _, selector in TableUtils:OrderedPairs(self.registeredSelectors) do
 		local docs = selector:generateDocs()
