@@ -703,10 +703,9 @@ function MutationProfileManager:BuildProfileManager()
 	Helpers:KillChildren(self.profileManagerParent, self.rulesOrderGroup, self.mutationDesigner)
 
 	Styler:MiddleAlignedColumnLayout(self.profileManagerParent, function(ele)
-		MazzleDocs:addDocButton(ele, Profiles_Docs)
 		local title = ele:AddText("Active Profile")
 		title.Font = "Large"
-		title.SameLine = true
+		MazzleDocs:addDocButton(ele, Profiles_Docs).SameLine = true
 	end)
 
 	local profileCombo = self.profileManagerParent:AddCombo("")

@@ -178,6 +178,9 @@ Ext.Require("Shared/Mutations/Mutators/AbilitiesMutator.lua")
 Ext.Require("Shared/Mutations/Mutators/BoostsMutator.lua")
 Ext.Require("Shared/Mutations/Mutators/ProgressionsMutator.lua")
 
+---@type MazzleDocsDocumentation
+local changelogs = {}
+
 ---@param existingSlides MazzleDocsSlide[]?
 ---@return MazzleDocsSlide[]?
 function MutatorInterface:generateDocs(existingSlides)
@@ -193,4 +196,12 @@ function MutatorInterface:generateDocs(existingSlides)
 			end
 		end
 	end
+
+	for _, changelog in ipairs(changelogs) do
+		table.insert(existingSlides, changelog)
+	end
 end
+
+changelogs = {
+
+}

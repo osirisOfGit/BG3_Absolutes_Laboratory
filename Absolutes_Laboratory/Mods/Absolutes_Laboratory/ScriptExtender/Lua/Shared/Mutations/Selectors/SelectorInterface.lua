@@ -414,6 +414,8 @@ If you're not getting the results you want and know it's not a situation where y
 	for _, changelog in ipairs(changelogs) do
 		table.insert(existingSlides, changelog)
 	end
+
+	return existingSlides
 end
 
 changelogs = {

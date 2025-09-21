@@ -7,11 +7,17 @@ MazzleDocs = Mods["Mazzle_Docs"]
 
 ---@param parent ExtuiTreeParent
 ---@param document MazzleDocsDocumentation
+---@param configConsumer fun(config: MazzleDocsConfig)?
 ---@return ExtuiImageButton
-function MazzleDocs:addDocButton(parent, document)
+function MazzleDocs:addDocButton(parent, document, configConsumer)
 	local button = Styler:ImageButton(parent:AddImageButton("Docs", "Item_BOOK_GEN_Books_Row_Multiple_D", Styler:ScaleFactor({ 32, 32 })))
 	button.OnClick = function()
-		self.Create_Mazzle_Docs(document, Absolutes_Lab_Doc_Config)
+		local config = TableUtils:DeeplyCopyTable(Absolutes_Lab_Doc_Config)
+		if configConsumer then
+			configConsumer(config)
+		end
+		
+		self.Create_Mazzle_Docs(document, config)
 	end
 
 	return button
@@ -40,7 +46,7 @@ end
 ---@class MazzleDocsImageConfig
 ---@field atlas_key string Name of the image atlas
 ---@field columns integer Number of images in each row
----@field rows integer Number of images in each column  
+---@field rows integer Number of images in each column
 ---@field image_width integer Width of each individual image
 ---@field image_height integer Height of each individual image
 
@@ -104,7 +110,7 @@ end
 
 ---@alias MazzleDoctsFontSize
 ---| "Tiny"
----| "Small" 
+---| "Small"
 ---| "Normal"
 ---| "Medium"
 ---| "Large"
@@ -117,7 +123,7 @@ end
 ---@field highlighted? boolean Display on dark red banner for tutorial goals
 
 ---@class MazzleDocsSubHeading : MazzleDocsContentItem
----@field type "SubHeading" 
+---@field type "SubHeading"
 ---@field text string The subheading text content
 
 ---@class MazzleDocsContent : MazzleDocsContentItem

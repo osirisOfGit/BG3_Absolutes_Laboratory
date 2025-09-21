@@ -78,79 +78,87 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 
 		if focusButtons[2].UserData or focusButtons[1].UserData then
 			local selectorColumn = row:AddCell()
-			Styler:CheapTextAlign("Selectors", selectorColumn, "Big").UserData = "keep"
 			Styler:MiddleAlignedColumnLayout(selectorColumn, function(ele)
-				local dryRunButton = ele:AddButton("Dry Run")
-				dryRunButton.Disabled = false
-				dryRunButton.UserData = "EnableForMods"
+				ele:AddText("Selectors").Font = "Big"
 
-				---@type ExtuiWindow
-				local resultsWindow
+				MazzleDocs:addDocButton(ele, SelectorInterface:generateDocs({}), function (config)
+					config.window_title = "Lab: Selectors"
+					config.type = "tutorial"
+				end).SameLine = true
 
-				dryRunButton.OnClick = function()
-					if not resultsWindow then
-						resultsWindow = Ext.IMGUI.NewWindow("Dry Run Results###resultswindow")
-						resultsWindow.Closeable = true
-						resultsWindow.AlwaysAutoResize = true
-					else
-						resultsWindow.Open = true
-						resultsWindow:SetFocus()
-						Helpers:KillChildren(resultsWindow)
-					end
+				Styler:MiddleAlignedColumnLayout(ele, function(ele)
+					local dryRunButton = ele:AddButton("Dry Run")
+					dryRunButton.Disabled = false
+					dryRunButton.UserData = "EnableForMods"
 
-					local predicate = SelectorInterface:createComposedPredicate(existingMutation.selectors._real or existingMutation.selectors)
+					---@type ExtuiWindow
+					local resultsWindow
 
-					local maxCols = 10
-					local resultCounter = 0
-					for level, entities in pairs(EntityRecorder:GetEntities()) do
-						local header = resultsWindow:AddCollapsingHeader(level)
-						header:SetColor("Header", { 1, 1, 1, 0 })
-						header.Font = "Large"
-						header.DefaultOpen = true
+					dryRunButton.OnClick = function()
+						if not resultsWindow then
+							resultsWindow = Ext.IMGUI.NewWindow("Dry Run Results###resultswindow")
+							resultsWindow.Closeable = true
+							resultsWindow.AlwaysAutoResize = true
+						else
+							resultsWindow.Open = true
+							resultsWindow:SetFocus()
+							Helpers:KillChildren(resultsWindow)
+						end
 
-						local columnCounter = 0
+						local predicate = SelectorInterface:createComposedPredicate(existingMutation.selectors._real or existingMutation.selectors)
 
-						for entity, record in TableUtils:OrderedPairs(entities, function(key)
-							return entities[key].Name
-						end) do
-							if predicate:Test(record) then
-								resultCounter = resultCounter + 1
-								columnCounter = columnCounter + 1
+						local maxCols = 10
+						local resultCounter = 0
+						for level, entities in pairs(EntityRecorder:GetEntities()) do
+							local header = resultsWindow:AddCollapsingHeader(level)
+							header:SetColor("Header", { 1, 1, 1, 0 })
+							header.Font = "Large"
+							header.DefaultOpen = true
 
-								local group = header:AddChildWindow(level .. entity)
-								group.Font = "Medium"
-								group.NoSavedSettings = true
-								group.Size = { 100, 100 }
-								group.SameLine = columnCounter > 1 and columnCounter % maxCols ~= 1
+							local columnCounter = 0
 
-								Styler:MiddleAlignedColumnLayout(group, function(ele)
-									local image = ele:AddImage(record.Icon, { 64, 64 })
-									if image.ImageData.Icon == "" then
-										ele:AddImage("Item_Unknown", { 64, 64 })
-									end
-								end)
+							for entity, record in TableUtils:OrderedPairs(entities, function(key)
+								return entities[key].Name
+							end) do
+								if predicate:Test(record) then
+									resultCounter = resultCounter + 1
+									columnCounter = columnCounter + 1
 
-								Styler:MiddleAlignedColumnLayout(group, function(ele)
-									local hyperlink = Styler:HyperlinkText(ele, record.Name, function(parent)
-										CharacterWindow:BuildWindow(parent, entity)
+									local group = header:AddChildWindow(level .. entity)
+									group.Font = "Medium"
+									group.NoSavedSettings = true
+									group.Size = { 100, 100 }
+									group.SameLine = columnCounter > 1 and columnCounter % maxCols ~= 1
+
+									Styler:MiddleAlignedColumnLayout(group, function(ele)
+										local image = ele:AddImage(record.Icon, { 64, 64 })
+										if image.ImageData.Icon == "" then
+											ele:AddImage("Item_Unknown", { 64, 64 })
+										end
 									end)
-									hyperlink.Font = "Small"
-								end)
+
+									Styler:MiddleAlignedColumnLayout(group, function(ele)
+										local hyperlink = Styler:HyperlinkText(ele, record.Name, function(parent)
+											CharacterWindow:BuildWindow(parent, entity)
+										end)
+										hyperlink.Font = "Small"
+									end)
+								end
+							end
+							if columnCounter == 0 then
+								header:Destroy()
+							else
+								header.Label = string.format("%s - %s Results", header.Label, columnCounter)
 							end
 						end
-						if columnCounter == 0 then
-							header:Destroy()
-						else
-							header.Label = string.format("%s - %s Results", header.Label, columnCounter)
+
+						if resultCounter == 0 then
+							resultsWindow:AddText("No Entities Selected").Font = "Large"
 						end
-					end
 
-					if resultCounter == 0 then
-						resultsWindow:AddText("No Entities Selected").Font = "Large"
+						resultsWindow.Label = string.format("%s - %s Results###resultswindow", "Dry Run", resultCounter)
 					end
-
-					resultsWindow.Label = string.format("%s - %s Results###resultswindow", "Dry Run", resultCounter)
-				end
+				end)
 			end).UserData = "keep"
 
 			self:RenderSelectors(selectorColumn, existingMutation.selectors, existingMutation.prepPhase)
