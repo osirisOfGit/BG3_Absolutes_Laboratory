@@ -209,11 +209,11 @@ ConfigurationStructure.DynamicClassDefinitions.customLeveledList = {
 ---@class CustomListsSettings
 ConfigurationStructure.config.mutations.settings.customLists = {
 	subListColours = {
-		guaranteed = { 0, 138, 172, 0.8 },
+		guaranteed = { 0, 138, 172, 0.92 },
 		randomized = { 124, 14, 43, 0 },
 		startOfCombatOnly = { 217, 118, 6, 0.8 },
 		onLoadOnly = { 217, 179, 6, 0.8 },
-		blackListed = { .5, .5, .5, 1 },
+		blackListed = { 0.99, 0.96, 0.96, 0.80 },
 		onDeathOnly = { 0.51, 0.24, 0.75, 1.0 },
 	},
 	autoCollapseFoldersSection = false,

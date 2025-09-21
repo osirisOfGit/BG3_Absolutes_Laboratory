@@ -924,9 +924,15 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 				end
 
 				local altTooltip = entryName
-				altTooltip = altTooltip .. "\n\t " .. self.subListIndex[subListName].name
+				altTooltip = altTooltip .. "\n\t" .. self.subListIndex[subListName].name
 				if progressionTableId then
-					altTooltip = altTooltip .. "\n\t  Linked from Progression " .. self.progressionTranslations[progressionTableId]
+					altTooltip = altTooltip .. "\n\tLinked from Progression " .. self.progressionTranslations[progressionTableId]
+				end
+				if self.replaceMap[entryName] then
+					altTooltip = altTooltip .. "\n\t Replaces:"
+					for _, toReplace in TableUtils:OrderedPairs(self.replaceMap[entryName]) do
+						altTooltip = altTooltip .. "\n\t\t" .. toReplace
+					end
 				end
 
 				local aiCantUse = false
