@@ -32,6 +32,9 @@ ConfigurationStructure.config.mutations.settings = {
 
 ---@type {[Guid]: PrepMarkerCategory}
 ConfigurationStructure.config.mutations.prepPhaseMarkers = {
+}
+
+ConfigurationStructure.DynamicClassDefinitions.prepPhaseMarkers = {
 	["a7e8e508-ee23-484d-ac49-67dfa78d2020"] = {
 		name = "Boss",
 		description = "Entities that are considered to be bosses (irrespective of their XPReward)",
@@ -50,6 +53,7 @@ ConfigurationStructure.config.mutations.prepPhaseMarkers = {
 	["f076b8a3-68b3-47e5-af20-ba93ecd1c1ad"] = { name = "Ranger" },
 	["7293f1dc-b0a6-455d-975f-96b1e020fdb0"] = { name = "Rogue" },
 	["94945836-3898-486b-95e1-2a62a07234a1"] = { name = "Sorcerer" },
+	["f9d9b432-3671-4cfe-9187-92504bf2fbad"] = { name = "Wizard" },
 	["fb2c85dd-12a4-43c1-9aae-5fe4f5230592"] = { name = "Warlock" },
 }
 

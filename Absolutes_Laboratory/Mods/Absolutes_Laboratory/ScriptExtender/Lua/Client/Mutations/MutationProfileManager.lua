@@ -1527,7 +1527,7 @@ What it'll look like in BG3MM, followed by an example meta.lsx with the Exported
 
 For example, if you find yourself defining the same set of Selectors over and over again (i.e. all bosses) + some specific additions, you can create a Prep Phase Mutation to mark all entities that are common between those Selectors, change your Main selector to just look at that marker, and simply add whatever extra selectors you want on top - e.g. All Bosses that are Humanoids, or all Devils that aren't bosses.
 
-Lab pre-packages a number of Markers that can be used by anyone - these shouldn't be deleted and replaced, as each Marker has a UUID assigned to them, which is used by the Mutator, so recreating them will cause irreversible duplication for anyone importing your profile.]]
+Lab pre-packages a number of Markers that can be used by anyone - these can't be edited or deleted, as each Marker has a UUID assigned to them that is used by the Mutator, so recreating them will cause irreversible duplication for anyone importing your profile and renaming them will just be confusing.]]
 			},
 			{
 				type = "Image",

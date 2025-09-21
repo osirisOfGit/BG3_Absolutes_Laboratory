@@ -5,6 +5,20 @@ Ext.Vars.RegisterUserVariable("Absolutes_Lab_Prep_Phase_Marker", {
 
 PrepPhaseMarkerMutator = MutatorInterface:new("Prep Phase Marker")
 
+if not ConfigurationStructure.config.mutations.prepPhaseMarkers or not ConfigurationStructure.config.mutations.prepPhaseMarkers() then
+	if ConfigurationStructure.config.mutations.prepPhaseMarkers then
+		ConfigurationStructure.config.mutations.prepPhaseMarkers.delete = true
+	end
+	ConfigurationStructure.config.mutations.prepPhaseMarkers = TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.prepPhaseMarkers)
+else
+	for markerId, markerBody in pairs(ConfigurationStructure.DynamicClassDefinitions.prepPhaseMarkers) do
+		if not ConfigurationStructure.config.mutations.prepPhaseMarkers[markerId] then
+			ConfigurationStructure.config.mutations.prepPhaseMarkers[markerId] = TableUtils:DeeplyCopyTable(markerBody)
+		end
+	end
+end
+
+
 function PrepPhaseMarkerMutator:Transient()
 	return false
 end
@@ -86,8 +100,11 @@ function PrepPhaseMarkerMutator:renderMutator(parent, mutator)
 		popup:Open()
 
 		for categoryId, prepPhaseCategory in TableUtils:OrderedPairs(prepPhaseCategories, function(key, value)
-			return value.name
-		end) do
+				return value.name
+			end,
+			function(key, value)
+				return not ConfigurationStructure.DynamicClassDefinitions.prepPhaseMarkers[key]
+			end) do
 			---@type ExtuiMenu
 			local menu = popup:AddMenu(prepPhaseCategory.name)
 
