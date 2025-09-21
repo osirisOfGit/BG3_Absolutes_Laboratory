@@ -261,7 +261,7 @@ WHERE
 				text = [[
 WHERE
 (
-	SIZE IS IN ('Tiny', 'Small)
+	SIZE IS IN ('Tiny', 'Small')
 	AND TEMPLATE IS IN ('BASE_Quadruped_Beast_Spider_Phase')
 )]]
 			},

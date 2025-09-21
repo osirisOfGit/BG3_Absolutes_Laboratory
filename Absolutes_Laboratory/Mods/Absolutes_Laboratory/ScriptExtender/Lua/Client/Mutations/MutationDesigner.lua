@@ -83,7 +83,6 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 
 				MazzleDocs:addDocButton(ele, SelectorInterface:generateDocs({}), function (config)
 					config.window_title = "Lab: Selectors"
-					config.type = "tutorial"
 				end).SameLine = true
 
 				Styler:MiddleAlignedColumnLayout(ele, function(ele)
