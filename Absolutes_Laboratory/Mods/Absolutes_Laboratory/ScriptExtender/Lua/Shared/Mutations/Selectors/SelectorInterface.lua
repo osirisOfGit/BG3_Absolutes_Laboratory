@@ -313,7 +313,7 @@ WHERE
 			},
 			{
 				type = "SubHeading",
-				text = "Build your Mutations to be General -> Specific",
+				text = "Build Your Mutations to be General -> Specific",
 				size = "Large",
 				color = "Orange"
 			},
@@ -334,7 +334,7 @@ This allows you to make general changes up top that cascade down, presuming diff
 			},
 			{
 				type = "SubHeading",
-				text = "When Should You Use Nested Queries?",
+				text = "Use Nested Queries For Logical Grouping",
 				size = "Large",
 				color = "Orange"
 			},
@@ -386,7 +386,16 @@ OR
 				type = "Content",
 				text =
 				"Now it's both correct and clean - this will scale as much as you need while remaining easy to read, and can easily be turned into Templates to reuse in other mutations (if it doesn't fit as a Prep Marker Selector)"
-			}
+			},
+			{
+				type = "CallOut",
+				prefix = "Ordering Selectors",
+				prefix_color = "Green",
+				text = [[
+As somewhat illustrated above, how you order your Selectors within a single Mutation does matter when chaining selectors at the same level.
+
+If you're not getting the results you want and know it's not a situation where you should be using Nested Queries, walk through your Selector chain the same way I did above, and if necessary, use the Orange up and/or down arrows underneath the Delete button next to each Selector to reorder them (this will preserve any nested children)]]
+			} --[[@as MazzleDocsCallOut]],
 		}
 	} --[[@as MazzleDocsSlide]])
 
