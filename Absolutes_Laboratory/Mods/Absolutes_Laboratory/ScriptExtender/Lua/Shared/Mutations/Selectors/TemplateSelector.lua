@@ -335,3 +335,6 @@ function TemplateSelector:predicate(selector)
 		return false
 	end
 end
+
+function TemplateSelector:generateDocs()
+end

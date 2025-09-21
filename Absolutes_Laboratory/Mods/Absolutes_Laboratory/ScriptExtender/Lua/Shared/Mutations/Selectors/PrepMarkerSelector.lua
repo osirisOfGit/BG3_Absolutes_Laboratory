@@ -124,3 +124,6 @@ function PrepMarkerSelector:predicate(selector)
 		end
 	end
 end
+
+function PrepMarkerSelector:generateDocs()
+end

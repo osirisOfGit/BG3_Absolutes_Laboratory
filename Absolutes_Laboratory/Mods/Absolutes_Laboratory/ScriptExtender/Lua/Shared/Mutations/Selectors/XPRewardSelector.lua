@@ -54,7 +54,7 @@ function XPRewardSelector:handleDependencies(export, selector, removeMissingDepe
 		if not xpReward then
 			selector.criteriaValue[i] = nil
 		elseif not removeMissingDependencies then
-			local source = TableUtils:IndexOf(rewardIndex, function (value)
+			local source = TableUtils:IndexOf(rewardIndex, function(value)
 				return TableUtils:IndexOf(value, xpRewardId) ~= nil
 			end)
 			if source then
@@ -78,4 +78,7 @@ function XPRewardSelector:handleDependencies(export, selector, removeMissingDepe
 		end
 		::continue::
 	end
+end
+
+function XPRewardSelector:generateDocs()
 end

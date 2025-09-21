@@ -43,3 +43,6 @@ function GameLevelSelector:predicate(selector)
 		return false
 	end
 end
+
+function GameLevelSelector:generateDocs()
+end

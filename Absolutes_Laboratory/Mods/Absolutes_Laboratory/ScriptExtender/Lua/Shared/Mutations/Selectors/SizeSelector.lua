@@ -51,3 +51,6 @@ function SizeSelector:predicate(selector)
 		return false
 	end
 end
+
+function SizeSelector:generateDocs()
+end

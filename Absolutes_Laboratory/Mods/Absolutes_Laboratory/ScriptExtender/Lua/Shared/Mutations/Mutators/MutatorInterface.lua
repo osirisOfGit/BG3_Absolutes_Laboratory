@@ -177,3 +177,20 @@ Ext.Require("Shared/Mutations/Mutators/HealthMutator.lua")
 Ext.Require("Shared/Mutations/Mutators/AbilitiesMutator.lua")
 Ext.Require("Shared/Mutations/Mutators/BoostsMutator.lua")
 Ext.Require("Shared/Mutations/Mutators/ProgressionsMutator.lua")
+
+---@param existingSlides MazzleDocsSlide[]?
+---@return MazzleDocsSlide[]?
+function MutatorInterface:generateDocs(existingSlides)
+	if not existingSlides then
+		return
+	end
+
+	for _, mutator in TableUtils:OrderedPairs(self.registeredMutators) do
+		local docs = mutator:generateDocs()
+		if docs then
+			for _, slide in ipairs(docs) do
+				table.insert(existingSlides, slide)
+			end
+		end
+	end
+end

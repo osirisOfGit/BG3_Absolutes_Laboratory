@@ -239,3 +239,6 @@ function RaceSelector:predicate(selector)
 		end
 	end
 end
+
+function RaceSelector:generateDocs()
+end

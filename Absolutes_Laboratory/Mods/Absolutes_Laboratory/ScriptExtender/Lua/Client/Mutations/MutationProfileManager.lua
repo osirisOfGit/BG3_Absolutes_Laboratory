@@ -1338,13 +1338,10 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 	buildSlots(numOfMutations)
 end
 
-local topic = "Profiles, Mutations, and Selectors"
-local subTopic = "Profiles"
 
 Profiles_Docs = {
 	{
-		Topic = topic,
-		SubTopic = subTopic,
+		Topic = "Profiles",
 		content = {
 			{
 				type = "Heading",
@@ -1390,8 +1387,7 @@ Create your profile using the Gear icon next to the dropdown - once your profile
 		}
 	},
 	{
-		Topic = topic,
-		SubTopic = subTopic,
+		Topic = "Profiles",
 		content = {
 			{
 				type = "Heading",
@@ -1518,8 +1514,7 @@ What it'll look like in BG3MM, followed by an example meta.lsx with the Exported
 	},
 	--#region Mutations
 	{
-		Topic = topic,
-		SubTopic = "Mutations",
+		Topic = "Mutations",
 		content = {
 			{
 				type = "Heading",
@@ -1545,129 +1540,9 @@ Lab pre-packages a number of Markers that can be used by anyone - these shouldn'
 				centered = false
 			} --[[@as MazzleDocsImage]]
 		}
-	},
-	--#region Selectors
-	{
-		Topic = topic,
-		SubTopic = "Mutations",
-		content = {
-			{
-				type = "Heading",
-				text = "Selectors"
-			},
-			{
-				type = "CallOut",
-				prefix = "General Rules:",
-				prefix_color = "Yellow",
-				text = [[
-- If a selector option has multiple checkboxes, like Race, and none of those checkboxes are selected, Lab will check if the entity is that parent value or is a child of that parent (for example, setting a Humanoid Race Selector will find all Humanoids and all subraces of Humanoid)
-- Selectors are processed in the order defined - groups are formed at each AND/OR Boundary
-- You MUST run the Scan tool in the Inspector for the Dry Run to work. This needs to be re-run when adding/updating/removing new encounter mods or a new recorder property is added. You should do this on a brand new campaign to avoid any complications from teleporting to all levels on existing ones.]]
-			} --[[@as MazzleDocsCallOut]],
-			{
-				type = "Content",
-				text = [[
-The Dry Run button will preview the results of your selectors based on what was indexed by the Entity Scanner in the Inspector.
-
-Let's start with the below:]]
-			},
-			{
-				type = "Image",
-				image_index = 6
-			} --[[@as MazzleDocsImage]],
-			{
-				type = "Content",
-				text = "This shows using a Nested Query - in DB Query Terms, this might look like:"
-			},
-			{
-				type = "Code",
-				text = [[
-SELECT *
-FROM ENTITIES
-WHERE
-(
-	SIZE IS IN ('Tiny', 'Small')
-	AND TEMPLATE IS IN ('BASE_Quadruped_Beast_Spider_Phase', 'FOR_PhaseSpider_Spawn', 'LOW_HouseOfGrief_Wildshape_Spider', ...)
-	^^ Explanation of the additional templates below vv
-)]]
-			},
-			{
-				type = "Content",
-				text = "if we were to uncheck the Inclusive checkbox from the Template selector (making it Exclusive), this would turn into:"
-			},
-			{
-				type = "Code",
-				text = [[
-WHERE
-(
-	SIZE IS IN ('Tiny', 'Small')
-	AND TEMPLATE IS NOT IN ('BASE_Quadruped_Beast_Spider_Phase', 'FOR_PhaseSpider_Spawn', 'LOW_HouseOfGrief_Wildshape_Spider', ...)
-	^^ Explanation of the additional templates below vv
-)]]
-			},
-			{
-				type = "Image",
-				image_index = 7
-			} --[[@as MazzleDocsImage]],
-			{
-				type = "Content",
-				text =
-				"That checkbox you see next to the BASE Template is available for any resources that have children inheriting from them. Shift-click on the checkbox to see the hierarchy:"
-			},
-			{
-				type = "Image",
-				image_index = 8
-			} --[[@as MazzleDocsImage]],
-			{
-				type = "Content",
-				text =
-				"For this Template, you can see there are quite a few child templates down to the great-grandchild level, so if the checkbox was unchecked those templates would be excluded from the query, turning it into:"
-			},
-			{
-				type = "Code",
-				text = [[
-WHERE
-(
-	SIZE IS IN ('Tiny', 'Small)
-	AND TEMPLATE IS IN ('BASE_Quadruped_Beast_Spider_Phase')
-)]]
-			},
-			{
-				type = "Content",
-				text = "Finally, we can add another selector at the same level as the first:"
-			},
-			{
-				type = "Image",
-				image_index = 9
-			} --[[@as MazzleDocsImage]],
-			{
-				type = "Content",
-				text =
-				"This adds an AND clause, specifying that entities much match the above criteria AND also be in level WLD_Main_A, turning the query into:"
-			},
-			{
-				type = "Code",
-				text = [[
-SELECT *
-FROM ENTITIES
-WHERE
-(
-	(
-		SIZE IS IN ('Tiny', 'Small')
-		AND TEMPLATE IS IN ('BASE_Quadruped_Beast_Spider_Phase', 'FOR_PhaseSpider_Spawn', 'LOW_HouseOfGrief_Wildshape_Spider', ...)
-	)
-	AND
-	(
-		GAME_LEVEL IS IN ('WLD_Main_A')
-	)
-)]]
-			},
-			{
-				type = "Content",
-				text = "Choosing OR instead would have the expected effect - either the first or second 'clause' must match for the entity to be selected."
-			}
-		}
 	}
 	--#endregion
-	--#endregion
 }
+
+SelectorInterface:generateDocs(Profiles_Docs)
+MutatorInterface:generateDocs(Profiles_Docs)

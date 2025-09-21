@@ -203,3 +203,6 @@ function PassiveSelector:predicate(selector)
 		return false
 	end
 end
+
+function PassiveSelector:generateDocs()
+end

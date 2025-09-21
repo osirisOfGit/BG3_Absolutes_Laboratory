@@ -181,3 +181,6 @@ function TagSelector:predicate(selector)
 		return false
 	end
 end
+
+function TagSelector:generateDocs()
+end

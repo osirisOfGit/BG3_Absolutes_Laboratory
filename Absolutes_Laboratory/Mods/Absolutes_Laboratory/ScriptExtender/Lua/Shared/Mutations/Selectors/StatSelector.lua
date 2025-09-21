@@ -319,3 +319,6 @@ function StatSelector:predicate(selector)
 		return false
 	end
 end
+
+function StatSelector:generateDocs()
+end

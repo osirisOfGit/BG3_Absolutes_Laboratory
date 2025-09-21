@@ -335,3 +335,6 @@ function FactionSelector:predicate(selector)
 		return false
 	end
 end
+
+function FactionSelector:generateDocs()
+end
