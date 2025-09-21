@@ -165,6 +165,9 @@ Ext.Require("Shared/Mutations/Selectors/TemplateSelector.lua")
 Ext.Require("Shared/Mutations/Selectors/XPRewardSelector.lua")
 
 
+---@type MazzleDocsDocumentation
+local changelogs = {}
+
 ---@param existingSlides MazzleDocsSlide[]?
 ---@return MazzleDocsSlide[]?
 function SelectorInterface:generateDocs(existingSlides)
@@ -407,4 +410,42 @@ If you're not getting the results you want and know it's not a situation where y
 			end
 		end
 	end
+
+	for _, changelog in ipairs(changelogs) do
+		table.insert(existingSlides, changelog)
+	end
 end
+
+changelogs = {
+	{
+		Topic = SelectorInterface.topic,
+		SubTopic = SelectorInterface.subTopic,
+		content = {
+			{
+				type = "Heading",
+				text = "Changelog"
+			},
+			{
+				type = "Heading",
+				text = "1.7.0 (No Changes)"
+			},
+			{
+				type = "Heading",
+				text = "1.6.0"
+			},
+			{
+				type = "Bullet",
+				text = {
+					"Add static sizes to sidebar searches in selectors",
+					"Add Size Selector (new Recorder Property)",
+					"Fix Race selector when races have invalid parent guids",
+					"Fixes Entities in the Selector with the same names causing IMGUI conflicts",
+					"Doesn't search by entity id unless there are 36 characters",
+					"Adds Up/Down Arrows to allow resorting",
+					"Fix all selectors that use a search box so already selected items will render with a highlight",
+					"Fix a bug that would break the selector list if you clicked on \"Add a Selector\", didn't choose anything, then clicked it again",
+				}
+			}
+		}
+	}
+}
