@@ -184,7 +184,7 @@ function ListDesignerBaseClass:launch(activeListId)
 		colorSettings:AddText("Click A Color To Change It, Hover for Tooltips: "):SetStyle("Alpha", 0.6)
 
 		for subListName, colour in TableUtils:OrderedPairs(self.settings.subListColours, function(key)
-				return self.subListIndex[key].name
+				return self.subListIndex[key].name == self.subListIndex["blackListed"].name and "zlisted" or self.subListIndex[key].name
 			end,
 			function(key, value)
 				return self.subListIndex[key] ~= nil
@@ -837,7 +837,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 
 	self.entryCacheForProgressions[level] = nil
 	for subListName, subList in TableUtils:OrderedPairs(subListsClone, function(key)
-		return self.subListIndex[key].name
+		return self.subListIndex[key].name == self.subListIndex["blackListed"].name and "zlisted" or self.subListIndex[key].name
 	end) do
 		if not self.subListIndex[subListName] then
 			local default = self.settings.defaultPool[self.configKey]
