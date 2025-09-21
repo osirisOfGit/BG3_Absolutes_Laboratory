@@ -807,6 +807,9 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 									table.insert(subList, entryName)
 								elseif (self.name == SpellListDesigner.name and (Ext.Stats.GetCachedSpell(entryName).AiFlags & Ext.Enums.AIFlags.CanNotUse) == Ext.Enums.AIFlags.CanNotUse) then
 									subListsClone.blackListed = subListsClone.blackListed or {}
+									subLists.blackListed = subLists.blackListed or {}
+
+									table.insert(subLists.blackListed, entryName)
 									table.insert(subListsClone.blackListed, entryName)
 								else
 									table.insert(subList, entryName)
@@ -1891,7 +1894,7 @@ function ListDesignerBaseClass:buildProgressionIndex()
 			local progression = Ext.StaticData.Get(progressionId, "Progression")
 
 			if hasRelevantNodes(progression) then
-				if not self.progressionTranslations[progression.Name] then
+				if not TableUtils:IndexOf(self.progressionTranslations, progression.TableUUID) then
 					self.progressionTranslations[progression.Name] = progression.TableUUID
 				end
 				self.progressionTranslations[progression.TableUUID] = progression.Name
