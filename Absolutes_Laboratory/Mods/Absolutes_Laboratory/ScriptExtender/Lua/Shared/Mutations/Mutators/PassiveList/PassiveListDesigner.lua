@@ -4,7 +4,7 @@ Ext.Require("Client/Mutations/ListDesignerBaseClass.lua")
 PassiveListDesigner = ListDesignerBaseClass:new("Passive List",
 	"passiveLists",
 	{ "startOfCombatOnly", "onLoadOnly", "onDeathOnly" },
-	{ "PassivePrototypesAdded", "PassivePrototypesRemoved", "PassivesAdded", "PassivesRemoved" },
+	{ "PassivePrototypesAdded", "PassivePrototypesRemoved", "PassivesAdded", "PassivesRemoved", "SelectPassives" },
 	---@param passiveMeta ResourceProgressionPassive|StatsPassivePrototype
 	function(passiveMeta, addToListFunc)
 		if type(passiveMeta) == "string" then
@@ -20,8 +20,17 @@ PassiveListDesigner = ListDesignerBaseClass:new("Passive List",
 			else
 				error(string.format("UUID %s is not a valid PassiveList", passiveMeta.UUID))
 			end
-		else
+		elseif Ext.Types.GetObjectType(passiveMeta) == "stats::PassivePrototype" then
 			addToListFunc(passiveMeta.Name)
+		else
+			---@type ResourcePassiveList
+			local progSpellList = Ext.StaticData.Get(passiveMeta.UUID, "PassiveList")
+
+			if progSpellList then
+				for _, passiveName in pairs(progSpellList.Passives) do
+					addToListFunc(passiveName)
+				end
+			end
 		end
 	end)
 
