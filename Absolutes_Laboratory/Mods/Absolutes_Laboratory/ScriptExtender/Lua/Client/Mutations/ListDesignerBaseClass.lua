@@ -466,33 +466,6 @@ function ListDesignerBaseClass:buildDesigner()
 	local extraOptionsRow = extraOptions:AddRow()
 
 	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function(ele)
-		Styler:EnableToggleButton(ele, "Auto-Collapse Folder View", false, function(swap)
-			if swap then
-				self.settings.autoCollapseFoldersSection = not self.settings.autoCollapseFoldersSection
-			end
-			return self.settings.autoCollapseFoldersSection
-		end)
-
-		ele:AddNewLine()
-
-		local deleteAllButton = ele:AddButton("Delete All Non-Linked Entries")
-		deleteAllButton.Disabled = self.activeList.modId ~= nil
-		deleteAllButton.OnClick = function()
-			for _, leveledSubList in TableUtils:OrderedPairs(self.activeList.levels) do
-				if leveledSubList.manuallySelectedEntries then
-					leveledSubList.manuallySelectedEntries.delete = true
-				end
-			end
-
-			self:buildDesigner()
-		end
-	end)
-
-	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function(ele)
-		self:customizeDesigner(ele)
-	end)
-
-	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function(ele)
 		Styler:DualToggleButton(ele, "Icon", "Text", false, function(swap)
 			if swap then
 				self.settings.iconOrText = self.settings.iconOrText == "Icon" and "Text" or "Icon"
@@ -514,6 +487,32 @@ function ListDesignerBaseClass:buildDesigner()
 		end
 
 		ele:AddSeparator()
+		Styler:EnableToggleButton(ele, "Auto-Collapse Folder View", false, function(swap)
+			if swap then
+				self.settings.autoCollapseFoldersSection = not self.settings.autoCollapseFoldersSection
+			end
+			return self.settings.autoCollapseFoldersSection
+		end)
+	end)
+
+	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function(ele)
+		self:customizeDesigner(ele)
+	end)
+
+	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function(ele)
+		local deleteAllButton = ele:AddButton("Delete All Non-Linked Entries")
+		deleteAllButton.Disabled = self.activeList.modId ~= nil
+		deleteAllButton.OnClick = function()
+			for _, leveledSubList in TableUtils:OrderedPairs(self.activeList.levels) do
+				if leveledSubList.manuallySelectedEntries then
+					leveledSubList.manuallySelectedEntries.delete = true
+				end
+			end
+
+			self:buildDesigner()
+		end
+		ele:AddSeparator()
+
 		ele:AddText("(?) Distribute By: "):Tooltip():AddText([[
 	Changing this option will clear your list as the two options are not compatible with each other.
 Using game level will distribute all entries in the same level that the entity is in and all the ones that come before (i.e. TUT, WLD, CRE, SCL if they're in SCL).
