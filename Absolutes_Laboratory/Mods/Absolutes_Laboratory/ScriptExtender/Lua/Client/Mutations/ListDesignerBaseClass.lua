@@ -762,7 +762,7 @@ end
 ---@param progressionTableId string?
 function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, level, progressionTableId)
 	if progressionTableId then
-		if not self.progressionTranslations[progressionTableId] or (not self.progressions[progressionTableId] or not self.progressions[progressionTableId][level]) then
+		if not self.progressionTranslations[progressionTableId] or (not self.progressions[progressionTableId] or not self.progressions[progressionTableId][level] or not self.progressions[progressionTableId][level][self.name]) then
 			Logger:BasicWarning("Progression Table UUID %s was not found in the index for level %s - removing from the config", progressionTableId, level)
 			return true
 		else
