@@ -432,8 +432,9 @@ The mutator is laid out as follows:
 Level Threshold - this represents a condition on the Mutator, separate from the selector, allowing you to design a Mutation that changes the bell curve of the selected entity's levels to match your intended experience.
 
 Base Level - this is the non-random value to set the entity to, which becomes the new 'base' and is referenced in the rest of the Mutator.
+If this is configured to be relative to the highest-leveled player (separate from the threshold), it's considered 'Dynamic', otherwise it's 'Static'
 
-The rest of the mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
+The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
 				},
 				{
 					type = "Separator"
@@ -447,7 +448,7 @@ The rest of the mutator UI is explained via tooltips to avoid duplicated info an
 					text = [[
 This Mutator directly changes the AvailableLevel and EocLevel components on the Entity (somehow this is not transient behavior)
 
-If the Base level is calculated relative to the Players's level (threshold is not relevant here), then a Component listener will be set on the host of the party - when the host levels up and executes the CC level up screen, the Profile will completely re-executed as if the level has loaded (which does mean that entities that previously didn't meet the threshold could meet it now)]]
+If the Base level is calculated relative to the Players's level (threshold is not relevant here), then a Component listener will be set on the host of the party - when the host levels up and exits the Character Level Up screen, the Profile will completely re-executed as if the game had been saved and reloaded (which does mean that entities that previously didn't meet the threshold could meet it now)]]
 				},
 				{
 					type = "Separator"
@@ -468,7 +469,35 @@ If the Base level is calculated relative to the Players's level (threshold is no
 						"should be 4 levels above their current level",
 						"should be 2 levels lower than the player, but Minibosses should be -1/+2 levels and Bosses should be +3/+5."
 					}
-				} --[[@as MazzleDoctsBullet]]
+				} --[[@as MazzleDoctsBullet]],
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Changelog"
+				},
+				{
+					type = "SubHeading",
+					text = "1.7.0"
+				},
+				{
+					type = "Bullet",
+					text = {
+						"Changes the on level up behavior to trigger when the EocLevel component changes instead of the AvailableLevel component, preventing it from firing mid-combat"
+					}
+				},
+				{
+					type = "SubHeading",
+					text = "!.6.0"
+				},
+				{
+					type = "Bullet",
+					text = {
+						"Adds Level Thresholds",
+						"Adds option to base the static increase/decrease on the entity's level, not the player's level"
+					}
+				}
 			}
 		}
 	} --[[@as MazzleDocsDocumentation]]
