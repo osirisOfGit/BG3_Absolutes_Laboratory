@@ -429,7 +429,13 @@ changelogs = {
 			},
 			{
 				type = "Heading",
-				text = "1.7.0 (No Changes)"
+				text = "1.7.0"
+			},
+			{
+				type = "Bullet",
+				text = {
+					"Fixes a bug when deleting the first selector in a chain"
+				}
 			},
 			{
 				type = "Heading",
