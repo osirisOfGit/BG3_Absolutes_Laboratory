@@ -149,13 +149,12 @@ function MutationProfileManager:init(parent)
 
 		local profileRulesRow = self.profileRulesParent:AddRow()
 
-		self.rulesOrderGroup = profileRulesRow:AddCell():AddGroup("rulesOrderGroup")
+		self.rulesOrderGroup = profileRulesRow:AddCell():AddChildWindow("rulesOrderGroup")
 		self.rulesOrderGroup.UserData = "keep"
-		self.profileManagerParent = nil
-		local profilerManagerwindow = self.rulesOrderGroup:AddChildWindow("RulesOrder")
-		profilerManagerwindow.Size = Styler:ScaleFactor({ 600, 120 })
-		profilerManagerwindow.UserData = "keep"
-		Styler:MiddleAlignedColumnLayout(profilerManagerwindow, function(ele)
+		local profilerManagerWindow = self.rulesOrderGroup:AddChildWindow("RulesOrder")
+		profilerManagerWindow.Size = Styler:ScaleFactor({ 600, 120 })
+		profilerManagerWindow.UserData = "keep"
+		Styler:MiddleAlignedColumnLayout(profilerManagerWindow, function(ele)
 			self.profileManagerParent = ele
 		end).UserData = "keep"
 
@@ -166,7 +165,7 @@ function MutationProfileManager:init(parent)
 		collapseExpandRulesOrderButton.OnClick = function()
 			Helpers:CollapseExpand(
 				collapseExpandRulesOrderButton.Label == "<<",
-				profilerManagerwindow.Size[1],
+				600 * Styler:ScaleFactor(),
 				function(width)
 					if width then
 						self.profileRulesParent.ColumnDefs[1].Width = width
