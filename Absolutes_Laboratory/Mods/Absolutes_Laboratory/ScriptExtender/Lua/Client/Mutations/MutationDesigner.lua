@@ -247,8 +247,10 @@ function MutationDesigner:RenderSelectors(parent, existingSelector, prepPhase)
 		local delete = Styler:ImageButton(sideCell:AddImageButton("delete", "ico_red_x", Styler:ScaleFactor({ 16, 16 })))
 		delete.UserData = i
 		delete.OnClick = function()
-			existingSelector[i] = nil
-			existingSelector[i + 1].delete = true
+			selectorEntry.delete = true
+			if andOrEntry == nil then
+				existingSelector[i + 2] = nil
+			end
 
 			TableUtils:ReindexNumericTable(existingSelector)
 

@@ -361,10 +361,18 @@ function LevelMutator:applyMutator(entity, entityVar)
 	end
 
 	if not levelUpSubscription and mutator.usePlayerLevel then
+		---@param entity EntityHandle
 		---@diagnostic disable-next-line: param-type-mismatch
-		levelUpSubscription = Ext.Entity.OnChange("AvailableLevel", function()
-			Logger:BasicInfo("A levelup mutator is registered and a player just gained enough XP to level up - rerunning mutations")
-			MutationProfileExecutor:ExecuteProfile(true)
+		levelUpSubscription = Ext.Entity.OnChange("AvailableLevel", function(entity)
+			if Osi.IsInCombat(entity.Uuid.EntityUuid) == 1 then
+				entity:OnDestroy("IsInCombat", function()
+					Logger:BasicInfo("A levelup mutator is registered and a player just gained enough XP to level up (and has left combat) - rerunning mutations")
+					MutationProfileExecutor:ExecuteProfile(true)
+				end)
+			else
+				Logger:BasicInfo("A levelup mutator is registered and a player just gained enough XP to level up - rerunning mutations")
+				MutationProfileExecutor:ExecuteProfile(true)
+			end
 		end, Ext.Entity.Get(Osi.GetHostCharacter()))
 	end
 
@@ -389,7 +397,7 @@ function LevelMutator:generateDocs()
 			content = {
 				{
 					type = "Heading",
-					text = "Character Level"
+					text = "Character Level",
 				},
 				{
 					type = "Separator"
@@ -402,10 +410,74 @@ function LevelMutator:generateDocs()
 Dependency On: None
 Transient: No
 Additive: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is always applied first]]
-				}--[[@as MazzleDocsCallOut]],
+				} --[[@as MazzleDocsCallOut]],
 				{
 					type = "Separator"
 				},
+				{
+					type = "SubHeading",
+					text = "Summary"
+				},
+				{
+					type = "Content",
+					text = [[
+This mutator serves as an important dependency for almost every other mutator - it allows creating both a living world that grows alongside the player and a tailored one that provides a specific experience, separately or at the same time.
+
+The 'Entity' mentioned throughout refers strictly to the Entity being mutated - the player's level is only relevant where specifically called out.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Mechanics"
+				},
+				{
+					type = "Content",
+					text = [[
+The mutator is laid out as follows:
+
+Level Threshold - this represents a condition on the Mutator, separate from the selector, allowing you to design a Mutation that changes the bell curve of the selected entity's levels to match your intended experience.
+
+Base Level - this is the non-random value to set the entity to, which becomes the new 'base' and is referenced in the rest of the Mutator.
+
+The rest of the mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Server-Side Implementation"
+				},
+				{
+					type = "Content",
+					text = [[
+This Mutator directly changes the AvailableLevel and EocLevel components on the Entity (somehow this is not transient behavior)
+
+If the Base level is calculated relative to the Players's level (threshold is not relevant here), then a Component listener will be set on the host of the party - when the host levels up, the Profile will completely re-executed as if the level has loaded (which does mean that entities that previously didn't meet the threshold could meet it now).
+If the player is in combat, execution will be deferred until they leave combat.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Example Use Cases"
+				},
+				{
+					type = "Section",
+					text = "Selected entities:"
+				},
+				{
+					type = "Bullet",
+					text = {
+						"5 levels or more below the player should become between -2 and +1 levels of the player instead",
+						"less than level 3 should be become between 0 and +3 levels above level 5",
+						"should be 4 levels above their current level",
+						"should be 2 levels lower than the player, but Minibosses should be -1/+2 levels and Bosses should be +3/+5."
+					}
+				} --[[@as MazzleDoctsBullet]]
 			}
 		}
 	} --[[@as MazzleDocsDocumentation]]
