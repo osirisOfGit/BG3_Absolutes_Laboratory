@@ -12,11 +12,32 @@ MazzleDocs = Mods["Mazzle_Docs"]
 function MazzleDocs:addDocButton(parent, document, configConsumer)
 	local button = Styler:ImageButton(parent:AddImageButton("Docs", "Item_BOOK_GEN_Books_Row_Multiple_D", Styler:ScaleFactor({ 32, 32 })))
 	button.OnClick = function()
+		local document = TableUtils:DeeplyCopyTable(document)
 		local config = TableUtils:DeeplyCopyTable(Absolutes_Lab_Doc_Config)
 		if configConsumer then
 			configConsumer(config)
 		end
-		
+
+		table.insert(document, {
+			Topic = "General",
+			content = {
+				{
+					type = "Heading",
+					text = "Miscellaneous Changelog"
+				},
+				{
+					type = "Heading",
+					text = "1.7.0"
+				},
+				{
+					type = "Bullet",
+					text = {
+						"Fixed the Profile section of Mutations not scrolling alongside the Folder view"
+					}
+				}
+			}
+		} --[[@as MazzleDocsSlide]])
+
 		self.Create_Mazzle_Docs(document, config)
 	end
 
