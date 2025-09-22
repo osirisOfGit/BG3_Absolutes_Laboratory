@@ -188,6 +188,72 @@ function MutatorInterface:generateDocs(existingSlides)
 		return
 	end
 
+	table.insert(existingSlides, {
+		Topic = "Mutations",
+		SubTopic = "Mutators",
+		content = {
+			{
+				type = "Heading",
+				text = "Mutators"
+			},
+			{
+				type = "Section",
+				text = "Mutators are responsible for changing, or mutating, the entities that have been selected by the Selectors."
+			},
+			{
+				type = "CallOut",
+				prefix = "Philosophies",
+				prefix_color = "Green",
+				text = {
+					"1. All entities can be mutated in a safe manner - users should not have to account for any individual entity's weirdness to avoid breaking other entities",
+					"2. All mutators should be completely reversable without the user having to reload to save before the mutations were applied",
+					"3. All mutator results should be visible and understandable in the Inspector, under the `Mutations` tab"
+				}
+			} --[[@as MazzleDocsCallOut]],
+			{
+				type = "Separator"
+			},
+			{
+				type = "SubHeading",
+				text = "Mutator Behavior During Profile Execution"
+			},
+			{
+				type = "Content",
+				text = "Mutators are pooled together after every Selector has run, overridng Mutators from Mutations higher in the Profile list if the 'Additive' checkbox is unchecked, or behaving as defined by their Additive section in their respective slide if applicable"
+			},
+			{
+				type = "Separator"
+			},
+			{
+				type = "SubHeading",
+				text = "Mutator Dependencies"
+			},
+			{
+				type = "Content",
+				text = [[
+Some mutators are also designed to be dependent on other mutators - these dependencies are listed in their respectives slides, but users don't have to concern themselves with this much, as each mutator is assigned an internal priority that ensures correct application order (and that order is reflected in the Mutators section of the sidebar).
+Just know that the UI will render the mutators in this assigned order (if multiple mutators share the same priority, order is not guaranteed between sessions), and this priority is documented in the DEBUG logs:]]
+			},
+			{
+				type = "Code",
+				text = "==== Starting mutator Classes And Subclasses (priority 8) ===="
+			},
+			{
+				type = "Separator"
+			},
+			{
+				type = "SubHeading",
+				text = "Transient Mutators"
+			},
+			{
+				type = "Content",
+				text = [[
+Mutators can also be Transient - this property is set for mutators that mutate the entity in a way that is wiped on game reload, forcing a reapplication. 
+As of this writing, end users don't have to really care about this, as it's accounted for to prevent inconsistencies where necessary, but the solutions aren't perfect - they'll be detailed where relevant.]]
+			}
+		}
+	} --[[@as MazzleDocsSlide]])
+
 	for _, mutator in TableUtils:OrderedPairs(self.registeredMutators) do
 		local docs = mutator:generateDocs()
 		if docs then
@@ -200,6 +266,8 @@ function MutatorInterface:generateDocs(existingSlides)
 	for _, changelog in ipairs(changelogs) do
 		table.insert(existingSlides, changelog)
 	end
+
+	return existingSlides
 end
 
 changelogs = {

@@ -81,7 +81,7 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 			Styler:MiddleAlignedColumnLayout(selectorColumn, function(ele)
 				ele:AddText("Selectors").Font = "Big"
 
-				MazzleDocs:addDocButton(ele, SelectorInterface:generateDocs({}), function (config)
+				MazzleDocs:addDocButton(ele, SelectorInterface:generateDocs({}), function(config)
 					config.window_title = "Lab: Selectors"
 				end).SameLine = true
 
@@ -167,17 +167,23 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 
 			local mutatorColumn = row:AddCell()
 
-			Styler:CheapTextAlign(("%s"):format(existingMutation.prepPhase and "Prep Mutator" or "Mutators"), mutatorColumn, "Big").UserData = "keep"
 			Styler:MiddleAlignedColumnLayout(mutatorColumn, function(ele)
 				ele.Font = "Small"
+				ele:AddText(("%s"):format(existingMutation.prepPhase and "Prep Mutator" or "Mutators")).Font = "Big"
+
+				MazzleDocs:addDocButton(ele, MutatorInterface:generateDocs({}), function(config)
+					config.window_title = "Lab: Mutators"
+				end).SameLine = true
 
 				if not existingMutation.prepPhase then
-					Styler:DualToggleButton(ele, "Sidebar", "Infinite Scroll", false, function(swap)
-						if swap then
-							setting.mutatorStyle = setting.mutatorStyle ~= "Sidebar" and "Sidebar" or "Infinite"
-							buildDesignerFunc()
-						end
-						return setting.mutatorStyle == "Sidebar"
+					Styler:MiddleAlignedColumnLayout(ele, function(ele)
+						Styler:DualToggleButton(ele, "Sidebar", "Infinite Scroll", false, function(swap)
+							if swap then
+								setting.mutatorStyle = setting.mutatorStyle ~= "Sidebar" and "Sidebar" or "Infinite"
+								buildDesignerFunc()
+							end
+							return setting.mutatorStyle == "Sidebar"
+						end)
 					end)
 				else
 					ele:AddNewLine()
