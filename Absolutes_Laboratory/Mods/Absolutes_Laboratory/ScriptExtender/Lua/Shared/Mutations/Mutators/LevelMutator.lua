@@ -361,18 +361,10 @@ function LevelMutator:applyMutator(entity, entityVar)
 	end
 
 	if not levelUpSubscription and mutator.usePlayerLevel then
-		---@param entity EntityHandle
 		---@diagnostic disable-next-line: param-type-mismatch
-		levelUpSubscription = Ext.Entity.OnChange("AvailableLevel", function(entity)
-			if Osi.IsInCombat(entity.Uuid.EntityUuid) == 1 then
-				entity:OnDestroy("IsInCombat", function()
-					Logger:BasicInfo("A levelup mutator is registered and a player just gained enough XP to level up (and has left combat) - rerunning mutations")
-					MutationProfileExecutor:ExecuteProfile(true)
-				end)
-			else
-				Logger:BasicInfo("A levelup mutator is registered and a player just gained enough XP to level up - rerunning mutations")
-				MutationProfileExecutor:ExecuteProfile(true)
-			end
+		levelUpSubscription = Ext.Entity.OnChange("EocLevel", function()
+			Logger:BasicInfo("A levelup mutator is registered and a player just gained enough XP to level up - rerunning mutations")
+			MutationProfileExecutor:ExecuteProfile(true)
 		end, Ext.Entity.Get(Osi.GetHostCharacter()))
 	end
 
@@ -455,8 +447,7 @@ The rest of the mutator UI is explained via tooltips to avoid duplicated info an
 					text = [[
 This Mutator directly changes the AvailableLevel and EocLevel components on the Entity (somehow this is not transient behavior)
 
-If the Base level is calculated relative to the Players's level (threshold is not relevant here), then a Component listener will be set on the host of the party - when the host levels up, the Profile will completely re-executed as if the level has loaded (which does mean that entities that previously didn't meet the threshold could meet it now).
-If the player is in combat, execution will be deferred until they leave combat.]]
+If the Base level is calculated relative to the Players's level (threshold is not relevant here), then a Component listener will be set on the host of the party - when the host levels up and executes the CC level up screen, the Profile will completely re-executed as if the level has loaded (which does mean that entities that previously didn't meet the threshold could meet it now)]]
 				},
 				{
 					type = "Separator"
