@@ -379,3 +379,34 @@ function LevelMutator:FinalizeMutator(entity)
 	entity:Replicate("AvailableLevel")
 	entity:Replicate("EocLevel")
 end
+
+---@return MazzleDocsDocumentation
+function LevelMutator:generateDocs()
+	return {
+		{
+			Topic = self.Topic,
+			SubTopic = self.SubTopic,
+			content = {
+				{
+					type = "Heading",
+					text = "Character Level"
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "CallOut",
+					prefix = "",
+					prefix_color = "Yellow",
+					text = [[
+Dependency On: None
+Transient: No
+Additive: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is always applied first]]
+				}--[[@as MazzleDocsCallOut]],
+				{
+					type = "Separator"
+				},
+			}
+		}
+	} --[[@as MazzleDocsDocumentation]]
+end

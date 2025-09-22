@@ -14,7 +14,9 @@ Ext.Vars.RegisterUserVariable(ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME, {
 MutatorInterface = {
 	name = "",
 	---@type {[string]: MutatorInterface}
-	registeredMutators = {}
+	registeredMutators = {},
+	Topic = "Mutations",
+	SubTopic = "Mutators",
 }
 
 ---@param name string
@@ -189,8 +191,8 @@ function MutatorInterface:generateDocs(existingSlides)
 	end
 
 	table.insert(existingSlides, {
-		Topic = "Mutations",
-		SubTopic = "Mutators",
+		Topic = self.Topic,
+		SubTopic = self.SubTopic,
 		content = {
 			{
 				type = "Heading",
@@ -219,7 +221,8 @@ function MutatorInterface:generateDocs(existingSlides)
 			},
 			{
 				type = "Content",
-				text = "Mutators are pooled together after every Selector has run, overridng Mutators from Mutations higher in the Profile list if the 'Additive' checkbox is unchecked, or behaving as defined by their Additive section in their respective slide if applicable"
+				text =
+				"Mutators are pooled together after every Selector has run, overridng Mutators from Mutations higher in the Profile list if the 'Additive' checkbox is unchecked, or behaving as defined by their Additive section in their respective slide if applicable"
 			},
 			{
 				type = "Separator"
@@ -248,13 +251,15 @@ Just know that the UI will render the mutators in this assigned order (if multip
 			{
 				type = "Content",
 				text = [[
-Mutators can also be Transient - this property is set for mutators that mutate the entity in a way that is wiped on game reload, forcing a reapplication. 
+Mutators can also be Transient - this property is set for mutators that mutate the entity in a way that is wiped on game reload, forcing a reapplication.
 As of this writing, end users don't have to really care about this, as it's accounted for to prevent inconsistencies where necessary, but the solutions aren't perfect - they'll be detailed where relevant.]]
 			}
 		}
 	} --[[@as MazzleDocsSlide]])
 
-	for _, mutator in TableUtils:OrderedPairs(self.registeredMutators) do
+	for _, mutator in TableUtils:OrderedPairs(self.registeredMutators, function(key, value)
+		return tostring(value:priority()) .. value.name
+	end) do
 		local docs = mutator:generateDocs()
 		if docs then
 			for _, slide in ipairs(docs) do
