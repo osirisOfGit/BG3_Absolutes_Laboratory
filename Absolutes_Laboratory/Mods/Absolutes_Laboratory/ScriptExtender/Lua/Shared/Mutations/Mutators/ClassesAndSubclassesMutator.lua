@@ -439,8 +439,8 @@ function ClassesAndSubclassesMutator:applyMutator(entity, entityVar)
 	---@type ClassesConditionalGroup[]
 	local chosenClassGroups = {}
 
-	for _, classesMutator in ipairs(classesMutators) do
-		for _, classConditonal in ipairs(classesMutator.values) do
+	for _, classesMutator in TableUtils:OrderedPairs(classesMutators) do
+		for _, classConditonal in TableUtils:OrderedPairs(classesMutator.values) do
 			if classConditonal.numberOfSpellLists and classConditonal.numberOfSpellLists > 0 then
 				if classConditonal.spellListDependencies and next(classConditonal.spellListDependencies) then
 					local numberMatched = 0

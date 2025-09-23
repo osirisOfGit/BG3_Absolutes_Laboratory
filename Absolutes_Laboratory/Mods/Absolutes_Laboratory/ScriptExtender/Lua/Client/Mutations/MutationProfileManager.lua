@@ -141,6 +141,10 @@ function MutationProfileManager:init(parent)
 				end)
 		end
 
+		local docs = MazzleDocs:addDocButton(rightPanel, Profiles_Docs)
+		docs.UserData = "keep"
+		docs.SameLine = true
+
 		rightPanel:AddSeparator()
 		self.profileRulesParent = Styler:TwoColumnTable(rightPanel)
 		self.profileRulesParent.Borders = false
@@ -698,14 +702,11 @@ function MutationProfileManager:BuildProfileManager()
 
 	local lastMutation = activeMutationView and activeMutationView.Label
 	activeMutationView = nil
+
 	local profiles = ConfigurationStructure.config.mutations.profiles
 	Helpers:KillChildren(self.profileManagerParent, self.rulesOrderGroup, self.mutationDesigner)
 
-	Styler:MiddleAlignedColumnLayout(self.profileManagerParent, function(ele)
-		local title = ele:AddText("Active Profile")
-		title.Font = "Large"
-		MazzleDocs:addDocButton(ele, Profiles_Docs).SameLine = true
-	end)
+	Styler:CheapTextAlign("Active Profile", self.profileManagerParent, "Large")
 
 	local profileCombo = self.profileManagerParent:AddCombo("")
 	profileCombo.WidthFitPreview = true

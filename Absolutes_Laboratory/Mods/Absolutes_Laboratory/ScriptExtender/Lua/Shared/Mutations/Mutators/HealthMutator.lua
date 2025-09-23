@@ -506,9 +506,9 @@ function HealthMutator:generateDocs()
 					prefix = "",
 					prefix_color = "Yellow",
 					text = [[
-Dependency On: None
+Dependency On: Level Mutator
 Transient: No
-Additive: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is always applied first]]
+Additive: No]]
 				} --[[@as MazzleDocsCallOut]],
 				{
 					type = "Separator"
@@ -519,7 +519,9 @@ Additive: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is always
 				},
 				{
 					type = "Content",
-					text = [[TODO]]
+					text = [[This is a conceptually simple mutator that allows for some unique complexity - namely, it allows you to define Health curves for different mob types of different character levels in different game levels, which can be previewed using the button showed above.
+
+The Modifiers are additive to the base amount, but also allow setting negative and decimal values, allowing you to define the curve exactly as you wish.]]
 				},
 				{
 					type = "Separator"

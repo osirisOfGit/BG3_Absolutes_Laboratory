@@ -65,7 +65,6 @@ function Styler:MiddleAlignedColumnLayout(parent, ...)
 
 		row:AddCell()
 	end
-
 	return table
 end
 

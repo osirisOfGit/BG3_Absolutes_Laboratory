@@ -78,86 +78,91 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 
 		if focusButtons[2].UserData or focusButtons[1].UserData then
 			local selectorColumn = row:AddCell()
+
+			local title = Styler:CheapTextAlign("Selectors", selectorColumn, "Big")
+			title.UserData = "keep"
+			title.AllowOverlap = true
+
+			local docs = MazzleDocs:addDocButton(selectorColumn, SelectorInterface:generateDocs({}), function(config)
+				config.window_title = "Lab: Selectors"
+			end)
+			docs.AllowItemOverlap = true
+			docs.UserData = "keep"
+			docs.PositionOffset = Styler:ScaleFactor({ 0, -50 })
+
 			Styler:MiddleAlignedColumnLayout(selectorColumn, function(ele)
-				ele:AddText("Selectors").Font = "Big"
+				-- ele:AddText("Selectors").Font = "Big"
+				local dryRunButton = ele:AddButton("Dry Run")
+				dryRunButton.Disabled = false
+				dryRunButton.UserData = "EnableForMods"
 
-				MazzleDocs:addDocButton(ele, SelectorInterface:generateDocs({}), function(config)
-					config.window_title = "Lab: Selectors"
-				end).SameLine = true
+				---@type ExtuiWindow
+				local resultsWindow
 
-				Styler:MiddleAlignedColumnLayout(ele, function(ele)
-					local dryRunButton = ele:AddButton("Dry Run")
-					dryRunButton.Disabled = false
-					dryRunButton.UserData = "EnableForMods"
-
-					---@type ExtuiWindow
-					local resultsWindow
-
-					dryRunButton.OnClick = function()
-						if not resultsWindow then
-							resultsWindow = Ext.IMGUI.NewWindow("Dry Run Results###resultswindow")
-							resultsWindow.Closeable = true
-							resultsWindow.AlwaysAutoResize = true
-						else
-							resultsWindow.Open = true
-							resultsWindow:SetFocus()
-							Helpers:KillChildren(resultsWindow)
-						end
-
-						local predicate = SelectorInterface:createComposedPredicate(existingMutation.selectors._real or existingMutation.selectors)
-
-						local maxCols = 10
-						local resultCounter = 0
-						for level, entities in pairs(EntityRecorder:GetEntities()) do
-							local header = resultsWindow:AddCollapsingHeader(level)
-							header:SetColor("Header", { 1, 1, 1, 0 })
-							header.Font = "Large"
-							header.DefaultOpen = true
-
-							local columnCounter = 0
-
-							for entity, record in TableUtils:OrderedPairs(entities, function(key)
-								return entities[key].Name
-							end) do
-								if predicate:Test(record) then
-									resultCounter = resultCounter + 1
-									columnCounter = columnCounter + 1
-
-									local group = header:AddChildWindow(level .. entity)
-									group.Font = "Medium"
-									group.NoSavedSettings = true
-									group.Size = { 100, 100 }
-									group.SameLine = columnCounter > 1 and columnCounter % maxCols ~= 1
-
-									Styler:MiddleAlignedColumnLayout(group, function(ele)
-										local image = ele:AddImage(record.Icon, { 64, 64 })
-										if image.ImageData.Icon == "" then
-											ele:AddImage("Item_Unknown", { 64, 64 })
-										end
-									end)
-
-									Styler:MiddleAlignedColumnLayout(group, function(ele)
-										local hyperlink = Styler:HyperlinkText(ele, record.Name, function(parent)
-											CharacterWindow:BuildWindow(parent, entity)
-										end)
-										hyperlink.Font = "Small"
-									end)
-								end
-							end
-							if columnCounter == 0 then
-								header:Destroy()
-							else
-								header.Label = string.format("%s - %s Results", header.Label, columnCounter)
-							end
-						end
-
-						if resultCounter == 0 then
-							resultsWindow:AddText("No Entities Selected").Font = "Large"
-						end
-
-						resultsWindow.Label = string.format("%s - %s Results###resultswindow", "Dry Run", resultCounter)
+				dryRunButton.OnClick = function()
+					if not resultsWindow then
+						resultsWindow = Ext.IMGUI.NewWindow("Dry Run Results###resultswindow")
+						resultsWindow.Closeable = true
+						resultsWindow.AlwaysAutoResize = true
+					else
+						resultsWindow.Open = true
+						resultsWindow:SetFocus()
+						Helpers:KillChildren(resultsWindow)
 					end
-				end)
+
+					local predicate = SelectorInterface:createComposedPredicate(existingMutation.selectors._real or existingMutation.selectors)
+
+					local maxCols = 10
+					local resultCounter = 0
+					for level, entities in pairs(EntityRecorder:GetEntities()) do
+						local header = resultsWindow:AddCollapsingHeader(level)
+						header:SetColor("Header", { 1, 1, 1, 0 })
+						header.Font = "Large"
+						header.DefaultOpen = true
+
+						local columnCounter = 0
+
+						for entity, record in TableUtils:OrderedPairs(entities, function(key)
+							return entities[key].Name
+						end) do
+							if predicate:Test(record) then
+								resultCounter = resultCounter + 1
+								columnCounter = columnCounter + 1
+
+								local group = header:AddChildWindow(level .. entity)
+								group.Font = "Medium"
+								group.NoSavedSettings = true
+								group.Size = { 100, 100 }
+								group.SameLine = columnCounter > 1 and columnCounter % maxCols ~= 1
+
+								Styler:MiddleAlignedColumnLayout(group, function(ele)
+									local image = ele:AddImage(record.Icon, { 64, 64 })
+									if image.ImageData.Icon == "" then
+										ele:AddImage("Item_Unknown", { 64, 64 })
+									end
+								end)
+
+								Styler:MiddleAlignedColumnLayout(group, function(ele)
+									local hyperlink = Styler:HyperlinkText(ele, record.Name, function(parent)
+										CharacterWindow:BuildWindow(parent, entity)
+									end)
+									hyperlink.Font = "Small"
+								end)
+							end
+						end
+						if columnCounter == 0 then
+							header:Destroy()
+						else
+							header.Label = string.format("%s - %s Results", header.Label, columnCounter)
+						end
+					end
+
+					if resultCounter == 0 then
+						resultsWindow:AddText("No Entities Selected").Font = "Large"
+					end
+
+					resultsWindow.Label = string.format("%s - %s Results###resultswindow", "Dry Run", resultCounter)
+				end
 			end).UserData = "keep"
 
 			self:RenderSelectors(selectorColumn, existingMutation.selectors, existingMutation.prepPhase)
@@ -167,23 +172,30 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 
 			local mutatorColumn = row:AddCell()
 
+			local title = Styler:CheapTextAlign(("%s"):format(existingMutation.prepPhase and "Prep Mutator" or "Mutators"), mutatorColumn, "Big")
+			title.UserData = "keep"
+			title.AllowOverlap = true
+
+			local docs = MazzleDocs:addDocButton(mutatorColumn, MutatorInterface:generateDocs({}), function(config)
+				config.window_title = "Lab: Mutators"
+			end)
+			docs.PositionOffset = Styler:ScaleFactor({ 0, -50 })
+			docs.AllowItemOverlap = true
+			docs.UserData = "keep"
+
 			Styler:MiddleAlignedColumnLayout(mutatorColumn, function(ele)
 				ele.Font = "Small"
-				ele:AddText(("%s"):format(existingMutation.prepPhase and "Prep Mutator" or "Mutators")).Font = "Big"
-
-				MazzleDocs:addDocButton(ele, MutatorInterface:generateDocs({}), function(config)
-					config.window_title = "Lab: Mutators"
-				end).SameLine = true
+				-- ele:AddText(("%s"):format(existingMutation.prepPhase and "Prep Mutator" or "Mutators")).Font = "Big"
 
 				if not existingMutation.prepPhase then
-					Styler:MiddleAlignedColumnLayout(ele, function(ele)
-						Styler:DualToggleButton(ele, "Sidebar", "Infinite Scroll", false, function(swap)
-							if swap then
-								setting.mutatorStyle = setting.mutatorStyle ~= "Sidebar" and "Sidebar" or "Infinite"
-								buildDesignerFunc()
-							end
-							return setting.mutatorStyle == "Sidebar"
-						end)
+					-- Styler:MiddleAlignedColumnLayout(ele, function(ele)
+					Styler:DualToggleButton(ele, "Sidebar", "Infinite Scroll", false, function(swap)
+						if swap then
+							setting.mutatorStyle = setting.mutatorStyle ~= "Sidebar" and "Sidebar" or "Infinite"
+							buildDesignerFunc()
+						end
+						return setting.mutatorStyle == "Sidebar"
+						-- end)
 					end)
 				else
 					ele:AddNewLine()
