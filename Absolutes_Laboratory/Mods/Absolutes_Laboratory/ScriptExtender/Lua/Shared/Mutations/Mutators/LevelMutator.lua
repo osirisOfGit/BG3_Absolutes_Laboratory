@@ -489,7 +489,7 @@ If the Base level is calculated relative to the Players's level (threshold is no
 				},
 				{
 					type = "SubHeading",
-					text = "!.6.0"
+					text = "1.6.0"
 				},
 				{
 					type = "Bullet",

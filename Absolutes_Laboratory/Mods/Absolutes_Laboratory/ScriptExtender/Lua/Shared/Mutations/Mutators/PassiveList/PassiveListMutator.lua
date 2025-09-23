@@ -620,7 +620,6 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 		for _, passiveId in pairs(loosePassivesToApply) do
 			if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
 				Logger:BasicDebug("Adding loose passive %s", passiveId)
-				Osi.AddPassive(entity.Uuid.EntityUuid, passiveId)
 				table.insert(appliedPassives, passiveId)
 			else
 				Logger:BasicDebug("Loose passive %s is already present", passiveId)
@@ -808,7 +807,7 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				},
 				{
 					type = "SubHeading",
-					text = "!.6.0"
+					text = "1.6.0"
 				},
 				{
 					type = "Bullet",

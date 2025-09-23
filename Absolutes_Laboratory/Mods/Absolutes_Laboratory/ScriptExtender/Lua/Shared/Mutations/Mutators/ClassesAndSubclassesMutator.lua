@@ -145,7 +145,7 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 				local levelPercentageInput = groupRow:AddCell():AddInputInt("%", levelPercentage)
 				levelPercentageInput.IDContext = classId
 				levelPercentageInput.UserData = classId
-				levelPercentageInput.ItemWidth = 40
+				levelPercentageInput.ItemWidth = Styler:ScaleFactor() * 80
 				levelPercentageInput.SameLine = true
 
 				if TableUtils:CountElements(classConditionalGroup.classIds) == 1 then
@@ -216,7 +216,7 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 					---@type ExtuiMenu
 					local menu = popup:AddMenu(self.translationMap[classId])
 					menu.Disabled = (classConditionalGroup.classIds and classConditionalGroup.classIds[classId]) ~= nil
- 
+
 					menu:AddSelectable(self.translationMap[classId]).OnClick = function()
 						classConditionalGroup.classIds = classConditionalGroup.classIds or {}
 						classConditionalGroup.classIds[classId] = TableUtils:CountElements(classConditionalGroup.classIds) == 0 and 100 or 0
@@ -254,7 +254,7 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 
 		conditionalCell:AddText("Must have been assigned ").SameLine = true
 		local spellListNumberInput = conditionalCell:AddInputInt("", classConditionalGroup.numberOfSpellLists or 0)
-		spellListNumberInput.ItemWidth = 40
+		spellListNumberInput.ItemWidth = Styler:ScaleFactor() * 40
 		spellListNumberInput.SameLine = true
 		spellListNumberInput.OnDeactivate = function()
 			if spellListNumberInput.Value[1] < 0 then
@@ -417,7 +417,7 @@ function ClassesAndSubclassesMutator:undoMutator(entity, entityVar)
 		Logger:BasicDebug("Reverted spellCastingAbility to %s", entityVar.originalValues[self.name].spellCastingAbility)
 		entity.Stats.SpellCastingAbility = entityVar.originalValues[self.name].spellCastingAbility
 	end
-	
+
 	if entityVar.originalValues[self.name].rangedAttackAbility then
 		Logger:BasicDebug("Reverted rangedAttackAbility to %s", entityVar.originalValues[self.name].rangedAttackAbility)
 		entity.Stats.RangedAttackAbility = entityVar.originalValues[self.name].rangedAttackAbility
@@ -628,11 +628,17 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				},
 				{
 					type = "SubHeading",
-					text = "1.7.0 (N/A)"
+					text = "1.7.0"
+				},
+				{
+					type = "Bullet",
+					text = {
+						"Sligtly widens inputs and makes sure they scale appropriately"
+					}
 				},
 				{
 					type = "SubHeading",
-					text = "!.6.0"
+					text = "1.6.0"
 				},
 				{
 					type = "Bullet",
@@ -643,4 +649,3 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 		}
 	} --[[@as MazzleDocsDocumentation]]
 end
-

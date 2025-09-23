@@ -507,7 +507,7 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				},
 				{
 					type = "SubHeading",
-					text = "!.6.0"
+					text = "1.6.0"
 				},
 				{
 					type = "Bullet",
