@@ -32,7 +32,8 @@ function MazzleDocs:addDocButton(parent, document, configConsumer)
 				{
 					type = "Bullet",
 					text = {
-						"Fixed the Profile section of Mutations not scrolling alongside the Folder view"
+						"Fixed the Profile section of Mutations not scrolling alongside the Folder view",
+						"Fixed Hide/Show buttons in Profile section resetting on any change to the profile"
 					}
 				}
 			}

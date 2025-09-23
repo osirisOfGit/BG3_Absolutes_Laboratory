@@ -1050,6 +1050,9 @@ function MutationProfileManager:BuildProfileManager()
 	self:BuildRuleManager(lastMutation)
 end
 
+local prepHide = false
+local mainHide = false
+
 ---@param lastMutationActive string?
 function MutationProfileManager:BuildRuleManager(lastMutationActive)
 	Helpers:KillChildren(self.rulesOrderGroup)
@@ -1096,16 +1099,22 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 			self.rulesOrderGroup:AddSeparatorText("Main Mutations"):SetStyle("SeparatorTextAlign", 0.5)
 		end
 		local hideButton = Styler:ImageButton(self.rulesOrderGroup:AddImageButton("hideLevel" .. (prepPhase and "prep" or "not"), "Action_Hide", Styler:ScaleFactor({ 28, 28 })))
-		hideButton.Visible = true
+		hideButton.Visible = not ((prepPhase and prepHide) or (not prepPhase and mainHide))
 		local showButton = Styler:ImageButton(self.rulesOrderGroup:AddImageButton("showLevel" .. (prepPhase and "prep" or "not"), "ico_concentration", Styler:ScaleFactor({ 28, 28 })))
-		showButton.Visible = false
+		showButton.Visible = (prepPhase and prepHide) or (not prepPhase and mainHide)
 
 		local group = self.rulesOrderGroup:AddGroup("Mutations" .. (prepPhase and "prep" or "not prep"))
+		group.Visible = hideButton.Visible
 
 		hideButton.OnClick = function()
 			group.Visible = not group.Visible
 			hideButton.Visible = not hideButton.Visible
 			showButton.Visible = not showButton.Visible
+			if prepPhase then
+				prepHide = not prepHide
+			else
+				mainHide = not mainHide
+			end
 		end
 
 		showButton.OnClick = hideButton.OnClick
@@ -1335,7 +1344,6 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 	buildSlots(numOfPrepMutations, true)
 	buildSlots(numOfMutations)
 end
-
 
 Profiles_Docs = {
 	{
