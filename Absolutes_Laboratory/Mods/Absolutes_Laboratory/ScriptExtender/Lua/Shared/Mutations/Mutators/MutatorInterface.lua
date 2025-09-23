@@ -258,7 +258,7 @@ As of this writing, end users don't have to really care about this, as it's acco
 	} --[[@as MazzleDocsSlide]])
 
 	for _, mutator in TableUtils:OrderedPairs(self.registeredMutators, function(key, value)
-		return tostring(value:priority()) .. value.name
+		return value:priority()
 	end) do
 		local docs = mutator:generateDocs()
 		if docs then

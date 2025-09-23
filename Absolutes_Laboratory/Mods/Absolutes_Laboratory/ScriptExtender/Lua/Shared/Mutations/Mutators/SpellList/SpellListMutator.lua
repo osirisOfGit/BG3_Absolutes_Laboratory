@@ -1287,7 +1287,7 @@ if Ext.IsServer() then
 				end
 				keep = true
 				table.insert(groupsToApply, spellMutatorGroup)
-				groupToListMap[#groupsToApply] = g
+				groupToListMap[#groupsToApply] = m
 
 				::next_group::
 			end
@@ -1431,33 +1431,35 @@ if Ext.IsServer() then
 							end
 
 							for i = startingSpellListLevel, cLevel do
-								local leveledLists = spellList.levels[i]
 								---@type EntryName[]
 								local randomPool = {}
-								if leveledLists then
-									if leveledLists.linkedProgressions then
-										for progressionId, subLists in pairs(leveledLists.linkedProgressions) do
-											self:processSubLists(subLists, entity, addSpells, origValues)
+								if spellList.levels then
+									local leveledLists = spellList.levels[i]
+									if leveledLists then
+										if leveledLists.linkedProgressions then
+											for progressionId, subLists in pairs(leveledLists.linkedProgressions) do
+												self:processSubLists(subLists, entity, addSpells, origValues)
 
-											if SpellListDesigner.progressionTranslations[progressionId] then
-												local progressionTable = SpellListDesigner.progressions[progressionId]
-												if progressionTable and progressionTable[i] and progressionTable[i][SpellListDesigner.name] then
-													for _, spells in pairs(progressionTable[i][SpellListDesigner.name]) do
-														for _, spellName in pairs(spells) do
-															if not TableUtils:IndexOf(subLists.blackListed, spellName) then
-																if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
-																		return value.Id.OriginatorPrototype == spellName
-																	end)
-																then
-																	table.insert(randomPool, spellName)
-																else
-																	---@type ResourceProgression
-																	local progressionResource = Ext.StaticData.Get(
-																		PassiveListDesigner.progressionTableToProgression[progressionId][i], "Progression")
+												if SpellListDesigner.progressionTranslations[progressionId] then
+													local progressionTable = SpellListDesigner.progressions[progressionId]
+													if progressionTable and progressionTable[i] and progressionTable[i][SpellListDesigner.name] then
+														for _, spells in pairs(progressionTable[i][SpellListDesigner.name]) do
+															for _, spellName in pairs(spells) do
+																if not TableUtils:IndexOf(subLists.blackListed, spellName) then
+																	if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
+																			return value.Id.OriginatorPrototype == spellName
+																		end)
+																	then
+																		table.insert(randomPool, spellName)
+																	else
+																		---@type ResourceProgression
+																		local progressionResource = Ext.StaticData.Get(
+																			PassiveListDesigner.progressionTableToProgression[progressionId][i], "Progression")
 
-																	Logger:BasicDebug("%s from progression %s (%s - level %s) is already known, not adding to the random pool",
-																		spellName,
-																		progressionId, progressionResource.Name, progressionResource.Level)
+																		Logger:BasicDebug("%s from progression %s (%s - level %s) is already known, not adding to the random pool",
+																			spellName,
+																			progressionId, progressionResource.Name, progressionResource.Level)
+																	end
 																end
 															end
 														end
@@ -1465,20 +1467,20 @@ if Ext.IsServer() then
 												end
 											end
 										end
-									end
 
-									if leveledLists.manuallySelectedEntries then
-										self:processSubLists(leveledLists.manuallySelectedEntries, entity, addSpells, origValues)
+										if leveledLists.manuallySelectedEntries then
+											self:processSubLists(leveledLists.manuallySelectedEntries, entity, addSpells, origValues)
 
-										if leveledLists.manuallySelectedEntries.randomized then
-											for _, spellName in pairs(leveledLists.manuallySelectedEntries.randomized) do
-												if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
-														return value.Id.OriginatorPrototype == spellName
-													end)
-												then
-													table.insert(randomPool, spellName)
-												else
-													Logger:BasicDebug("%s is already known, not adding to the random pool", spellName)
+											if leveledLists.manuallySelectedEntries.randomized then
+												for _, spellName in pairs(leveledLists.manuallySelectedEntries.randomized) do
+													if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
+															return value.Id.OriginatorPrototype == spellName
+														end)
+													then
+														table.insert(randomPool, spellName)
+													else
+														Logger:BasicDebug("%s is already known, not adding to the random pool", spellName)
+													end
 												end
 											end
 										end
@@ -1581,4 +1583,107 @@ if Ext.IsServer() then
 			entityVar.appliedMutatorsPath[self.name] = nil
 		end
 	end
+end
+
+---@return MazzleDocsDocumentation
+function SpellListMutator:generateDocs()
+	return {
+		{
+			Topic = self.Topic,
+			SubTopic = self.SubTopic,
+			content = {
+				{
+					type = "Heading",
+					text = "Spell Lists",
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "CallOut",
+					prefix = "",
+					prefix_color = "Yellow",
+					text = [[
+Dependency On: None
+Transient: No
+Additive: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is always applied first]]
+				} --[[@as MazzleDocsCallOut]],
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Summary"
+				},
+				{
+					type = "Content",
+					text = [[TODO]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Mechanics"
+				},
+				{
+					type = "Content",
+					text = [[
+The mutator is laid out as follows:
+
+TODO
+
+The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Server-Side Implementation"
+				},
+				{
+					type = "Content",
+					text = [[ TODO ]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Example Use Cases"
+				},
+				{
+					type = "Section",
+					text = "Selected entities:"
+				},
+				{
+					type = "Bullet",
+					text = {
+						"TODO"
+					}
+				} --[[@as MazzleDoctsBullet]],
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Changelog"
+				},
+				{
+					type = "SubHeading",
+					text = "1.7.0 (N/A)"
+				},
+				{
+					type = "SubHeading",
+					text = "!.6.0"
+				},
+				{
+					type = "Bullet",
+					text = { "?"
+					}
+				}
+			}
+		}
+	} --[[@as MazzleDocsDocumentation]]
 end

@@ -716,3 +716,107 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 		entityVar.originalValues[self.name] = appliedPassives
 	end
 end
+
+---@return MazzleDocsDocumentation
+function PassiveListMutator:generateDocs()
+	return {
+		{
+			Topic = self.Topic,
+			SubTopic = self.SubTopic,
+			content = {
+				{
+					type = "Heading",
+					text = "Passive Lists",
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "CallOut",
+					prefix = "",
+					prefix_color = "Yellow",
+					text = [[
+Dependency On: None
+Transient: No
+Additive: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is always applied first]]
+				} --[[@as MazzleDocsCallOut]],
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Summary"
+				},
+				{
+					type = "Content",
+					text = [[TODO]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Mechanics"
+				},
+				{
+					type = "Content",
+					text = [[
+The mutator is laid out as follows:
+
+TODO
+
+The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Server-Side Implementation"
+				},
+				{
+					type = "Content",
+					text = [[ TODO ]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Example Use Cases"
+				},
+				{
+					type = "Section",
+					text = "Selected entities:"
+				},
+				{
+					type = "Bullet",
+					text = {
+						"TODO"
+					}
+				} --[[@as MazzleDoctsBullet]],
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Changelog"
+				},
+				{
+					type = "SubHeading",
+					text = "1.7.0 (N/A)"
+				},
+				{
+					type = "SubHeading",
+					text = "!.6.0"
+				},
+				{
+					type = "Bullet",
+					text = { "?"
+					}
+				}
+			}
+		}
+	} --[[@as MazzleDocsDocumentation]]
+end
+
