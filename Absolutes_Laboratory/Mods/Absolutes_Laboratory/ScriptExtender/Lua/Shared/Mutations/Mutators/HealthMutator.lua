@@ -443,7 +443,8 @@ function HealthMutator:applyMutator(entity, entityVar)
 			entity.Health.MaxHp = math.floor(entity.Health.MaxHp + (entity.Health.MaxHp * percentageToAdd))
 			entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * currentHealthPercentage)))
 
-			Logger:BasicDebug("Dynamically changed max from %s -> %s, current from %s -> %s, due to set percentage being %s%% (base: %s%%, character: %s%%, gameLevel: %s%%, xpReward: %s%%)",
+			Logger:BasicDebug(
+				"Dynamically changed max from %s -> %s, current from %s -> %s, due to set percentage being %s%% (base: %s%%, character: %s%%, gameLevel: %s%%, xpReward: %s%%)",
 				currentMaxHealth,
 				entity.Health.MaxHp,
 				currentHealth,
@@ -508,7 +509,7 @@ function HealthMutator:generateDocs()
 					text = [[
 Dependency On: Level Mutator
 Transient: No
-Additive: No]]
+Additive: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is always applied first]]
 				} --[[@as MazzleDocsCallOut]],
 				{
 					type = "Separator"
@@ -519,7 +520,8 @@ Additive: No]]
 				},
 				{
 					type = "Content",
-					text = [[This is a conceptually simple mutator that allows for some unique complexity - namely, it allows you to define Health curves for different mob types of different character levels in different game levels, which can be previewed using the button showed above.
+					text =
+					[[This is a conceptually simple mutator that allows for some unique complexity - namely, it allows you to define Health curves for different mob types of different character levels in different game levels, which can be previewed using the button showed above.
 
 The Modifiers are additive to the base amount, but also allow setting negative and decimal values, allowing you to define the curve exactly as you wish.]]
 				},
@@ -535,7 +537,9 @@ The Modifiers are additive to the base amount, but also allow setting negative a
 					text = [[
 The mutator is laid out as follows:
 
-TODO
+Static vs Dynamic Toggle - if set to Static, you'll set the Entity Health to exactly that value, no modifiers included.
+Dynamic takes the entity's current max health and changes it according the % defined (positive or negative), modifiers included.
+The Preview button shows you exactly what the result will be for the combinations you select.
 
 The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
 				},
@@ -548,7 +552,10 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				},
 				{
 					type = "Content",
-					text = [[ TODO ]]
+					text = [[
+This Mutator directly changes the entity.Health MaxHp and HP components so the current HP will change relative to the MaxHp, preventing any full-heal shenanigans - meaning, if the entity's health is 7/10, and the max health is set to 20, the current health will be updated to 14 (70% of 20).
+
+If a Static and a Dyanmic Health Mutator in different Mutations make it to the final pool (due to the one lower in the profile order being set to Additive), Lab will apply the Static version first, then the Dynamic version on top of that.]]
 				},
 				{
 					type = "Separator"
@@ -564,7 +571,9 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				{
 					type = "Bullet",
 					text = {
-						"TODO"
+						"that aren't bosses should have 50% more health, otherwise they should have 100% more",
+						"should have a 10% increase every Game Level until IRN_Main_A, at which point they start losing 5% every Game level",
+						"5% every Game Level, subtracting 1% for every rung up on the XPReward ladder (so Bosses will be (5% - 5%))"
 					}
 				} --[[@as MazzleDoctsBullet]],
 				{
@@ -576,19 +585,16 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				},
 				{
 					type = "SubHeading",
-					text = "1.7.0 (N/A)"
-				},
-				{
-					type = "SubHeading",
 					text = "1.6.0"
 				},
 				{
 					type = "Bullet",
-					text = { "?"
+					text = {
+						"Fix execution when the math ain't whole numbers",
+						"Changes Additive behavior for Health Mutators - Dynamic overwrites Dynamic, Static Overwrites Static, but Static and Dynamic can be run together (Static will always run first)"
 					}
 				}
 			}
 		}
 	} --[[@as MazzleDocsDocumentation]]
 end
-

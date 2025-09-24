@@ -401,7 +401,7 @@ function LevelMutator:generateDocs()
 					text = [[
 Dependency On: None
 Transient: No
-Additive: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is always applied first]]
+Additive: No]]
 				} --[[@as MazzleDocsCallOut]],
 				{
 					type = "Separator"
