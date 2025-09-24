@@ -43,6 +43,8 @@ function AbilitiesMutator:renderMutator(parent, mutator)
 		numberOfLowestToRemove = 1
 	} --[[@as DieSettings]]
 
+	local dieSettings = mutator.values.dieSettings
+
 	local layoutTable = parent:AddTable("Layout", 2):AddRow()
 
 	local dieSettingSide = layoutTable:AddCell()
@@ -59,43 +61,51 @@ Priority order of the abilities is determined in the following sequence:
 
 	local numDiceRow = dieTable:AddRow()
 	numDiceRow:AddCell():AddText("# Of Dice To Roll Per Ability")
-	local numDiceInput = numDiceRow:AddCell():AddInputInt("", mutator.values.dieSettings.numberOfDice)
+	local numDiceInput = numDiceRow:AddCell():AddInputInt("", dieSettings.numberOfDice)
 	numDiceInput.ItemWidth = 80
 	numDiceInput.OnChange = function()
 		if numDiceInput.Value[1] <= 0 then
-			local currValue = mutator.values.dieSettings.numberOfDice
+			local currValue = dieSettings.numberOfDice
 			numDiceInput.Value = { currValue, currValue, currValue, currValue }
 		else
-			mutator.values.dieSettings.numberOfDice = numDiceInput.Value[1]
+			dieSettings.numberOfDice = numDiceInput.Value[1]
 		end
 	end
 
 	local diceSidesRow = dieTable:AddRow()
 	diceSidesRow:AddCell():AddText("Die Type To Roll (i.e. d6)")
 	local diceSideCell = diceSidesRow:AddCell()
-	local diceSideInput = diceSideCell:AddInputInt("", mutator.values.dieSettings.diceSides)
+	local diceSideInput = diceSideCell:AddInputInt("", dieSettings.diceSides)
 	diceSideInput.ItemWidth = 80
 	diceSideInput.OnChange = function()
 		if diceSideInput.Value[1] <= 0 then
-			local currValue = mutator.values.dieSettings.diceSides
+			local currValue = dieSettings.diceSides
 			diceSideInput.Value = { currValue, currValue, currValue, currValue }
 		else
-			mutator.values.dieSettings.diceSides = diceSideInput.Value[1]
+			dieSettings.diceSides = diceSideInput.Value[1]
 		end
 	end
 
 	local numToDropRow = dieTable:AddRow()
 	numToDropRow:AddCell():AddText("# of Lowest Rolls To Drop")
-	local numToDropInput = numToDropRow:AddCell():AddInputInt("", mutator.values.dieSettings.numberOfLowestToRemove)
+	local numToDropInput = numToDropRow:AddCell():AddInputInt("", dieSettings.numberOfLowestToRemove)
 	numToDropInput.ItemWidth = 80
 	numToDropInput.OnChange = function()
 		if numToDropInput.Value[1] <= 0 then
-			local currValue = mutator.values.dieSettings.numberOfLowestToRemove
+			local currValue = dieSettings.numberOfLowestToRemove
 			numToDropInput.Value = { currValue, currValue, currValue, currValue }
 		else
-			mutator.values.dieSettings.numberOfLowestToRemove = numToDropInput.Value[1]
+			dieSettings.numberOfLowestToRemove = numToDropInput.Value[1]
 		end
 	end
+
+	local min = dieSettings.numberOfDice - dieSettings.numberOfLowestToRemove
+	local max = dieSettings.diceSides * (dieSettings.numberOfDice - dieSettings.numberOfLowestToRemove)
+
+	local averageWithAllDice = (((dieSettings.diceSides + 1) / 2) * dieSettings.numberOfDice)
+	local avg = math.floor(averageWithAllDice)
+
+	dieSettingSide:AddText(("Min: %d | Avg: %d | Max: %d"):format(min, avg, max))
 
 	local abilityPrioritySide = layoutTable:AddCell()
 	abilityPrioritySide:AddSeparatorText("Primary Abilities Override ( ? )"):Tooltip():AddText([[
@@ -249,7 +259,7 @@ function AbilitiesMutator:applyMutator(entity, entityVar)
 		Logger:BasicDebug("Overridden Ability Priorities are: %s", override)
 	end
 
-	if not primary or not secondary or not tertiary then
+	if not abilities.primaryStat or not abilities.secondaryStat or not abilities.tertiaryStat then
 		if entityVar.appliedMutators[SpellListMutator.name] and entityVar.appliedMutators[SpellListMutator.name].appliedLists then
 			---@type {[Guid]: number}
 			local appliedSpellLists = entityVar.appliedMutators[SpellListMutator.name].appliedLists
@@ -446,7 +456,13 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				},
 				{
 					type = "SubHeading",
-					text = "1.7.0 (N/A)"
+					text = "1.7.0"
+				},
+				{
+					type = "Bullet",
+					text = {
+						"Fix execution variable so it doesn't always try to calculate the prime 3 if they're already set"
+					}
 				},
 				{
 					type = "SubHeading",
@@ -461,4 +477,3 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 		}
 	} --[[@as MazzleDocsDocumentation]]
 end
-
