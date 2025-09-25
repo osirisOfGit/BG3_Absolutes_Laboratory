@@ -660,7 +660,7 @@ If Level 1 is set, Lab will hardset the existing resource on the entity (if appl
 
 					local deleteClass = Styler:ImageButton(classGroup:AddImageButton("delete" .. classId, "ico_red_x", { 16, 16 }))
 					deleteClass.OnClick = function()
-						classDependentActionResources.requiresClasses[i] = nil
+						classDependentActionResources.requiresClasses[c] = nil
 						TableUtils:ReindexNumericTable(classDependentActionResources.requiresClasses)
 						buildClasses()
 					end
@@ -683,7 +683,7 @@ If Level 1 is set, Lab will hardset the existing resource on the entity (if appl
 							local menu = popup:AddMenu(ClassesAndSubclassesMutator.translationMap[classId])
 							menu.Disabled = TableUtils:IndexOf(classDependentActionResources.requiresClasses, classId) ~= nil
 
-							menu:AddSelectable(ClassesAndSubclassesMutator.translationMap[classId]).OnClick = function()
+							menu:AddSelectable(ClassesAndSubclassesMutator.translationMap[classId], "DontClosePopups").OnClick = function()
 								classDependentActionResources.requiresClasses = classDependentActionResources.requiresClasses or {}
 								table.insert(classDependentActionResources.requiresClasses, classId)
 
@@ -694,7 +694,7 @@ If Level 1 is set, Lab will hardset the existing resource on the entity (if appl
 								return ClassesAndSubclassesMutator.translationMap[value]
 							end) do
 								---@type ExtuiSelectable
-								local select = menu:AddSelectable(ClassesAndSubclassesMutator.translationMap[subclassId])
+								local select = menu:AddSelectable(ClassesAndSubclassesMutator.translationMap[subclassId], "DontClosePopups")
 								select.Selected = TableUtils:IndexOf(classDependentActionResources.requiresClasses, subclassId) ~= nil
 
 								select.OnClick = function()
@@ -726,6 +726,12 @@ If Level 1 is set, Lab will hardset the existing resource on the entity (if appl
 			end
 		end
 		buildClasses()
+
+		parent:AddButton("Add Class(es) Group").OnClick = function()
+			mutator.values.classDependent = mutator.values.classDependent or {}
+			table.insert(mutator.values.classDependent, {})
+			buildClasses()
+		end
 	end
 end
 
@@ -983,20 +989,27 @@ function ActionResourcesMutator:applyMutator(entity, entityVar)
 							if classOnEntity.ClassUUID == classId or classOnEntity.SubClassUUID == classId then
 								Logger:BasicDebug("Class %s is present on the entity - adding resources", Ext.StaticData.Get(classId, "ClassDescription").Name)
 								for _, resourceConfig in ipairs(classConfig.actionResources) do
-									if classOnEntity.Level >= resourceConfig.initialEntityOrClassLevel then
-										if not config[resourceConfig.resourceId] then
-											resourceConfig.totalClassLevel = classOnEntity.Level
-											config[resourceConfig.resourceId] = resourceConfig
-										else
-											config[resourceConfig.resourceId].totalClassLevel = config[resourceConfig.resourceId].totalClassLevel + classOnEntity.Level
-										end
+									if not config[resourceConfig.resourceId] then
+										resourceConfig.totalClassLevel = classOnEntity.Level
+										config[resourceConfig.resourceId] = {
+											[resourceConfig.resourceLevel] = resourceConfig
+										}
+									elseif config[resourceConfig.resourceId][resourceConfig.resourceLevel] then
+										config[resourceConfig.resourceId][resourceConfig.resourceLevel].totalClassLevel =
+											config[resourceConfig.resourceId][resourceConfig.resourceLevel].totalClassLevel + classOnEntity.Level
+									else
+										resourceConfig.totalClassLevel = classOnEntity.Level
+										config[resourceConfig.resourceId][resourceConfig.resourceLevel] = resourceConfig
 									end
 								end
 							end
 						end
 					end
-					for resource, resourceConfig in pairs(config) do
-						resourcePool[resource] = resourceConfig
+					for resource, resourceConfigs in pairs(config) do
+						for level, resourceConfig in pairs(resourceConfigs) do
+							resourcePool[resource] = resourcePool[resource] or {}
+							resourcePool[resource][level] = resourceConfig
+						end
 					end
 				end
 			end
@@ -1007,27 +1020,39 @@ function ActionResourcesMutator:applyMutator(entity, entityVar)
 		local boostString = ""
 		local template = "ActionResourceOverride(%s,%d,%d);"
 
-		for resourceId, config in pairs(resourcePool) do
+		for resourceId, leveledConfigs in pairs(resourcePool) do
 			---@type ResourceActionResource
 			local resource = Ext.StaticData.Get(resourceId, "ActionResource")
 
-			local amount = config.levelMap[1] or Osi.Get
-			if config.everyXLevels then
-				local iterationCounter = 0
-				for _ = config.initialEntityOrClassLevel, (config.totalClassLevel or entity.EocLevel.Level), config.everyXLevels do
-					iterationCounter = iterationCounter + 1
-
-					local amountToReduce = ((config.reduceByYEachIteration or 0) * iterationCounter)
-					-- Rounding to the nearest whole number, prioritizing flooring
-					amount = amount + math.floor((config.amount - amountToReduce) + 0.49)
-					Logger:BasicTrace("Adding %s for %s", math.floor((config.amount - amountToReduce) + 0.49), resource.Name)
+			for resourceLevel, resourceConfig in TableUtils:OrderedPairs(leveledConfigs) do
+				local amount = resourceConfig.levelMap[1]
+				if not amount then
+					for _, resources in pairs(entity.ActionResources.Resources) do
+						local index = TableUtils:IndexOf(resources, function(value)
+							return value.ResourceUUID == resourceId and value.Level == resourceLevel
+						end)
+						if index then
+							amount = resources[index].MaxAmount
+							break
+						end
+					end
 				end
-			end
 
-			if amount > 0 then
-				boostString = boostString .. string.format(template, resource.Name, amount, config.resourceLevel or 0)
-			else
-				Logger:BasicDebug("Not adding resource %s to the boosts as the final amount is %s", resource.Name, amount)
+				local lastLevelValue = 0
+				for i = 2, (resourceConfig.totalClassLevel or entity.EocLevel.Level) do
+					if resourceConfig.levelMap[i] then
+						amount = amount + resourceConfig.levelMap[i]
+						lastLevelValue = resourceConfig.levelMap[i]
+					elseif resourceConfig.additiveCurve then
+						amount = amount + lastLevelValue
+					end
+				end
+
+				if amount > 0 then
+					boostString = boostString .. string.format(template, resource.Name, amount, resourceConfig.resourceLevel or 0)
+				else
+					Logger:BasicDebug("Not adding resource %s to the boosts as the final amount is %s", resource.Name, amount)
+				end
 			end
 		end
 		Logger:BasicDebug("Final boosts are %s", boostString)
