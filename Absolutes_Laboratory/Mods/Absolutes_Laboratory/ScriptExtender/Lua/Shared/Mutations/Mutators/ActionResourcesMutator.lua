@@ -24,8 +24,8 @@ function ActionResourcesMutator:deprecatedRender(parent, mutator)
 
 	Styler:Color(Styler:CheapTextAlign("THIS VERSION IS DEPRECATED", parent, "Large"), "ErrorText")
 	Styler:MiddleAlignedColumnLayout(parent, function(ele)
-		ele:AddText(
-			"This version of the mutator will be removed next release. Click the button below to wipe this mutator and replace it with the new version - due to the differences, it can't be migrated. This can't be undone.")
+		ele:AddText([[This version of the mutator will be removed next release. Click the button below to wipe this mutator and replace it with the new version.
+Due to the differences, it can't be migrated. This can't be undone.]])
 		Styler:MiddleAlignedColumnLayout(ele, function(ele)
 			---@param button ExtuiButton
 			ele:AddButton("Replace with New Version").OnClick = function(button)
