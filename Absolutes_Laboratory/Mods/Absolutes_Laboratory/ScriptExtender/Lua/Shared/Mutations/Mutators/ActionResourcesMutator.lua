@@ -367,7 +367,7 @@ function ActionResourcesMutator:renderMutator(parent, mutator)
 		local function buildGeneral(group, config)
 			Helpers:KillChildren(group)
 
-			local displayTable = group:AddTable("", 2)
+			local displayTable = group:AddTable("", 3)
 			displayTable.Borders = true
 			local displayTableRow = displayTable:AddRow()
 
@@ -537,6 +537,8 @@ If Level 1 is set, Lab will hardset the existing resource on the entity (if appl
 					end
 				end
 			end
+
+			displayTable.Columns = math.min(3, #displayTable.Children[1].Children)
 		end
 
 		buildGeneral(generalGroup, mutator.values.general)
@@ -621,7 +623,8 @@ If Level 1 is set, Lab will hardset the existing resource on the entity (if appl
 		end
 
 		local classSep = parent:AddSeparatorText("Class-Specific ( ? )")
-		classSep:SetStyle("SeparatorTextAlign", 0.2, 0.5)
+		Styler:ScaledFont(classSep, "Large")
+		classSep:SetStyle("SeparatorTextAlign", 0.5)
 		classSep:Tooltip():AddText(
 			"\t Resources defined here will override their General counterparts above if applicable. Later groups will override earlier groups in the list if both are applicable.")
 
@@ -643,8 +646,8 @@ If Level 1 is set, Lab will hardset the existing resource on the entity (if appl
 					buildClasses()
 				end
 
-				local cell = row:AddCell()
-				cell:AddText("Group " .. i).Font = "Large"
+				local cell = row:AddCell():AddCollapsingHeader("Group " .. i)
+				cell.DefaultOpen = true
 
 				for c, classId in TableUtils:OrderedPairs(classDependentActionResources.requiresClasses or {}) do
 					local name = ClassesAndSubclassesMutator.translationMap[classId]
