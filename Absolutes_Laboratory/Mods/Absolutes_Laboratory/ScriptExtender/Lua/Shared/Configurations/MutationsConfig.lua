@@ -22,6 +22,11 @@ ConfigurationStructure.config.mutations.settings = {
 		mutators = {},
 		---@type {[string]: SelectorQuery[]}
 		selectors = {}
+	},
+	actionResourceDistributionPresets = {
+		["Default"] = {
+			[1] = 1
+		}
 	}
 }
 

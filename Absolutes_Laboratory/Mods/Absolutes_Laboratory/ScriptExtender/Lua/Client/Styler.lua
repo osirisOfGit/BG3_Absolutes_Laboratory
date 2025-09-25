@@ -428,3 +428,31 @@ function Styler:Color(element, property, color)
 	end
 	return element
 end
+
+---@enum FontSize
+Styler.FontSize = {
+	"Tiny",
+	"Small",
+	"Medium",
+	"Default",
+	"Big",
+	"Large",
+	["Tiny"] = 1,
+	["Small"] = 2,
+	["Medium"] = 3,
+	["Default"] = 4,
+	["Big"] = 5,
+	["Large"] = 6,
+}
+
+---@generic E : ExtuiStyledRenderable
+---@param element E
+---@param elefontSize FontSize
+---@return E
+function Styler:ScaledFont(element, elefontSize)
+	local mcmFontSize = Styler.FontSize[MCM.Get("font_size", "755a8a72-407f-4f0d-9a33-274ac0f0b53d")]
+	local targetFontDiff = Styler.FontSize[elefontSize] - Styler.FontSize["Default"]
+
+	element.Font = self.FontSize[math.max(1, math.min(#Styler.FontSize, mcmFontSize + targetFontDiff))]
+	return element
+end

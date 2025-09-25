@@ -1034,7 +1034,7 @@ if Ext.IsServer() then
 		end
 	end)
 
-	Ext.Osiris.RegisterListener("Died", 1, "before", function(character)
+	Ext.Osiris.RegisterListener("Died", 1, "after", function(character)
 		---@type EntityHandle
 		local entity = Ext.Entity.Get(character)
 		if entity.Vars[SPELL_MUTATOR_ON_DEATH] then
