@@ -448,7 +448,7 @@ If Level 1 is set, Lab will hardset the existing resource on the entity (if appl
 							if not actionResourceConfig.levelMap[input.Value[1]] then
 								actionResourceConfig.levelMap[input.Value[1]] = numberOfResource
 								actionResourceConfig.levelMap[level] = nil
-								generalGroup(group, config)
+								buildGeneral(group, config)
 							else
 								input.Value = { level, level, level, level }
 							end
@@ -1127,9 +1127,9 @@ function ActionResourcesMutator:generateDocs()
 					prefix = "",
 					prefix_color = "Yellow",
 					text = [[
-Dependency On: None
-Transient: No
-Additive: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is always applied first]]
+Dependency On: Classes/Subclasses
+Transient: No (Unless the game is restarted, then yes)
+Additive: Yes - Resources will be merged together into one pool, with later mutators overwriting earlier ones if the same resource is configured]]
 				} --[[@as MazzleDocsCallOut]],
 				{
 					type = "Separator"
