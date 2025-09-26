@@ -1171,7 +1171,7 @@ To combat (heh) this, Lab dynamically creates a new BOOST Status for every entit
 
 This ensures that the boosts don't get wiped between reloads - however, it can't prevent the boosts from being wiped on game restart, as the status itself isn't backed by a static stat entry - it won't exist until Lab runs again, but the entity is processed by the game before Lab can run, so BG3 won't see the status and will clean up the entity.
 
-As this only affects scenarios where a user has to save mid-combat and restart the game, it's currently being left as a hopefully rare, but known, gap. Addressing this issue will require local file writes per campaign to track created resources. Feedback is required!]]
+As this only affects scenarios where a user saves mid-combat and restarts the game, it's currently being left as a hopefully rare, but known, gap. Addressing this issue will require local file writes per campaign to track created resources. Feedback is required!]]
 				},
 				{
 					type = "Separator"
@@ -1182,12 +1182,15 @@ As this only affects scenarios where a user has to save mid-combat and restart t
 				},
 				{
 					type = "Section",
-					text = "Selected entities:"
+					text = "Selected entities should have:"
 				},
 				{
 					type = "Bullet",
 					text = {
-						"TODO"
+						"exactly 7 Level 1 spell slots by level 5",
+						"7 more Level 1 spell slots than they usually do by level 5",
+						"2 Bladesong charges if they're a Bladesong",
+						"1 Extra Action Point if they're just a Rogue, or 2 if they're equally multiclassed as a Rogue and a Fighter"
 					}
 				} --[[@as MazzleDoctsBullet]],
 				{
@@ -1199,15 +1202,12 @@ As this only affects scenarios where a user has to save mid-combat and restart t
 				},
 				{
 					type = "SubHeading",
-					text = "1.7.0 (N/A)"
-				},
-				{
-					type = "SubHeading",
-					text = "1.6.0"
+					text = "1.7.0"
 				},
 				{
 					type = "Bullet",
-					text = { "?"
+					text = {
+						"Deprecated the previous implementation, implementing a new version"
 					}
 				}
 			}
