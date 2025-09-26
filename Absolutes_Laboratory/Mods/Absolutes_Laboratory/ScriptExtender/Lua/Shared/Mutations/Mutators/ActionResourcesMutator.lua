@@ -554,34 +554,28 @@ If Level 1 is set, Lab will hardset the existing resource on the entity (if appl
 			end, function(key, value)
 				return not Ext.StaticData.Get(value, "ActionResource").IsHidden
 			end) do
-				---@type ResourceActionResource
-				local actionResource = Ext.StaticData.Get(actionResourceId, "ActionResource")
-
 				---@param select ExtuiSelectable
 				local function selectFunc(select)
 					-- Value is flipped by the time this fires
 					if not select.Selected then
-						config[TableUtils:IndexOf(config, function(value)
+						local index = TableUtils:IndexOf(config, function(value)
 							return value.resourceId == actionResourceId and value.resourceLevel == select.UserData
-						end)].delete = true
+						end)
+						config[index].delete = true
 
 						TableUtils:ReindexNumericTable(config)
-
-						onSelectFunc()
 					else
 						table.insert(config, {
 							resourceId = actionResourceId,
-							resourceLevel = select.UserData,
+							resourceLevel = tonumber(select.UserData),
 							additiveCurve = true,
 							levelMap = TableUtils:DeeplyCopyTable(savedPresetSpreads._real["Default"])
 						} --[[@as ActionResourcesConfig]])
-
-						if actionResource.MaxLevel > 0 then
-							select.Selected = false
-						end
 					end
 					onSelectFunc()
 				end
+				---@type ResourceActionResource
+				local actionResource = Ext.StaticData.Get(actionResourceId, "ActionResource")
 
 				if actionResource.MaxLevel > 0 then
 					---@type ExtuiMenu
@@ -1140,7 +1134,8 @@ Additive: Yes - Resources will be merged together into one pool, with later muta
 				},
 				{
 					type = "Content",
-					text = [[TODO]]
+					text = [[Conceptually, this mutator is fairly straightforward - assign Action Resources to entities by defining their resource curve, mimicking progressions;
+however, ther are important technical nuances that need to be strictly observed as documented below.]]
 				},
 				{
 					type = "Separator"
@@ -1152,9 +1147,11 @@ Additive: Yes - Resources will be merged together into one pool, with later muta
 				{
 					type = "Content",
 					text = [[
-The mutator is laid out as follows:
+There are two main sections - General and Class-specific. General configs use the current level of the entity (according to the EocLevel component) when applying, and
+Class-specific overwrite General configs where applicable, and use the **sum** of all the relevant classes on the entity (i.e. if you give 1 spell slot per level to Warlock and Wizard, and the selected entity is level 6 but has 2 levels in Wizard and Warlock, they'll only be given 4 spell slots).
 
-TODO
+An important behavior to note is that this mutator _adds_ the defined amount of resources to the entity, according to their current level; meaning, if the entity is currently level 4 and has 3 Ki Points, and you give them 2 Ki Points per level starting from level 2, they'll end up with 9 Ki Points.
+However, if you specify Level 1 in the config, then that will override the existing amount on the entity, using that number as the base - in the previous example, if you give them 1 Ki Point at Level 1, and 2 every level after, they'll end with 7 Ki Points (1 + (2 * 3)), as opposed to (3 + (2 * 3)).
 
 The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
 				},
@@ -1167,7 +1164,14 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				},
 				{
 					type = "Content",
-					text = [[ TODO ]]
+					text = [[
+This mutator has a unique problem: Boosts that aren't backed by a Status or Passive are wiped on reload (or loading a different campaign), and Action Resources added/changed by a Boost are reset when the boost is wiped - since adding a resource gives the entity a full charge in that resource, this would mean that NPCs would regain things like spell slots if the user reloads mid-combat.
+
+To combat (heh) this, Lab dynamically creates a new BOOST Status for every entity processed by this mutator, using the naming scheme `ABSOLUTES_LAB_RESOURCE_BOOST_{last 12 characters of the entity's UUID}`.
+
+This ensures that the boosts don't get wiped between reloads - however, it can't prevent the boosts from being wiped on game restart, as the status itself isn't backed by a static stat entry - it won't exist until Lab runs again, but the entity is processed by the game before Lab can run, so BG3 won't see the status and will clean up the entity.
+
+As this only affects scenarios where a user has to save mid-combat and restart the game, it's currently being left as a hopefully rare, but known, gap. Addressing this issue will require local file writes per campaign to track created resources. Feedback is required!]]
 				},
 				{
 					type = "Separator"
