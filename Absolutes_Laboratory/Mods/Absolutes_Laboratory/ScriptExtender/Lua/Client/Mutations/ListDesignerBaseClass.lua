@@ -763,7 +763,8 @@ end
 function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, level, progressionTableId)
 	if progressionTableId then
 		if not self.progressionTranslations[progressionTableId] or (not self.progressions[progressionTableId] or not self.progressions[progressionTableId][level] or not self.progressions[progressionTableId][level][self.name]) then
-			Logger:BasicWarning("Progression Table UUID %s was not found in the index for level %s - removing from the config for List %s", progressionTableId, level, self.activeList.name)
+			Logger:BasicWarning("Progression Table UUID %s was not found in the index for level %s - removing from the config for List %s", progressionTableId, level,
+				self.activeList.name)
 			return true
 		else
 			local sep = parentGroup:AddSeparatorText(self.progressionTranslations[progressionTableId])
@@ -2188,3 +2189,37 @@ function ListDesignerBaseClass:HandleDependences(export, mutator, lists, removeM
 		end
 	end
 end
+
+Ext.RegisterConsoleCommand("Lab_DumpProgressions", function(cmd, ...)
+	local tableUUIDS = { ... }
+	SpellListDesigner:buildProgressionIndex()
+	PassiveListDesigner:buildProgressionIndex()
+
+	local progLog = Logger:new("ProgressionDumper.log", false)
+	progLog:ClearLogFile()
+
+	for progressionTableUUID, levels in TableUtils:OrderedPairs(ListDesignerBaseClass.progressions, function(key, value)
+			return ListDesignerBaseClass.progressNodeTranslations[key]
+		end,
+		function(key, value)
+			return not next(tableUUIDS) or TableUtils:IndexOf(tableUUIDS, key) ~= nil
+		end)
+	do
+		progLog:BasicDebug("================= Start Table %s - %s =================", progressionTableUUID, ListDesignerBaseClass.progressionTranslations[progressionTableUUID])
+
+		for level, lists in TableUtils:OrderedPairs(levels) do
+			progLog:BasicDebug("\tLevel %d", level)
+			for listName, list in TableUtils:OrderedPairs(lists) do
+				progLog:BasicDebug("\t\t|_ %s", listName)
+				for nodeName, entries in TableUtils:OrderedPairs(list) do
+					progLog:BasicDebug("\t\t\t|_ %s", nodeName)
+					for _, entry in TableUtils:OrderedPairs(entries) do
+						progLog:BasicDebug("\t\t\t  |_ %s", entry)
+					end
+				end
+			end
+		end
+
+		progLog:BasicDebug("================= End Table %s - %s =================\n", progressionTableUUID, ListDesignerBaseClass.progressionTranslations[progressionTableUUID])
+	end
+end)

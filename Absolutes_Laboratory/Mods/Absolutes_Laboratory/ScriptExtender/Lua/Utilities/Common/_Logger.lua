@@ -8,6 +8,7 @@ Logger = {}
 Logger.fileName = "log.txt"
 Logger.logBuffer = {}
 Logger.timer = nil
+Logger.prefix = true
 
 Logger.PrintTypes = {
     TRACE = 5,
@@ -36,7 +37,7 @@ local TEXT_COLORS = {
 }
 
 ---@return Logger
-function Logger:new(fileName)
+function Logger:new(fileName, prefix)
     ---@type Logger
     local instance = {}
 
@@ -45,6 +46,7 @@ function Logger:new(fileName)
 
     instance.fileName = fileName or self.fileName
     instance.logBuffer = {}
+    instance.prefix = prefix == nil and true or prefix
 
     return instance
 end
@@ -101,7 +103,7 @@ end
 
 --- Function to print text with custom colors, message type, custom prefix, rainbowText, and prefix length
 function Logger:BasicPrint(content, messageType, textColor, customPrefix, rainbowText, prefixLength)
-    prefixLength = prefixLength or 15
+    prefixLength = self.prefix and (prefixLength or 15) or 0
     messageType = messageType or self.PrintTypes.INFO
     local textColorCode = textColor or TEXT_COLORS.cyan -- Default to cyan
 
@@ -109,7 +111,11 @@ function Logger:BasicPrint(content, messageType, textColor, customPrefix, rainbo
     local padding = string.rep(" ", prefixLength - #customPrefix)
     local message = ConcatOutput(ConcatPrefix(customPrefix .. padding .. "  [" .. self.PrintTypes[messageType] .. "]" .. " (" .. (Ext.IsClient() and "C" or "S") .. ")", content))
 
-    self:LogMessage(ConcatOutput("[" .. self.PrintTypes[messageType] .. "]" .. " (" .. (Ext.IsClient() and "C" or "S") .. ")", content))
+    if self.prefix then
+        self:LogMessage(ConcatOutput("[" .. self.PrintTypes[messageType] .. "]" .. " (" .. (Ext.IsClient() and "C" or "S") .. ")", content))
+    else
+        self:LogMessage(content)
+    end
     if messageType <= self.PrintTypes.INFO then
         local coloredMessage = rainbowText and GetRainbowText(message) or
             string.format("\x1b[%dm%s\x1b[0m", textColorCode, message)
@@ -190,7 +196,7 @@ end
 
 --- Saves the log to the log.txt using a buffer
 function Logger:LogMessage(message)
-    local logMessage = GetTimestamp() .. " " .. message
+    local logMessage = (self.prefix and (GetTimestamp() .. " ") or "") .. message
     table.insert(self.logBuffer, logMessage)
 
     if self.timer then

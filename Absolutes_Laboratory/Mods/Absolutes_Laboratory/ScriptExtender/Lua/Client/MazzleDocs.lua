@@ -68,7 +68,7 @@ end
 ---@class MazzleDocsImageConfig
 ---@field atlas_key string Name of the image atlas
 ---@field columns integer Number of images in each row
----@field rows integer Number of images in each column
+---@field rows integer Number of images in each column  
 ---@field image_width integer Width of each individual image
 ---@field image_height integer Height of each individual image
 
@@ -105,14 +105,19 @@ end
 ---@field button_active? [number, number, number, number] Button active state color {r, g, b, a}
 ---@field scrollbar_bg? [number, number, number, number] Scrollbar background color {r, g, b, a}
 ---@field scrollbar_grab? [number, number, number, number] Scrollbar grab handle color {r, g, b, a}
+---@field scrollbar_grab_hovered? [number, number, number, number] Scrollbar grab handle hover color {r, g, b, a}
+---@field scrollbar_grab_active? [number, number, number, number] Scrollbar grab handle active color {r, g, b, a}
+---@field keyword_text? [number, number, number, number] Keyword/important text color {r, g, b, a}
+---@field highlight_text? [number, number, number, number] Highlighted text color {r, g, b, a}
+---@field warning_text? [number, number, number, number] Warning text color {r, g, b, a}
+---@field action_color? [number, number, number, number] Action point color (green) {r, g, b, a}
+---@field bonus_action_color? [number, number, number, number] Bonus action point color (orange) {r, g, b, a}
 
 -- Base content item interface
 ---@class MazzleDocsContentItem
 ---@field type MazzleDocsContentType The type of content widget
 ---@field text? string|string[] The main text content (required for most types)
----@field font? string Custom font name (exact font, takes precedence over fontsize)
----@field fontsize? MazzleDoctsFontSize Size-based font name
----@field size? MazzleDoctsFontSize Alternative way to specify font size (same as fontsize)
+---@field font? string Font specification - either a size ("Tiny", "Small", "Normal", "Medium", "Large") or a font name (currently only "Inconsolata" available)
 ---@field color? string|[number, number, number, number] Override default color (color name or RGBA array)
 ---@field centered? boolean Center the content horizontally
 ---@field left_indent? integer Left margin in pixels
@@ -132,7 +137,7 @@ end
 
 ---@alias MazzleDoctsFontSize
 ---| "Tiny"
----| "Small"
+---| "Small" 
 ---| "Normal"
 ---| "Medium"
 ---| "Large"
@@ -141,12 +146,12 @@ end
 
 ---@class MazzleDocsHeading : MazzleDocsContentItem
 ---@field type "Heading"
----@field text string The heading text content
+---@field text string|string[] The heading text content (string or array)
 ---@field highlighted? boolean Display on dark red banner for tutorial goals
 
 ---@class MazzleDocsSubHeading : MazzleDocsContentItem
----@field type "SubHeading"
----@field text string The subheading text content
+---@field type "SubHeading" 
+---@field text string|string[] The subheading text content (string or array)
 
 ---@class MazzleDocsContent : MazzleDocsContentItem
 ---@field type "Content"
@@ -154,11 +159,11 @@ end
 
 ---@class MazzleDocsSection : MazzleDocsContentItem
 ---@field type "Section"
----@field text string Section header text with distinctive styling
+---@field text string|string[] Section header text with distinctive styling (string or array)
 
 ---@class MazzleDocsNote : MazzleDocsContentItem
 ---@field type "Note"
----@field text string Note text with muted appearance
+---@field text string|string[] Note text with muted appearance (string or array)
 
 -- List Widgets
 
@@ -173,16 +178,17 @@ end
 ---@class MazzleDocsCallOut : MazzleDocsContentItem
 ---@field type "CallOut"
 ---@field prefix string Prefix text (e.g., "Warning:", "Tip:", "Note:")
----@field text string The main callout text content
+---@field text string|string[] The main callout text content (string or array for multiple lines)
 ---@field prefix_color? string Color name for the prefix text
 ---@field text_block_indent? integer Indentation for the text block in pixels
----@field right_padding_px? integer Right padding space (default: 40)
+---@field right_padding_px? integer Right padding space (default: 40 for CallOut, 20 for render function)
+---@field prefix_gap_px? integer Gap between prefix and text in pixels (default: 12)
 
 -- Code Widgets
 
 ---@class MazzleDocsCode : MazzleDocsContentItem
 ---@field type "Code"
----@field text string Code content with preserved formatting
+---@field text string|string[] Code content with preserved formatting (string or array for multiple lines)
 
 -- Separator Widget
 
@@ -191,8 +197,19 @@ end
 
 -- Interactive Widgets
 
+-- Single button format
 ---@class MazzleDoctsDynamicButton : MazzleDocsContentItem
 ---@field type "DynamicButton"
+---@field label string Text displayed on the button
+---@field button_type MazzleDocsDynamicButtonType Type of button action
+---@field button_parameters? table Parameters passed to the action handler (varies by button_type)
+
+-- Multiple buttons format (displays buttons side-by-side)
+---@class MazzleDoctsDynamicButtonMultiple : MazzleDocsContentItem
+---@field type "DynamicButton"
+---@field buttons MazzleDocsButtonSpec[] Array of button specifications for side-by-side display
+
+---@class MazzleDocsButtonSpec
 ---@field label string Text displayed on the button
 ---@field button_type MazzleDocsDynamicButtonType Type of button action
 ---@field button_parameters? table Parameters passed to the action handler (varies by button_type)
@@ -206,6 +223,8 @@ end
 ---| "add_passive"        # Add passive to character
 ---| "remove_passive"     # Remove passive from character
 ---| "add_status"         # Add status effect to character
+---| "spawn_npc"          # Spawn an NPC
+---| "add_item"		   	  # Add item to character
 ---| "remove_status"      # Remove status effect from character
 ---| "open_docs"          # Open documentation window
 ---| "open_mcm"           # Open Mod Configuration Menu
