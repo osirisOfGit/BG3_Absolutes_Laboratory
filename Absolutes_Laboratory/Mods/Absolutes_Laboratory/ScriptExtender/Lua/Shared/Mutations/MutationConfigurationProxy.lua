@@ -28,7 +28,7 @@ MutationConfigurationProxy = {
 		end,
 		__pairs = function(t)
 			---@type {[Guid]: PrepMarkerCategory}
-			local markerCategories = TableUtils:DeeplyCopyTable(mutationsConfig.prepPhaseMarkers._real)
+			local markerCategories = TableUtils:DeeplyCopyTable(mutationsConfig.prepPhaseMarkers._real or mutationsConfig.prepPhaseMarkers)
 
 			for _, modCache in pairs(MutationModProxy.ModProxy.prepPhaseMarkers) do
 				---@cast modCache +LocalModCache
@@ -51,7 +51,7 @@ MutationConfigurationProxy = {
 		end,
 		__pairs = function(t)
 			---@type {[Guid]: CustomList}
-			local spellLists = TableUtils:DeeplyCopyTable(mutationsConfig.spellLists._real)
+			local spellLists = TableUtils:DeeplyCopyTable(mutationsConfig.spellLists._real or mutationsConfig.spellLists)
 
 			for _, modCache in pairs(MutationModProxy.ModProxy.spellLists) do
 				---@cast modCache +LocalModCache
@@ -74,7 +74,7 @@ MutationConfigurationProxy = {
 		end,
 		__pairs = function(t)
 			---@type {[Guid]: CustomList}
-			local passiveLists = TableUtils:DeeplyCopyTable(mutationsConfig.passiveLists._real)
+			local passiveLists = TableUtils:DeeplyCopyTable(mutationsConfig.passiveLists._real or mutationsConfig.passiveLists)
 
 			for _, modCache in pairs(MutationModProxy.ModProxy.passiveLists) do
 				---@cast modCache +LocalModCache
@@ -97,7 +97,7 @@ MutationConfigurationProxy = {
 		end,
 		__pairs = function(t)
 			---@type {[Guid]: CustomList}
-			local statusLists = TableUtils:DeeplyCopyTable(mutationsConfig.statusLists._real)
+			local statusLists = TableUtils:DeeplyCopyTable(mutationsConfig.statusLists._real or mutationsConfig.statusLists)
 
 			for _, modCache in pairs(MutationModProxy.ModProxy.statusLists) do
 				---@cast modCache +LocalModCache

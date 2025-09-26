@@ -484,7 +484,8 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 											table.insert(randomPool, passiveId)
 										else
 											---@type ResourceProgression
-											local progressionResource = Ext.StaticData.Get(PassiveListDesigner.progressionTableToProgression[progressionTableId][level], "Progression")
+											local progressionResource = Ext.StaticData.Get(PassiveListDesigner.progressionTableToProgression[progressionTableId][level],
+												"Progression")
 											Logger:BasicDebug("%s from progression %s (%s - level %s) is already known, not adding to the random pool", passiveId, progressionTableId,
 												progressionResource.Name, progressionResource.Level)
 										end
@@ -818,4 +819,3 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 		}
 	} --[[@as MazzleDocsDocumentation]]
 end
-

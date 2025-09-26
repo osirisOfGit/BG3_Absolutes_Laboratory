@@ -6,7 +6,7 @@ Ext.Vars.RegisterUserVariable("Absolutes_Lab_Prep_Phase_Marker", {
 PrepPhaseMarkerMutator = MutatorInterface:new("Prep Phase Marker")
 
 if Ext.IsClient() then
-	if not ConfigurationStructure.config.mutations.prepPhaseMarkers or ConfigurationStructure.config.mutations.prepPhaseMarkers() then
+	if not ConfigurationStructure.config.mutations.prepPhaseMarkers or not ConfigurationStructure.config.mutations.prepPhaseMarkers() then
 		if ConfigurationStructure.config.mutations.prepPhaseMarkers then
 			ConfigurationStructure.config.mutations.prepPhaseMarkers.delete = true
 		end
