@@ -360,7 +360,7 @@ function ActionResourcesMutator:renderMutator(parent, mutator)
 		local popup = parent:AddPopup("")
 
 		Styler:ScaledFont(parent:AddSeparatorText("General (All Entities)"), "Large"):SetStyle("SeparatorTextAlign", 0.5)
-		
+
 		local generalGroup = parent:AddGroup("general")
 
 		---@param group ExtuiGroup
@@ -368,7 +368,8 @@ function ActionResourcesMutator:renderMutator(parent, mutator)
 		local function buildGeneral(group, config)
 			Helpers:KillChildren(group)
 
-			local displayTable = group:AddTable("", 3)
+			local displayTable = group:AddTable("displayTable", 3)
+			displayTable.NoSavedSettings = true
 			displayTable.Borders = true
 			local displayTableRow = displayTable:AddRow()
 
@@ -539,7 +540,7 @@ If Level 1 is set, Lab will hardset the existing resource on the entity (if appl
 				end
 			end
 
-			displayTable.Columns = math.min(3, #displayTable.Children[1].Children)
+			displayTable.Columns = math.max(1, math.min(3, #displayTableRow.Children))
 		end
 
 		buildGeneral(generalGroup, mutator.values.general)
