@@ -262,6 +262,8 @@ function MutationDesigner:RenderSelectors(parent, existingSelector, prepPhase)
 			selectorEntry.delete = true
 			if andOrEntry == nil then
 				existingSelector[i + 2] = nil
+			else
+				existingSelector[i] = nil
 			end
 
 			TableUtils:ReindexNumericTable(existingSelector)
@@ -344,7 +346,6 @@ function MutationDesigner:RenderSelectors(parent, existingSelector, prepPhase)
 			Helpers:KillChildren(selectorGroup)
 			if selectorEntry.criteriaValue then
 				selectorEntry.criteriaValue.delete = true
-				selectorEntry.criteriaValue = nil
 			end
 
 			selectorEntry.criteriaCategory = selectorCombo.Options[selectorCombo.SelectedIndex + 1]
