@@ -1974,19 +1974,32 @@ function ListDesignerBaseClass:buildProgressionIndex()
 		end
 
 		for progressionTableUUID, progByLevels in pairs(self.progressions) do
-			for _, list in pairs(MutationConfigurationProxy[self.configKey]) do
+			for listId, list in pairs(MutationConfigurationProxy[self.configKey]) do
 				---@cast list CustomList
+				if not list.modId then
+					list = ConfigurationStructure.config.mutations[self.configKey][listId]
+				end
 				if TableUtils:IndexOf(list.levels, function(value)
 						return (value.linkedProgressions and value.linkedProgressions[progressionTableUUID]) ~= nil
 					end)
 				then
-					for level, leveledList in TableUtils:OrderedPairs(list.levels) do
-						if (progByLevels[level] and progByLevels[level][self.name])
-							and (not leveledList.linkedProgressions or not leveledList.linkedProgressions[progressionTableUUID])
-						then
-							leveledList.linkedProgressions = leveledList.linkedProgressions or {}
-							leveledList.linkedProgressions[progressionTableUUID] = TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
-							Logger:BasicInfo("Added missing level %s for progression %s to List %s", level, self.progressionTranslations[progressionTableUUID], list.name)
+					for level, lists in TableUtils:OrderedPairs(progByLevels) do
+						if lists[self.name] then
+							if not list.levels[level] then
+								list.levels[level] = {
+									manuallySelectedEntries = {},
+									linkedProgressions = {}
+								}
+							end
+
+							local leveledList = list.levels[level]
+
+							if (not leveledList.linkedProgressions or not leveledList.linkedProgressions[progressionTableUUID]) then
+								leveledList.linkedProgressions = leveledList.linkedProgressions or {}
+								leveledList.linkedProgressions[progressionTableUUID] = TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
+								Logger:BasicInfo("Added missing level %s for progression %s to %s %s", level, self.progressionTranslations[progressionTableUUID], self.name,
+								list.name)
+							end
 						end
 					end
 				end
