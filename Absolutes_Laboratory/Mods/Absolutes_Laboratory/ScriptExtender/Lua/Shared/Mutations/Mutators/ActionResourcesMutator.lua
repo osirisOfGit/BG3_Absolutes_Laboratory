@@ -360,6 +360,7 @@ function ActionResourcesMutator:renderMutator(parent, mutator)
 		local popup = parent:AddPopup("")
 
 		Styler:ScaledFont(parent:AddSeparatorText("General (All Entities)"), "Large"):SetStyle("SeparatorTextAlign", 0.5)
+		
 		local generalGroup = parent:AddGroup("general")
 
 		---@param group ExtuiGroup
@@ -549,31 +550,33 @@ If Level 1 is set, Lab will hardset the existing resource on the entity (if appl
 			Helpers:KillChildren(popup)
 			popup:Open()
 
+			---@param select ExtuiSelectable
+			---@param actionResourceId string
+			local function chooseResourceFunction(select, actionResourceId)
+				-- Value is flipped by the time this fires
+				if not select.Selected then
+					local index = TableUtils:IndexOf(config, function(value)
+						return value.resourceId == actionResourceId and value.resourceLevel == select.UserData
+					end)
+					config[index].delete = true
+
+					TableUtils:ReindexNumericTable(config)
+				else
+					table.insert(config, {
+						resourceId = actionResourceId,
+						resourceLevel = tonumber(select.UserData),
+						additiveCurve = true,
+						levelMap = TableUtils:DeeplyCopyTable(savedPresetSpreads["Default"]._real)
+					} --[[@as ActionResourcesConfig]])
+				end
+				onSelectFunc()
+			end
+
 			for _, actionResourceId in TableUtils:OrderedPairs(Ext.StaticData.GetAll("ActionResource"), function(key, value)
 				return Ext.StaticData.Get(value, "ActionResource").Name
 			end, function(key, value)
 				return not Ext.StaticData.Get(value, "ActionResource").IsHidden
 			end) do
-				---@param select ExtuiSelectable
-				local function selectFunc(select)
-					-- Value is flipped by the time this fires
-					if not select.Selected then
-						local index = TableUtils:IndexOf(config, function(value)
-							return value.resourceId == actionResourceId and value.resourceLevel == select.UserData
-						end)
-						config[index].delete = true
-
-						TableUtils:ReindexNumericTable(config)
-					else
-						table.insert(config, {
-							resourceId = actionResourceId,
-							resourceLevel = tonumber(select.UserData),
-							additiveCurve = true,
-							levelMap = TableUtils:DeeplyCopyTable(savedPresetSpreads._real["Default"])
-						} --[[@as ActionResourcesConfig]])
-					end
-					onSelectFunc()
-				end
 				---@type ResourceActionResource
 				local actionResource = Ext.StaticData.Get(actionResourceId, "ActionResource")
 
@@ -592,7 +595,9 @@ If Level 1 is set, Lab will hardset the existing resource on the entity (if appl
 						Styler:HyperlinkRenderable(select, actionResource.Name, "Alt", true, nil, function(parent)
 							ResourceManager:RenderDisplayWindow(actionResource, parent)
 						end)
-						select.OnClick = selectFunc
+						select.OnClick = function(select)
+							chooseResourceFunction(select, actionResourceId)
+						end
 					end
 				else
 					local existingIndex = TableUtils:IndexOf(config, function(value)
@@ -606,7 +611,9 @@ If Level 1 is set, Lab will hardset the existing resource on the entity (if appl
 					Styler:HyperlinkRenderable(select, actionResource.Name, "Alt", true, nil, function(parent)
 						ResourceManager:RenderDisplayWindow(actionResource, parent)
 					end)
-					select.OnClick = selectFunc
+					select.OnClick = function(select)
+						chooseResourceFunction(select, actionResourceId)
+					end
 				end
 			end
 		end

@@ -585,7 +585,7 @@ function StatusListMutator:applyMutator(entity, entityVar)
 	end
 
 	---@type ListEntryReplaceMap
-	local replaceMap = TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.listEntryReplaceMap._real)
+	local replaceMap = TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.listEntryReplaceMap)
 	replaceMap.statusLists = replaceMap.statusLists or {}
 	local replaceMap = replaceMap.statusLists
 

@@ -31,8 +31,7 @@ end
 function FileUtils:SaveTableToFile(filepath, content)
 	local jsonSuccess, response = xpcall(function()
 		return Ext.Json.Stringify(content, {
-			Beautify = false,
-			IterateUserdata = true,
+			Beautify = true,
 			StringifyInternalTypes = true
 		})
 	end, debug.traceback)

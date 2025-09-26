@@ -628,7 +628,7 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 	end
 
 	---@type ListEntryReplaceMap
-	local replaceMap = TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.listEntryReplaceMap._real)
+	local replaceMap = TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.listEntryReplaceMap)
 	replaceMap.passiveLists = replaceMap.passiveLists or {}
 	local replaceMap = replaceMap.passiveLists
 

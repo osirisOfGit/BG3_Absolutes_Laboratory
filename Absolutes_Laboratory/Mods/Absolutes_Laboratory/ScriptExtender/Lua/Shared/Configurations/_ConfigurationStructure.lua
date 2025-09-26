@@ -54,6 +54,12 @@ function ConfigurationStructure:generate_recursive_metatable(proxy_table, real_t
 						key = tonumber(key)
 					end
 
+					if real_table[key] and type(value) ~= "table" and real_table[key] == value then
+						return
+					end
+
+					Logger:BasicTrace("Updating config key %s to be %s", key, value)
+
 					real_table[key] = value
 					if type(value) == "table" then
 						rawset(proxy_table, key, self:generate_recursive_metatable(
@@ -90,7 +96,7 @@ function ConfigurationStructure:generate_recursive_metatable(proxy_table, real_t
 					Logger:BasicDebug("Configuration updates made - sending updated table to server")
 
 					if Ext.ClientNet.IsHost() then
-						Ext.ClientNet.PostMessageToServer(ModuleUUID .. "_UpdateConfiguration", "")
+						Channels.UpdateConfiguration:SendToServer()
 					elseif not informedUserOfHostRestriction then
 						informedUserOfHostRestriction = true
 						Logger:BasicWarning(
@@ -105,7 +111,7 @@ end
 ConfigurationStructure.DynamicClassDefinitions = {}
 
 --- @class Configuration
-ConfigurationStructure.config = ConfigurationStructure:generate_recursive_metatable({}, real_config_table)
+ConfigurationStructure.config = Ext.IsClient() and ConfigurationStructure:generate_recursive_metatable({}, real_config_table) or {}
 
 Ext.Require("Shared/Configurations/MutationsConfig.lua")
 
@@ -151,6 +157,18 @@ function ConfigurationStructure:GetRealConfigCopy()
 	return TableUtils:DeeplyCopyTable(real_config_table)
 end
 
+local function convertStringKeysToNumeric(tbl)
+	for key, value in pairs(tbl) do
+		if type(key) == "string" and tonumber(key) then
+			tbl[tonumber(key)] = value
+			tbl[key] = nil
+		end
+		if type(value) == "table" then
+			convertStringKeysToNumeric(value)
+		end
+	end
+end
+
 function ConfigurationStructure:InitializeConfig()
 	local config = FileUtils:LoadTableFile("config.json")
 
@@ -164,10 +182,10 @@ function ConfigurationStructure:InitializeConfig()
 			CopyConfigsIntoReal(config, ConfigurationStructure.config)
 			FileUtils:SaveTableToFile("config.json", real_config_table)
 		else
+			convertStringKeysToNumeric(config)
 			-- All config management is done on the client side - just want server to always use the full config file (instead of attempting to merge with defaults)
-			real_config_table = {}
-			ConfigurationStructure.config = self:generate_recursive_metatable({}, real_config_table)
-			CopyConfigsIntoReal(config, ConfigurationStructure.config)
+			real_config_table = config
+			ConfigurationStructure.config = config
 		end
 	end
 
@@ -181,10 +199,6 @@ end
 
 if Ext.IsClient() then
 	Ext.Events.SessionLoaded:Subscribe(function()
-		Ext.ClientNet.PostMessageToServer(ModuleUUID .. "_UpdateConfiguration", "")
+		Channels.UpdateConfiguration:SendToServer()
 	end)
 end
-
-Ext.RegisterNetListener(ModuleUUID .. "_UpdateConfiguration", function(channel, payload, user)
-	ConfigurationStructure:InitializeConfig()
-end)

@@ -1225,7 +1225,7 @@ if Ext.IsServer() then
 		end
 
 		---@type ListEntryReplaceMap
-		local replaceMap = TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.listEntryReplaceMap._real)
+		local replaceMap = TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.listEntryReplaceMap)
 		replaceMap.passiveLists = replaceMap.spellLists or {}
 		local replaceMap = replaceMap.spellLists
 

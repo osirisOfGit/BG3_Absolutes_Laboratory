@@ -3,8 +3,9 @@ Ext.Require("Shared/Mutations/External/MutationModProxy.lua")
 local mutationsConfig = ConfigurationStructure.config.mutations
 
 if Ext.IsServer() then
-	Ext.RegisterNetListener(ModuleUUID .. "_UpdateConfiguration", function(channel, payload, user)
-		mutationsConfig = ConfigurationStructure.config.mutations._real
+	Channels.UpdateConfiguration:SetHandler(function(payload, user)
+		ConfigurationStructure:InitializeConfig()
+		mutationsConfig = ConfigurationStructure.config.mutations
 	end)
 end
 

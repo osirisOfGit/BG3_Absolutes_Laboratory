@@ -1,3 +1,5 @@
+Channels.UpdateConfiguration = Ext.Net.CreateChannel(ModuleUUID, "UpdateConfiguration")
+
 Channels.GetEntityDump = Ext.Net.CreateChannel(ModuleUUID, "GetEntityDump")
 Channels.GetEntityIcon = Ext.Net.CreateChannel(ModuleUUID, "GetEntityIcon")
 Channels.IsEntityAlive = Ext.Net.CreateChannel(ModuleUUID, "IsEntityAlive")
