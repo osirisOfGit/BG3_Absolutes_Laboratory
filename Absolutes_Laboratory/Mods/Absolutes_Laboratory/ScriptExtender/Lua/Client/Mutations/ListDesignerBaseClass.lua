@@ -762,8 +762,12 @@ end
 ---@param progressionTableId string?
 function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, level, progressionTableId)
 	if progressionTableId then
-		if not self.progressionTranslations[progressionTableId] or (not self.progressions[progressionTableId] or not self.progressions[progressionTableId][level] or not self.progressions[progressionTableId][level][self.name]) then
-			Logger:BasicWarning("Progression Table UUID %s was not found in the index for level %s - removing from the config for List %s", progressionTableId, level,
+		if not self.progressions[progressionTableId] or not self.progressions[progressionTableId][level] or not self.progressions[progressionTableId][level][self.name] then
+			Logger:BasicWarning("Progression Table %s (%s) was not found in the index for level %s - removing from the config for %s %s",
+				self.progressionTranslations[progressionTableId] or "Unknown",
+				progressionTableId,
+				level,
+				self.configKey,
 				self.activeList.name)
 			return true
 		else
@@ -800,21 +804,21 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 			then
 				for _, entryList in pairs(progressionEntry[level][self.name]) do
 					for _, entryName in pairs(entryList) do
-						if not self:CheckIfEntryIsInListLevel(self.activeList.levels[level], entryName, level, true) then
-							if not TableUtils:IndexOf(self.entryCacheForProgressions[level], entryName) then
-								self.entryCacheForProgressions[level] = self.entryCacheForProgressions[level] or {}
-								table.insert(self.entryCacheForProgressions[level], entryName)
-								if not progressionTableId then
-									table.insert(subList, entryName)
-								elseif (self.name == SpellListDesigner.name and (Ext.Stats.GetCachedSpell(entryName).AiFlags & Ext.Enums.AIFlags.CanNotUse) == Ext.Enums.AIFlags.CanNotUse) then
-									subListsClone.blackListed = subListsClone.blackListed or {}
-									subLists.blackListed = subLists.blackListed or {}
+						if not TableUtils:IndexOf(self.entryCacheForProgressions[level], entryName)
+							and not self:CheckIfEntryIsInListLevel(self.activeList.levels[level], entryName, level, true) then
+							self.entryCacheForProgressions[level] = self.entryCacheForProgressions[level] or {}
+							table.insert(self.entryCacheForProgressions[level], entryName)
 
-									table.insert(subLists.blackListed, entryName)
-									table.insert(subListsClone.blackListed, entryName)
-								else
-									table.insert(subList, entryName)
-								end
+							if not progressionTableId then
+								table.insert(subList, entryName)
+							elseif (self.name == SpellListDesigner.name and (Ext.Stats.GetCachedSpell(entryName).AiFlags & Ext.Enums.AIFlags.CanNotUse) == Ext.Enums.AIFlags.CanNotUse) then
+								subListsClone.blackListed = subListsClone.blackListed or {}
+								subLists.blackListed = subLists.blackListed or {}
+
+								table.insert(subLists.blackListed, entryName)
+								table.insert(subListsClone.blackListed, entryName)
+							else
+								table.insert(subList, entryName)
 							end
 						end
 					end
@@ -1925,15 +1929,13 @@ function ListDesignerBaseClass:buildProgressionIndex()
 					end
 				end
 
-				for nodeName, metaList in TableUtils:OrderedPairs(nodesToIterate) do
+				for nodeName, entryList in TableUtils:OrderedPairs(nodesToIterate) do
 					local nodeName = self.progressNodeTranslations[nodeName] or nodeName
 
 					self.progressions[progression.TableUUID][progression.Level][self.name][nodeName] =
 						self.progressions[progression.TableUUID][progression.Level][self.name][nodeName] or {}
 
-					for _, meta in pairs(metaList, function(key, value)
-						return value
-					end) do
+					for _, meta in pairs(entryList) do
 						local success, error = xpcall(function(...)
 							self.iterateProgressionEntriesFunc(meta, function(name)
 								if not TableUtils:IndexOf(self.progressions[progression.TableUUID], function(value)
@@ -1974,31 +1976,37 @@ function ListDesignerBaseClass:buildProgressionIndex()
 		end
 
 		for progressionTableUUID, progByLevels in pairs(self.progressions) do
-			for listId, list in pairs(MutationConfigurationProxy[self.configKey]) do
-				---@cast list CustomList
-				if not list.modId then
-					list = ConfigurationStructure.config.mutations[self.configKey][listId]
-				end
-				if TableUtils:IndexOf(list.levels, function(value)
-						return (value.linkedProgressions and value.linkedProgressions[progressionTableUUID]) ~= nil
-					end)
-				then
-					for level, lists in TableUtils:OrderedPairs(progByLevels) do
-						if lists[self.name] then
-							if not list.levels[level] then
-								list.levels[level] = {
-									manuallySelectedEntries = {},
-									linkedProgressions = {}
-								}
-							end
+			if TableUtils:IndexOf(progByLevels, function(value)
+					return value[self.name] ~= nil
+				end)
+			then
+				for listId, list in pairs(MutationConfigurationProxy[self.configKey]) do
+					---@cast list CustomList
+					if not list.modId then
+						list = ConfigurationStructure.config.mutations[self.configKey][listId]
+					end
 
-							local leveledList = list.levels[level]
+					if TableUtils:IndexOf(list.levels, function(value)
+							return (value.linkedProgressions and value.linkedProgressions[progressionTableUUID]) ~= nil
+						end)
+					then
+						for level, lists in TableUtils:OrderedPairs(progByLevels) do
+							if lists[self.name] then
+								if not list.levels[level] then
+									list.levels[level] = {
+										manuallySelectedEntries = {},
+										linkedProgressions = {}
+									}
+								end
 
-							if (not leveledList.linkedProgressions or not leveledList.linkedProgressions[progressionTableUUID]) then
-								leveledList.linkedProgressions = leveledList.linkedProgressions or {}
-								leveledList.linkedProgressions[progressionTableUUID] = TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
-								Logger:BasicInfo("Added missing level %s for progression %s to %s %s", level, self.progressionTranslations[progressionTableUUID], self.name,
-								list.name)
+								local leveledList = list.levels[level]
+
+								if (not leveledList.linkedProgressions or not leveledList.linkedProgressions[progressionTableUUID]) then
+									leveledList.linkedProgressions = leveledList.linkedProgressions or {}
+									leveledList.linkedProgressions[progressionTableUUID] = TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
+									Logger:BasicInfo("Added missing level %s for progression %s to %s %s", level, self.progressionTranslations[progressionTableUUID], self.name,
+										list.name)
+								end
 							end
 						end
 					end

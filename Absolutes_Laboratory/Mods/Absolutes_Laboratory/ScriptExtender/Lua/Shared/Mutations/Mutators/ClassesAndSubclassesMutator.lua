@@ -562,97 +562,100 @@ function ClassesAndSubclassesMutator:generateDocs()
 					text = [[
 Dependency On: Spell Lists
 Transient: Yes
-Additive: Yes - Classes groups will be added into one pool and randomly chosen from (post filtering)
+Additive: Yes - Class Groups will be added into one pool and randomly chosen from (post filtering)]]
 				} --[[@as MazzleDocsCallOut]],
-					{
-						type = "Separator"
-					},
-					{
-						type = "SubHeading",
-						text = "Summary"
-					},
-					{
-						type = "Content",
-						text =
-						[[Functionally speaking, Classes have very little impact on gameplay functionality - as far as I'm aware, it only matters for specific spells that check Class level instead of entity level.
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Summary"
+				},
+				{
+					type = "Content",
+					text =
+					[[Functionally speaking, Classes have very little impact on gameplay functionality - as far as I'm aware, it only matters for specific spells that check Class level instead of entity level.
 Still, it's good flavour, useful in those cases, and a valuable dependency for the Action Resources Mutator, so here we are.]]
-					},
-					{
-						type = "Separator"
-					},
-					{
-						type = "SubHeading",
-						text = "Mechanics"
-					},
-					{
-						type = "Content",
-						text = [[
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Mechanics"
+				},
+				{
+					type = "Content",
+					text = [[
 The mutator is laid out as follows:
 
-TODO
+Class Groups: Configured on the left hand side, this section contains a list of classes that should _all_ be assigned to the entity, adding up to 100% of the entity's Level (per the EocLevel component). 
+You can add multiple subclasses from one main class, but if you add the Main class you won't be allowed to add any subclasses from it.
+
+Modifiers: On the right hand side you'll find two modifiers:
+
+	Spell List Dependencies - this is a simple dependency that stats the entity must have been assigned at least 1 level of the specific amount of lists from the dependency pool - for example, you can specify that the group should only apply if the entity had the Bard AND Wizard spell lists applied, _or_ the Bard OR the Wizard lists, allowing for precise multi-class control.
+	
+	Ability Overrides: Allows specifying what ability the entity should use for the applicable rolls, otherwise whatever is currently on the entity will be used (can be found under the Stats component on the Entity in the Inspector).
+		
 
 The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
-					},
-					{
-						type = "Separator"
-					},
-					{
-						type = "SubHeading",
-						text = "Server-Side Implementation"
-					},
-					{
-						type = "Content",
-						text = [[You can assign multiple (sub)classes to an entity, divying up the character level for each Class, but the total value must equal 100%.
-
-There isn't a direct association to spell lists, as a Death Cleric and a Necromancy Wizard may use the same custom spell list if desired, but you can ensure the group assigned matches the archetype of the entity by ensuring they've been given a certain number of specific spell lists. If multiple Class Groups are eligible to be assigned, one will be randomly chosen.
-
-The Ability Overrides section is separate from the Abilities Mutator - this dictates the Abilities used for the respective checks, ensuring that attack/spell rolls are thematically aligned with the character archetype (can be found under the Stats component on the Entity in the Inspector). ]]
-					},
-					{
-						type = "Separator"
-					},
-					{
-						type = "SubHeading",
-						text = "Example Use Cases"
-					},
-					{
-						type = "Section",
-						text = "Selected entities:"
-					},
-					{
-						type = "Bullet",
-						text = {
-							"TODO"
-						}
-					} --[[@as MazzleDoctsBullet]],
-					{
-						type = "Separator"
-					},
-					{
-						type = "SubHeading",
-						text = "Changelog"
-					},
-					{
-						type = "SubHeading",
-						text = "1.7.0"
-					},
-					{
-						type = "Bullet",
-						text = {
-							"Sligtly widens inputs and makes sure they scale appropriately"
-						}
-					},
-					{
-						type = "SubHeading",
-						text = "1.6.0"
-					},
-					{
-						type = "Bullet",
-						text = { "?"
-						}
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Server-Side Implementation"
+				},
+				{
+					type = "Content",
+					text = [[When setting the classes, the `Classes.Classes` component is overwritten entirely; any specific Abilities overwrite their respective Stat component property: SpellCastingAbility, RangedAttackAbility, UnarmedAttackAbility. ]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Example Use Cases"
+				},
+				{
+					type = "Section",
+					text = "Selected entities:"
+				},
+				{
+					type = "Bullet",
+					text = {
+						"TODO"
+					}
+				} --[[@as MazzleDoctsBullet]],
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Changelog"
+				},
+				{
+					type = "SubHeading",
+					text = "1.7.0"
+				},
+				{
+					type = "Bullet",
+					text = {
+						"Sligtly widens inputs and makes sure UI elements scale appropriately"
+					}
+				},
+				{
+					type = "SubHeading",
+					text = "1.6.0"
+				},
+				{
+					type = "Bullet",
+					text = { "?"
 					}
 				}
 			}
-		} --[[@as MazzleDocsDocumentation]]
-	}
+		}
+	} --[[@as MazzleDocsDocumentation]]
 end
