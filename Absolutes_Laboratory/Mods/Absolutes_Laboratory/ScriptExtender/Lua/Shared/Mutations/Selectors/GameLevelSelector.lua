@@ -1,5 +1,9 @@
 GameLevelSelector = SelectorInterface:new("Game Level")
 
+function GameLevelSelector:handleDependencies()
+ -- NOOP
+end
+
 ---@class GameLevelSelector : Selector
 ---@field criteriaValue string[]
 

@@ -560,92 +560,99 @@ function ClassesAndSubclassesMutator:generateDocs()
 					prefix = "",
 					prefix_color = "Yellow",
 					text = [[
-Dependency On: None
-Transient: No
-Additive: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is always applied first]]
+Dependency On: Spell Lists
+Transient: Yes
+Additive: Yes - Classes groups will be added into one pool and randomly chosen from (post filtering)
 				} --[[@as MazzleDocsCallOut]],
-				{
-					type = "Separator"
-				},
-				{
-					type = "SubHeading",
-					text = "Summary"
-				},
-				{
-					type = "Content",
-					text = [[TODO]]
-				},
-				{
-					type = "Separator"
-				},
-				{
-					type = "SubHeading",
-					text = "Mechanics"
-				},
-				{
-					type = "Content",
-					text = [[
+					{
+						type = "Separator"
+					},
+					{
+						type = "SubHeading",
+						text = "Summary"
+					},
+					{
+						type = "Content",
+						text =
+						[[Functionally speaking, Classes have very little impact on gameplay functionality - as far as I'm aware, it only matters for specific spells that check Class level instead of entity level.
+Still, it's good flavour, useful in those cases, and a valuable dependency for the Action Resources Mutator, so here we are.]]
+					},
+					{
+						type = "Separator"
+					},
+					{
+						type = "SubHeading",
+						text = "Mechanics"
+					},
+					{
+						type = "Content",
+						text = [[
 The mutator is laid out as follows:
 
 TODO
 
 The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
-				},
-				{
-					type = "Separator"
-				},
-				{
-					type = "SubHeading",
-					text = "Server-Side Implementation"
-				},
-				{
-					type = "Content",
-					text = [[ TODO ]]
-				},
-				{
-					type = "Separator"
-				},
-				{
-					type = "SubHeading",
-					text = "Example Use Cases"
-				},
-				{
-					type = "Section",
-					text = "Selected entities:"
-				},
-				{
-					type = "Bullet",
-					text = {
-						"TODO"
-					}
-				} --[[@as MazzleDoctsBullet]],
-				{
-					type = "Separator"
-				},
-				{
-					type = "SubHeading",
-					text = "Changelog"
-				},
-				{
-					type = "SubHeading",
-					text = "1.7.0"
-				},
-				{
-					type = "Bullet",
-					text = {
-						"Sligtly widens inputs and makes sure they scale appropriately"
-					}
-				},
-				{
-					type = "SubHeading",
-					text = "1.6.0"
-				},
-				{
-					type = "Bullet",
-					text = { "?"
+					},
+					{
+						type = "Separator"
+					},
+					{
+						type = "SubHeading",
+						text = "Server-Side Implementation"
+					},
+					{
+						type = "Content",
+						text = [[You can assign multiple (sub)classes to an entity, divying up the character level for each Class, but the total value must equal 100%.
+
+There isn't a direct association to spell lists, as a Death Cleric and a Necromancy Wizard may use the same custom spell list if desired, but you can ensure the group assigned matches the archetype of the entity by ensuring they've been given a certain number of specific spell lists. If multiple Class Groups are eligible to be assigned, one will be randomly chosen.
+
+The Ability Overrides section is separate from the Abilities Mutator - this dictates the Abilities used for the respective checks, ensuring that attack/spell rolls are thematically aligned with the character archetype (can be found under the Stats component on the Entity in the Inspector). ]]
+					},
+					{
+						type = "Separator"
+					},
+					{
+						type = "SubHeading",
+						text = "Example Use Cases"
+					},
+					{
+						type = "Section",
+						text = "Selected entities:"
+					},
+					{
+						type = "Bullet",
+						text = {
+							"TODO"
+						}
+					} --[[@as MazzleDoctsBullet]],
+					{
+						type = "Separator"
+					},
+					{
+						type = "SubHeading",
+						text = "Changelog"
+					},
+					{
+						type = "SubHeading",
+						text = "1.7.0"
+					},
+					{
+						type = "Bullet",
+						text = {
+							"Sligtly widens inputs and makes sure they scale appropriately"
+						}
+					},
+					{
+						type = "SubHeading",
+						text = "1.6.0"
+					},
+					{
+						type = "Bullet",
+						text = { "?"
+						}
 					}
 				}
 			}
-		}
-	} --[[@as MazzleDocsDocumentation]]
+		} --[[@as MazzleDocsDocumentation]]
+	}
 end

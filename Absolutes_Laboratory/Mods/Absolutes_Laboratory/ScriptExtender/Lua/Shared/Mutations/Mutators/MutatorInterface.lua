@@ -266,6 +266,13 @@ As of this writing, end users don't have to really care about this, as it's acco
 				table.insert(existingSlides, slide)
 			end
 		end
+
+		local changelog = mutator:generateChangelog()
+		if changelog and next(changelog) then
+			for _, slide in ipairs(changelog) do
+				table.insert(existingSlides, slide)
+			end
+		end
 	end
 
 	for _, changelog in ipairs(changelogs) do
@@ -275,6 +282,7 @@ As of this writing, end users don't have to really care about this, as it's acco
 	return existingSlides
 end
 
-changelogs = {
-
-}
+---@return MazzleDocsSlide[]
+function MutatorInterface:generateChangelog()
+	return {}
+end
