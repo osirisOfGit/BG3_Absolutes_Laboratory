@@ -772,6 +772,9 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 			return true
 		else
 			local sep = parentGroup:AddSeparatorText(self.progressionTranslations[progressionTableId])
+			if self.progressionTranslations[progressionTableId] ~= sep.Label then
+				sep.Label = sep.Label .. (" (%s)"):format(progressionTableId:sub(#progressionTableId - 5))
+			end
 			sep:SetStyle("SeparatorTextAlign", 0.05)
 			if not self.activeList.modId then
 				if subLists.randomized and subLists.randomized._real and next(subLists.randomized._real) then

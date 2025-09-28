@@ -1042,6 +1042,8 @@ function ActionResourcesMutator:applyMutator(entity, entityVar)
 						end
 					end
 				end
+				amount = amount or 0
+				Logger:BasicDebug("Base amount for subsequent additions is: %d", amount)
 
 				local lastLevelValue = 0
 				for i = 2, (resourceConfig.totalClassLevel or entity.EocLevel.Level) do
