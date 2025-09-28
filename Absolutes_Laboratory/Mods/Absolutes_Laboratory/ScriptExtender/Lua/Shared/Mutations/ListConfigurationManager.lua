@@ -1,0 +1,420 @@
+---@class ProgressionLevel
+local progressionLevel = {
+	---@type Guid
+	id = nil,
+	---@type number
+	level = nil,
+	---@type ProgressionType
+	type = nil,
+	---@class ProgressionSpells
+	["spellLists"] = {
+		---@type string[]
+		AddSpells = {},
+		---@type string[]
+		SelectSpells = {}
+	},
+	---@class ProgressionPassives
+	["passiveLists"] = {
+		---@type string[]
+		PassivePrototypesAdded = {},
+		---@type string[]
+		PassivePrototypesRemoved = {},
+		---@type string[]
+		SelectPassives = {}
+	}
+}
+
+---@class ProgressionTable
+---@field progressionLevels ProgressionLevel[]
+---@field name string
+---@field tableId tableUUID
+
+---@alias tableUUID Guid
+
+ListConfigurationManager = {
+	---@type {[tableUUID] : ProgressionTable}
+	progressionIndex = {},
+	---@enum ProgressionNodes
+	progressionNodes = {
+		["AddSpells"] = 1,
+		["PassivePrototypesAdded"] = 2,
+		["PassivePrototypesRemoved"] = 3,
+		["PassivesAdded"] = 4,
+		["PassivesRemoved"] = 5,
+		["SelectPassives"] = 6,
+		["SelectSpells"] = 7,
+		[1] = "AddSpells",
+		[2] = "PassivePrototypesAdded",
+		[3] = "PassivePrototypesRemoved",
+		[4] = "PassivesAdded",
+		[5] = "PassivesRemoved",
+		[6] = "SelectPassives",
+		[7] = "SelectSpells",
+	},
+	settings = ConfigurationStructure.config.mutations.settings.customLists,
+	listsConfig = ConfigurationStructure.config.mutations.lists
+}
+
+function ListConfigurationManager:buildProgressionIndex()
+	if not next(self.progressionIndex) then
+		for _, progressionId in pairs(Ext.StaticData.GetAll("Progression")) do
+			---@type ResourceProgression
+			local progression = Ext.StaticData.Get(progressionId, "Progression")
+
+			if not self.progressionIndex[progression.TableUUID] then
+				local name = progression.Name
+				if TableUtils:IndexOf(self.progressionIndex, function(value)
+						return value.name == name
+					end) then
+					name = name .. (" (%s)"):format(progression.TableUUID:sub(#progression.TableUUID - 5))
+				end
+
+				self.progressionIndex[progression.TableUUID] = {
+					name = name,
+					tableId = progression.TableUUID,
+					progressionLevels = {}
+				}
+			end
+
+			---@type ProgressionLevel
+			local progressionIndex = {
+				id = progressionId,
+				level = progression.Level,
+				type = tostring(progression.ProgressionType)
+			}
+
+			local nodesToIterate = {}
+			for node, nodeEntry in pairs(progression) do
+				---@cast node string
+				if self.progressionNodes[node]
+					and ((type(nodeEntry) == "string" and nodeEntry ~= "")
+						or (type(nodeEntry) == "userdata" and next(Ext.Types.Serialize(nodeEntry))))
+				then
+					local entries = {}
+					if type(nodeEntry) == "table" or type(nodeEntry) == "userdata" then
+						for _, entry in ipairs(nodeEntry) do
+							table.insert(entries, entry)
+						end
+					else
+						local splitTable = {}
+						for _, val in string.gmatch(progression[node], "([^;]+)") do
+							table.insert(splitTable, val)
+						end
+						if next(splitTable) then
+							for _, entry in ipairs(splitTable) do
+								table.insert(nodesToIterate[node], entry)
+							end
+						end
+					end
+
+					for _, entry in ipairs(entries) do
+						if node:find("Spells") then
+							---@cast entry ResourceProgressionSpell|ResourceProgressionAddedSpell
+
+							---@type ResourceSpellList
+							local progSpellList = Ext.StaticData.Get(entry.SpellUUID, "SpellList")
+
+							if progSpellList then
+								progressionIndex["spellLists"] = progressionIndex["spellLists"] or {}
+								progressionIndex["spellLists"][node] = progressionIndex["spellLists"][node] or {}
+								for _, spellName in pairs(progSpellList.Spells) do
+									table.insert(progressionIndex["spellLists"][node], spellName)
+								end
+							else
+								Logger:BasicWarning("SpellUUID %s from Progression %s (%s, Level %d) does not exist as a spell list",
+									entry.SpellUUID,
+									progressionId,
+									progression.Name,
+									progression.Level)
+							end
+						elseif node:find("Passive") then
+							---@cast entry ResourceProgressionPassive|StatsPassivePrototype|string
+							if type(entry) == "string" then
+								progressionIndex["passiveLists"] = progressionIndex["passiveLists"] or {}
+								progressionIndex["passiveLists"][node] = progressionIndex["passiveLists"][node] or {}
+								table.insert(progressionIndex["passiveLists"][node], entry)
+							elseif Ext.Types.GetObjectType(entry) == "stats::PassivePrototype" then
+								progressionIndex["passiveLists"] = progressionIndex["passiveLists"] or {}
+								progressionIndex["passiveLists"][node] = progressionIndex["passiveLists"][node] or {}
+								table.insert(progressionIndex["passiveLists"][node], entry.Name)
+							else
+								---@type ResourcePassiveList
+								local passiveList = Ext.StaticData.Get(entry.UUID, "PassiveList")
+
+								if passiveList then
+									progressionIndex["passiveLists"] = progressionIndex["passiveLists"] or {}
+									progressionIndex["passiveLists"][node] = progressionIndex["passiveLists"][node] or {}
+									for _, passiveName in pairs(passiveList.Passives) do
+										table.insert(progressionIndex["passiveLists"][node], passiveName)
+									end
+								else
+									Logger:BasicWarning("Passive UUID %s from Progression %s (%s, Level %d) does not exist as a spell list",
+										entry.UUID,
+										progressionId,
+										progression.Name,
+										progression.Level)
+								end
+							end
+						end
+					end
+				end
+			end
+			if (progressionIndex["passiveLists"] or progressionIndex["spellLists"]) then
+				table.insert(self.progressionIndex[progression.TableUUID].progressionLevels, progressionIndex)
+			end
+		end
+	end
+end
+
+---@param export MutationsConfig
+---@param mutator Mutator
+---@param lists Guid[]
+---@param removeMissingDependencies boolean?
+function ListConfigurationManager:HandleDependences(export, mutator, lists, removeMissingDependencies)
+	self:buildProgressionIndex()
+
+	local progressionSources = Ext.StaticData.GetSources("Progression")
+
+	local replaceMap = removeMissingDependencies == true
+		and export.listEntryReplaceMap
+		or TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.listEntryReplaceMap._real)
+
+	---@param statName string
+	---@param container table?
+	---@return boolean?
+	local function buildStatDependency(statName, container)
+		---@type (SpellData|PassiveData|StatusData)?
+		local stat = Ext.Stats.Get(statName)
+		if stat then
+			if not removeMissingDependencies then
+				container = container or mutator
+				container.modDependencies = container.modDependencies or {}
+				if not container.modDependencies[stat.OriginalModId] then
+					local name, author, version = Helpers:BuildModFields(stat.OriginalModId)
+					if author == "Larian" then
+						return true
+					end
+
+					container.modDependencies[stat.OriginalModId] = {
+						modName = name,
+						modAuthor = author,
+						modVersion = version,
+						modId = stat.OriginalModId,
+						packagedItems = {}
+					}
+				end
+				local name = Ext.Loca.GetTranslatedString(stat.DisplayName, statName)
+				name = name == "" and statName or name
+				container.modDependencies[stat.OriginalModId].packagedItems[statName] = name
+			end
+			return true
+		else
+			return false
+		end
+	end
+
+	if not export.listEntryReplaceMap[self.configKey] and replaceMap[self.configKey] and replaceMap[self.configKey] and next(replaceMap[self.configKey]) then
+		if not removeMissingDependencies then
+			replaceMap.modDependencies = export.listEntryReplaceMap.modDependencies
+		end
+		for statName, entriesToReplace in pairs(replaceMap[self.configKey]) do
+			for i, statBeingReplaced in ipairs(entriesToReplace) do
+				if not buildStatDependency(statBeingReplaced, replaceMap) then
+					replaceMap[self.configKey][statName][i] = nil
+				end
+			end
+
+			TableUtils:ReindexNumericTable(replaceMap[self.configKey][statName])
+		end
+		if not removeMissingDependencies then
+			export.listEntryReplaceMap.modDependencies = replaceMap.modDependencies
+			export.listEntryReplaceMap[self.configKey] = replaceMap[self.configKey]
+		end
+	end
+
+	for l, listId in pairs(lists) do
+		local list = MutationConfigurationProxy[self.configKey][listId]
+		if list then
+			local listModId = list.modId
+			if not listModId then
+				--- @type CustomList
+				local listDef = removeMissingDependencies == true
+					and export[self.configKey][listId]
+					or TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations[self.configKey][listId]._real)
+
+				listId = listId .. "Exported"
+
+				if listDef.levels then
+					for level, levelSubList in pairs(listDef.levels) do
+						if levelSubList.linkedProgressions then
+							for progressionTableId, sublists in pairs(levelSubList.linkedProgressions) do
+								for _, entries in pairs(sublists) do
+									for i, entry in pairs(entries) do
+										if not buildStatDependency(entry, listDef) then
+											entries[i] = nil
+										end
+									end
+									TableUtils:ReindexNumericTable(entries)
+								end
+
+								local progressionId = SpellListDesigner.progressionTableToProgression[progressionTableId][level]
+								if progressionId then
+									---@type ResourceProgression
+									local progression = Ext.StaticData.Get(progressionId, "Progression")
+									if not progression then
+										levelSubList.linkedProgressions[progressionId] = nil
+									elseif not removeMissingDependencies then
+										local progressionSource = TableUtils:IndexOf(progressionSources, function(value)
+											return TableUtils:IndexOf(value, progressionId) ~= nil
+										end)
+										if progressionSource then
+											listDef.modDependencies = listDef.modDependencies or {}
+											if not listDef.modDependencies[progressionSource] then
+												local name, author, version = Helpers:BuildModFields(progressionSource)
+												if author == "Larian" then
+													goto continue
+												end
+												listDef.modDependencies[progressionSource] = {
+													modName = name,
+													modAuthor = author,
+													modVersion = version,
+													modId = progressionSource,
+													packagedItems = {}
+												}
+											end
+											listDef.modDependencies[progressionSource].packagedItems[progressionId] = progression.Name
+										end
+										::continue::
+									end
+								end
+							end
+						end
+
+						if levelSubList.manuallySelectedEntries then
+							for _, entries in pairs(levelSubList.manuallySelectedEntries) do
+								for i, entry in pairs(entries) do
+									if not buildStatDependency(entry, listDef) then
+										entries[i] = nil
+									end
+								end
+								TableUtils:ReindexNumericTable(entries)
+							end
+						end
+					end
+				end
+
+				export[self.configKey] = export[self.configKey] or {}
+				if not export[self.configKey][listId] then
+					export[self.configKey][listId] = listDef
+				end
+			else
+				local name, author, version = Helpers:BuildModFields(listModId)
+				mutator.modDependencies = mutator.modDependencies or {}
+				mutator.modDependencies[listModId] = {
+					modAuthor = author,
+					modName = name,
+					modVersion = version,
+					modId = listModId,
+					packagedItems = nil
+				}
+			end
+		end
+	end
+end
+
+---@param configBase MutationsConfig?
+function ListConfigurationManager:maintainLists(configBase)
+	configBase = configBase or ConfigurationStructure.config.mutations
+	if configBase.spellLists then
+		for guid, list in pairs(configBase.spellLists) do
+			---@cast list CustomList
+			self.listsConfig.spellLists[guid] = TableUtils:DeeplyCopyTable(list._real or list)
+		end
+		configBase.spellLists.delete = true
+		configBase.spellLists = nil
+	end
+
+	if configBase.passiveLists then
+		for guid, list in pairs(configBase.passiveLists) do
+			self.listsConfig.passiveLists[guid] = TableUtils:DeeplyCopyTable(list._real or list)
+		end
+		configBase.passiveLists.delete = true
+		configBase.passiveLists = nil
+	end
+
+	if configBase.statusLists then
+		for guid, list in pairs(configBase.statusLists) do
+			self.listsConfig.statusLists[guid] = TableUtils:DeeplyCopyTable(list._real or list)
+		end
+		configBase.statusLists.delete = true
+		configBase.statusLists = nil
+	end
+
+	if configBase.listEntryReplaceMap then
+		configBase.lists.entryReplacerDictionary = TableUtils:DeeplyCopyTable(configBase.listEntryReplaceMap._real or configBase.listEntryReplaceMap)
+		configBase.listEntryReplaceMap.delete = true
+		configBase.listEntryReplaceMap = nil
+	end
+
+	for _, list in TableUtils:CombinedPairs(configBase.lists.passiveLists,
+		configBase.lists.spellLists,
+		configBase.lists.statusLists)
+	do
+		for _, levelList in pairs(list.levels) do
+			if levelList.linkedProgressions then
+				for progTableId, customSubList in pairs(levelList.linkedProgressions) do
+					if not TableUtils:IndexOf(list.linkedProgressionTableIds, progTableId) then
+						table.insert(list.linkedProgressionTableIds, progTableId)
+					end
+					if not (customSubList.blackListed or customSubList.guaranteed or customSubList.onDeathOnly
+							or customSubList.startOfCombatOnly or customSubList.onLoadOnly)
+					then
+						if not list.modId then
+							customSubList.delete = true
+						else
+							levelList.linkedProgressions[progTableId] = nil
+						end
+					end
+				end
+				if not next(levelList.linkedProgressions) then
+					levelList.linkedProgressions.delete = true
+					levelList.linkedProgressions = nil
+				end
+			end
+		end
+	end
+end
+
+Ext.RegisterConsoleCommand("Lab_DumpProgressions", function(cmd, ...)
+	local tableUUIDS = { ... }
+	local self = ListConfigurationManager
+	self:buildProgressionIndex()
+
+	local progLog = Logger:new("ProgressionDumper.txt", false)
+	progLog:ClearLogFile()
+
+	for progressionTableUUID, levels in TableUtils:OrderedPairs(ListDesignerBaseClass.progressions, function(key, value)
+			return ListDesignerBaseClass.progressNodeTranslations[key]
+		end,
+		function(key, value)
+			return not next(tableUUIDS) or TableUtils:IndexOf(tableUUIDS, key) ~= nil
+		end)
+	do
+		progLog:BasicDebug("================= Start Table %s - %s =================", progressionTableUUID, ListDesignerBaseClass.progressionTranslations[progressionTableUUID])
+
+		for level, lists in TableUtils:OrderedPairs(levels) do
+			progLog:BasicDebug("\tLevel %d", level)
+			for listName, list in TableUtils:OrderedPairs(lists) do
+				progLog:BasicDebug("\t\t|_ %s", listName)
+				for nodeName, entries in TableUtils:OrderedPairs(list) do
+					progLog:BasicDebug("\t\t\t|_ %s", nodeName)
+					for _, entry in TableUtils:OrderedPairs(entries) do
+						progLog:BasicDebug("\t\t\t  |_ %s", entry)
+					end
+				end
+			end
+		end
+
+		progLog:BasicDebug("================= End Table %s - %s =================\n", progressionTableUUID, ListDesignerBaseClass.progressionTranslations[progressionTableUUID])
+	end
+end)

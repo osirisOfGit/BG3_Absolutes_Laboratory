@@ -4,13 +4,18 @@ MutationModProxy.listTypes = { "spellLists", "statusLists", "passiveLists" }
 
 MutationModProxy.Filename = "AbsolutesLaboratory_ProfilesAndMutations"
 
----@class LocalModCache
----@field profiles {[Guid] : string}
----@field folders {[Guid] : string}
+
+---@class LocalModCacheLists
 ---@field spellLists {[Guid] : string}
 ---@field passiveLists {[Guid] : string}
 ---@field statusLists {[Guid] : string}
+
+---@class LocalModCache
+---@field profiles {[Guid] : string}
+---@field folders {[Guid] : string}
+---@field lists LocalModCacheLists
 ---@field listEntryReplaceMap {[string] : string[]}
+---@field prepPhaseMarkers {[Guid] : PrepMarkerCategory}
 
 ---@type {[Guid] : LocalModCache}
 local modList = {}
@@ -109,58 +114,60 @@ MutationModProxy.ModProxy = {
 			return pairs(modList)
 		end
 	}),
-	listEntryReplaceMap = setmetatable({}, {
-		__mode = "k",
-		__index = function(t, k)
-			setModProxyFields(t, k, "listEntryReplaceMap")
-			return modList[k].listEntryReplaceMap
-		end,
-		__call = function(t)
-			return TableUtils:CountElements(modList)
-		end,
-		__pairs = function(t)
-			return pairs(modList)
-		end
-	}),
-	spellLists = setmetatable({}, {
-		__mode = "k",
-		__index = function(t, k)
-			return setModProxyFields(t, k, "spellLists")
-		end,
-		__call = function(t)
-			MutationModProxy:ImportMutationsFromMods()
-			return TableUtils:CountElements(modList)
-		end,
-		__pairs = function(t)
-			return pairs(modList)
-		end
-	}),
-	passiveLists = setmetatable({}, {
-		__mode = "k",
-		__index = function(t, k)
-			return setModProxyFields(t, k, "passiveLists")
-		end,
-		__call = function(t)
-			MutationModProxy:ImportMutationsFromMods()
-			return TableUtils:CountElements(modList)
-		end,
-		__pairs = function(t)
-			return pairs(modList)
-		end
-	}),
-	statusLists = setmetatable({}, {
-		__mode = "k",
-		__index = function(t, k)
-			return setModProxyFields(t, k, "statusLists")
-		end,
-		__call = function(t)
-			MutationModProxy:ImportMutationsFromMods()
-			return TableUtils:CountElements(modList)
-		end,
-		__pairs = function(t)
-			return pairs(modList)
-		end
-	})
+	lists = {
+		listEntryReplaceMap = setmetatable({}, {
+			__mode = "k",
+			__index = function(t, k)
+				setModProxyFields(t, k, "listEntryReplaceMap")
+				return modList[k].listEntryReplaceMap
+			end,
+			__call = function(t)
+				return TableUtils:CountElements(modList)
+			end,
+			__pairs = function(t)
+				return pairs(modList)
+			end
+		}),
+		spellLists = setmetatable({}, {
+			__mode = "k",
+			__index = function(t, k)
+				return setModProxyFields(t, k, "spellLists")
+			end,
+			__call = function(t)
+				MutationModProxy:ImportMutationsFromMods()
+				return TableUtils:CountElements(modList)
+			end,
+			__pairs = function(t)
+				return pairs(modList)
+			end
+		}),
+		passiveLists = setmetatable({}, {
+			__mode = "k",
+			__index = function(t, k)
+				return setModProxyFields(t, k, "passiveLists")
+			end,
+			__call = function(t)
+				MutationModProxy:ImportMutationsFromMods()
+				return TableUtils:CountElements(modList)
+			end,
+			__pairs = function(t)
+				return pairs(modList)
+			end
+		}),
+		statusLists = setmetatable({}, {
+			__mode = "k",
+			__index = function(t, k)
+				return setModProxyFields(t, k, "statusLists")
+			end,
+			__call = function(t)
+				MutationModProxy:ImportMutationsFromMods()
+				return TableUtils:CountElements(modList)
+			end,
+			__pairs = function(t)
+				return pairs(modList)
+			end
+		})
+	}
 }
 
 ---@param modId Guid
@@ -202,24 +209,27 @@ function MutationModProxy:ImportMutationsFromMods()
 					end
 				end
 
-				if mutations.spellLists and next(mutations.spellLists) then
-					modEntry.spellLists = {}
-					for spellListId, spellList in pairs(mutations.spellLists) do
-						modEntry.spellLists[spellListId] = spellList.name
+				if mutations.lists then
+					ListConfigurationManager:maintainLists(mutations)
+					if mutations.lists.spellLists and next(mutations.lists.spellLists) then
+						modEntry.lists.spellLists = {}
+						for spellListId, spellList in pairs(mutations.lists.spellLists) do
+							modEntry.lists.spellLists[spellListId] = spellList.name
+						end
 					end
-				end
 
-				if mutations.statusLists and next(mutations.statusLists) then
-					modEntry.statusLists = {}
-					for statusListId, statusList in pairs(mutations.statusLists) do
-						modEntry.statusLists[statusListId] = statusList.name
+					if mutations.lists.statusLists and next(mutations.lists.statusLists) then
+						modEntry.lists.statusLists = {}
+						for statusListId, statusList in pairs(mutations.lists.statusLists) do
+							modEntry.lists.statusLists[statusListId] = statusList.name
+						end
 					end
-				end
 
-				if mutations.passiveLists and next(mutations.passiveLists) then
-					modEntry.passiveLists = {}
-					for passiveListId, passiveList in pairs(mutations.passiveLists) do
-						modEntry.passiveLists[passiveListId] = passiveList.name
+					if mutations.lists.passiveLists and next(mutations.lists.passiveLists) then
+						modEntry.lists.passiveLists = {}
+						for passiveListId, passiveList in pairs(mutations.lists.passiveLists) do
+							modEntry.lists.passiveLists[passiveListId] = passiveList.name
+						end
 					end
 				end
 			end

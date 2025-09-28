@@ -200,7 +200,6 @@ function TableUtils:CombinedPairs(...)
 
 	local i = 0
 	local currentTableIndex = 1
-
 	return function()
 		while currentTableIndex <= #tables do
 			i = i + 1

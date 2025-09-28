@@ -1,3 +1,5 @@
+Ext.Require("Shared/Mutations/ListConfigurationManager.lua")
+
 ---@class ListDesignerBaseClass
 ListDesignerBaseClass = {
 	name = "List Designer",
@@ -20,24 +22,6 @@ ListDesignerBaseClass = {
 	browserTabs = {},
 	---@type ExtuiPopup	
 	popup = nil,
-
-	---@type string[]?
-	progressionLinkedNodes = nil,
-	---@type fun(resource: any, addToListFunc: fun(name: string))
-	iterateProgressionEntriesFunc = nil,
-	-- Intentionally not cloning the below in :new so all lists share the progression index
-	hasIndexedRelevantProgressions = false,
-	--- TableUUID:  Level:    ListName  	ProgList  entryNames
-	---@type {[Guid]: {[integer]: {[string]: {[string]: string[]}}}}
-	progressions = {},
-	---@type {[Guid]: {[number]: Guid}}
-	progressionTableToProgression = {},
-	progressionTranslations = {},
-	-- Used when building the lists in the designer, so we're not adding the same entry from multiple progressions - should be unique per inheriting class
-	---@type EntryName[][]
-	entryCacheForProgressions = {},
-	---@type {[string]: string}
-	progressNodeTranslations = {},
 
 	---@type ExtuiSelectable?
 	activeListHandle = nil,
@@ -73,19 +57,15 @@ ListDesignerBaseClass = {
 ---@param name string
 ---@param configKey string
 ---@param subListTypesToExclude ("guaranteed"|"randomized"|"startOfCombatOnly"|"onLoadOnly"|"blackListed"|"onDeathOnly")[]?
----@param progressionLinkedNodes string[]?
----@param iterateProgressionEntriesFunc fun(resource: any, addToListFunc: fun(name: string))?
 ---@return ListDesignerBaseClass
-function ListDesignerBaseClass:new(name, configKey, subListTypesToExclude, progressionLinkedNodes, iterateProgressionEntriesFunc)
+function ListDesignerBaseClass:new(name, configKey, subListTypesToExclude)
 	local instance = {}
 
 	setmetatable(instance, self)
 	self.__index = self
 	instance.name = name
-	instance.iterateProgressionEntriesFunc = iterateProgressionEntriesFunc
 	instance.configKey = configKey
 	instance.browserTabs = {}
-	instance.progressionLinkedNodes = progressionLinkedNodes
 	instance.entryCacheForProgressions = {}
 	instance.selectedEntries = {
 		entries = {},
@@ -223,10 +203,8 @@ end
 
 ---@param activeListId Guid?
 function ListDesignerBaseClass:buildLists(activeListId)
-	ConfigurationStructure.config.mutations[self.configKey] = ConfigurationStructure.config.mutations[self.configKey] or {}
-
 	---@type {[Guid]: CustomList}
-	local listConfig = ConfigurationStructure.config.mutations[self.configKey]
+	local listConfig = ConfigurationStructure.config.mutations.lists[self.configKey]
 
 	local headerTitle = self.listSection:AddSeparatorText("Your Lists ( ? )")
 	headerTitle:Tooltip():AddText("\t Right-click on an entry to manage it")
@@ -336,11 +314,11 @@ function ListDesignerBaseClass:buildLists(activeListId)
 end
 
 function ListDesignerBaseClass:buildModLists(activeListID)
-	if MutationModProxy.ModProxy[self.configKey]() then
+	if MutationModProxy.ModProxy.lists[self.configKey]() then
 		---@type {[Guid]: Guid[]}
 		local modLists = {}
 
-		for modId, modCache in pairs(MutationModProxy.ModProxy[self.configKey]) do
+		for modId, modCache in pairs(MutationModProxy.ModProxy.lists[self.configKey]) do
 			---@cast modCache +LocalModCache
 
 			if modCache[self.configKey] and next(modCache[self.configKey]) then
@@ -360,9 +338,9 @@ function ListDesignerBaseClass:buildModLists(activeListID)
 				self.listSection:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name)
 
 				for _, guid in TableUtils:OrderedPairs(spellLists, function(_, value)
-					return MutationModProxy.ModProxy[self.configKey][value].name
+					return MutationModProxy.ModProxy.lists[self.configKey][value].name
 				end) do
-					local list = MutationModProxy.ModProxy[self.configKey][guid]
+					local list = MutationModProxy.ModProxy.lists[self.configKey][guid]
 					list.useGameLevel = list.useGameLevel or false
 
 					---@type ExtuiSelectable
@@ -421,14 +399,10 @@ end
 
 local isHidden = {}
 function ListDesignerBaseClass:buildDesigner()
-	if self.progressionLinkedNodes then
-		self:buildProgressionIndex()
-	end
-
 	---@type {[string] : string[]}
-	self.replaceMap = ConfigurationStructure.config.mutations.listEntryReplaceMap[self.configKey]
+	self.replaceMap = ConfigurationStructure.config.mutations.lists.entryReplacerDictionary[self.configKey]
 	if self.activeList.modId then
-		self.replaceMap = MutationConfigurationProxy.listEntryReplaceMap[self.activeList.modId]
+		self.replaceMap = MutationConfigurationProxy.lists.entryReplacerDictionary[self.activeList.modId]
 	end
 
 	self:clearSelectedEntries()
@@ -573,7 +547,7 @@ Using entity level will use the entity's character level, post Character Level M
 						if yesButton.Label ~= "Do it" then
 							self.mainWindow:SetFocus()
 							self.popup:SetCollapsed(true, "Always")
-							for _, lists in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations[self.configKey]) do
+							for _, lists in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.lists[self.configKey]) do
 								---@cast lists CustomList
 								if lists.levels then
 									for level, levelSubList in TableUtils:OrderedPairs(lists.levels) do
@@ -672,21 +646,27 @@ Using entity level will use the entity's character level, post Character Level M
 			if self.activeList.levels[level].manuallySelectedEntries then
 				self:buildEntryListFromSubList(entryGroup, self.activeList.levels[level].manuallySelectedEntries, level)
 			end
+		end
 
-			if self.activeList.levels[level].linkedProgressions and next(self.activeList.levels[level].linkedProgressions) then
-				local sep = entryGroup:AddSeparatorText("Linked Progressions")
-				local progGroup = entryGroup:AddGroup("linkedProg")
+		if self.activeList.linkedProgressionTableIds and next(self.activeList.linkedProgressionTableIds._real or self.activeList.linkedProgressionTableIds) then
+			local sep = entryGroup:AddSeparatorText("Linked Progressions")
+			local progGroup = entryGroup:AddGroup("linkedProg")
 
-				for progressionTableId, subLists in TableUtils:OrderedPairs(self.activeList.levels[level].linkedProgressions) do
-					if not self.activeList.modId and self:buildEntryListFromSubList(progGroup, subLists, level, progressionTableId) then
-						self.activeList.levels[level].linkedProgressions[progressionTableId].delete = true
-					end
+			for _, progressionTableId in TableUtils:OrderedPairs(self.activeList.linkedProgressionTableIds) do
+				local progList = {}
+				if self.activeList.levels
+					and self.activeList.levels[level]
+					and self.activeList.levels[level].linkedProgressions
+					and self.activeList.levels[level].linkedProgressions[progressionTableId]
+				then
+					progList = self.activeList.levels[level].linkedProgressions[progressionTableId]
 				end
+				self:buildEntryListFromSubList(progGroup, progList, level, progressionTableId)
+			end
 
-				if #progGroup.Children == 0 then
-					sep:Destroy()
-					progGroup:Destroy()
-				end
+			if #progGroup.Children == 0 then
+				sep:Destroy()
+				progGroup:Destroy()
 			end
 		end
 
@@ -762,28 +742,10 @@ end
 ---@param progressionTableId string?
 function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, level, progressionTableId)
 	if progressionTableId then
-		if not self.progressions[progressionTableId] or not self.progressions[progressionTableId][level] or not self.progressions[progressionTableId][level][self.name] then
-			Logger:BasicWarning("Progression Table %s (%s) was not found in the index for level %s - removing from the config for %s %s",
-				self.progressionTranslations[progressionTableId] or "Unknown",
-				progressionTableId,
-				level,
-				self.configKey,
-				self.activeList.name)
-			return true
+		if ListConfigurationManager.progressionIndex[progressionTableId] then
+			parentGroup:AddSeparatorText(ListConfigurationManager.progressionIndex[progressionTableId].name):SetStyle("SeparatorTextAlign", 0.05)
 		else
-			local sep = parentGroup:AddSeparatorText(self.progressionTranslations[progressionTableId])
-			if self.progressionTranslations[progressionTableId] ~= sep.Label then
-				sep.Label = sep.Label .. (" (%s)"):format(progressionTableId:sub(#progressionTableId - 5))
-			end
-			sep:SetStyle("SeparatorTextAlign", 0.05)
-			if not self.activeList.modId then
-				if subLists.randomized and subLists.randomized._real and next(subLists.randomized._real) then
-					subLists.randomized.delete = true
-					subLists.randomized = {}
-				else
-					subLists.randomized = {}
-				end
-			end
+			return
 		end
 	end
 	local subListsClone = TableUtils:DeeplyCopyTable(subLists._real or subLists)
@@ -798,30 +760,28 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 
 	local count = 0
 
-	local function buildSubList(subListName, subList)
+	local function buildProgressionSubList(subListName, subList)
 		if subListName == "randomized" and progressionTableId then
-			local progressionEntry = self.progressions[progressionTableId]
-			if progressionEntry
-				and progressionEntry[level]
-				and progressionEntry[level][self.name]
-			then
-				for _, entryList in pairs(progressionEntry[level][self.name]) do
-					for _, entryName in pairs(entryList) do
-						if not TableUtils:IndexOf(self.entryCacheForProgressions[level], entryName)
-							and not self:CheckIfEntryIsInListLevel(self.activeList.levels[level], entryName, level, true) then
-							self.entryCacheForProgressions[level] = self.entryCacheForProgressions[level] or {}
-							table.insert(self.entryCacheForProgressions[level], entryName)
+			for progLevel, progressionEntry in pairs(ListConfigurationManager.progressionIndex[progressionTableId].progressionLevels) do
+				if progLevel == level and progressionEntry[self.configKey] then
+					for _, nodeEntries in pairs(progressionEntry[self.configKey]) do
+						---@cast nodeEntries {[string]: string[]}
+						for _, entryList in pairs(nodeEntries) do
+							for _, entryName in pairs(entryList) do
+								if not TableUtils:IndexOf(subLists, function(value)
+										return TableUtils:IndexOf(value, entryName) ~= nil
+									end)
+								then
+									if (self.name == SpellListDesigner.name and (Ext.Stats.GetCachedSpell(entryName).AiFlags & Ext.Enums.AIFlags.CanNotUse) == Ext.Enums.AIFlags.CanNotUse) then
+										subListsClone.blackListed = subListsClone.blackListed or {}
+										subLists.blackListed = subLists.blackListed or {}
 
-							if not progressionTableId then
-								table.insert(subList, entryName)
-							elseif (self.name == SpellListDesigner.name and (Ext.Stats.GetCachedSpell(entryName).AiFlags & Ext.Enums.AIFlags.CanNotUse) == Ext.Enums.AIFlags.CanNotUse) then
-								subListsClone.blackListed = subListsClone.blackListed or {}
-								subLists.blackListed = subLists.blackListed or {}
-
-								table.insert(subLists.blackListed, entryName)
-								table.insert(subListsClone.blackListed, entryName)
-							else
-								table.insert(subList, entryName)
+										table.insert(subLists.blackListed, entryName)
+										table.insert(subListsClone.blackListed, entryName)
+									else
+										table.insert(subList, entryName)
+									end
+								end
 							end
 						end
 					end
@@ -839,29 +799,28 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 			for _, entry in pairs(subList) do
 				table.insert(listForGroupFunc, entry)
 			end
-			buildSubList(subListName, listForGroupFunc)
+			buildProgressionSubList(subListName, listForGroupFunc)
 		end
 		local success, childParent = pcall(function() return row.Children[1].Children[1] end)
 		local parentContainer = success and childParent or row.Children[1]
 		groupFunc = self:renderEntriesBySubcategories(listForGroupFunc, parentContainer)
 	end
 
-	self.entryCacheForProgressions[level] = nil
 	for subListName, subList in TableUtils:OrderedPairs(subListsClone, function(key)
 		return self.subListIndex[key].name == self.subListIndex["blackListed"].name and "zlisted" or self.subListIndex[key].name
 	end) do
-		if not self.subListIndex[subListName] then
-			local default = self.settings.defaultPool[self.configKey]
-			subLists[default] = subLists[default] or {}
-			for _, entry in pairs(subLists[subListName]) do
-				table.insert(subLists[default], entry)
-			end
-			subLists[subListName].delete = true
-			Helpers:KillChildren(parentGroup)
-			self:buildEntryListFromSubList(parentGroup, subLists, level, progressionTableId)
-			return
-		end
-		buildSubList(subListName, subList)
+		-- if not self.subListIndex[subListName] then
+		-- 	local default = self.settings.defaultPool[self.configKey]
+		-- 	subLists[default] = subLists[default] or {}
+		-- 	for _, entry in pairs(subLists[subListName]) do
+		-- 		table.insert(subLists[default], entry)
+		-- 	end
+		-- 	subLists[subListName].delete = true
+		-- 	Helpers:KillChildren(parentGroup)
+		-- 	self:buildEntryListFromSubList(parentGroup, subLists, level, progressionTableId)
+		-- 	return
+		-- end
+		buildProgressionSubList(subListName, subList)
 
 		---@cast subList EntryName[]
 
@@ -887,7 +846,8 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 				local totalChildren = #parent.Children + 1
 
 				local entryImageButton = parent:AddImageButton(entryName .. "##" .. level, entryData.Icon ~= "" and entryData.Icon or "Item_Unknown",
-					{ 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
+					Styler:ScaleFactor({ 48, 48 }))
+
 				if self.replaceMap[entryName] and next(self.replaceMap[entryName]._real or self.replaceMap[entryName]) then
 					local replacesText = parent:AddText("R")
 					replacesText.Font = "Tiny"
@@ -895,7 +855,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 				end
 				if entryImageButton.Image.Icon == "" then
 					entryImageButton:Destroy()
-					entryImageButton = parent:AddImageButton(entryName .. "##" .. level, "Item_Unknown", { 48 * Styler:ScaleFactor(), 48 * Styler:ScaleFactor() })
+					entryImageButton = parent:AddImageButton(entryName .. "##" .. level, "Item_Unknown", Styler:ScaleFactor({ 48, 48 }))
 				end
 
 				if useIcons then
@@ -1502,19 +1462,11 @@ function ListDesignerBaseClass:buildStatBrowser(statType)
 		end)
 end
 
-function ListDesignerBaseClass:buildProgressionBrowser()
+function ListDesignerBaseClass:buildFullProgressionBrowser()
 	if self.browserTabs["Progressions"] then
-		self:clearSelectedEntries()
-		for i in ipairs(self.selectedEntries.entries) do
-			if self.selectedEntries.entries[i].subListName then
-				self.selectedEntries.handles[i]:SetColor("Button", self.subListIndex[self.selectedEntries.entries[i].subListName].colour)
-			end
-			self.selectedEntries.handles[i]:SetColor("ButtonHovered", { 0.64, 0.40, 0.28, 0.5 })
-
-			self.selectedEntries.entries[i] = nil
-			self.selectedEntries.handles[i] = nil
-		end
 		Helpers:KillChildren(self.browserTabs["Progressions"])
+
+		self:clearSelectedEntries()
 
 		local searchBox = self.browserTabs["Progressions"]:AddInputText("")
 		searchBox.Hint = "Search Progressions"
@@ -1533,18 +1485,42 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 				resultsGroup.Visible = true
 
 				local searchValue = string.upper(searchBox.Text)
+			end)
+		end
+	end
+end
 
-				for progressionTableUuid, indexedProgLevelLists in TableUtils:OrderedPairs(self.progressions, function(key, value)
-					return self.progressionTranslations[key]
-				end) do
-					local progressionName = self.progressionTranslations[progressionTableUuid]
+function ListDesignerBaseClass:buildLiteProgressionBrowser()
+	if self.browserTabs["Progressions"] then
+		Helpers:KillChildren(self.browserTabs["Progressions"])
+
+		self:clearSelectedEntries()
+
+		local searchBox = self.browserTabs["Progressions"]:AddInputText("")
+		searchBox.Hint = "Search Progressions"
+
+		local resultsGroup = self.browserTabs["Progressions"]:AddGroup("Results")
+
+		local levelView = self.browserTabs["Progressions"]:AddGroup("Levels")
+
+		local listManager = ListConfigurationManager
+
+		local timer
+		searchBox.OnChange = function()
+			if timer then
+				Ext.Timer.Cancel(timer)
+			end
+			timer = Ext.Timer.WaitFor(200, function()
+				Helpers:KillChildren(resultsGroup)
+				resultsGroup.Visible = true
+
+				local searchValue = string.upper(searchBox.Text)
+
+				for progressionTableUuid, progressionTable in pairs(listManager.progressionIndex) do
+					local progressionName = progressionTable.name
 					if progressionName:upper():find(searchValue) then
 						---@type ExtuiSelectable
 						local select = resultsGroup:AddSelectable(progressionName)
-
-						if self.progressionTranslations[progressionName] ~= progressionTableUuid then
-							select.Label = select.Label .. (" (%s)"):format(progressionTableUuid:sub(#progressionTableUuid - 5))
-						end
 
 						select.OnClick = function()
 							resultsGroup.Visible = false
@@ -1559,7 +1535,7 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 								local copyAllButton = ele:AddButton("Copy All")
 
 								copyAllButton.OnClick = function()
-									for level, lists in TableUtils:OrderedPairs(indexedProgLevelLists, function(key)
+									for level, lists in TableUtils:OrderedPairs(progressionTable, function(key)
 										return tonumber(key)
 									end) do
 										if self.activeList.useGameLevel then
@@ -1646,7 +1622,7 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 							end)
 
 							local progTable = Styler:TwoColumnTable(levelView, progressionTableUuid)
-							for level, lists in TableUtils:OrderedPairs(indexedProgLevelLists, function(key)
+							for level, lists in TableUtils:OrderedPairs(progressionTable, function(key)
 								return tonumber(key)
 							end, function(key, value)
 								return value[self.name] ~= nil
@@ -1884,145 +1860,6 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 	end
 end
 
-function ListDesignerBaseClass:buildProgressionIndex()
-	if not self.hasIndexedRelevantProgressions and self.progressionLinkedNodes then
-		self.hasIndexedRelevantProgressions = true
-
-		---@param progression ResourceProgression
-		---@return boolean?
-		local function hasRelevantNodes(progression)
-			for _, node in pairs(self.progressionLinkedNodes) do
-				if progression[node]
-					and ((type(progression[node]) == "string" and progression[node] ~= "")
-						or (type(progression[node]) == "userdata" and next(Ext.Types.Serialize(progression[node]))))
-				then
-					return true
-				end
-			end
-		end
-
-		for _, progressionId in pairs(Ext.StaticData.GetAll("Progression")) do
-			---@type ResourceProgression
-			local progression = Ext.StaticData.Get(progressionId, "Progression")
-
-			if hasRelevantNodes(progression) then
-				if not self.progressionTranslations[progression.TableUUID] then
-					self.progressionTranslations[progression.TableUUID] = progression.Name
-				end
-				self.progressionTranslations[progression.Name] = progression.TableUUID
-
-				self.progressions[progression.TableUUID] = self.progressions[progression.TableUUID] or {}
-				self.progressions[progression.TableUUID][progression.Level] = self.progressions[progression.TableUUID][progression.Level] or {}
-				self.progressions[progression.TableUUID][progression.Level][self.name] = self.progressions[progression.TableUUID][progression.Level][self.name] or {}
-
-				---@type {[string] : string[]}
-				local nodesToIterate = {}
-				for _, node in pairs(self.progressionLinkedNodes) do
-					nodesToIterate[node] = {}
-					if type(progression[node]) == "table" or type(progression[node]) == "userdata" then
-						for _, entry in ipairs(progression[node]) do
-							table.insert(nodesToIterate[node], entry)
-						end
-					else
-						local splitTable = {}
-						for _, val in string.gmatch(progression[node], "([^;]+)") do
-							table.insert(splitTable, val)
-						end
-						if next(splitTable) then
-							for _, entry in ipairs(splitTable) do
-								table.insert(nodesToIterate[node], entry)
-							end
-						end
-					end
-				end
-
-				for nodeName, entryList in TableUtils:OrderedPairs(nodesToIterate) do
-					local nodeName = self.progressNodeTranslations[nodeName] or nodeName
-
-					self.progressions[progression.TableUUID][progression.Level][self.name][nodeName] =
-						self.progressions[progression.TableUUID][progression.Level][self.name][nodeName] or {}
-
-					for _, meta in pairs(entryList) do
-						local success, error = xpcall(function(...)
-							self.iterateProgressionEntriesFunc(meta, function(name)
-								if not TableUtils:IndexOf(self.progressions[progression.TableUUID], function(value)
-										return TableUtils:IndexOf(value[self.name], function(value)
-											return TableUtils:IndexOf(value, name) ~= nil
-										end) ~= nil
-									end)
-								then
-									table.insert(self.progressions[progression.TableUUID][progression.Level][self.name][nodeName], name)
-								end
-							end)
-						end, debug.traceback)
-
-						if not success then
-							Logger:BasicWarning("Could not process a node of progression %s (%s) due to error %s", progression.ResourceUUID, progression.Name, error)
-						end
-					end
-					if #self.progressions[progression.TableUUID][progression.Level][self.name][nodeName] == 0 then
-						self.progressions[progression.TableUUID][progression.Level][self.name][nodeName] = nil
-					end
-				end
-
-				if not next(self.progressions[progression.TableUUID][progression.Level][self.name]) then
-					self.progressions[progression.TableUUID][progression.Level][self.name] = nil
-
-					if not next(self.progressions[progression.TableUUID][progression.Level]) then
-						self.progressions[progression.TableUUID][progression.Level] = nil
-
-						if not next(self.progressions[progression.TableUUID]) then
-							self.progressions[progression.TableUUID] = nil
-						end
-					end
-				else
-					self.progressionTableToProgression[progression.TableUUID] = self.progressionTableToProgression[progression.TableUUID] or {}
-					self.progressionTableToProgression[progression.TableUUID][progression.Level] = progressionId
-				end
-			end
-		end
-
-		for progressionTableUUID, progByLevels in pairs(self.progressions) do
-			if TableUtils:IndexOf(progByLevels, function(value)
-					return value[self.name] ~= nil
-				end)
-			then
-				for listId, list in pairs(MutationConfigurationProxy[self.configKey]) do
-					---@cast list CustomList
-					if not list.modId then
-						list = ConfigurationStructure.config.mutations[self.configKey][listId]
-					end
-
-					if TableUtils:IndexOf(list.levels, function(value)
-							return (value.linkedProgressions and value.linkedProgressions[progressionTableUUID]) ~= nil
-						end)
-					then
-						for level, lists in TableUtils:OrderedPairs(progByLevels) do
-							if lists[self.name] then
-								if not list.levels[level] then
-									list.levels[level] = {
-										manuallySelectedEntries = {},
-										linkedProgressions = {}
-									}
-								end
-
-								local leveledList = list.levels[level]
-
-								if (not leveledList.linkedProgressions or not leveledList.linkedProgressions[progressionTableUUID]) then
-									leveledList.linkedProgressions = leveledList.linkedProgressions or {}
-									leveledList.linkedProgressions[progressionTableUUID] = TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
-									Logger:BasicInfo("Added missing level %s for progression %s to %s %s", level, self.progressionTranslations[progressionTableUUID], self.name,
-										list.name)
-								end
-							end
-						end
-					end
-				end
-			end
-		end
-	end
-end
-
 ---@param leveledSubList LeveledSubList
 ---@param entryName string
 ---@param level number|GameLevel
@@ -2061,193 +1898,3 @@ function ListDesignerBaseClass:CheckIfEntryIsInListLevel(leveledSubList, entryNa
 
 	return false
 end
-
----@param export MutationsConfig
----@param mutator Mutator
----@param lists Guid[]
----@param removeMissingDependencies boolean?
-function ListDesignerBaseClass:HandleDependences(export, mutator, lists, removeMissingDependencies)
-	self:buildProgressionIndex()
-
-	local progressionSources = Ext.StaticData.GetSources("Progression")
-
-	local replaceMap = removeMissingDependencies == true
-		and export.listEntryReplaceMap
-		or TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.listEntryReplaceMap._real)
-
-	---@param statName string
-	---@param container table?
-	---@return boolean?
-	local function buildStatDependency(statName, container)
-		---@type (SpellData|PassiveData|StatusData)?
-		local stat = Ext.Stats.Get(statName)
-		if stat then
-			if not removeMissingDependencies then
-				container = container or mutator
-				container.modDependencies = container.modDependencies or {}
-				if not container.modDependencies[stat.OriginalModId] then
-					local name, author, version = Helpers:BuildModFields(stat.OriginalModId)
-					if author == "Larian" then
-						return true
-					end
-
-					container.modDependencies[stat.OriginalModId] = {
-						modName = name,
-						modAuthor = author,
-						modVersion = version,
-						modId = stat.OriginalModId,
-						packagedItems = {}
-					}
-				end
-				local name = Ext.Loca.GetTranslatedString(stat.DisplayName, statName)
-				name = name == "" and statName or name
-				container.modDependencies[stat.OriginalModId].packagedItems[statName] = name
-			end
-			return true
-		else
-			return false
-		end
-	end
-
-	if not export.listEntryReplaceMap[self.configKey] and replaceMap[self.configKey] and replaceMap[self.configKey] and next(replaceMap[self.configKey]) then
-		if not removeMissingDependencies then
-			replaceMap.modDependencies = export.listEntryReplaceMap.modDependencies
-		end
-		for statName, entriesToReplace in pairs(replaceMap[self.configKey]) do
-			for i, statBeingReplaced in ipairs(entriesToReplace) do
-				if not buildStatDependency(statBeingReplaced, replaceMap) then
-					replaceMap[self.configKey][statName][i] = nil
-				end
-			end
-
-			TableUtils:ReindexNumericTable(replaceMap[self.configKey][statName])
-		end
-		if not removeMissingDependencies then
-			export.listEntryReplaceMap.modDependencies = replaceMap.modDependencies
-			export.listEntryReplaceMap[self.configKey] = replaceMap[self.configKey]
-		end
-	end
-
-	for l, listId in pairs(lists) do
-		local list = MutationConfigurationProxy[self.configKey][listId]
-		if list then
-			local listModId = list.modId
-			if not listModId then
-				--- @type CustomList
-				local listDef = removeMissingDependencies == true
-					and export[self.configKey][listId]
-					or TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations[self.configKey][listId]._real)
-
-				listId = listId .. "Exported"
-
-				if listDef.levels then
-					for level, levelSubList in pairs(listDef.levels) do
-						if levelSubList.linkedProgressions then
-							for progressionTableId, sublists in pairs(levelSubList.linkedProgressions) do
-								for _, entries in pairs(sublists) do
-									for i, entry in pairs(entries) do
-										if not buildStatDependency(entry, listDef) then
-											entries[i] = nil
-										end
-									end
-									TableUtils:ReindexNumericTable(entries)
-								end
-
-								local progressionId = SpellListDesigner.progressionTableToProgression[progressionTableId][level]
-								if progressionId then
-									---@type ResourceProgression
-									local progression = Ext.StaticData.Get(progressionId, "Progression")
-									if not progression then
-										levelSubList.linkedProgressions[progressionId] = nil
-									elseif not removeMissingDependencies then
-										local progressionSource = TableUtils:IndexOf(progressionSources, function(value)
-											return TableUtils:IndexOf(value, progressionId) ~= nil
-										end)
-										if progressionSource then
-											listDef.modDependencies = listDef.modDependencies or {}
-											if not listDef.modDependencies[progressionSource] then
-												local name, author, version = Helpers:BuildModFields(progressionSource)
-												if author == "Larian" then
-													goto continue
-												end
-												listDef.modDependencies[progressionSource] = {
-													modName = name,
-													modAuthor = author,
-													modVersion = version,
-													modId = progressionSource,
-													packagedItems = {}
-												}
-											end
-											listDef.modDependencies[progressionSource].packagedItems[progressionId] = progression.Name
-										end
-										::continue::
-									end
-								end
-							end
-						end
-
-						if levelSubList.manuallySelectedEntries then
-							for _, entries in pairs(levelSubList.manuallySelectedEntries) do
-								for i, entry in pairs(entries) do
-									if not buildStatDependency(entry, listDef) then
-										entries[i] = nil
-									end
-								end
-								TableUtils:ReindexNumericTable(entries)
-							end
-						end
-					end
-				end
-
-				export[self.configKey] = export[self.configKey] or {}
-				if not export[self.configKey][listId] then
-					export[self.configKey][listId] = listDef
-				end
-			else
-				local name, author, version = Helpers:BuildModFields(listModId)
-				mutator.modDependencies = mutator.modDependencies or {}
-				mutator.modDependencies[listModId] = {
-					modAuthor = author,
-					modName = name,
-					modVersion = version,
-					modId = listModId,
-					packagedItems = nil
-				}
-			end
-		end
-	end
-end
-
-Ext.RegisterConsoleCommand("Lab_DumpProgressions", function(cmd, ...)
-	local tableUUIDS = { ... }
-	SpellListDesigner:buildProgressionIndex()
-	PassiveListDesigner:buildProgressionIndex()
-
-	local progLog = Logger:new("ProgressionDumper.log", false)
-	progLog:ClearLogFile()
-
-	for progressionTableUUID, levels in TableUtils:OrderedPairs(ListDesignerBaseClass.progressions, function(key, value)
-			return ListDesignerBaseClass.progressNodeTranslations[key]
-		end,
-		function(key, value)
-			return not next(tableUUIDS) or TableUtils:IndexOf(tableUUIDS, key) ~= nil
-		end)
-	do
-		progLog:BasicDebug("================= Start Table %s - %s =================", progressionTableUUID, ListDesignerBaseClass.progressionTranslations[progressionTableUUID])
-
-		for level, lists in TableUtils:OrderedPairs(levels) do
-			progLog:BasicDebug("\tLevel %d", level)
-			for listName, list in TableUtils:OrderedPairs(lists) do
-				progLog:BasicDebug("\t\t|_ %s", listName)
-				for nodeName, entries in TableUtils:OrderedPairs(list) do
-					progLog:BasicDebug("\t\t\t|_ %s", nodeName)
-					for _, entry in TableUtils:OrderedPairs(entries) do
-						progLog:BasicDebug("\t\t\t  |_ %s", entry)
-					end
-				end
-			end
-		end
-
-		progLog:BasicDebug("================= End Table %s - %s =================\n", progressionTableUUID, ListDesignerBaseClass.progressionTranslations[progressionTableUUID])
-	end
-end)

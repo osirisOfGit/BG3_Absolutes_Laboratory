@@ -33,7 +33,7 @@ function Styler:CheapTextAlign(text, parent, font)
 		---@type ExtuiSelectable
 		local selectable = parent:AddSelectable(text)
 		if font then
-			selectable.Font = font
+			Styler:ScaledFont(selectable, font)
 		end
 		selectable:SetStyle("SelectableTextAlign", 0.5)
 		selectable.Disabled = true
@@ -431,18 +431,18 @@ end
 
 ---@enum FontSize
 Styler.FontSize = {
-	"Tiny",
-	"Small",
-	"Medium",
-	"Default",
-	"Big",
-	"Large",
 	["Tiny"] = 1,
 	["Small"] = 2,
 	["Medium"] = 3,
 	["Default"] = 4,
 	["Big"] = 5,
 	["Large"] = 6,
+	"Tiny",
+	"Small",
+	"Medium",
+	"Default",
+	"Big",
+	"Large"
 }
 
 ---@generic E : ExtuiStyledRenderable

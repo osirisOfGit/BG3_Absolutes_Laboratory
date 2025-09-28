@@ -31,7 +31,7 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 	local focusButtons
 
 	Styler:MiddleAlignedColumnLayout(parent, function(ele)
-		ele.Font = "Small"
+		Styler:ScaledFont(ele, "Small")
 		Styler:CheapTextAlign("Focus:", ele)
 
 		local focusSelectors = ele:AddButton("Selectors")
@@ -117,7 +117,7 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 					for level, entities in pairs(EntityRecorder:GetEntities()) do
 						local header = resultsWindow:AddCollapsingHeader(level)
 						header:SetColor("Header", { 1, 1, 1, 0 })
-						header.Font = "Large"
+						Styler:ScaledFont(header, "Large")
 						header.DefaultOpen = true
 
 						local columnCounter = 0
@@ -132,11 +132,11 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 								local group = header:AddChildWindow(level .. entity)
 								group.Font = "Medium"
 								group.NoSavedSettings = true
-								group.Size = { 100, 100 }
+								group.Size = Styler:ScaleFactor({ 100, 100 })
 								group.SameLine = columnCounter > 1 and columnCounter % maxCols ~= 1
 
 								Styler:MiddleAlignedColumnLayout(group, function(ele)
-									local image = ele:AddImage(record.Icon, { 64, 64 })
+									local image = ele:AddImage(record.Icon, Styler:ScaleFactor({ 64, 64 }))
 									if image.ImageData.Icon == "" then
 										ele:AddImage("Item_Unknown", { 64, 64 })
 									end
@@ -146,7 +146,7 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 									local hyperlink = Styler:HyperlinkText(ele, record.Name, function(parent)
 										CharacterWindow:BuildWindow(parent, entity)
 									end)
-									hyperlink.Font = "Small"
+									Styler:ScaledFont(hyperlink, "Small")
 								end)
 							end
 						end
@@ -158,7 +158,7 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 					end
 
 					if resultCounter == 0 then
-						resultsWindow:AddText("No Entities Selected").Font = "Large"
+						Styler:ScaledFont(resultsWindow:AddText("No Entities Selected"), "Large")
 					end
 
 					resultsWindow.Label = string.format("%s - %s Results###resultswindow", "Dry Run", resultCounter)
@@ -184,7 +184,7 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 			docs.UserData = "keep"
 
 			Styler:MiddleAlignedColumnLayout(mutatorColumn, function(ele)
-				ele.Font = "Small"
+				Styler:ScaledFont(ele, "Small")
 				-- ele:AddText(("%s"):format(existingMutation.prepPhase and "Prep Mutator" or "Mutators")).Font = "Big"
 
 				if not existingMutation.prepPhase then
@@ -571,7 +571,7 @@ function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators, prepPha
 
 		local mutatorCombo = mutatorCell:AddCombo("")
 		mutatorCombo.Visible = not prepPhase
-		mutatorCombo.Font = "Large"
+		Styler:ScaledFont(mutatorCombo, "Large")
 		mutatorCombo.WidthFitPreview = true
 		local opts = {}
 		local selectedIndex = -1

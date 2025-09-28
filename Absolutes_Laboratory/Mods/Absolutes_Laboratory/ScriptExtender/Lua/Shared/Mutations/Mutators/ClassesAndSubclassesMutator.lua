@@ -10,7 +10,7 @@ function ClassesAndSubclassesMutator:canBeAdditive()
 end
 
 function ClassesAndSubclassesMutator:Transient()
-	return true
+	return false
 end
 
 ---@class ClassAbilityOverrides

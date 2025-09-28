@@ -3,22 +3,7 @@ Ext.Require("Client/Mutations/ListDesignerBaseClass.lua")
 ---@class SpellListDesigner : ListDesignerBaseClass
 ---@field activeList SpellList
 SpellListDesigner = ListDesignerBaseClass:new("Spell List",
-	"spellLists",
-	nil,
-	{ "SelectSpells", "AddSpells" },
-	---@param spellMeta ResourceProgressionSpell|ResourceProgressionAddedSpell
-	function(spellMeta, addToListFunc)
-		---@type ResourceSpellList
-		local progSpellList = Ext.StaticData.Get(spellMeta.SpellUUID, "SpellList")
-
-		if progSpellList then
-			for _, spellName in pairs(progSpellList.Spells) do
-				addToListFunc(spellName)
-			end
-		else
-			error(string.format("SpellUUID %s does not exist as a spell list", spellMeta.SpellUUID))
-		end
-	end)
+	"spellLists")
 
 function SpellListDesigner:buildBrowser()
 	if not self.browserTabs["SpellData"] then
@@ -26,7 +11,7 @@ function SpellListDesigner:buildBrowser()
 		self.browserTabs["SpellData"].NoSavedSettings = true
 	end
 
-	self:buildProgressionBrowser()
+	self:buildLiteProgressionBrowser()
 	self:buildStatBrowser("SpellData")
 end
 

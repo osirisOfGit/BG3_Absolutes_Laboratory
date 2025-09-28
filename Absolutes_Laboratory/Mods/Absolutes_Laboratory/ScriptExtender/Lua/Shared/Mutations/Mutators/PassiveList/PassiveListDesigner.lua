@@ -3,41 +3,7 @@ Ext.Require("Client/Mutations/ListDesignerBaseClass.lua")
 ---@class PassiveListDesigner : ListDesignerBaseClass
 PassiveListDesigner = ListDesignerBaseClass:new("Passive List",
 	"passiveLists",
-	{ "startOfCombatOnly", "onLoadOnly", "onDeathOnly" },
-	{ "PassivePrototypesAdded", "PassivePrototypesRemoved", "PassivesAdded", "PassivesRemoved", "SelectPassives" },
-	---@param passiveMeta ResourceProgressionPassive|StatsPassivePrototype
-	function(passiveMeta, addToListFunc)
-		if type(passiveMeta) == "string" then
-			addToListFunc(passiveMeta)
-		elseif Ext.Types.GetObjectType(passiveMeta) == "resource::ProgressionPassive" then
-			---@type ResourcePassiveList
-			local progSpellList = Ext.StaticData.Get(passiveMeta.UUID, "PassiveList")
-
-			if progSpellList then
-				for _, spellName in pairs(progSpellList.Passives) do
-					addToListFunc(spellName)
-				end
-			else
-				error(string.format("UUID %s is not a valid PassiveList", passiveMeta.UUID))
-			end
-		elseif Ext.Types.GetObjectType(passiveMeta) == "stats::PassivePrototype" then
-			addToListFunc(passiveMeta.Name)
-		else
-			---@type ResourcePassiveList
-			local progSpellList = Ext.StaticData.Get(passiveMeta.UUID, "PassiveList")
-
-			if progSpellList then
-				for _, passiveName in pairs(progSpellList.Passives) do
-					addToListFunc(passiveName)
-				end
-			end
-		end
-	end)
-
-PassiveListDesigner.progressNodeTranslations = {
-	["PassivePrototypesAdded"] = "PassivesAdded",
-	["PassivePrototypesRemoved"] = "PassivesRemoved"
-}
+	{ "startOfCombatOnly", "onLoadOnly", "onDeathOnly" })
 
 function PassiveListDesigner:buildBrowser()
 	if not self.browserTabs["PassiveData"] then
@@ -45,7 +11,7 @@ function PassiveListDesigner:buildBrowser()
 		self.browserTabs["PassiveData"].NoSavedSettings = true
 	end
 
-	self:buildProgressionBrowser()
+	self:buildLiteProgressionBrowser()
 	self:buildStatBrowser("PassiveData")
 end
 

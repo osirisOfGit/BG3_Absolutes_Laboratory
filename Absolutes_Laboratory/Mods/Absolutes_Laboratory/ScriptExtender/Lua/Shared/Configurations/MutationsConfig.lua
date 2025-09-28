@@ -174,43 +174,6 @@ ConfigurationStructure.config.mutations.profiles = {}
 --#endregion
 
 --#region Lists
----@alias EntryName string
-
----@class CustomSubList
-ConfigurationStructure.DynamicClassDefinitions.customSubList = {
-	---@type EntryName[]?
-	guaranteed = nil,
-	---@type EntryName[]?
-	randomized = nil,
-	---@type EntryName[]?
-	startOfCombatOnly = nil,
-	---@type EntryName[]?
-	onLoadOnly = nil,
-	---@type EntryName[]?
-	blackListed = nil,
-	---@type EntryName[]?
-	onDeathOnly = nil
-}
-
----@class LeveledSubList
----@field linkedProgressions {[Guid]: CustomSubList}?
----@field manuallySelectedEntries CustomSubList
-
----@class CustomList
-ConfigurationStructure.DynamicClassDefinitions.customLeveledList = {
-	name = "",
-	description = "",
-	---@type Guid?
-	modId = nil,
-	---@type (LeveledSubList[]|{[GameLevel] : LeveledSubList})?
-	levels = nil,
-	---@type Guid[]?
-	spellListDependencies = nil,
-	---@type ModDependencies
-	modDependencies = nil,
-	useGameLevel = false
-}
-
 ---@class CustomListsSettings
 ConfigurationStructure.config.mutations.settings.customLists = {
 	subListColours = {
@@ -264,25 +227,64 @@ ConfigurationStructure.config.mutations.settings.customLists = {
 ---@class SpellList : CustomList
 ---@field abilityPriorities AbilityPriorities
 
----@class ListEntryReplaceMap
-ConfigurationStructure.config.mutations.listEntryReplaceMap = {
-	---@type {[string]: string[]}
-	spellLists = {},
-	---@type {[string]: string[]}
-	passiveLists = {},
-	---@type {[string]: string[]}
-	statusLists = {},
-	---@type ModDependencies
-	modDependencies = nil,
+---@alias EntryName string
+
+---@class CustomSubList
+ConfigurationStructure.DynamicClassDefinitions.customSubList = {
+	---@type EntryName[]?
+	guaranteed = nil,
+	---@type EntryName[]?
+	randomized = nil,
+	---@type EntryName[]?
+	startOfCombatOnly = nil,
+	---@type EntryName[]?
+	onLoadOnly = nil,
+	---@type EntryName[]?
+	blackListed = nil,
+	---@type EntryName[]?
+	onDeathOnly = nil
 }
 
----@type {[Guid]: SpellList}
-ConfigurationStructure.config.mutations.spellLists = {}
+---@class LeveledSubList
+---@field linkedProgressions {[Guid]: CustomSubList}?
+---@field manuallySelectedEntries CustomSubList
 
----@type {[Guid]: CustomList}
-ConfigurationStructure.config.mutations.passiveLists = {}
+---@class CustomList
+ConfigurationStructure.DynamicClassDefinitions.customLeveledList = {
+	name = "",
+	description = "",
+	---@type Guid?
+	modId = nil,
+	---@type (LeveledSubList[]|{[GameLevel] : LeveledSubList})?
+	levels = nil,
+	---@type Guid[]
+	linkedProgressionTableIds = {},
+	---@type Guid[]?
+	spellListDependencies = nil,
+	---@type ModDependencies
+	modDependencies = nil,
+	useGameLevel = false
+}
 
----@type {[Guid]: CustomList}
-ConfigurationStructure.config.mutations.statusLists = {}
+---@class MutationLists
+ConfigurationStructure.config.mutations.lists = {
+	---@class EntryReplacerDictionary
+	entryReplacerDictionary = {
+		---@type {[string]: string[]}
+		spellLists = {},
+		---@type {[string]: string[]}
+		passiveLists = {},
+		---@type {[string]: string[]}
+		statusLists = {},
+		---@type ModDependencies
+		modDependencies = nil,
+	},
+	---@type {[Guid]: SpellList}
+	spellLists = {},
+	---@type {[Guid]: CustomList}
+	passiveLists = {},
+	---@type {[Guid]: CustomList}
+	statusLists = {}
+}
 
 --#endregion
