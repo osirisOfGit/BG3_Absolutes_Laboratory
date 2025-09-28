@@ -1539,6 +1539,10 @@ function ListDesignerBaseClass:buildProgressionBrowser()
 						---@type ExtuiSelectable
 						local select = resultsGroup:AddSelectable(progressionName)
 
+						if self.progressionTranslations[progressionName] ~= progressionTableUuid then
+							select.Label = select.Label .. (" (%s)"):format(progressionTableUuid:sub(#progressionTableUuid - 5))
+						end
+
 						select.OnClick = function()
 							resultsGroup.Visible = false
 							Helpers:KillChildren(levelView)
