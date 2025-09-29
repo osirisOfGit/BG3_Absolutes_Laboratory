@@ -2,6 +2,8 @@
 local progressionLevel = {
 	---@type Guid
 	id = nil,
+	---@type Guid
+	modId = nil,
 	---@type number
 	level = nil,
 	---@type ProgressionType
@@ -40,11 +42,13 @@ ListConfigurationManager = {
 			return rawget(t, k)
 		end,
 		__call = function(t, ...)
-			for key in pairs(t) do
+			for key in pairs(ListConfigurationManager.progressionIndex) do
 				t[key] = nil
 			end
 		end
 	}),
+	---@type Guid[]
+	progressionTables = {},
 	---@enum ProgressionNodes
 	progressionNodes = {
 		["AddSpells"] = 1,
@@ -68,7 +72,8 @@ ListConfigurationManager = {
 
 ---@param tableUUID Guid?
 function ListConfigurationManager:buildProgressionIndex(tableUUID)
-	if tableUUID or not next(self.progressionIndex) then
+	if tableUUID or not next(self.progressionIndex) or not next(self.progressionTables) then
+		local progressionSources = Ext.StaticData.GetSources("Progression")
 		for _, progressionId in pairs(Ext.StaticData.GetAll("Progression")) do
 			---@type ResourceProgression
 			local progression = Ext.StaticData.Get(progressionId, "Progression")
@@ -90,6 +95,11 @@ function ListConfigurationManager:buildProgressionIndex(tableUUID)
 					tableId = progression.TableUUID,
 					progressionLevels = {}
 				}
+			elseif TableUtils:IndexOf(self.progressionIndex[progression.TableUUID].progressionLevels, function(value)
+					return value.id == progressionId
+				end)
+			then
+				goto continue
 			end
 
 			---@type ProgressionLevel
@@ -176,8 +186,19 @@ function ListConfigurationManager:buildProgressionIndex(tableUUID)
 				end
 			end
 			if (progressionIndex["passiveLists"] or progressionIndex["spellLists"]) then
+				progressionIndex.modId = TableUtils:IndexOf(progressionSources, function(value)
+					return TableUtils:IndexOf(value, progressionId) ~= nil
+				end)
+
 				table.insert(self.progressionIndex[progression.TableUUID].progressionLevels, progressionIndex)
 			end
+
+			if not next(self.progressionIndex[progression.TableUUID].progressionLevels) then
+				self.progressionIndex[progression.TableUUID] = nil
+			elseif not TableUtils:IndexOf(self.progressionTables, progression.TableUUID) then
+				table.insert(self.progressionTables, progression.TableUUID)
+			end
+
 			::continue::
 		end
 	end
