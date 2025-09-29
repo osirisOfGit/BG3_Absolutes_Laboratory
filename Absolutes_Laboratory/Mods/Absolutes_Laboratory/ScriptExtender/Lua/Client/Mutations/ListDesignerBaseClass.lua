@@ -503,7 +503,7 @@ function ListDesignerBaseClass:buildDesigner()
 				return self.activeList.blacklistSameEntriesInHigherProgressionLevels
 			end)
 		end
-		
+
 		ele:AddSeparator()
 
 		ele:AddText("(?) Distribute By: "):Tooltip():AddText([[
@@ -1098,15 +1098,18 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 												end
 
 												for _, handle in pairs(handles) do
-													---@type CustomSubList
-													local subList =
-														self.activeList.levels[handle.level][handle.progressionTableId and "linkedProgressions" or "manuallySelectedEntries"]
+													---@type LeveledSubList
+													local subList = self.activeList.levels[handle.level]
 
 													if handle.progressionTableId then
-														subList = subList[handle.progressionTableId]
+														subList.linkedProgressions = subList.linkedProgressions or {}
+														subList.linkedProgressions[handle.progressionTableId] = subList.linkedProgressions[handle.progressionTableId] or {}
+														subList = subList.linkedProgressions[handle.progressionTableId]
+													else
+														subList = subList.manuallySelectedEntries
 													end
 
-													if subListCategory ~= "randomized" or not progressionTableId then
+													if subListCategory ~= self.settings.defaultPool[self.configKey] or not progressionTableId then
 														subList[subListCategory] = subList[subListCategory] or {}
 														table.insert(subList[subListCategory], handle.entryName)
 													elseif subList[subListCategory] then
