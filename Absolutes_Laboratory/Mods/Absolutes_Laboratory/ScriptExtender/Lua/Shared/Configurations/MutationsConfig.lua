@@ -263,7 +263,8 @@ ConfigurationStructure.DynamicClassDefinitions.customLeveledList = {
 	spellListDependencies = nil,
 	---@type ModDependencies
 	modDependencies = nil,
-	useGameLevel = false
+	useGameLevel = false,
+	blacklistSameEntriesInHigherProgressionLevels = true
 }
 
 ---@class MutationLists

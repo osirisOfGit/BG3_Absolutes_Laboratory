@@ -7,14 +7,14 @@ local progressionLevel = {
 	---@type ProgressionType
 	type = nil,
 	---@class ProgressionSpells
-	["spellLists"] = {
+	spellLists = {
 		---@type string[]
 		AddSpells = {},
 		---@type string[]
 		SelectSpells = {}
 	},
 	---@class ProgressionPassives
-	["passiveLists"] = {
+	passiveLists = {
 		---@type string[]
 		PassivePrototypesAdded = {},
 		---@type string[]
@@ -33,7 +33,18 @@ local progressionLevel = {
 
 ListConfigurationManager = {
 	---@type {[tableUUID] : ProgressionTable}
-	progressionIndex = {},
+	progressionIndex = setmetatable({}, {
+		__mode = "kv",
+		__index = function(t, k)
+			ListConfigurationManager:buildProgressionIndex(k)
+			return rawget(t, k)
+		end,
+		__call = function(t, ...)
+			for key in pairs(t) do
+				t[key] = nil
+			end
+		end
+	}),
 	---@enum ProgressionNodes
 	progressionNodes = {
 		["AddSpells"] = 1,
@@ -55,18 +66,23 @@ ListConfigurationManager = {
 	listsConfig = ConfigurationStructure.config.mutations.lists
 }
 
-function ListConfigurationManager:buildProgressionIndex()
-	if not next(self.progressionIndex) then
+---@param tableUUID Guid?
+function ListConfigurationManager:buildProgressionIndex(tableUUID)
+	if tableUUID or not next(self.progressionIndex) then
 		for _, progressionId in pairs(Ext.StaticData.GetAll("Progression")) do
 			---@type ResourceProgression
 			local progression = Ext.StaticData.Get(progressionId, "Progression")
 
-			if not self.progressionIndex[progression.TableUUID] then
+			if tableUUID and progression.TableUUID ~= tableUUID then
+				goto continue
+			end
+
+			if not rawget(self.progressionIndex, progression.TableUUID) then
 				local name = progression.Name
 				if TableUtils:IndexOf(self.progressionIndex, function(value)
 						return value.name == name
 					end) then
-					name = name .. (" (%s)"):format(progression.TableUUID:sub(#progression.TableUUID - 5))
+					name = name .. (" (%s)"):format(progressionId:sub(#progressionId - 5))
 				end
 
 				self.progressionIndex[progression.TableUUID] = {
@@ -162,8 +178,27 @@ function ListConfigurationManager:buildProgressionIndex()
 			if (progressionIndex["passiveLists"] or progressionIndex["spellLists"]) then
 				table.insert(self.progressionIndex[progression.TableUUID].progressionLevels, progressionIndex)
 			end
+			::continue::
 		end
 	end
+end
+
+---@param progressionTableId Guid
+---@param level number
+---@param entryName string
+---@param configKey "spellLists"|"passiveLists"
+---@return boolean
+function ListConfigurationManager:hasSameEntryInLowerLevel(progressionTableId, level, entryName, configKey)
+	for _, progEntry in pairs(self.progressionIndex[progressionTableId].progressionLevels) do
+		if progEntry.level < level and progEntry[configKey] then
+			if TableUtils:IndexOf(progEntry[configKey], function(value)
+					return TableUtils:IndexOf(value, entryName) ~= nil
+				end) then
+				return true
+			end
+		end
+	end
+	return false
 end
 
 ---@param export MutationsConfig
@@ -360,25 +395,25 @@ function ListConfigurationManager:maintainLists(configBase)
 		configBase.lists.spellLists,
 		configBase.lists.statusLists)
 	do
-		for _, levelList in pairs(list.levels) do
-			if levelList.linkedProgressions then
-				for progTableId, customSubList in pairs(levelList.linkedProgressions) do
-					if not TableUtils:IndexOf(list.linkedProgressionTableIds, progTableId) then
-						table.insert(list.linkedProgressionTableIds, progTableId)
-					end
-					if not (customSubList.blackListed or customSubList.guaranteed or customSubList.onDeathOnly
-							or customSubList.startOfCombatOnly or customSubList.onLoadOnly)
-					then
-						if not list.modId then
+		if list.levels then
+			for _, levelList in TableUtils:OrderedPairs(list.levels) do
+				if levelList.linkedProgressions then
+					list.linkedProgressionTableIds = list.linkedProgressionTableIds or {}
+					for progTableId, customSubList in TableUtils:OrderedPairs(levelList.linkedProgressions) do
+						if not TableUtils:IndexOf(list.linkedProgressionTableIds, progTableId) then
+							table.insert(list.linkedProgressionTableIds, progTableId)
+						end
+						if not (customSubList.blackListed or customSubList.guaranteed or customSubList.onDeathOnly
+								or customSubList.startOfCombatOnly or customSubList.onLoadOnly)
+						then
 							customSubList.delete = true
-						else
 							levelList.linkedProgressions[progTableId] = nil
 						end
 					end
-				end
-				if not next(levelList.linkedProgressions) then
-					levelList.linkedProgressions.delete = true
-					levelList.linkedProgressions = nil
+					if not next(levelList.linkedProgressions._real or levelList.linkedProgressions) then
+						levelList.linkedProgressions.delete = true
+						levelList.linkedProgressions = nil
+					end
 				end
 			end
 		end
@@ -388,33 +423,11 @@ end
 Ext.RegisterConsoleCommand("Lab_DumpProgressions", function(cmd, ...)
 	local tableUUIDS = { ... }
 	local self = ListConfigurationManager
+
+	self.progressionIndex()
 	self:buildProgressionIndex()
 
 	local progLog = Logger:new("ProgressionDumper.txt", false)
 	progLog:ClearLogFile()
-
-	for progressionTableUUID, levels in TableUtils:OrderedPairs(ListDesignerBaseClass.progressions, function(key, value)
-			return ListDesignerBaseClass.progressNodeTranslations[key]
-		end,
-		function(key, value)
-			return not next(tableUUIDS) or TableUtils:IndexOf(tableUUIDS, key) ~= nil
-		end)
-	do
-		progLog:BasicDebug("================= Start Table %s - %s =================", progressionTableUUID, ListDesignerBaseClass.progressionTranslations[progressionTableUUID])
-
-		for level, lists in TableUtils:OrderedPairs(levels) do
-			progLog:BasicDebug("\tLevel %d", level)
-			for listName, list in TableUtils:OrderedPairs(lists) do
-				progLog:BasicDebug("\t\t|_ %s", listName)
-				for nodeName, entries in TableUtils:OrderedPairs(list) do
-					progLog:BasicDebug("\t\t\t|_ %s", nodeName)
-					for _, entry in TableUtils:OrderedPairs(entries) do
-						progLog:BasicDebug("\t\t\t  |_ %s", entry)
-					end
-				end
-			end
-		end
-
-		progLog:BasicDebug("================= End Table %s - %s =================\n", progressionTableUUID, ListDesignerBaseClass.progressionTranslations[progressionTableUUID])
-	end
+	progLog:BasicDebug("%s", self.progressionIndex)
 end)

@@ -28,7 +28,7 @@ ListDesignerBaseClass = {
 	---@type CustomList?
 	activeList = nil,
 
-	---@type ListEntryReplaceMap
+	---@type EntryReplacerDictionary
 	replaceMap = {},
 
 	--- For Multiselect Drag/Drop tracking
@@ -59,6 +59,7 @@ ListDesignerBaseClass = {
 ---@param subListTypesToExclude ("guaranteed"|"randomized"|"startOfCombatOnly"|"onLoadOnly"|"blackListed"|"onDeathOnly")[]?
 ---@return ListDesignerBaseClass
 function ListDesignerBaseClass:new(name, configKey, subListTypesToExclude)
+	ListConfigurationManager:maintainLists()
 	local instance = {}
 
 	setmetatable(instance, self)
@@ -103,6 +104,7 @@ end
 function ListDesignerBaseClass:launch(activeListId)
 	if not self.mainWindow then
 		self.mainWindow = Ext.IMGUI.NewWindow(self.name)
+		self.mainWindow.Font = MCM.Get("font_size", "755a8a72-407f-4f0d-9a33-274ac0f0b53d")
 		self.mainWindow.Closeable = true
 		self.mainWindow:SetStyle("WindowMinSize", 300 * Styler:ScaleFactor(), 150 * Styler:ScaleFactor())
 
@@ -150,7 +152,7 @@ function ListDesignerBaseClass:launch(activeListId)
 			self.listSection.Visible = true
 		end
 
-		if self.progressionLinkedNodes then
+		if self.configKey == "spellLists" or self.configKey == "passiveLists" then
 			self.browserTabs["Progressions"] = self.browserTabParent:AddTabItem("Progressions"):AddChildWindow("Progression Browser")
 			self.browserTabs["Progressions"].NoSavedSettings = true
 		end
@@ -485,6 +487,23 @@ function ListDesignerBaseClass:buildDesigner()
 
 			self:buildDesigner()
 		end
+
+		if self.configKey ~= "statusLists" then
+			ele:AddSeparator()
+
+			if self.activeList.blacklistSameEntriesInHigherProgressionLevels == nil then
+				self.activeList.blacklistSameEntriesInHigherProgressionLevels = true
+			end
+
+			Styler:EnableToggleButton(ele, "Dedupe Spells Within A Progression", false, function(swap)
+				if swap then
+					self.activeList.blacklistSameEntriesInHigherProgressionLevels = not self.activeList.blacklistSameEntriesInHigherProgressionLevels
+					self:buildDesigner()
+				end
+				return self.activeList.blacklistSameEntriesInHigherProgressionLevels
+			end)
+		end
+		
 		ele:AddSeparator()
 
 		ele:AddText("(?) Distribute By: "):Tooltip():AddText([[
@@ -653,7 +672,9 @@ Using entity level will use the entity's character level, post Character Level M
 			local progGroup = entryGroup:AddGroup("linkedProg")
 
 			for _, progressionTableId in TableUtils:OrderedPairs(self.activeList.linkedProgressionTableIds) do
-				local progList = {}
+				local progList = {
+					randomized = {}
+				}
 				if self.activeList.levels
 					and self.activeList.levels[level]
 					and self.activeList.levels[level].linkedProgressions
@@ -661,12 +682,11 @@ Using entity level will use the entity's character level, post Character Level M
 				then
 					progList = self.activeList.levels[level].linkedProgressions[progressionTableId]
 				end
-				self:buildEntryListFromSubList(progGroup, progList, level, progressionTableId)
-			end
 
-			if #progGroup.Children == 0 then
-				sep:Destroy()
-				progGroup:Destroy()
+				if self:buildEntryListFromSubList(progGroup, progList, level, progressionTableId) then
+					sep:Destroy()
+					progGroup:Destroy()
+				end
 			end
 		end
 
@@ -741,14 +761,15 @@ end
 ---@param level number|GameLevel
 ---@param progressionTableId string?
 function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, level, progressionTableId)
+	local subListsClone = TableUtils:DeeplyCopyTable(subLists._real or subLists)
 	if progressionTableId then
 		if ListConfigurationManager.progressionIndex[progressionTableId] then
 			parentGroup:AddSeparatorText(ListConfigurationManager.progressionIndex[progressionTableId].name):SetStyle("SeparatorTextAlign", 0.05)
+			subListsClone[self.settings.defaultPool[self.configKey]] = subListsClone[self.settings.defaultPool[self.configKey]] or {}
 		else
 			return
 		end
 	end
-	local subListsClone = TableUtils:DeeplyCopyTable(subLists._real or subLists)
 
 	local useIcons = self.settings.iconOrText == "Icon"
 	local displayTable = parentGroup:AddTable("display", useIcons and 1 or 3)
@@ -761,26 +782,26 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 	local count = 0
 
 	local function buildProgressionSubList(subListName, subList)
-		if subListName == "randomized" and progressionTableId then
-			for progLevel, progressionEntry in pairs(ListConfigurationManager.progressionIndex[progressionTableId].progressionLevels) do
-				if progLevel == level and progressionEntry[self.configKey] then
+		if subListName == self.settings.defaultPool[self.configKey] and progressionTableId then
+			local blacklistLowerLevelEntries = self.activeList.blacklistSameEntriesInHigherProgressionLevels
+			for _, progressionEntry in pairs(ListConfigurationManager.progressionIndex[progressionTableId].progressionLevels) do
+				if progressionEntry.level == level and progressionEntry[self.configKey] then
 					for _, nodeEntries in pairs(progressionEntry[self.configKey]) do
-						---@cast nodeEntries {[string]: string[]}
-						for _, entryList in pairs(nodeEntries) do
-							for _, entryName in pairs(entryList) do
-								if not TableUtils:IndexOf(subLists, function(value)
-										return TableUtils:IndexOf(value, entryName) ~= nil
-									end)
-								then
-									if (self.name == SpellListDesigner.name and (Ext.Stats.GetCachedSpell(entryName).AiFlags & Ext.Enums.AIFlags.CanNotUse) == Ext.Enums.AIFlags.CanNotUse) then
-										subListsClone.blackListed = subListsClone.blackListed or {}
-										subLists.blackListed = subLists.blackListed or {}
+						---@cast nodeEntries string[]
+						for _, entryName in pairs(nodeEntries) do
+							if not TableUtils:IndexOf(subListsClone, function(value)
+									return TableUtils:IndexOf(value, entryName) ~= nil
+								end)
+								and (not blacklistLowerLevelEntries or not ListConfigurationManager:hasSameEntryInLowerLevel(progressionTableId, progressionEntry.level, entryName, self.configKey))
+							then
+								if (self.name == SpellListDesigner.name and (Ext.Stats.GetCachedSpell(entryName).AiFlags & Ext.Enums.AIFlags.CanNotUse) == Ext.Enums.AIFlags.CanNotUse) then
+									subListsClone.blackListed = subListsClone.blackListed or {}
+									subLists.blackListed = subLists.blackListed or {}
 
-										table.insert(subLists.blackListed, entryName)
-										table.insert(subListsClone.blackListed, entryName)
-									else
-										table.insert(subList, entryName)
-									end
+									table.insert(subLists.blackListed, entryName)
+									table.insert(subListsClone.blackListed, entryName)
+								else
+									table.insert(subList, entryName)
 								end
 							end
 						end
@@ -897,7 +918,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 				local altTooltip = entryName
 				altTooltip = altTooltip .. "\n\t" .. self.subListIndex[subListName].name
 				if progressionTableId then
-					altTooltip = altTooltip .. "\n\tLinked from Progression " .. self.progressionTranslations[progressionTableId]
+					altTooltip = altTooltip .. "\n\tLinked from Progression " .. ListConfigurationManager.progressionIndex[progressionTableId].name
 				end
 				if self.replaceMap[entryName] then
 					altTooltip = altTooltip .. "\n\t Replaces:"
@@ -1236,6 +1257,9 @@ Entries that replaces other entries are marked in the Main List view with a tiny
 		end
 	end
 
+	if not row.Children[1] or #row.Children[1].Children == 0 then
+		return true
+	end
 	if not useIcons then
 		if row.Children[2] and #row.Children[2].Children == 0 then
 			displayTable.Columns = 1
