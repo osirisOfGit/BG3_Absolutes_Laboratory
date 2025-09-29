@@ -107,8 +107,8 @@ You can shift-click on images to pop out their tooltip into a new window, but th
 						local headers = resultsParent:AddRow()
 						headers.Headers = true
 						headers:AddCell()
-						headers:AddCell():AddText("Display Name")
-						headers:AddCell():AddText("Name")
+						headers:AddCell():AddText(settings.sort.name == "displayName" and "Display Name" or "Name")
+						headers:AddCell():AddText(settings.sort.name == "displayName" and "Name" or "Display Name")
 					end
 
 					table.sort(results, function(a, b)
@@ -168,8 +168,13 @@ You can shift-click on images to pop out their tooltip into a new window, but th
 
 						if not settings.onlyIcons then
 							---@cast imageParent ExtuiTableRow
-							imageParent:AddCell():AddText(Ext.Loca.GetTranslatedString(stat.DisplayName, statName))
-							imageParent:AddCell():AddText(statName)
+							if settings.sort.name == "displayName" then
+								imageParent:AddCell():AddText(Ext.Loca.GetTranslatedString(stat.DisplayName, statName))
+								imageParent:AddCell():AddText(statName)
+							else
+								imageParent:AddCell():AddText(statName)
+								imageParent:AddCell():AddText(Ext.Loca.GetTranslatedString(stat.DisplayName, statName))
+							end
 						end
 					end
 
