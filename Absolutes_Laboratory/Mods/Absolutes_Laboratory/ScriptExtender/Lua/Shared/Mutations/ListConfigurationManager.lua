@@ -36,7 +36,7 @@ local progressionLevel = {
 ListConfigurationManager = {
 	---@type {[tableUUID] : ProgressionTable}
 	progressionIndex = setmetatable({}, {
-		__mode = "kv",
+		__mode = "v",
 		__index = function(t, k)
 			ListConfigurationManager:buildProgressionIndex(k)
 			return rawget(t, k)

@@ -479,21 +479,7 @@ function ListDesignerBaseClass:buildDesigner()
 	end)
 
 	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function(ele)
-		local deleteAllButton = ele:AddButton("Delete All Non-Linked Entries")
-		deleteAllButton.Disabled = self.activeList.modId ~= nil
-		deleteAllButton.OnClick = function()
-			for _, leveledSubList in TableUtils:OrderedPairs(self.activeList.levels) do
-				if leveledSubList.manuallySelectedEntries then
-					leveledSubList.manuallySelectedEntries.delete = true
-				end
-			end
-
-			self:buildDesigner()
-		end
-
 		if self.configKey ~= "statusLists" then
-			ele:AddSeparator()
-
 			if self.activeList.blacklistSameEntriesInHigherProgressionLevels == nil then
 				self.activeList.blacklistSameEntriesInHigherProgressionLevels = true
 			end
@@ -505,9 +491,8 @@ function ListDesignerBaseClass:buildDesigner()
 				end
 				return self.activeList.blacklistSameEntriesInHigherProgressionLevels
 			end)
+			ele:AddSeparator()
 		end
-
-		ele:AddSeparator()
 
 		ele:AddText("(?) Distribute By: "):Tooltip():AddText([[
 	Changing this option will clear your list as the two options are not compatible with each other.
@@ -627,6 +612,21 @@ Using entity level will use the entity's character level, post Character Level M
 					end
 				end)
 			end
+		end
+
+		ele:AddSeparator()
+
+		local deleteAllButton = ele:AddButton("Delete All Non-Linked Entries")
+		deleteAllButton:SetColor("Button", { 1, 0, 0, 0.5 })
+		deleteAllButton.Disabled = self.activeList.modId ~= nil
+		deleteAllButton.OnClick = function()
+			for _, leveledSubList in TableUtils:OrderedPairs(self.activeList.levels) do
+				if leveledSubList.manuallySelectedEntries then
+					leveledSubList.manuallySelectedEntries.delete = true
+				end
+			end
+
+			self:buildDesigner()
 		end
 	end)
 
@@ -829,13 +829,11 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 	local groupFunc
 	local listForGroupFunc = {}
 	if useIcons and self.settings.showSeperatorsInMain then
-		for subListName, subList in TableUtils:OrderedPairs(subListsClone, function(key)
-			return self.subListIndex[key].name
-		end) do
+		for subListName, subList in pairs(subListsClone) do
+			buildProgressionSubList(subListName, listForGroupFunc)
 			for _, entry in pairs(subList) do
 				table.insert(listForGroupFunc, entry)
 			end
-			buildProgressionSubList(subListName, listForGroupFunc)
 		end
 		local success, childParent = pcall(function() return row.Children[1].Children[1] end)
 		local parentContainer = success and childParent or row.Children[1]
@@ -860,19 +858,10 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 
 		---@cast subList EntryName[]
 
-		for i, entryName in TableUtils:OrderedPairs(subList, function(key)
-			return subList[key]
-		end) do
+		for _, entryName in TableUtils:OrderedPairs(subList) do
 			---@type SpellData|PassiveData|StatusData
 			local entryData = Ext.Stats.Get(entryName)
-			if not entryData then
-				if not self.activeList.modId then
-					Logger:BasicWarning("Removing %s from %s %s's %s pool at level %s due to it being a non-existent entry", entryName, self.name, self.activeList.name, subListName,
-						level)
-					subLists[subListName][i] = nil
-					TableUtils:ReindexNumericTable(subLists[subListName])
-				end
-			else
+			if entryData then
 				count = count + 1
 				---@type ExtuiTreeParent
 				local parent = useIcons and row.Children[1] or row:AddCell()
@@ -1573,6 +1562,10 @@ function ListDesignerBaseClass:buildLiteProgressionBrowser()
 						---@type ExtuiSelectable
 						local select = resultsGroup:AddSelectable(progressionName)
 
+						if TableUtils:IndexOf(self.activeList.linkedProgressionTableIds, progressionTableUuid) then
+							select.Selected = true
+						end
+
 						select.OnClick = function()
 							resultsGroup.Visible = false
 							Helpers:KillChildren(levelView)
@@ -1664,7 +1657,6 @@ function ListDesignerBaseClass:buildLiteProgressionBrowser()
 									end)
 								then
 									levelName = levelName .. (" (%s)"):format(progressionEntry.id:sub(#progressionEntry.id - 5))
-									progTable.ColumnDefs[1].Width = Styler:ScaleFactor() * 85 
 								end
 
 								row:AddCell():AddText(levelName)
@@ -1709,6 +1701,11 @@ function ListDesignerBaseClass:buildLiteProgressionBrowser()
 										end
 
 										local altTooltip = entryName
+										if ListConfigurationManager:hasSameEntryInLowerLevel(progressionTableUuid, level, entryName, self.configKey) and tonumber(entryImageButton.Tint[4]) == 1.0 then
+											entryImageButton.Tint = { 1, 1, 0, 0.4 }
+											altTooltip = altTooltip .. "\n Already offered in a previous level"
+										end
+
 										if self.name == SpellListDesigner.name and (Ext.Stats.GetCachedSpell(entryName).AiFlags & Ext.Enums.AIFlags.CanNotUse) == Ext.Enums.AIFlags.CanNotUse then
 											entryImageButton.Tint = { 1, 0, 0, 0.4 }
 											altTooltip = altTooltip .. "\n !!!! SPELL CAN'T BE USED BY AI !!!!"
