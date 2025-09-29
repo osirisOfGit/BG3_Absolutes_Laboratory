@@ -341,13 +341,20 @@ end
 ---@param parent ExtuiTreeParent
 ---@param buttonText string
 ---@param startSameLine boolean
+---@param tooltip string?
 ---@param callback fun(swap: boolean?): boolean
-function Styler:EnableToggleButton(parent, buttonText, startSameLine, callback)
+function Styler:EnableToggleButton(parent, buttonText, startSameLine, tooltip, callback)
+	if tooltip then
+		buttonText = "(?) " .. buttonText
+	end
 	local option1 = parent:AddButton(buttonText)
 	option1.AllowDuplicateId = true
 	option1.Disabled = true
 	self:Color(option1, "ActiveButton")
 	option1.SameLine = startSameLine or false
+	if tooltip then
+		option1:Tooltip():AddText("\t " .. tooltip)
+	end
 
 	local toggle = parent:AddSliderInt("", callback() and 0 or 1, 0, 1)
 	toggle:SetColor("Text", { 1, 1, 1, 0 })
@@ -355,6 +362,9 @@ function Styler:EnableToggleButton(parent, buttonText, startSameLine, callback)
 	toggle.SameLine = true
 	toggle.AllowDuplicateId = true
 	toggle.ItemWidth = 80 * Styler:ScaleFactor()
+	if tooltip then
+		toggle:Tooltip():AddText("\t " .. tooltip)
+	end
 
 	if callback() then
 		self:Color(option1, "ActiveButton")

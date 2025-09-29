@@ -415,9 +415,8 @@ function ListDesignerBaseClass:buildDesigner()
 	self.entryCacheForProgressions = {}
 	Helpers:KillChildren(self.designerSection)
 	self.designerSection:AddNewLine()
-	local headerTitle = self.designerSection:AddSeparatorText(self.activeList.name)
+	local headerTitle = Styler:ScaledFont(self.designerSection:AddSeparatorText(self.activeList.name), "Big")
 	headerTitle:SetStyle("SeparatorTextAlign", 0.5)
-	headerTitle.Font = "Big"
 	if self.activeList.description and self.activeList.description ~= "" then
 		headerTitle.Label = headerTitle.Label .. "( ? )"
 		headerTitle:Tooltip():AddText("\t " .. self.activeList.description).TextWrapPos = 800 * Styler:ScaleFactor()
@@ -456,7 +455,7 @@ function ListDesignerBaseClass:buildDesigner()
 
 		if self.settings.iconOrText == "Icon" and self:renderEntriesBySubcategories({}, ele) then
 			ele:AddSeparator()
-			Styler:EnableToggleButton(ele, "Show SubCategories Under Levels", false, function(swap)
+			Styler:EnableToggleButton(ele, "Show SubCategories Under Levels", false, nil, function(swap)
 				if swap then
 					self.settings.showSeperatorsInMain = not self.settings.showSeperatorsInMain
 					self:buildDesigner()
@@ -466,7 +465,7 @@ function ListDesignerBaseClass:buildDesigner()
 		end
 
 		ele:AddSeparator()
-		Styler:EnableToggleButton(ele, "Auto-Collapse Folder View", false, function(swap)
+		Styler:EnableToggleButton(ele, "Auto-Collapse Folder View", false, nil, function(swap)
 			if swap then
 				self.settings.autoCollapseFoldersSection = not self.settings.autoCollapseFoldersSection
 			end
@@ -484,13 +483,15 @@ function ListDesignerBaseClass:buildDesigner()
 				self.activeList.blacklistSameEntriesInHigherProgressionLevels = true
 			end
 
-			Styler:EnableToggleButton(ele, "Dedupe Spells Within A Progression", false, function(swap)
-				if swap then
-					self.activeList.blacklistSameEntriesInHigherProgressionLevels = not self.activeList.blacklistSameEntriesInHigherProgressionLevels
-					self:buildDesigner()
-				end
-				return self.activeList.blacklistSameEntriesInHigherProgressionLevels
-			end)
+			Styler:EnableToggleButton(ele, "Dedupe Spells Within A Progression", false,
+				"If a progression offers the same spell at multiple levels, only the lowest level will be considered to have the spell (both in this UI and during mutator application). The Progression Browser will show all spells regardless of this setting.",
+				function(swap)
+					if swap then
+						self.activeList.blacklistSameEntriesInHigherProgressionLevels = not self.activeList.blacklistSameEntriesInHigherProgressionLevels
+						self:buildDesigner()
+					end
+					return self.activeList.blacklistSameEntriesInHigherProgressionLevels
+				end)
 			ele:AddSeparator()
 		end
 
@@ -619,14 +620,25 @@ Using entity level will use the entity's character level, post Character Level M
 		local deleteAllButton = ele:AddButton("Delete All Non-Linked Entries")
 		deleteAllButton:SetColor("Button", { 1, 0, 0, 0.5 })
 		deleteAllButton.Disabled = self.activeList.modId ~= nil
+		local timer
 		deleteAllButton.OnClick = function()
-			for _, leveledSubList in TableUtils:OrderedPairs(self.activeList.levels) do
-				if leveledSubList.manuallySelectedEntries then
-					leveledSubList.manuallySelectedEntries.delete = true
+			if deleteAllButton.Label ~= "Delete All Non-Linked Entries" then
+				Ext.Timer.Cancel(timer)
+				timer = nil
+				for _, leveledSubList in TableUtils:OrderedPairs(self.activeList.levels) do
+					if leveledSubList.manuallySelectedEntries then
+						leveledSubList.manuallySelectedEntries.delete = true
+					end
 				end
-			end
 
-			self:buildDesigner()
+				self:buildDesigner()
+			else
+				deleteAllButton.Label = "Are You Sure?"
+				timer = Ext.Timer.WaitFor(5000, function()
+					deleteAllButton.Label = "Delete All Non-Linked Entries"
+					timer = nil
+				end)
+			end
 		end
 	end)
 
@@ -672,7 +684,7 @@ Using entity level will use the entity's character level, post Character Level M
 		end
 
 		if self.activeList.linkedProgressionTableIds and next(self.activeList.linkedProgressionTableIds._real or self.activeList.linkedProgressionTableIds) then
-			local sep = entryGroup:AddSeparatorText("Linked Progressions")
+			local sep = Styler:ScaledFont(entryGroup:AddSeparatorText("Linked Progressions"), "Big")
 			local progGroup = entryGroup:AddGroup("linkedProg")
 
 			local deleteProgGroup = true
@@ -779,7 +791,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 	local subListsClone = TableUtils:DeeplyCopyTable(subLists._real or subLists)
 	if progressionTableId then
 		if ListConfigurationManager.progressionIndex[progressionTableId] then
-			entryListGroup:AddSeparatorText(ListConfigurationManager.progressionIndex[progressionTableId].name):SetStyle("SeparatorTextAlign", 0.05)
+			Styler:ScaledFont(entryListGroup:AddSeparatorText(ListConfigurationManager.progressionIndex[progressionTableId].name), "Big"):SetStyle("SeparatorTextAlign", 0.05)
 			subListsClone[self.settings.defaultPool[self.configKey]] = subListsClone[self.settings.defaultPool[self.configKey]] or {}
 		else
 			return
@@ -829,6 +841,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 	local groupFunc
 	local listForGroupFunc = {}
 	if useIcons and self.settings.showSeperatorsInMain then
+		buildProgressionSubList(self.settings.defaultPool[self.configKey], listForGroupFunc)
 		for subListName, subList in pairs(subListsClone) do
 			buildProgressionSubList(subListName, listForGroupFunc)
 			for _, entry in pairs(subList) do
@@ -1597,9 +1610,10 @@ function ListDesignerBaseClass:buildLiteProgressionBrowser()
 
 										for _, entryList in pairs(progressionEntry[self.configKey]) do
 											for _, entry in pairs(entryList) do
-												if not self:CheckIfEntryIsInListLevel(subLevelList, entry, level) and
-													(self.name ~= SpellListDesigner.name
+												if not self:CheckIfEntryIsInListLevel(subLevelList, entry, level)
+													and (self.name ~= SpellListDesigner.name
 														or (Ext.Stats.GetCachedSpell(entry).AiFlags & Ext.Enums.AIFlags.CanNotUse) ~= Ext.Enums.AIFlags.CanNotUse)
+													and not ListConfigurationManager:hasSameEntryInLowerLevel(progressionTableUuid, level, entry, self.configKey)
 												then
 													table.insert(leveledSubList[defaultPool], entry)
 												end
@@ -1607,6 +1621,7 @@ function ListDesignerBaseClass:buildLiteProgressionBrowser()
 										end
 									end
 
+									select:OnClick()
 									self:buildDesigner()
 								end
 
@@ -1634,6 +1649,7 @@ function ListDesignerBaseClass:buildLiteProgressionBrowser()
 											progressionIndex = #self.activeList.linkedProgressionTableIds._real
 										end
 										self:buildDesigner()
+										select:OnClick()
 									end
 								end
 							end)

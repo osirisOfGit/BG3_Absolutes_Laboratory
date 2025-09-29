@@ -65,7 +65,7 @@ function LevelMutator:renderMutator(parent, mutator)
 		end
 	end
 
-	Styler:EnableToggleButton(parent, "relative to the highest-leveled player", true, function(swap)
+	Styler:EnableToggleButton(parent, "relative to the highest-leveled player", true,  nil, function(swap)
 		if swap then
 			mutator.levelThreshold.relativeToPlayer = not mutator.levelThreshold.relativeToPlayer
 			if not mutator.levelThreshold.relativeToPlayer and mutator.levelThreshold.level < 1 then
