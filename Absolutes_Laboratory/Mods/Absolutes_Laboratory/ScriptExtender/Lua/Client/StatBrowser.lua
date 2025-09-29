@@ -97,6 +97,7 @@ You can shift-click on images to pop out their tooltip into a new window, but th
 					if not settings.onlyIcons then
 						---@cast resultsParent ExtuiTable
 						resultsParent = resultsGroup:AddTable("results", 3)
+						resultsParent.Resizable = true
 						resultsParent.NoSavedSettings = true
 
 						resultsParent:AddColumn("", "WidthFixed")
