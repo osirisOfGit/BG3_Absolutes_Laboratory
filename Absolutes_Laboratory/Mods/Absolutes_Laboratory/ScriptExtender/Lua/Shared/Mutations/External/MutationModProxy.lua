@@ -58,7 +58,7 @@ local function setModProxyFields(tbl, key, target)
 		end
 
 		for _, listType in pairs(MutationModProxy.listTypes) do
-			if mutationConfig.lists[listType] then
+			if mutationConfig.lists and mutationConfig.lists[listType] then
 				for listId, list in pairs(mutationConfig.lists[listType]) do
 					list.modId = modId
 					rawset(MutationModProxy.ModProxy.lists[listType], listId, list)
@@ -66,7 +66,7 @@ local function setModProxyFields(tbl, key, target)
 			end
 		end
 
-		if mutationConfig.lists.entryReplacerDictionary then
+		if mutationConfig.lists and mutationConfig.lists.entryReplacerDictionary then
 			for entry, entriesBeingReplaced in pairs(mutationConfig.lists.entryReplacerDictionary) do
 				rawset(MutationModProxy.ModProxy.lists.entryReplacerDictionary, entry, entriesBeingReplaced)
 			end
@@ -176,7 +176,7 @@ MutationModProxy.ModProxy = {
 function MutationModProxy:ImportMutation(modId)
 	local mod = Ext.Mod.GetMod(modId)
 	if mod then
-		---@type MutationsConfig?
+		---@type {["mutations"]: MutationsConfig?}
 		local mutations = FileUtils:LoadTableFile(string.format("Mods/%s/%s", mod.Info.Directory, self.Filename .. ".json"), "data")
 		if mutations then
 			return mutations.mutations, modId

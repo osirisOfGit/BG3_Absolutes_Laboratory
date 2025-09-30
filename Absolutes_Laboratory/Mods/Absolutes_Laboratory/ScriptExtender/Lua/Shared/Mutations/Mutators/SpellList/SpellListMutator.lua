@@ -188,7 +188,7 @@ Using entity level will use the entity's character level, post Character Level M
 								for modId, modCache in pairs(MutationModProxy.ModProxy.lists.spellLists) do
 									---@cast modCache +LocalModCache
 
-									if modCache.lists.spellLists and next(modCache.lists.spellLists) then
+									if modCache.lists and modCache.lists.spellLists and next(modCache.lists.spellLists) then
 										modSpellLists[modId] = {}
 										for spellListId in pairs(modCache.lists.spellLists) do
 											table.insert(modSpellLists[modId], spellListId)
@@ -1453,14 +1453,15 @@ if Ext.IsServer() then
 															spellList.levels = spellList.levels or {}
 															spellList.levels[i] = spellList.levels[i] or {}
 															spellList.levels[i].linkedProgressions = spellList.levels[i].linkedProgressions or {}
+															spellList.levels[i].linkedProgressions[progressionTableId] = spellList.levels[i].linkedProgressions[progressionTableId] or {}
 
 															local defaultPool = spellList.defaultPool or
 																ConfigurationStructure.config.mutations.settings.customLists.defaultPool.spellLists
 
-															spellList.levels[i].linkedProgressions[defaultPool] = spellList.levels[i].linkedProgressions[defaultPool] or {}
+															spellList.levels[i].linkedProgressions[progressionTableId][defaultPool] = spellList.levels[i].linkedProgressions[progressionTableId][defaultPool] or {}
 
 															Logger:BasicDebug("Added %s to the default pool %s for later processing", spellName, defaultPool)
-															table.insert(spellList.levels[i].linkedProgressions[defaultPool], spellName)
+															table.insert(spellList.levels[i].linkedProgressions[progressionTableId][defaultPool], spellName)
 														end
 													end
 												end
@@ -1480,7 +1481,9 @@ if Ext.IsServer() then
 																return value.Id.OriginatorPrototype == spellName
 															end)
 														then
-															table.insert(randomPool, spellName)
+															if not TableUtils:IndexOf(randomPool, spellName) then
+																table.insert(randomPool, spellName)
+															end
 														else
 															Logger:BasicDebug("%s is already known, not adding to the random pool", spellName)
 														end
@@ -1497,7 +1500,9 @@ if Ext.IsServer() then
 															return value.Id.OriginatorPrototype == spellName
 														end)
 													then
-														table.insert(randomPool, spellName)
+														if not TableUtils:IndexOf(randomPool, spellName) then
+															table.insert(randomPool, spellName)
+														end
 													else
 														Logger:BasicDebug("%s is already known, not adding to the random pool", spellName)
 													end

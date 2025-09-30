@@ -135,7 +135,7 @@ and this list will use the sum of the assigned spell list levels to determine wh
 			for modId, modCache in pairs(MutationModProxy.ModProxy.lists.passiveLists) do
 				---@cast modCache +LocalModCache
 
-				if modCache.lists.passiveLists and next(modCache.lists.passiveLists) then
+				if modCache.lists and modCache.lists.passiveLists and next(modCache.lists.passiveLists) then
 					modPassiveLists[modId] = {}
 					for passiveListId in pairs(modCache.lists.passiveLists) do
 						table.insert(modPassiveLists[modId], passiveListId)
@@ -478,14 +478,15 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 										passiveList.levels = passiveList.levels or {}
 										passiveList.levels[level] = passiveList.levels[level] or {}
 										passiveList.levels[level].linkedProgressions = passiveList.levels[level].linkedProgressions or {}
+										passiveList.levels[level].linkedProgressions[progressionTableId] = passiveList.levels[level].linkedProgressions[progressionTableId] or {}
 
 										local defaultPool = passiveList.defaultPool or
 											ConfigurationStructure.config.mutations.settings.customLists.defaultPool.passiveLists
 
-										passiveList.levels[level].linkedProgressions[defaultPool] = passiveList.levels[level].linkedProgressions[defaultPool] or {}
+										passiveList.levels[level].linkedProgressions[progressionTableId][defaultPool] = passiveList.levels[level].linkedProgressions[progressionTableId][defaultPool] or {}
 
 										Logger:BasicDebug("Added %s to the default pool %s for later processing", spellName, defaultPool)
-										table.insert(passiveList.levels[level].linkedProgressions[defaultPool], spellName)
+										table.insert(passiveList.levels[level].linkedProgressions[progressionTableId][defaultPool], spellName)
 									end
 								end
 							end
@@ -513,7 +514,9 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 						if subLists.randomized and next(subLists.randomized) then
 							for _, passiveId in pairs(subLists.randomized) do
 								if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
-									table.insert(randomPool, passiveId)
+									if not TableUtils:IndexOf(randomPool, passiveId) then
+										table.insert(randomPool, passiveId)
+									end
 								else
 									local progressionTable = ListConfigurationManager.progressionIndex[progressionTableId]
 
@@ -529,7 +532,9 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 					if leveledLists.manuallySelectedEntries.randomized then
 						for _, passiveId in pairs(leveledLists.manuallySelectedEntries.randomized) do
 							if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
-								table.insert(randomPool, passiveId)
+								if not TableUtils:IndexOf(randomPool, passiveId) then
+									table.insert(randomPool, passiveId)
+								end
 							else
 								Logger:BasicDebug("%s is already present, not adding to the random pool", passiveId)
 							end

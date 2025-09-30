@@ -61,10 +61,10 @@ Using entity level will use the entity's character level, after Character Level 
 
 	if mutator.values.statusLists then
 		for l, statusListId in TableUtils:OrderedPairs(mutator.values.statusLists, function(key, value)
-			local list = MutationConfigurationProxy.statusLists[value]
+			local list = MutationConfigurationProxy.lists.statusLists[value]
 			return (list.modId or "_") .. list.name
 		end) do
-			local list = MutationConfigurationProxy.statusLists[statusListId]
+			local list = MutationConfigurationProxy.lists.statusLists[statusListId]
 
 			local delete = Styler:ImageButton(mutatorSection:AddImageButton("delete" .. list.name, "ico_red_x", { 16, 16 }))
 			delete.OnClick = function()
@@ -108,7 +108,7 @@ and this list will use the sum of the assigned spell list levels to determine wh
 		Helpers:KillChildren(popup)
 		popup:Open()
 
-		for statusListId, statusList in pairs(MutationConfigurationProxy.statusLists) do
+		for statusListId, statusList in pairs(MutationConfigurationProxy.lists.statusLists) do
 			if statusList.useGameLevel == mutator.useGameLevel then
 				---@type ExtuiSelectable
 				local select = popup:AddSelectable(statusList.name .. (statusList.modId and string.format(" (from %s)", Ext.Mod.GetMod(statusList.modId).Info.Name) or ""),
@@ -134,7 +134,7 @@ and this list will use the sum of the assigned spell list levels to determine wh
 			for modId, modCache in pairs(MutationModProxy.ModProxy.lists.statusLists) do
 				---@cast modCache +LocalModCache
 
-				if modCache.lists.statusLists and next(modCache.lists.statusLists) then
+				if modCache.lists and modCache.lists.statusLists and next(modCache.lists.statusLists) then
 					modStatusLists[modId] = {}
 					for statusListId in pairs(modCache.lists.statusLists) do
 						table.insert(modStatusLists[modId], statusListId)
@@ -545,7 +545,7 @@ function StatusListMutator:applyMutator(entity, entityVar)
 
 		if statusListMutator.values.statusLists then
 			for _, statusListId in pairs(statusListMutator.values.statusLists) do
-				local statusList = MutationConfigurationProxy.statusLists[statusListId]
+				local statusList = MutationConfigurationProxy.lists.statusLists[statusListId]
 				statusList = statusList.__real or statusList
 				if statusList then
 					if statusList.spellListDependencies and next(statusList.spellListDependencies) then
@@ -596,7 +596,7 @@ function StatusListMutator:applyMutator(entity, entityVar)
 			for statusListId, numRandomStatusesPerLevel in pairs(statusListsPool) do
 				count = count + 1
 				if count == chosenIndex then
-					local statusList = MutationConfigurationProxy.statusLists[statusListId]
+					local statusList = MutationConfigurationProxy.lists.statusLists[statusListId]
 					statusList = statusList.__real or statusList
 
 					Logger:BasicDebug("%s status lists without dependencies are in the pool - randomly chose %s",
@@ -630,7 +630,7 @@ function StatusListMutator:applyMutator(entity, entityVar)
 			end
 		else
 			for statusListId, numRandomStatusesPerLevel in pairs(statusListsPool) do
-				local statusList = MutationConfigurationProxy.statusLists[statusListId]
+				local statusList = MutationConfigurationProxy.lists.statusLists[statusListId]
 				statusList = statusList.__real or statusList
 
 				local levelToUse = 0

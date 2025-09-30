@@ -57,7 +57,7 @@ MutationConfigurationProxy = {
 				for _, modCache in pairs(MutationModProxy.ModProxy.lists.spellLists) do
 					---@cast modCache +LocalModCache
 
-					if modCache.lists.spellLists and next(modCache.lists.spellLists) then
+					if modCache.lists and modCache.lists.spellLists and next(modCache.lists.spellLists) then
 						for spellListId in pairs(modCache.lists.spellLists) do
 							spellLists[spellListId] = MutationModProxy.ModProxy.lists.spellLists[spellListId]
 						end
@@ -80,7 +80,7 @@ MutationConfigurationProxy = {
 				for _, modCache in pairs(MutationModProxy.ModProxy.lists.passiveLists) do
 					---@cast modCache +LocalModCache
 
-					if modCache.lists.passiveLists and next(modCache.lists.passiveLists) then
+					if modCache.lists and modCache.lists.passiveLists and next(modCache.lists.passiveLists) then
 						for passiveListId in pairs(modCache.lists.passiveLists) do
 							passiveLists[passiveListId] = MutationModProxy.ModProxy.lists.passiveLists[passiveListId]
 						end
@@ -103,7 +103,7 @@ MutationConfigurationProxy = {
 				for _, modCache in pairs(MutationModProxy.ModProxy.lists.statusLists) do
 					---@cast modCache +LocalModCache
 
-					if modCache.lists.statusLists and next(modCache.lists.statusLists) then
+					if modCache.lists and modCache.lists.statusLists and next(modCache.lists.statusLists) then
 						for statusListId in pairs(modCache.lists.statusLists) do
 							statusLists[statusListId] = MutationModProxy.ModProxy.lists.statusLists[statusListId]
 						end

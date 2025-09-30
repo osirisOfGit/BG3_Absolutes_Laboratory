@@ -123,7 +123,7 @@ function MutatorInterface:undoMutator(entity, entityVar, primedEntityVar, reproc
 			entity.DisplayName and entity.DisplayName.Name:Get() or entity.ServerCharacter.Template.Name,
 			entity.Uuid.EntityUuid)
 
-		for mutatorName in TableUtils:OrderedPairs(entityVar.appliedMutators, function(key)
+		for mutatorName in TableUtils:OrderedPairs(entityVar.originalValues, function(key)
 			return self.registeredMutators[key]:priority()
 		end) do
 			local mut = self.registeredMutators[mutatorName]

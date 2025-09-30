@@ -162,7 +162,7 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 		end
 	end, debug.traceback)
 	if not success then
-		Logger:BasicError("Unrecoverable error happened while executing the Mutation Profile %s",
+		Logger:BasicError("Unrecoverable error happened while executing the Mutation Profile %s: %s",
 			activeProfile.name .. (activeProfile.modId and string.format(" (from mod %s)", Ext.Mod.GetMod(activeProfile.modId).Info.Name) or ""),
 			error)
 	end
@@ -173,7 +173,7 @@ Ext.Osiris.RegisterListener("EnteredCombat", 2, "before", function(entityId, com
 	local entity = Ext.Entity.Get(entityId)
 	if not mutatedEntities[entity.Uuid.EntityUuid] and entity.ServerCharacter and not entity.PartyMember then
 		Logger:BasicInfo("%s entered combat %s and hasn't been mutated - executing profile!", entityId, combatGuid)
-		MutationProfileExecutor:ExecuteProfile(false, entity)
+		MutationProfileExecutor:ExecuteProfile(false, entityId)
 	end
 end)
 

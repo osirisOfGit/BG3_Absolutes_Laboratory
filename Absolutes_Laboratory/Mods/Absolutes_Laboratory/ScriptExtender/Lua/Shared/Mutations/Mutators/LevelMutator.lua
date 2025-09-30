@@ -65,7 +65,7 @@ function LevelMutator:renderMutator(parent, mutator)
 		end
 	end
 
-	Styler:EnableToggleButton(parent, "relative to the highest-leveled player", true,  nil, function(swap)
+	Styler:EnableToggleButton(parent, "relative to the highest-leveled player", true, nil, function(swap)
 		if swap then
 			mutator.levelThreshold.relativeToPlayer = not mutator.levelThreshold.relativeToPlayer
 			if not mutator.levelThreshold.relativeToPlayer and mutator.levelThreshold.level < 1 then
@@ -368,9 +368,7 @@ function LevelMutator:applyMutator(entity, entityVar)
 		end, Ext.Entity.Get(Osi.GetHostCharacter()))
 	end
 
-	baseLevel = (Ext.Math.Sign(baseLevel) == -1 and baseLevel < targetLevel) and targetLevel or baseLevel
-
-	entity.AvailableLevel.Level = targetLevel + baseLevel
+	entity.AvailableLevel.Level = math.max(1, targetLevel + baseLevel)
 	entity.EocLevel.Level = entity.AvailableLevel.Level
 	Logger:BasicDebug("Changed level from %s to %s", entityVar.originalValues[self.name], entity.AvailableLevel.Level)
 end

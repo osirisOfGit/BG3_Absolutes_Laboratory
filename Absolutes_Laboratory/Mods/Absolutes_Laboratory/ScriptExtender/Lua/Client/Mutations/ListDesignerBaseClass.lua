@@ -514,6 +514,12 @@ Using entity level will use the entity's character level, post Character Level M
 						}
 					end
 				end
+
+				if self.activeList.linkedProgressionTableIds then
+					self.activeList.linkedProgressionTableIds.delete = true
+					self.activeList.linkedProgressionTableIds = {}
+				end
+
 				self:buildDesigner()
 			end
 			return not self.activeList.useGameLevel
@@ -570,34 +576,17 @@ Using entity level will use the entity's character level, post Character Level M
 
 										if levelSubList.linkedProgressions then
 											for progressionTableId, list in TableUtils:OrderedPairs(levelSubList.linkedProgressions) do
-												if list[previous] or previous == "randomized" then
-													list[chosen] = list[chosen] or {}
-													if chosen ~= "randomized" then
-														if previous ~= "randomized" then
-															for _, entry in ipairs(list[previous]) do
-																if self.name ~= SpellListDesigner.name or (Ext.Stats.GetCachedSpell(entry).AiFlags & Ext.Enums.AIFlags.CanNotUse) ~= Ext.Enums.AIFlags.CanNotUse then
-																	table.insert(list[chosen], entry)
-																end
-															end
-														else
-															local progressionEntry = self.progressions[progressionTableId]
-															if progressionEntry
-																and progressionEntry[level]
-																and progressionEntry[level][self.name]
-															then
-																for _, entryList in pairs(progressionEntry[level][self.name]) do
-																	for _, entry in pairs(entryList) do
-																		if not lists.levels[level] or not self:CheckIfEntryIsInListLevel(levelSubList, entry, level, true) then
-																			if self.name ~= SpellListDesigner.name or (Ext.Stats.GetCachedSpell(entry).AiFlags & Ext.Enums.AIFlags.CanNotUse) ~= Ext.Enums.AIFlags.CanNotUse then
-																				table.insert(list[chosen], entry)
-																			end
-																		end
-																	end
-																end
-															end
-														end
-													end
+												if list[previous] then
 													list[previous].delete = true
+												end
+												if list[chosen] then
+													list[chosen].delete = true
+												end
+												if not list() then
+													list.delete = true
+													if not levelSubList.linkedProgressions() then
+														levelSubList.linkedProgressions.delete = true
+													end
 												end
 											end
 										end
@@ -644,6 +633,11 @@ Using entity level will use the entity's character level, post Character Level M
 
 	local leveledListGroup = self.designerSection:AddGroup("leveledLists")
 
+	if self.activeList.levels and self.activeList.levels[31] then
+		self.activeList.levels[0] = TableUtils:DeeplyCopyTable(self.activeList.levels[31]._real or self.activeList.levels[31])
+		self.activeList.levels[31].delete = true
+		self.activeList.levels[31] = nil
+	end
 	self:iterateLevels(function(level)
 		local listGroup = leveledListGroup:AddGroup("list" .. level)
 
@@ -1608,14 +1602,16 @@ function ListDesignerBaseClass:buildLiteProgressionBrowser()
 										local leveledSubList = subLevelList.manuallySelectedEntries
 										leveledSubList[defaultPool] = leveledSubList[defaultPool] or {}
 
-										for _, entryList in pairs(progressionEntry[self.configKey]) do
-											for _, entry in pairs(entryList) do
-												if not self:CheckIfEntryIsInListLevel(subLevelList, entry, level)
-													and (self.name ~= SpellListDesigner.name
-														or (Ext.Stats.GetCachedSpell(entry).AiFlags & Ext.Enums.AIFlags.CanNotUse) ~= Ext.Enums.AIFlags.CanNotUse)
-													and not ListConfigurationManager:hasSameEntryInLowerLevel(progressionTableUuid, level, entry, self.configKey)
-												then
-													table.insert(leveledSubList[defaultPool], entry)
+										if progressionEntry[self.configKey] then
+											for _, entryList in pairs(progressionEntry[self.configKey]) do
+												for _, entry in pairs(entryList) do
+													if not self:CheckIfEntryIsInListLevel(subLevelList, entry, level)
+														and (self.name ~= SpellListDesigner.name
+															or (Ext.Stats.GetCachedSpell(entry).AiFlags & Ext.Enums.AIFlags.CanNotUse) ~= Ext.Enums.AIFlags.CanNotUse)
+														and not ListConfigurationManager:hasSameEntryInLowerLevel(progressionTableUuid, level, entry, self.configKey)
+													then
+														table.insert(leveledSubList[defaultPool], entry)
+													end
 												end
 											end
 										end

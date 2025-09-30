@@ -401,17 +401,20 @@ function ClassesAndSubclassesMutator:handleDependencies(_, mutator, removeMissin
 end
 
 function ClassesAndSubclassesMutator:undoMutator(entity, entityVar)
-	entity.Classes.Classes = {}
-	for _, classDef in pairs(entityVar.originalValues[self.name].classes) do
-		---@cast classDef ClassInfo
-		entity.Classes.Classes[#entity.Classes.Classes + 1] = {
-			ClassUUID = classDef.ClassUUID,
-			SubClassUUID = classDef.SubClassUUID,
-			Level = classDef.Level
-		}
-	end
+	entity:RemoveComponent("Classes")
+	entity:CreateComponent("Classes")
+	if entityVar.originalValues[self.name] then
+		for _, classDef in pairs(entityVar.originalValues[self.name].classes) do
+			---@cast classDef ClassInfo
+			entity.Classes.Classes[#entity.Classes.Classes + 1] = {
+				ClassUUID = classDef.ClassUUID,
+				SubClassUUID = classDef.SubClassUUID,
+				Level = classDef.Level
+			}
+		end
 
-	Logger:BasicDebug("Reverted classes to %s", entityVar.originalValues[self.name].classes)
+		Logger:BasicDebug("Reverted classes to %s", entityVar.originalValues[self.name].classes)
+	end
 
 	if entityVar.originalValues[self.name].spellCastingAbility then
 		Logger:BasicDebug("Reverted spellCastingAbility to %s", entityVar.originalValues[self.name].spellCastingAbility)
@@ -475,7 +478,7 @@ function ClassesAndSubclassesMutator:applyMutator(entity, entityVar)
 		local classGroup = chosenClassGroups[math.random(#chosenClassGroups)]
 		if classGroup.classIds then
 			entityVar.originalValues[self.name] = {
-				classes = Ext.Types.Serialize(entity.Classes.Classes)
+				classes = TableUtils:DeeplyCopyTable(Ext.Types.Serialize(entity.Classes.Classes))
 			}
 
 			entity.Classes.Classes = {}
@@ -589,7 +592,7 @@ Still, it's good flavour, useful in those cases, and a valuable dependency for t
 					text = [[
 The mutator is laid out as follows:
 
-Class Groups: Configured on the left hand side, this section contains a list of classes that should _all_ be assigned to the entity, adding up to 100% of the entity's Level (per the EocLevel component). 
+Class Groups: Configured on the left hand side, this section contains a list of classes that should _all_ be assigned to the entity, adding up to 100% of the entity's Level (per the EocLevel component).
 You can add multiple subclasses from one main class, but if you add the Main class you won't be allowed to add any subclasses from it.
 
 Modifiers: On the right hand side you'll find two modifiers:
@@ -610,7 +613,8 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				},
 				{
 					type = "Content",
-					text = [[When setting the classes, the `Classes.Classes` component is overwritten entirely; any specific Abilities overwrite their respective Stat component property: SpellCastingAbility, RangedAttackAbility, UnarmedAttackAbility. ]]
+					text =
+					[[When setting the classes, the `Classes.Classes` component is overwritten entirely; any specific Abilities overwrite their respective Stat component property: SpellCastingAbility, RangedAttackAbility, UnarmedAttackAbility. ]]
 				},
 				{
 					type = "Separator"
