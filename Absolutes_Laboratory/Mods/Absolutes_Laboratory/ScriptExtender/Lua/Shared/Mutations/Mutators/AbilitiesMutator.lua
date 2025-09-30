@@ -270,7 +270,7 @@ function AbilitiesMutator:applyMutator(entity, entityVar)
 				-- Sorting descending?
 				return levelsAssigned * -1
 			end) do
-				local spellList = MutationConfigurationProxy.spellLists[spellListId]
+				local spellList = MutationConfigurationProxy.lists.spellLists[spellListId]
 				spellList = spellList.__real or spellList
 
 				if spellList.abilityPriorities then
@@ -298,7 +298,7 @@ function AbilitiesMutator:applyMutator(entity, entityVar)
 							Logger:BasicDebug("Spell list %s is %s%% of list %s's level - averaging out score priority",
 								spellList.name,
 								(appliedSpellLists[spellListId] / appliedSpellLists[lastAssignedListId]) * 100,
-								MutationConfigurationProxy.spellLists[lastAssignedListId].name)
+								MutationConfigurationProxy.lists.spellLists[lastAssignedListId].name)
 
 							if not TableUtils:IndexOf(abilities, spellList.abilityPriorities.primaryStat) then
 								abilities.tertiaryStat = spellList.abilityPriorities.primaryStat

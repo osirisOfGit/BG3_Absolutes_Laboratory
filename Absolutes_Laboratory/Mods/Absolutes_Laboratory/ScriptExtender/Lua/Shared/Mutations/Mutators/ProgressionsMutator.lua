@@ -207,9 +207,9 @@ Progressions are evaluated independently from one another to allow for progressi
 
 		if progressionConditionalGroup.spellListDependencies then
 			for i, spellListId in TableUtils:OrderedPairs(progressionConditionalGroup.spellListDependencies, function(key, value)
-				return MutationConfigurationProxy.spellLists[value] and MutationConfigurationProxy.spellLists[value].name or value
+				return MutationConfigurationProxy.lists.spellLists[value] and MutationConfigurationProxy.lists.spellLists[value].name or value
 			end) do
-				local spellList = MutationConfigurationProxy.spellLists[spellListId]
+				local spellList = MutationConfigurationProxy.lists.spellLists[spellListId]
 				if spellList then
 					local delete = Styler:ImageButton(conditionalCell:AddImageButton("delete" .. spellListId, "ico_red_x", { 16, 16 }))
 					delete.OnClick = function()
@@ -239,7 +239,7 @@ Progressions are evaluated independently from one another to allow for progressi
 			Helpers:KillChildren(popup)
 			popup:Open()
 
-			for spellListId, spellList in TableUtils:OrderedPairs(MutationConfigurationProxy.spellLists, function(key, value)
+			for spellListId, spellList in TableUtils:OrderedPairs(MutationConfigurationProxy.lists.spellLists, function(key, value)
 				return value.name .. (value.modId and string.format(" (%s)", Ext.Mod.GetMod(value.modId).Info.Name) or "")
 			end) do
 				---@type ExtuiSelectable

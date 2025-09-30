@@ -264,6 +264,8 @@ ConfigurationStructure.DynamicClassDefinitions.customLeveledList = {
 	---@type ModDependencies
 	modDependencies = nil,
 	useGameLevel = false,
+	---@type string?
+	defaultPool = nil,
 	blacklistSameEntriesInHigherProgressionLevels = true
 }
 

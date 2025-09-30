@@ -233,7 +233,7 @@ function ListConfigurationManager:HandleDependences(export, mutator, lists, remo
 
 	local replaceMap = removeMissingDependencies == true
 		and export.listEntryReplaceMap
-		or TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.listEntryReplaceMap._real)
+		or TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.lists.entryReplacerDictionary._real)
 
 	---@param statName string
 	---@param container table?

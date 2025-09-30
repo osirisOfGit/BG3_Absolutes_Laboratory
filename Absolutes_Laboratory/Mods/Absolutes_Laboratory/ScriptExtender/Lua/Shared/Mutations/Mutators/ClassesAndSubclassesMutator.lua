@@ -267,7 +267,7 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 
 		if classConditionalGroup.spellListDependencies then
 			for i, spellListId in TableUtils:OrderedPairs(classConditionalGroup.spellListDependencies, function(key, value)
-				return MutationConfigurationProxy.spellLists[value].name
+				return MutationConfigurationProxy.lists.spellLists[value].name
 			end) do
 				local delete = Styler:ImageButton(conditionalCell:AddImageButton("delete" .. spellListId, "ico_red_x", { 16, 16 }))
 				delete.OnClick = function()
@@ -278,7 +278,7 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 					self:renderMutator(parent, mutator)
 				end
 
-				local spellList = MutationConfigurationProxy.spellLists[spellListId]
+				local spellList = MutationConfigurationProxy.lists.spellLists[spellListId]
 				local spellListLink = conditionalCell:AddTextLink(spellList.name .. (spellList.modId and string.format(" (%s)", Ext.Mod.GetMod(spellList.modId).Info.Name) or ""))
 				spellListLink.IDContext = spellListId
 				spellListLink.SameLine = true
@@ -292,7 +292,7 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 			Helpers:KillChildren(popup)
 			popup:Open()
 
-			for spellListId, spellList in TableUtils:OrderedPairs(MutationConfigurationProxy.spellLists, function(key, value)
+			for spellListId, spellList in TableUtils:OrderedPairs(MutationConfigurationProxy.lists.spellLists, function(key, value)
 				return value.name .. (value.modId and string.format(" (%s)", Ext.Mod.GetMod(value.modId).Info.Name) or "")
 			end) do
 				---@type ExtuiSelectable

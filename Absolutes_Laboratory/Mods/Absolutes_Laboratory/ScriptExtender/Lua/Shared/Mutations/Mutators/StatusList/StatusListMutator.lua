@@ -89,7 +89,7 @@ Using entity level will use the entity's character level, after Character Level 
 and this list will use the sum of the assigned spell list levels to determine what levels from this status list should be used.]])
 
 				for s, spellListId in ipairs(list.spellListDependencies) do
-					local spellList = MutationConfigurationProxy.spellLists[spellListId]
+					local spellList = MutationConfigurationProxy.lists.spellLists[spellListId]
 					if spellList then
 						sep:AddTextLink(spellList.name .. (spellList.modId and string.format(" (from %s)", Ext.Mod.GetMod(spellList.modId).Info.Name) or "")).OnClick = function()
 							SpellListDesigner:launch(spellListId)
@@ -127,16 +127,16 @@ and this list will use the sum of the assigned spell list levels to determine wh
 			end
 		end
 
-		if MutationModProxy.ModProxy.statusLists() then
+		if MutationModProxy.ModProxy.lists.statusLists() then
 			---@type {[Guid]: Guid[]}
 			local modStatusLists = {}
 
-			for modId, modCache in pairs(MutationModProxy.ModProxy.statusLists) do
+			for modId, modCache in pairs(MutationModProxy.ModProxy.lists.statusLists) do
 				---@cast modCache +LocalModCache
 
-				if modCache.statusLists and next(modCache.statusLists) then
+				if modCache.lists.statusLists and next(modCache.lists.statusLists) then
 					modStatusLists[modId] = {}
-					for statusListId in pairs(modCache.statusLists) do
+					for statusListId in pairs(modCache.lists.statusLists) do
 						table.insert(modStatusLists[modId], statusListId)
 					end
 				end
@@ -148,12 +148,12 @@ and this list will use the sum of the assigned spell list levels to determine wh
 				end) do
 					local modGroup = popup:AddGroup("Mods" .. modId)
 
-					modGroup:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name).Font = "Small"
+					Styler:ScaledFont(modGroup:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name), "Small")
 
 					for _, statusListId in TableUtils:OrderedPairs(statusLists, function(key, value)
-						return MutationModProxy.ModProxy.statusLists[value].name
+						return MutationModProxy.ModProxy.lists.statusLists[value].name
 					end) do
-						local statusList = MutationModProxy.ModProxy.statusLists[statusListId]
+						local statusList = MutationModProxy.ModProxy.lists.statusLists[statusListId]
 						if mutator.useGameLevel == statusList.useGameLevel then
 							---@type ExtuiSelectable
 							local select = modGroup:AddSelectable(statusList.name, "DontClosePopups")
@@ -427,7 +427,7 @@ function StatusListMutator:handleDependencies(export, mutator, removeMissingDepe
 	end
 
 	if mutator.values.statusLists then
-		StatusListDesigner:HandleDependences(export, mutator, mutator.values.statusLists, removeMissingDependencies)
+		ListConfigurationManager:HandleDependences(export, mutator, mutator.values.statusLists, removeMissingDependencies)
 	end
 end
 
@@ -584,8 +584,8 @@ function StatusListMutator:applyMutator(entity, entityVar)
 		end
 	end
 
-	---@type ListEntryReplaceMap
-	local replaceMap = TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.listEntryReplaceMap)
+
+	local replaceMap = TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.lists.entryReplacerDictionary)
 	replaceMap.statusLists = replaceMap.statusLists or {}
 	local replaceMap = replaceMap.statusLists
 
@@ -606,8 +606,7 @@ function StatusListMutator:applyMutator(entity, entityVar)
 					local levelToUse = statusList.useGameLevel and EntityRecorder.Levels[entity.Level.LevelName] or entity.EocLevel.Level
 
 					if levelToUse > 0 and statusList.modId then
-						---@type ListEntryReplaceMap
-						local modReplaceMap = MutationConfigurationProxy.listEntryReplaceMap[statusList.modId]
+						local modReplaceMap = MutationConfigurationProxy.lists.entryReplacerDictionary[statusList.modId]
 						if modReplaceMap.statusLists then
 							for statReplacement, statsToReplace in pairs(modReplaceMap.statusLists) do
 								if not replaceMap[statReplacement] then
@@ -643,8 +642,7 @@ function StatusListMutator:applyMutator(entity, entityVar)
 				end
 
 				if levelToUse > 0 and statusList.modId then
-					---@type ListEntryReplaceMap
-					local modReplaceMap = MutationConfigurationProxy.listEntryReplaceMap[statusList.modId]
+					local modReplaceMap = MutationConfigurationProxy.lists.entryReplacerDictionary[statusList.modId]
 					if modReplaceMap.statusLists then
 						for statReplacement, statsToReplace in pairs(modReplaceMap.statusLists) do
 							if not replaceMap[statReplacement] then
@@ -691,7 +689,7 @@ function StatusListMutator:applyMutator(entity, entityVar)
 		for _, statusToApply in ipairs(appliedStatuses) do
 			Osi.ApplyStatus(entity.Uuid.EntityUuid, statusToApply, -1, 1)
 		end
-		
+
 		entityVar.originalValues[self.name] = appliedStatuses
 	end
 end
@@ -798,4 +796,3 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 		}
 	} --[[@as MazzleDocsDocumentation]]
 end
-

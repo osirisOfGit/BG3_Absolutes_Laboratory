@@ -25,7 +25,7 @@ function PassiveListDesigner:customizeDesigner(parent)
 		Helpers:KillChildren(linkedSpellListsTable)
 
 		for s, spellListId in ipairs(self.activeList.spellListDependencies or {}) do
-			local spellList = MutationConfigurationProxy.spellLists[spellListId]
+			local spellList = MutationConfigurationProxy.lists.spellLists[spellListId]
 			local cell = linkedSpellListsTable:AddRow():AddCell()
 
 			local delete = Styler:ImageButton(cell:AddImageButton("delete" .. spellList.name, "ico_red_x", { 16, 16 }))
@@ -55,7 +55,7 @@ function PassiveListDesigner:customizeDesigner(parent)
 		Helpers:KillChildren(self.popup)
 		self.popup:Open()
 
-		for spellListId, spellList in pairs(MutationConfigurationProxy.spellLists) do
+		for spellListId, spellList in pairs(MutationConfigurationProxy.lists.spellLists) do
 			if spellList.useGameLevel == self.activeList.useGameLevel then
 				---@type ExtuiSelectable
 				local select = self.popup:AddSelectable(spellList.name .. (spellList.modId and string.format(" (from %s)", Ext.Mod.GetMod(spellList.modId).Info.Name) or ""),

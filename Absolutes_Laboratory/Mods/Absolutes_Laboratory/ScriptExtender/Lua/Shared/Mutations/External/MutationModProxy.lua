@@ -9,12 +9,12 @@ MutationModProxy.Filename = "AbsolutesLaboratory_ProfilesAndMutations"
 ---@field spellLists {[Guid] : string}
 ---@field passiveLists {[Guid] : string}
 ---@field statusLists {[Guid] : string}
+---@field entryReplacerDictionary EntryReplacerDictionary
 
 ---@class LocalModCache
 ---@field profiles {[Guid] : string}
 ---@field folders {[Guid] : string}
 ---@field lists LocalModCacheLists
----@field listEntryReplaceMap {[string] : string[]}
 ---@field prepPhaseMarkers {[Guid] : PrepMarkerCategory}
 
 ---@type {[Guid] : LocalModCache}
@@ -58,17 +58,17 @@ local function setModProxyFields(tbl, key, target)
 		end
 
 		for _, listType in pairs(MutationModProxy.listTypes) do
-			if mutationConfig[listType] then
-				for listId, list in pairs(mutationConfig[listType]) do
+			if mutationConfig.lists[listType] then
+				for listId, list in pairs(mutationConfig.lists[listType]) do
 					list.modId = modId
-					rawset(MutationModProxy.ModProxy[listType], listId, list)
+					rawset(MutationModProxy.ModProxy.lists[listType], listId, list)
 				end
 			end
 		end
 
-		if mutationConfig.listEntryReplaceMap then
-			for entry, entriesBeingReplaced in pairs(mutationConfig.listEntryReplaceMap) do
-				rawset(MutationModProxy.ModProxy.listEntryReplaceMap, entry, entriesBeingReplaced)
+		if mutationConfig.lists.entryReplacerDictionary then
+			for entry, entriesBeingReplaced in pairs(mutationConfig.lists.entryReplacerDictionary) do
+				rawset(MutationModProxy.ModProxy.lists.entryReplacerDictionary, entry, entriesBeingReplaced)
 			end
 		end
 
@@ -115,11 +115,11 @@ MutationModProxy.ModProxy = {
 		end
 	}),
 	lists = {
-		listEntryReplaceMap = setmetatable({}, {
+		entryReplacerDictionary = setmetatable({}, {
 			__mode = "k",
 			__index = function(t, k)
-				setModProxyFields(t, k, "listEntryReplaceMap")
-				return modList[k].listEntryReplaceMap
+				setModProxyFields(t, k, "entryReplacerDictionary")
+				return modList[k].lists.entryReplacerDictionary
 			end,
 			__call = function(t)
 				return TableUtils:CountElements(modList)
@@ -229,6 +229,16 @@ function MutationModProxy:ImportMutationsFromMods()
 						modEntry.lists.passiveLists = {}
 						for passiveListId, passiveList in pairs(mutations.lists.passiveLists) do
 							modEntry.lists.passiveLists[passiveListId] = passiveList.name
+						end
+					end
+
+					if mutations.lists.entryReplacerDictionary and next(mutations.lists.entryReplacerDictionary) then
+						modEntry.lists.entryReplacerDictionary = {}
+						for listName, replacerDict in pairs(mutations.lists.entryReplacerDictionary) do
+							modEntry.lists.entryReplacerDictionary[listName] = {}
+							for entryName, toReplace in pairs(replacerDict) do
+								modEntry.lists.entryReplacerDictionary[entryName] = toReplace
+							end
 						end
 					end
 				end

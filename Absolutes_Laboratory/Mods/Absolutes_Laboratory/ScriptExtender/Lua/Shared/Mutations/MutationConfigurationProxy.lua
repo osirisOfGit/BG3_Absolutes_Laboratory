@@ -57,7 +57,7 @@ MutationConfigurationProxy = {
 				for _, modCache in pairs(MutationModProxy.ModProxy.lists.spellLists) do
 					---@cast modCache +LocalModCache
 
-					if modCache.spellLists and next(modCache.lists.spellLists) then
+					if modCache.lists.spellLists and next(modCache.lists.spellLists) then
 						for spellListId in pairs(modCache.lists.spellLists) do
 							spellLists[spellListId] = MutationModProxy.ModProxy.lists.spellLists[spellListId]
 						end
@@ -115,9 +115,9 @@ MutationConfigurationProxy = {
 				end)
 			end
 		}),
-		listEntryReplaceMap = setmetatable({}, {
+		entryReplacerDictionary = setmetatable({}, {
 			__index = function(t, k)
-				return MutationModProxy.ModProxy.listEntryReplaceMap[k]
+				return MutationModProxy.ModProxy.lists.entryReplacerDictionary[k]
 			end
 		}),
 	}
