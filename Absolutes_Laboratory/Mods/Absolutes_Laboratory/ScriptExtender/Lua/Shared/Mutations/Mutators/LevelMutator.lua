@@ -363,8 +363,10 @@ function LevelMutator:applyMutator(entity, entityVar)
 	if not levelUpSubscription and mutator.usePlayerLevel then
 		---@diagnostic disable-next-line: param-type-mismatch
 		levelUpSubscription = Ext.Entity.OnChange("EocLevel", function()
-			Logger:BasicInfo("A levelup mutator is registered and a player just gained enough XP to level up - rerunning mutations")
-			MutationProfileExecutor:ExecuteProfile(true)
+			Ext.Timer.WaitFor(10000, function()
+				Logger:BasicInfo("A levelup mutator is registered and a player just gained enough XP to level up - rerunning mutations")
+				MutationProfileExecutor:ExecuteProfile(true)
+			end)
 		end, Ext.Entity.Get(Osi.GetHostCharacter()))
 	end
 
