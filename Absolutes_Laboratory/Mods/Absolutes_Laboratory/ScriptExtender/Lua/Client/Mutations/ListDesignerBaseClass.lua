@@ -629,7 +629,7 @@ Using entity level will use the entity's character level, post Character Level M
 				end)
 			end
 		end
-	end)
+	end).Disabled = self.activeList.modId ~= nil
 
 	local leveledListGroup = self.designerSection:AddGroup("leveledLists")
 

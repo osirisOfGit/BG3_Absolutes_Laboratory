@@ -39,28 +39,29 @@ function PassiveSelector:renderSelector(parent, existingSelector)
 		for i, passiveId in TableUtils:OrderedPairs(existingSelector.criteriaValue, function(key, passiveId)
 			return Ext.Loca.GetTranslatedString(Ext.Stats.Get(passiveId).DisplayName, passiveId)
 		end) do
-			local delete = Styler:ImageButton(passiveDisplay:AddImageButton("delete" .. passiveId, "ico_red_x", { 16, 16 }))
-			delete.OnClick = function()
-				existingSelector.criteriaValue[i] = nil
-				TableUtils:ReindexNumericTable(existingSelector.criteriaValue)
-
-				updateFunc(#existingSelector.criteriaValue)
-				displaySelectedPassives()
-			end
-
 			---@type PassiveData
 			local passive = Ext.Stats.Get(passiveId)
+			if passive then
+				local delete = Styler:ImageButton(passiveDisplay:AddImageButton("delete" .. passiveId, "ico_red_x", { 16, 16 }))
+				delete.OnClick = function()
+					existingSelector.criteriaValue[i] = nil
+					TableUtils:ReindexNumericTable(existingSelector.criteriaValue)
 
-			local icon = passiveDisplay:AddImage((passive.Icon ~= "" and passive.Icon ~= "unknown") and passive.Icon or "Item_Unknown", { 32, 32 })
-			if icon.ImageData.Icon == "" then
-				icon:Destroy()
-				icon = passiveDisplay:AddImage("Item_Unknown", { 32, 32 })
+					updateFunc(#existingSelector.criteriaValue)
+					displaySelectedPassives()
+				end
+
+				local icon = passiveDisplay:AddImage((passive.Icon ~= "" and passive.Icon ~= "unknown") and passive.Icon or "Item_Unknown", { 32, 32 })
+				if icon.ImageData.Icon == "" then
+					icon:Destroy()
+					icon = passiveDisplay:AddImage("Item_Unknown", { 32, 32 })
+				end
+				icon.SameLine = true
+
+				Styler:HyperlinkText(passiveDisplay, Ext.Loca.GetTranslatedString(passive.DisplayName, passiveId), function(parent)
+					ResourceManager:RenderDisplayWindow(passive, parent)
+				end, true).SameLine = true
 			end
-			icon.SameLine = true
-
-			Styler:HyperlinkText(passiveDisplay, Ext.Loca.GetTranslatedString(passive.DisplayName, passiveId), function(parent)
-				ResourceManager:RenderDisplayWindow(passive, parent)
-			end, true).SameLine = true
 		end
 	end
 

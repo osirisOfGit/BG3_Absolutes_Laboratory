@@ -297,8 +297,6 @@ function ListConfigurationManager:HandleDependences(export, mutator, lists, remo
 					and export.lists[configKey][listId]
 					or TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.lists[configKey][listId]._real)
 
-				listId = listId .. "Exported"
-
 				if listDef.linkedProgressionTableIds then
 					for i, progressionTableId in pairs(listDef.linkedProgressionTableIds) do
 						local progressionTable = self.progressionIndex[progressionTableId]
@@ -446,7 +444,7 @@ function ListConfigurationManager:maintainLists(configBase)
 	if configBase.spellLists then
 		for guid, list in pairs(configBase.spellLists) do
 			---@cast list CustomList
-			self.listsConfig.spellLists[guid] = TableUtils:DeeplyCopyTable(list._real or list)
+			configBase.lists.spellLists[guid] = TableUtils:DeeplyCopyTable(list._real or list)
 		end
 		configBase.spellLists.delete = true
 		configBase.spellLists = nil
@@ -454,7 +452,7 @@ function ListConfigurationManager:maintainLists(configBase)
 
 	if configBase.passiveLists then
 		for guid, list in pairs(configBase.passiveLists) do
-			self.listsConfig.passiveLists[guid] = TableUtils:DeeplyCopyTable(list._real or list)
+			configBase.lists.passiveLists[guid] = TableUtils:DeeplyCopyTable(list._real or list)
 		end
 		configBase.passiveLists.delete = true
 		configBase.passiveLists = nil
@@ -462,7 +460,7 @@ function ListConfigurationManager:maintainLists(configBase)
 
 	if configBase.statusLists then
 		for guid, list in pairs(configBase.statusLists) do
-			self.listsConfig.statusLists[guid] = TableUtils:DeeplyCopyTable(list._real or list)
+			configBase.lists.statusLists[guid] = TableUtils:DeeplyCopyTable(list._real or list)
 		end
 		configBase.statusLists.delete = true
 		configBase.statusLists = nil
@@ -486,9 +484,7 @@ function ListConfigurationManager:maintainLists(configBase)
 						if not TableUtils:IndexOf(list.linkedProgressionTableIds, progTableId) then
 							table.insert(list.linkedProgressionTableIds, progTableId)
 						end
-						if not (customSubList.blackListed or customSubList.guaranteed or customSubList.onDeathOnly
-								or customSubList.startOfCombatOnly or customSubList.onLoadOnly)
-						then
+						if not next(customSubList._real or customSubList) then
 							customSubList.delete = true
 							levelList.linkedProgressions[progTableId] = nil
 						end

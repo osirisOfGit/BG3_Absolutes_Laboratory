@@ -670,6 +670,7 @@ function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMut
 		---@type ExtuiSelectable
 		local select = sideBar:AddSelectable(mutator.targetProperty)
 		select.SameLine = true
+		select.UserData = "EnableForMods"
 		select.OnClick = function()
 			if activeMutatorHandle then
 				activeMutatorHandle.Selected = false
