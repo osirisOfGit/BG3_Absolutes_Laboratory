@@ -60,8 +60,12 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 
 			local counter = 0
 
+			local currentLevel = Ext.Entity.Get(Osi.GetHostCharacter()).ServerCharacter.Level
+
 			for _, entity in pairs(... and { ... } or Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
-				if (Osi.IsDead(entity.Uuid.EntityUuid) == 0 or not entity.DeadByDefault) and not entity.PartyMember then
+				---@cast entity EntityHandle
+				
+				if (Osi.IsDead(entity.Uuid.EntityUuid) == 0 or not entity.DeadByDefault) and not entity.PartyMember and entity.ServerCharacter.Level == currentLevel then
 					mutatedEntities[entity.Uuid.EntityUuid] = true
 
 					---@type MutatorEntityVar
