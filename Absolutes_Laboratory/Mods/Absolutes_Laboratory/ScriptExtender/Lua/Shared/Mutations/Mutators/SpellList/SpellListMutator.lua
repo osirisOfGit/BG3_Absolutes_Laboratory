@@ -3,6 +3,15 @@ Ext.Require("Shared/Mutations/Mutators/SpellList/SpellListDesigner.lua")
 ---@class SpellListMutatorClass : MutatorInterface
 SpellListMutator = MutatorInterface:new("SpellList")
 
+---@type ExtComponentType[]
+SpellListMutator.affectedComponents = {
+	"SpellBook",
+	"SpellBookPrepares",
+	"SpellContainer",
+	"BoostsContainer",
+	"StatusContainer"
+}
+
 function SpellListMutator:priority()
 	return self:recordPriority(LevelMutator:priority() + 1)
 end
@@ -1218,6 +1227,7 @@ if Ext.IsServer() then
 	end
 
 	function SpellListMutator:applyMutator(entity, entityVar)
+		ListConfigurationManager:buildProgressionIndex()
 		---@type EsvSpellSpellSystem
 		local spellSystem = Ext.System.ServerSpell
 
@@ -1444,12 +1454,13 @@ if Ext.IsServer() then
 													for _, spells in pairs(progressionLevel.spellLists) do
 														for _, spellName in pairs(spells) do
 															local leveledLists = spellList.levels and spellList.levels[i]
-															if not leveledLists
-																or not leveledLists.linkedProgressions
-																or not TableUtils:IndexOf(leveledLists.linkedProgressions[progressionTableId],
-																	function(value)
-																		return TableUtils:IndexOf(value, spellName) ~= nil
-																	end)
+															if (not leveledLists
+																	or not leveledLists.linkedProgressions
+																	or not TableUtils:IndexOf(leveledLists.linkedProgressions[progressionTableId],
+																		function(value)
+																			return TableUtils:IndexOf(value, spellName) ~= nil
+																		end))
+																and (not spellList.blacklistSameEntriesInHigherProgressionLevels or not ListConfigurationManager:hasSameEntryInLowerLevel(progressionTableId, i, spellName, "spellLists"))
 															then
 																spellList.levels = spellList.levels or {}
 																spellList.levels[i] = spellList.levels[i] or {}
@@ -1492,7 +1503,8 @@ if Ext.IsServer() then
 																end
 															else
 																Logger:BasicDebug(
-																"Randomized spell %s from progression %s (%s - level %s) is already known, not adding to the random pool", spellName,
+																	"Randomized spell %s from progression %s (%s - level %s) is already known, not adding to the random pool",
+																	spellName,
 																	progressionTableId, progressionTable.name, i)
 															end
 														end

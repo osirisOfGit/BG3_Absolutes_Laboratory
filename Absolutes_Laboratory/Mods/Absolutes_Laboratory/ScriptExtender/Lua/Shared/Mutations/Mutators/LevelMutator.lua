@@ -1,5 +1,8 @@
 LevelMutator = MutatorInterface:new("Character Level")
-
+LevelMutator.affectedComponents = {
+	"Health",
+	"EocLevel"
+}
 function LevelMutator:priority()
 	return self:recordPriority(1)
 end

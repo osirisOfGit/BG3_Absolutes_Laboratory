@@ -1,5 +1,9 @@
 ---@class ClassesAndSubclassesMutatorClass : MutatorInterface
 ClassesAndSubclassesMutator = MutatorInterface:new("Classes And Subclasses")
+ClassesAndSubclassesMutator.affectedComponents = {
+	"Classes",
+	"Stats"
+}
 
 function ClassesAndSubclassesMutator:priority()
 	return self:recordPriority(SpellListMutator:priority() + 1)

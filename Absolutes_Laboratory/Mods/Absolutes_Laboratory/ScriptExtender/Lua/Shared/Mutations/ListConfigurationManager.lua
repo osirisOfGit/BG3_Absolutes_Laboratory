@@ -73,6 +73,7 @@ ListConfigurationManager = {
 ---@param tableUUID Guid?
 function ListConfigurationManager:buildProgressionIndex(tableUUID)
 	if tableUUID or not next(self.progressionIndex) or not next(self.progressionTables) then
+		Ext.Utils.ProfileBegin(("Indexing %s"):format(tableUUID or "All Progressions"))
 		local progressionSources = Ext.StaticData.GetSources("Progression")
 		for _, progressionId in pairs(Ext.StaticData.GetAll("Progression")) do
 			---@type ResourceProgression
@@ -201,6 +202,7 @@ function ListConfigurationManager:buildProgressionIndex(tableUUID)
 
 			::continue::
 		end
+		Ext.Utils.ProfileEnd(("Indexing %s"):format(tableUUID or "All Progressions"))
 	end
 end
 
@@ -210,15 +212,23 @@ end
 ---@param configKey "spellLists"|"passiveLists"
 ---@return boolean
 function ListConfigurationManager:hasSameEntryInLowerLevel(progressionTableId, level, entryName, configKey)
+	if level <= 1 then
+		return false
+	end
+
+	Ext.Utils.ProfileBegin(("Checking if %s offers the same entry in a level lower than %d"):format(self.progressionIndex[progressionTableId].name, level))
 	for _, progEntry in pairs(self.progressionIndex[progressionTableId].progressionLevels) do
 		if progEntry.level < level and progEntry[configKey] then
 			if TableUtils:IndexOf(progEntry[configKey], function(value)
 					return TableUtils:IndexOf(value, entryName) ~= nil
 				end) then
+				Ext.Utils.ProfileEnd(("Checking if %s offers the same entry in a level lower than %d"):format(self.progressionIndex[progressionTableId].name, level))
 				return true
 			end
 		end
 	end
+	Ext.Utils.ProfileEnd(("Checking if %s offers the same entry in a level lower than %d"):format(self.progressionIndex[progressionTableId].name, level))
+
 	return false
 end
 

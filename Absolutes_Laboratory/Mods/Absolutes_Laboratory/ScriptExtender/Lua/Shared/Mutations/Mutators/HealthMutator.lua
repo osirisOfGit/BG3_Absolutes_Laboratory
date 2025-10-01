@@ -1,4 +1,7 @@
 HealthMutator = MutatorInterface:new("Health")
+HealthMutator.affectedComponents = {
+	"Health",
+}
 
 function HealthMutator:priority()
 	return self:recordPriority(LevelMutator:priority() + 1)

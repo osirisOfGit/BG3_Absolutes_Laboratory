@@ -3,6 +3,11 @@ Ext.Require("Shared/Mutations/Mutators/StatusList/StatusListDesigner.lua")
 ---@class StatusListMutatorClass : MutatorInterface
 StatusListMutator = MutatorInterface:new("StatusList")
 
+---@type ExtComponentType[]
+StatusListMutator.affectedComponents = {
+	"StatusContainer"
+}
+
 function StatusListMutator:priority()
 	return self:recordPriority(SpellListMutator:priority() + 1)
 end

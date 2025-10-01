@@ -1,5 +1,8 @@
 ---@class BoostsMutatorClass : MutatorInterface
 BoostsMutator = MutatorInterface:new("Boosts")
+BoostsMutator.affectedComponents = {
+	"BoostsContainer"
+}
 
 function BoostsMutator:priority()
 	return 99
@@ -769,4 +772,3 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 		}
 	} --[[@as MazzleDocsDocumentation]]
 end
-

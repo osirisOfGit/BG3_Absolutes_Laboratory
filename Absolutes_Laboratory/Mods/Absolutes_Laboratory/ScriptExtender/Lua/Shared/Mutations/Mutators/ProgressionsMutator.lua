@@ -1,4 +1,8 @@
 ProgressionsMutator = MutatorInterface:new("Progressions")
+ProgressionsMutator.affectedComponents = {
+	"ProgressionContainer",
+	"ProgressionMeta"
+}
 
 function ProgressionsMutator:priority()
 	return self:recordPriority(SpellListMutator:priority() + 1)
@@ -518,4 +522,3 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 		}
 	} --[[@as MazzleDocsDocumentation]]
 end
-

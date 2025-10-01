@@ -44,22 +44,77 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 		if activeProfile and next(activeProfile.mutationRules) then
 			local time = Ext.Timer:MonotonicTime()
 
-			---@type function[]
+			---@type {[string] : fun()}
 			local entitiesToProcess = {}
-			---@type thread
-			local delayedProcessor = coroutine.create(function(...)
-				local counter = 1
-				while counter < #entitiesToProcess do
-					entitiesToProcess[counter]()
-					counter = counter + 1
-					coroutine.yield()
-				end
+
+			---@type {[string] : number}
+			local eligible = {}
+
+			local tickListener
+			local tickCounter = 0
+			local entityCounter = 0
+
+			Ext.OnNextTick(function(e)
+				tickListener = Ext.Events.Tick:Subscribe(function(e)
+					if Logger:IsLogLevelEnabled(Logger.PrintTypes.DEBUG) then
+						Logger:BasicDebug("%s entities left to process, %s currently eligible", TableUtils:CountElements(entitiesToProcess), TableUtils:CountElements(eligible))
+					end
+					if not next(entitiesToProcess) then
+						Logger:BasicInfo("======= Mutated %s Entities in %dms (%d ticks) under Profile %s =======",
+							entityCounter,
+							(Ext.Timer:MonotonicTime() - time),
+							tickCounter,
+							activeProfile.name .. (activeProfile.modId and string.format(" (from mod %s)", Ext.Mod.GetMod(activeProfile.modId).Info.Name) or ""))
+						Ext.Events.Tick:Unsubscribe(tickListener)
+						tickListener = nil
+					else
+						tickCounter = tickCounter + 1
+						for entityId, funct in pairs(entitiesToProcess) do
+							---@type EntityHandle
+							local entity = Ext.Entity.Get(entityId)
+							if entity.Vars.Absolutes_Laboratory_Undone_Components then
+								for _, component in ipairs(entity.Vars.Absolutes_Laboratory_Undone_Components) do
+									if entity:GetReplicationFlags(component) ~= 0 then
+										if Logger:IsLogLevelEnabled(Logger.PrintTypes.TRACE) then
+											Logger:BasicTrace("Entity %s's component %s was dirty with flag %d, not eligible for processing yet",
+												entityId,
+												component,
+												tonumber(entity:GetReplicationFlags(component)))
+										end
+
+										if eligible[entityId] then
+											eligible[entityId] = nil
+										end
+										goto continue
+									end
+								end
+								if eligible[entityId] and eligible[entityId] >= 1 then
+									Logger:BasicDebug("Completed undo for %s after %d ticks", EntityRecorder:GetEntityName(entity), tickCounter)
+									funct()
+									eligible[entityId] = nil
+									entitiesToProcess[entityId] = nil
+								else
+									eligible[entityId] = (eligible[entityId] or 0) + 1
+								end
+							end
+							::continue::
+						end
+					end
+				end, { Priority = 999 })
 			end)
+
+			-- ---@type thread
+			-- local delayedProcessor = coroutine.create(function(...)
+			-- 	local counter = 1
+			-- 	while counter < #entitiesToProcess do
+			-- 		entitiesToProcess[counter]()
+			-- 		counter = counter + 1
+			-- 		coroutine.yield()
+			-- 	end
+			-- end)
 
 			---@type {[Guid] : {[Guid]: SelectorPredicate}}
 			local cachedSelectors = {}
-
-			local counter = 0
 
 			local currentLevel = Ext.Entity.Get(Osi.GetHostCharacter()).ServerCharacter.Level
 
@@ -111,19 +166,18 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 					local didUndo = false
 					if entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] then
 						didUndo = true
-						MutatorInterface:undoMutator(entity, entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME], entityVar, rerunTransient)
+						Ext.OnNextTick(function(e)
+							MutatorInterface:undoMutator(entity, entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME], entityVar, rerunTransient)
+						end)
 					end
 
 					if next(entityVar.appliedMutators) then
-						counter = counter + 1
+						entityCounter = entityCounter + 1
 						if didUndo then
-							table.insert(entitiesToProcess, function()
+							entitiesToProcess[entity.Uuid.EntityUuid] = function()
 								MutatorInterface:applyMutator(entity, entityVar)
 								entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = next(entityVar.appliedMutators) and entityVar or nil
-							end)
-							Ext.Timer.WaitFor(50, function()
-								coroutine.resume(delayedProcessor)
-							end)
+							end
 						else
 							MutatorInterface:applyMutator(entity, entityVar)
 							entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = next(entityVar.appliedMutators) and entityVar or nil
@@ -136,21 +190,12 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 				end
 			end
 
-			-- Ext.Timer.WaitFor(50, function()
-			-- 	coroutine.resume(delayedProcessor)
-			-- end)
-			-- Ensures all undo operations have time to complete
-			local function checkCompletion()
-				if #entitiesToProcess == 0 or coroutine.status(delayedProcessor) == "dead" then
-					Logger:BasicInfo("======= Mutated %s Entities in %dms under Profile %s =======",
-						counter,
-						(Ext.Timer:MonotonicTime() - time),
-						activeProfile.name .. (activeProfile.modId and string.format(" (from mod %s)", Ext.Mod.GetMod(activeProfile.modId).Info.Name) or ""))
-				else
-					Ext.Timer.WaitFor(100, checkCompletion)
-				end
+			if not next(entitiesToProcess) then
+				Logger:BasicInfo("======= Mutated %s Entities in %dms under Profile %s =======",
+					entityCounter,
+					(Ext.Timer:MonotonicTime() - time),
+					activeProfile.name .. (activeProfile.modId and string.format(" (from mod %s)", Ext.Mod.GetMod(activeProfile.modId).Info.Name) or ""))
 			end
-			checkCompletion()
 		else
 			local time = Ext.Timer:MonotonicTime()
 			local counter = 0

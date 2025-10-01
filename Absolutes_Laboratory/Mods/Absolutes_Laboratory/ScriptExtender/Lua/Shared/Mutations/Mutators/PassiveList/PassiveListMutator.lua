@@ -3,6 +3,11 @@ Ext.Require("Shared/Mutations/Mutators/PassiveList/PassiveListDesigner.lua")
 ---@class PassiveListMutatorClass : MutatorInterface
 PassiveListMutator = MutatorInterface:new("PassiveList")
 
+---@type ExtComponentType[]
+PassiveListMutator.affectedComponents = {
+	"PassiveContainer",
+}
+
 function PassiveListMutator:priority()
 	return self:recordPriority(SpellListMutator:priority() + 1)
 end

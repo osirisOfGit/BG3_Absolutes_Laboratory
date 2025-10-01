@@ -1,4 +1,7 @@
 AbilitiesMutator = MutatorInterface:new("Abilities")
+AbilitiesMutator.affectedComponents = {
+	"BoostsContainer"
+}
 
 function AbilitiesMutator:priority()
 	return self:recordPriority(SpellListMutator:priority() + 1)

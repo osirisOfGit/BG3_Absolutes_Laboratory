@@ -10,6 +10,12 @@ Ext.Vars.RegisterUserVariable(ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME, {
 	SyncToClient = true
 })
 
+Ext.Vars.RegisterUserVariable("Absolutes_Laboratory_Undone_Components", {
+	Server = true,
+	Client = false,
+	SyncToClient = false
+})
+
 ---@class MutatorInterface
 MutatorInterface = {
 	name = "",
@@ -17,6 +23,8 @@ MutatorInterface = {
 	registeredMutators = {},
 	Topic = "Mutations",
 	SubTopic = "Mutators",
+	---@type ExtComponentType[]
+	affectedComponents = {}
 }
 
 ---@param name string
@@ -124,6 +132,7 @@ function MutatorInterface:undoMutator(entity, entityVar, primedEntityVar, reproc
 	local entityName = EntityRecorder:GetEntityName(entity)
 	Ext.Utils.ProfileBegin("Lab Profiles - Undoing Mutators on " .. entityName)
 	if entityVar then
+		local componentsToListenTo = {}
 		local time = Ext.Timer:MonotonicTime()
 
 		Logger:BasicDebug("=========================== STARTING UNDO FOR %s_%s ===========================",
@@ -141,7 +150,16 @@ function MutatorInterface:undoMutator(entity, entityVar, primedEntityVar, reproc
 
 				local success, error = xpcall(function(...)
 					Ext.Utils.ProfileBegin(("Lab Profiles - Undoing %s Mutator On %s"):format(mutatorName, entityName))
-					self.registeredMutators[mutatorName]:undoMutator(entity, entityVar, primedEntityVar, reprocessTransient)
+					mut:undoMutator(entity, entityVar, primedEntityVar, reprocessTransient)
+
+					if next(mut.affectedComponents) then
+						for _, component in pairs(mut.affectedComponents) do
+							if not TableUtils:IndexOf(componentsToListenTo, component) then
+								table.insert(componentsToListenTo, component)
+							end
+						end
+					end
+
 					Ext.Utils.ProfileEnd(("Lab Profiles - Undoing %s Mutator On %s"):format(mutatorName, entityName))
 				end, debug.traceback)
 
@@ -163,6 +181,8 @@ function MutatorInterface:undoMutator(entity, entityVar, primedEntityVar, reproc
 			entityName,
 			entity.Uuid.EntityUuid,
 			Ext.Timer:MonotonicTime() - time)
+
+		entity.Vars.Absolutes_Laboratory_Undone_Components = componentsToListenTo
 	end
 	entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = nil
 	Ext.Utils.ProfileEnd("Lab Profiles - Undoing Mutators on " .. entityName)
@@ -176,6 +196,9 @@ end
 --- Should fire things like replication, system calls, etc in case an undo and apply need to run consecutively, so they don't fight one another
 ---@param entity EntityHandle
 function MutatorInterface:FinalizeMutator(entity) end
+
+---@return ExtComponentType[]?
+function MutatorInterface:affectedComponents() end
 
 Ext.Require("Shared/Mutations/Mutators/PrepPhaseMarkerMutator.lua")
 
