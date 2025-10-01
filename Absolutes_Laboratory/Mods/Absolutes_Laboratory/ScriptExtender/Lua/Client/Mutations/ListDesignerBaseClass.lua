@@ -326,9 +326,9 @@ function ListDesignerBaseClass:buildModLists(activeListID)
 		for modId, modCache in pairs(MutationModProxy.ModProxy.lists[self.configKey]) do
 			---@cast modCache +LocalModCache
 
-			if modCache[self.configKey] and next(modCache[self.configKey]) then
+			if modCache.lists[self.configKey] and next(modCache.lists[self.configKey]) then
 				modLists[modId] = {}
-				for listId in pairs(modCache[self.configKey]) do
+				for listId in pairs(modCache.lists[self.configKey]) do
 					table.insert(modLists[modId], listId)
 				end
 			end
@@ -536,7 +536,7 @@ Using entity level will use the entity's character level, post Character Level M
 		for group in TableUtils:OrderedPairs(self.subListIndex) do
 			if group ~= "blackListed" then
 				table.insert(opts, self.subListIndex[group].name)
-				if group == self.settings.defaultPool[self.configKey] then
+				if group == (self.activeList.defaultPool or self.settings.defaultPool[self.configKey]) then
 					index = #opts
 				end
 			end
@@ -544,7 +544,7 @@ Using entity level will use the entity's character level, post Character Level M
 		defaultCombo.Options = opts
 		defaultCombo.SelectedIndex = index - 1
 		defaultCombo.OnChange = function()
-			local previous = self.settings.defaultPool[self.configKey]
+			local previous = self.activeList.defaultPool or self.settings.defaultPool[self.configKey]
 			local chosen = TableUtils:IndexOf(self.subListIndex, function(value)
 				return value.name == defaultCombo.Options[defaultCombo.SelectedIndex + 1]
 			end)
@@ -684,23 +684,25 @@ Using entity level will use the entity's character level, post Character Level M
 			local deleteProgGroup = true
 
 			for _, progressionTableId in pairs(self.activeList.linkedProgressionTableIds) do
-				if TableUtils:IndexOf(ListConfigurationManager.progressionIndex[progressionTableId].progressionLevels, function(value)
-						return value.level == level
-					end)
-				then
-					local progList = {
-					}
-					if self.activeList.levels
-						and self.activeList.levels[level]
-						and self.activeList.levels[level].linkedProgressions
-						and self.activeList.levels[level].linkedProgressions[progressionTableId]
+				if ListConfigurationManager.progressionIndex[progressionTableId] then
+					if TableUtils:IndexOf(ListConfigurationManager.progressionIndex[progressionTableId].progressionLevels, function(value)
+							return value.level == level
+						end)
 					then
-						progList = self.activeList.levels[level].linkedProgressions[progressionTableId]
-					end
+						local progList = {
+						}
+						if self.activeList.levels
+							and self.activeList.levels[level]
+							and self.activeList.levels[level].linkedProgressions
+							and self.activeList.levels[level].linkedProgressions[progressionTableId]
+						then
+							progList = self.activeList.levels[level].linkedProgressions[progressionTableId]
+						end
 
-					local delete = self:buildEntryListFromSubList(progGroup, progList, level, progressionTableId)
-					if deleteProgGroup then
-						deleteProgGroup = delete
+						local delete = self:buildEntryListFromSubList(progGroup, progList, level, progressionTableId)
+						if deleteProgGroup then
+							deleteProgGroup = delete
+						end
 					end
 				end
 			end
@@ -749,7 +751,7 @@ Using entity level will use the entity's character level, post Character Level M
 			self.activeList.levels[group.UserData] = self.activeList.levels[group.UserData] or {}
 			self.activeList.levels[group.UserData].manuallySelectedEntries = self.activeList.levels[group.UserData].manuallySelectedEntries or {}
 
-			local defaultPool = self.settings.defaultPool[self.configKey]
+			local defaultPool = self.activeList.defaultPool or self.settings.defaultPool[self.configKey]
 
 			for _, spellHandle in pairs(entryHandles) do
 				if not self:CheckIfEntryIsInListLevel(self.activeList.levels[group.UserData], spellHandle.entryName, group.UserData) then
@@ -786,7 +788,8 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 	if progressionTableId then
 		if ListConfigurationManager.progressionIndex[progressionTableId] then
 			Styler:ScaledFont(entryListGroup:AddSeparatorText(ListConfigurationManager.progressionIndex[progressionTableId].name), "Big"):SetStyle("SeparatorTextAlign", 0.05)
-			subListsClone[self.settings.defaultPool[self.configKey]] = subListsClone[self.settings.defaultPool[self.configKey]] or {}
+			subListsClone[self.activeList.defaultPool or self.settings.defaultPool[self.configKey]] = subListsClone
+			[self.activeList.defaultPool or self.settings.defaultPool[self.configKey]] or {}
 		else
 			return
 		end
@@ -803,7 +806,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 	local count = 0
 
 	local function buildProgressionSubList(subListName, subList)
-		if subListName == self.settings.defaultPool[self.configKey] and progressionTableId then
+		if subListName == (self.activeList.defaultPool or self.settings.defaultPool[self.configKey]) and progressionTableId then
 			local blacklistLowerLevelEntries = self.activeList.blacklistSameEntriesInHigherProgressionLevels
 			for _, progressionEntry in pairs(ListConfigurationManager.progressionIndex[progressionTableId].progressionLevels) do
 				if progressionEntry.level == level and progressionEntry[self.configKey] then
@@ -835,7 +838,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 	local groupFunc
 	local listForGroupFunc = {}
 	if useIcons and self.settings.showSeperatorsInMain then
-		buildProgressionSubList(self.settings.defaultPool[self.configKey], listForGroupFunc)
+		buildProgressionSubList(self.activeList.defaultPool or self.settings.defaultPool[self.configKey], listForGroupFunc)
 		for subListName, subList in pairs(subListsClone) do
 			buildProgressionSubList(subListName, listForGroupFunc)
 			for _, entry in pairs(subList) do
@@ -1120,7 +1123,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 														subList = subList.manuallySelectedEntries
 													end
 
-													if subListCategory ~= self.settings.defaultPool[self.configKey] or not progressionTableId then
+													if subListCategory ~= (self.activeList.defaultPool or self.settings.defaultPool[self.configKey]) or not progressionTableId then
 														subList[subListCategory] = subList[subListCategory] or {}
 														table.insert(subList[subListCategory], handle.entryName)
 													elseif subList[subListCategory] then
@@ -1325,7 +1328,7 @@ function ListDesignerBaseClass:buildStatBrowser(statType)
 							subLevelList.manuallySelectedEntries = subLevelList.manuallySelectedEntries or
 								TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.customSubList)
 
-							local defaultPool = self.settings.defaultPool[self.configKey]
+							local defaultPool = self.activeList.defaultPool or self.settings.defaultPool[self.configKey]
 							local leveledSubList = subLevelList.manuallySelectedEntries
 							leveledSubList[defaultPool] = leveledSubList[defaultPool] or {}
 
@@ -1582,7 +1585,7 @@ function ListDesignerBaseClass:buildLiteProgressionBrowser()
 							header:SetStyle("SeparatorTextAlign", 0.5)
 
 							Styler:MiddleAlignedColumnLayout(levelView, function(ele)
-								local defaultPool = self.settings.defaultPool[self.configKey]
+								local defaultPool = self.activeList.defaultPool or self.settings.defaultPool[self.configKey]
 								local copyAllButton = ele:AddButton("Copy All")
 
 								copyAllButton.OnClick = function()

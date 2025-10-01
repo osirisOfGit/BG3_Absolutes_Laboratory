@@ -210,6 +210,7 @@ function MutationModProxy:ImportMutationsFromMods()
 				end
 
 				if mutations.lists then
+					modEntry.lists = modEntry.lists or {}
 					ListConfigurationManager:maintainLists(mutations)
 					if mutations.lists.spellLists and next(mutations.lists.spellLists) then
 						modEntry.lists.spellLists = {}

@@ -626,8 +626,8 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 		if passiveListMutator.values.passiveLists then
 			for _, passiveListId in pairs(passiveListMutator.values.passiveLists) do
 				local passiveList = MutationConfigurationProxy.lists.passiveLists[passiveListId]
-				passiveList = passiveList.__real or passiveList
 				if passiveList then
+					passiveList = passiveList.__real or passiveList
 					if passiveList.spellListDependencies and next(passiveList.spellListDependencies) then
 						for _, spellListDependency in ipairs(passiveList.spellListDependencies) do
 							if entityVar.appliedMutators[SpellListMutator.name] and entityVar.appliedMutators[SpellListMutator.name].appliedLists[spellListDependency] then

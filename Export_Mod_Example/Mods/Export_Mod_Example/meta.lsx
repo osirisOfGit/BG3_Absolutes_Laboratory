@@ -7,12 +7,349 @@
         <node id="Dependencies">
           <children>
             <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="BladesingerDnD5R_3d8f18cf-0fd6-e2d8-54af-a7af42256dc4" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Bladesinger DnD 5R Changes" />
+              <attribute id="UUID" type="FixedString" value="3d8f18cf-0fd6-e2d8-54af-a7af42256dc4" />
+              <attribute id="Version64" type="int64" value="36310276290641933" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="5R_FountofMoonlight" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="5R Fount of Moonlight" />
+              <attribute id="UUID" type="FixedString" value="e800652c-3afe-45c6-a5a0-2b9c9a82df43" />
+              <attribute id="Version64" type="int64" value="36169534507319296" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Ultimate_NPC_Stat_Overhaul" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Ultimate NPC Stat Overhaul - Absolute's Laboratory Edition" />
+              <attribute id="UUID" type="FixedString" value="61e8471b-4eda-4493-829d-e3c29ecc36c3" />
+              <attribute id="Version64" type="int64" value="108086391056891904" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="AdvancedTTSpells_fa49db03-caa7-49c8-7c76-e6c38b60267a" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="AdvancedTTSpells" />
+              <attribute id="UUID" type="FixedString" value="fa49db03-caa7-49c8-7c76-e6c38b60267a" />
+              <attribute id="Version64" type="int64" value="36169545244737536" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Monk 5e Adjustments" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Monk 5e Adjustments" />
+              <attribute id="UUID" type="FixedString" value="9721ea3b-cf61-41f8-9e10-4b8516f3ce72" />
+              <attribute id="Version64" type="int64" value="108649341010313216" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="BookOfDruids_36134629-de40-94cf-8e14-beb17341147b" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Book of Druids - 5e Druid Subclasses" />
+              <attribute id="UUID" type="FixedString" value="36134629-de40-94cf-8e14-beb17341147b" />
+              <attribute id="Version64" type="int64" value="36028797018963976" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="CommunityLibrary" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="CommunityLibrary" />
+              <attribute id="UUID" type="FixedString" value="396c5966-09b0-40a1-af3f-93a5e9ce71c0" />
+              <attribute id="Version64" type="int64" value="72479806502993920" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="School of Transmutation Enhanced" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="School of Transmutation Enhanced" />
+              <attribute id="UUID" type="FixedString" value="12a74e1f-b60b-4d65-a132-7089efc2067f" />
+              <attribute id="Version64" type="int64" value="2" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="UACunningStrike" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="UACunningStrike" />
+              <attribute id="UUID" type="FixedString" value="248dfe45-70cb-474f-825c-c58a72cff970" />
+              <attribute id="Version64" type="int64" value="36873224096579584" />
+            </node>
+
+            <node id="ModuleShortDesc">
               <attribute id="Folder" type="LSWString" value="Absolutes_Laboratory" />
               <attribute id="MD5" type="LSString" value="" />
               <attribute id="Name" type="FixedString" value="Absolute's Laboratory" />
               <attribute id="UUID" type="FixedString" value="a17a3a3d-5c16-404a-910a-68ae9e47f247" />
-              <attribute id="Version64" type="int64" value="36873221949095936" />
+              <attribute id="Version64" type="int64" value="37013959437451264" />
             </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="bibMod1_73707e2a-b358-aa93-fe6e-de6764489833" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Features from DnD 5E Planescape" />
+              <attribute id="UUID" type="FixedString" value="73707e2a-b358-aa93-fe6e-de6764489833" />
+              <attribute id="Version64" type="int64" value="72198344411185420" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Goon's_Library" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Goon's Library" />
+              <attribute id="UUID" type="FixedString" value="07fbc2f1-f359-4b9d-b243-fe28bd783e4c" />
+              <attribute id="Version64" type="int64" value="144678155209146369" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="HomebrewSpells" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Homebrew Spells" />
+              <attribute id="UUID" type="FixedString" value="84958e84-fd62-474f-bd1f-cbabc132c4b3" />
+              <attribute id="Version64" type="int64" value="72198331526283266" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="WiseAttacksMonk_82859e07-835a-e157-d69a-e2b8d951f452" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Master of All Four Elements Monk - Rework" />
+              <attribute id="UUID" type="FixedString" value="82859e07-835a-e157-d69a-e2b8d951f452" />
+              <attribute id="Version64" type="int64" value="36028801313931269" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Blessed Hammer and Imbue Weapon" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Lightbringer Reforged - Blessed Hammer and Imbue Weapon" />
+              <attribute id="UUID" type="FixedString" value="3d26bfee-44e1-4aeb-8d1f-bde5e9490c89" />
+              <attribute id="Version64" type="int64" value="36028799166447616" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Monk - Wisdom Ki Scaling" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Monk - Wisdom Ki Scaling" />
+              <attribute id="UUID" type="FixedString" value="83f0ea9e-5ec2-491a-96fa-1f3f4ca4e6a8" />
+              <attribute id="Version64" type="int64" value="36028799166447616" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Expansion" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Expansion" />
+              <attribute id="UUID" type="FixedString" value="a2c4b0fc-e745-41df-81b7-fa53950d86a0" />
+              <attribute id="Version64" type="int64" value="36873228391546882" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Artificer" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Artificer" />
+              <attribute id="UUID" type="FixedString" value="88fadf2c-152d-404e-b863-c12273559e1c" />
+              <attribute id="Version64" type="int64" value="75153818781745152" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Test_4b516620-9c56-aa18-96ae-a9ee4f57b515" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Mystra's Spells" />
+              <attribute id="UUID" type="FixedString" value="4b516620-9c56-aa18-96ae-a9ee4f57b515" />
+              <attribute id="Version64" type="int64" value="72057628397666370" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="FighterSubclasses5eCombined_88e1d176-4259-f98f-6b9a-486caaaf2c70" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="5e Fighter Subclasses Combined" />
+              <attribute id="UUID" type="FixedString" value="88e1d176-4259-f98f-6b9a-486caaaf2c70" />
+              <attribute id="Version64" type="int64" value="36169549539704833" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Meta" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Rogue Unchained" />
+              <attribute id="UUID" type="FixedString" value="650acf3e-e488-490a-a42c-f55555555555" />
+              <attribute id="Version64" type="int64" value="36028816346316888" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="OneDnD_WarMagic" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="DnD 5R War Magic and Improved War Magic" />
+              <attribute id="UUID" type="FixedString" value="7429b169-5e11-4d31-9db3-b1285df2d191" />
+              <attribute id="Version64" type="int64" value="144115188075855875" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="StormSorceryOverhaul_24f84388-ce13-2428-e54a-ee93c37173a9" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Storm Sorcery Overhaul" />
+              <attribute id="UUID" type="FixedString" value="24f84388-ce13-2428-e54a-ee93c37173a9" />
+              <attribute id="Version64" type="int64" value="36028797018963970" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="MetamagicExtended" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="MetamagicExtended" />
+              <attribute id="UUID" type="FixedString" value="da5d2ea8-51c2-42ba-8d0f-34b5b198a19e" />
+              <attribute id="Version64" type="int64" value="180143985094819844" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Champion_PHB2024" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Champion_PHB2024" />
+              <attribute id="UUID" type="FixedString" value="6596a24a-230b-405a-aa03-838d99b4bb7a" />
+              <attribute id="Version64" type="int64" value="36028797018963969" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="War Domain Enhanced" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="War Domain Enhanced" />
+              <attribute id="UUID" type="FixedString" value="916f28a7-e72c-4a84-8d38-9e38fcfb015e" />
+              <attribute id="Version64" type="int64" value="6" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="ManyMoreMonsters" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Many More Monsters" />
+              <attribute id="UUID" type="FixedString" value="1b215646-6200-451a-9c4a-b21406f69edd" />
+              <attribute id="Version64" type="int64" value="108649349600247812" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="RecklessAttack5e" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="RecklessAttack5e" />
+              <attribute id="UUID" type="FixedString" value="776e25bb-6128-479d-8923-089146901e46" />
+              <attribute id="Version64" type="int64" value="36028801313931265" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="5R_StarryWisp" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="5R Starry Wisp" />
+              <attribute id="UUID" type="FixedString" value="b119b70f-2e8c-4b07-bf66-e69e664bc68f" />
+              <attribute id="Version64" type="int64" value="36310271995674624" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Spjammer_4511f6b4-7422-efd2-8db1-31f6352c8a9a" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Features from DnD 5E Spelljammer" />
+              <attribute id="UUID" type="FixedString" value="4511f6b4-7422-efd2-8db1-31f6352c8a9a" />
+              <attribute id="Version64" type="int64" value="36028822788767821" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="RR_Barbarian_Equipment_42d1e5cf-b283-2280-29f0-31aa5759929f" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Rage and Resilience: Barbarian Equipment" />
+              <attribute id="UUID" type="FixedString" value="42d1e5cf-b283-2280-29f0-31aa5759929f" />
+              <attribute id="Version64" type="int64" value="36028797018963974" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Arcane Trickster Enhanced" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Arcane Trickster Enhanced" />
+              <attribute id="UUID" type="FixedString" value="3246dfee-e767-4bcd-b866-b509222696b2" />
+              <attribute id="Version64" type="int64" value="6" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="5eSpells" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="5eSpells" />
+              <attribute id="UUID" type="FixedString" value="fb5f528d-4d48-4bf2-a668-2274d3cfba96" />
+              <attribute id="Version64" type="int64" value="72479806502993920" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="5R_Druid" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="5R Druid" />
+              <attribute id="UUID" type="FixedString" value="10945588-a8c9-4e07-885e-4449807e03f4" />
+              <attribute id="Version64" type="int64" value="36169534507319297" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="DivineSoulCompat20" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Sorcerer: Divine Soul (REVISED) Lv20 Expansion Add-on" />
+              <attribute id="UUID" type="FixedString" value="33279cc6-e662-496d-95f6-b970d6f357ef" />
+              <attribute id="Version64" type="int64" value="36028797018963971" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="College of Valour Enhanced" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="College of Valour Enhanced" />
+              <attribute id="UUID" type="FixedString" value="8b1c26ca-d18f-4df3-8094-2c414b522923" />
+              <attribute id="Version64" type="int64" value="2" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Valkrana's Spellbook" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Valkrana's Spellbook" />
+              <attribute id="UUID" type="FixedString" value="9deeb371-f01e-41b4-b20e-c5eee0751b12" />
+              <attribute id="Version64" type="int64" value="73042788668669952" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="DruidWildShapeOverhaul" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Druid Wild Shape Overhaul" />
+              <attribute id="UUID" type="FixedString" value="274cf3f1-f043-4e1f-8acf-b2e79c3630b8" />
+              <attribute id="Version64" type="int64" value="36169534507319298" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="ItemBugFix_010e73d5-9342-e528-eb01-8289c03ea7cb" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Item and Spell Bug Fixes" />
+              <attribute id="UUID" type="FixedString" value="010e73d5-9342-e528-eb01-8289c03ea7cb" />
+              <attribute id="Version64" type="int64" value="73183515419607041" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Smite Rework_Judgments" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Lightbringer Reforged - Judgments (Smite Rework)" />
+              <attribute id="UUID" type="FixedString" value="85fea947-f8a1-4108-b152-b17c2d8e8998" />
+              <attribute id="Version64" type="int64" value="36028803461414912" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="Eldritch Knight Plus" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Eldritch Knight Plus - Lvl 20 ver." />
+              <attribute id="UUID" type="FixedString" value="b2044353-c19c-4bbb-a2dd-94108e3176a6" />
+              <attribute id="Version64" type="int64" value="180425460071530511" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="OathofConquest_7066e995-e7fc-3932-10db-9d2c9c7de8c8" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="Oath of Conquest" />
+              <attribute id="UUID" type="FixedString" value="7066e995-e7fc-3932-10db-9d2c9c7de8c8" />
+              <attribute id="Version64" type="int64" value="108649341010313219" />
+            </node>
+
+            <node id="ModuleShortDesc">
+              <attribute id="Folder" type="LSWString" value="SmartCunningAction" />
+              <attribute id="MD5" type="LSString" value="" />
+              <attribute id="Name" type="FixedString" value="SmartCunningAction" />
+              <attribute id="UUID" type="FixedString" value="26b0112b-40f1-4b2b-b43a-bcc92b15d440" />
+              <attribute id="Version64" type="int64" value="36028803461414912" />
+            </node>
+
           </children>
         </node>
         <node id="ModuleInfo">

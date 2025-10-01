@@ -112,11 +112,11 @@ function MutationProfileManager:init(parent)
 
 		if MutationModProxy.ModProxy.folders() > 0 then
 			self.selectionParent:AddSeparatorText("Mod-Added Mutations"):SetStyle("SeparatorTextAlign", 0.5)
-			self.modFolderGroup = self.selectionParent:AddGroup("ModFolders")
+			self.modFolderGroup = self.selectionParent:AddChildWindow("ModFolders")
 			self.modFolderGroup.DragDropType = "MutationRules"
 			self.modFolderGroup.OnDragDrop = self.userFolderGroup.OnDragDrop
 		else
-			self.modFolderGroup = self.selectionParent:AddGroup("ModFolders")
+			self.modFolderGroup = self.selectionParent:AddChildWindow("ModFolders")
 		end
 
 		local rightPanel = row:AddCell()
@@ -1220,7 +1220,7 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 				local folders = MutationConfigurationProxy.folders
 
 				local mutationButton = row:AddButton(folders[mutationRule.mutationFolderId].name ..
-					"/" .. folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId].name)
+				"/" .. folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId].name)
 
 				if folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId].modId then
 					mutationButton.Label = "(M) " .. mutationButton.Label

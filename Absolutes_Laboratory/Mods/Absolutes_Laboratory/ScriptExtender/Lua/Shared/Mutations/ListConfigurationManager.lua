@@ -420,6 +420,7 @@ function ListConfigurationManager:HandleDependences(export, mutator, lists, remo
 					end
 				end
 
+				listDef.defaultPool = ConfigurationStructure.config.mutations.settings.customLists.defaultPool[configKey]
 				export.lists[configKey] = export.lists[configKey] or {}
 				if not export.lists[configKey][listId] then
 					export.lists[configKey][listId] = listDef
