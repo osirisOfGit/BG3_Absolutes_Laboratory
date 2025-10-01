@@ -32,6 +32,13 @@ You can shift-click on images to pop out their tooltip into a new window, but th
 		Helpers:KillChildren(settingsPopup)
 		settingsPopup:Open()
 
+		if statType == "SpellData" then
+			settingsPopup:AddCheckbox("Show All Upcast Levels For Spells?", settings.showAllSpellLevels).OnChange = function()
+				settings.showAllSpellLevels = not settings.showAllSpellLevels
+				input:OnChange(input, input.Text)
+			end
+		end
+
 		---@param checkbox ExtuiCheckbox
 		settingsPopup:AddCheckbox("Only Display Icons (With Tooltips)?", settings.onlyIcons).OnChange = function(checkbox)
 			settings.onlyIcons = checkbox.Checked
@@ -76,7 +83,7 @@ You can shift-click on images to pop out their tooltip into a new window, but th
 				for _, spellName in pairs(Ext.Stats.GetStats(statType)) do
 					---@type SpellData|PassiveData|StatusData
 					local stat = Ext.Stats.Get(spellName)
-					if stat.ModifierList ~= "SpellData" or stat.RootSpellID == "" then
+					if stat.ModifierList ~= "SpellData" or (settings.showAllSpellLevels or stat.RootSpellID == "") then
 						if spellName:upper():find(value) then
 							table.insert(results, spellName)
 						else

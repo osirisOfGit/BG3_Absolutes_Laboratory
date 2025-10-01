@@ -11,7 +11,8 @@ ConfigurationStructure.config.mutations.settings = {
 			---@type "displayName"|"spellName"
 			name = "displayName",
 			direction = "Descending"
-		}
+		},
+		showAllSpellLevels = false
 	},
 	mutationDesigner = {
 		---@type "Sidebar"|"Infinite"
