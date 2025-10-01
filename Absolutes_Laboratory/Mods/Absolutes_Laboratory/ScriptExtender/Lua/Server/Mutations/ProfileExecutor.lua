@@ -168,6 +168,12 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 	end
 end
 
+Ext.Osiris.RegisterListener("LevelGameplayReady", 2, "after", function(levelName, isEditorMode)
+	if levelName == "SYS_CC_I" then return end
+
+	MutationProfileExecutor:ExecuteProfile()
+end)
+
 Ext.Osiris.RegisterListener("EnteredCombat", 2, "before", function(entityId, combatGuid)
 	---@type EntityHandle
 	local entity = Ext.Entity.Get(entityId)
@@ -187,8 +193,9 @@ Ext.RegisterConsoleCommand("Lab_TestTransient", function(cmd, ...)
 	MutationProfileExecutor:ExecuteProfile(true)
 end)
 
-Ext.Osiris.RegisterListener("LevelGameplayReady", 2, "after", function(levelName, isEditorMode)
-	if levelName == "SYS_CC_I" then return end
-
-	MutationProfileExecutor:ExecuteProfile()
+Ext.RegisterConsoleCommand("Lab_ClearEntityClasses", function (cmd, ...)
+	for _, entity in pairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
+		entity:RemoveComponent("Classes")
+		entity:CreateComponent("Classes")
+	end
 end)

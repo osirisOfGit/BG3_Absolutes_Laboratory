@@ -488,32 +488,34 @@ function ClassesAndSubclassesMutator:applyMutator(entity, entityVar)
 			for classId, levelPercentage in pairs(classGroup.classIds) do
 				---@type ResourceClassDescription
 				local class = Ext.StaticData.Get(classId, "ClassDescription")
-				local hasParentClass = Ext.StaticData.Get(class.ParentGuid, "ClassDescription") ~= nil
+				if class then
+					local hasParentClass = Ext.StaticData.Get(class.ParentGuid, "ClassDescription") ~= nil
 
-				if classesLeft == 1 then
-					entity.Classes.Classes[#entity.Classes.Classes + 1] = {
-						ClassUUID = hasParentClass and class.ParentGuid or classId,
-						Level = classLevelsLeft,
-						SubClassUUID = hasParentClass and classId or nil
-					}
-					Logger:BasicDebug("Added class %s at level %s", class.DisplayName:Get() or class.Name, classLevelsLeft)
-				else
-					local desiredClassLevel = math.ceil(entity.AvailableLevel.Level * (levelPercentage / 100))
-					if desiredClassLevel > 0 then
+					if classesLeft == 1 then
 						entity.Classes.Classes[#entity.Classes.Classes + 1] = {
 							ClassUUID = hasParentClass and class.ParentGuid or classId,
-							Level = desiredClassLevel,
+							Level = classLevelsLeft,
 							SubClassUUID = hasParentClass and classId or nil
 						}
+						Logger:BasicDebug("Added class %s at level %s", class.DisplayName:Get() or class.Name, classLevelsLeft)
+					else
+						local desiredClassLevel = math.ceil(entity.AvailableLevel.Level * (levelPercentage / 100))
+						if desiredClassLevel > 0 then
+							entity.Classes.Classes[#entity.Classes.Classes + 1] = {
+								ClassUUID = hasParentClass and class.ParentGuid or classId,
+								Level = desiredClassLevel,
+								SubClassUUID = hasParentClass and classId or nil
+							}
 
-						Logger:BasicDebug("Added class %s at level %s", class.DisplayName:Get() or class.Name, desiredClassLevel)
-						classLevelsLeft = classLevelsLeft - desiredClassLevel
+							Logger:BasicDebug("Added class %s at level %s", class.DisplayName:Get() or class.Name, desiredClassLevel)
+							classLevelsLeft = classLevelsLeft - desiredClassLevel
+						end
 					end
-				end
 
-				classesLeft = classesLeft - 1
-				if classLevelsLeft == 0 then
-					break
+					classesLeft = classesLeft - 1
+					if classLevelsLeft == 0 then
+						break
+					end
 				end
 			end
 

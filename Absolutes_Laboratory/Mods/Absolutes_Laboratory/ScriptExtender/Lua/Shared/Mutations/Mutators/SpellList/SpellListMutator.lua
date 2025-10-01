@@ -1438,30 +1438,34 @@ if Ext.IsServer() then
 								if spellList.linkedProgressionTableIds and next(spellList.linkedProgressionTableIds._real or spellList.linkedProgressionTableIds) then
 									for _, progressionTableId in pairs(spellList.linkedProgressionTableIds) do
 										local progressionTable = ListConfigurationManager.progressionIndex[progressionTableId]
-										for _, progressionLevel in pairs(progressionTable.progressionLevels) do
-											if progressionLevel.level == i and progressionLevel.spellLists then
-												for _, spells in pairs(progressionLevel.spellLists) do
-													for _, spellName in pairs(spells) do
-														local leveledLists = spellList.levels and spellList.levels[i]
-														if not leveledLists
-															or not leveledLists.linkedProgressions
-															or not TableUtils:IndexOf(leveledLists.linkedProgressions[progressionTableId],
-																function(value)
-																	return TableUtils:IndexOf(value, spellName) ~= nil
-																end)
-														then
-															spellList.levels = spellList.levels or {}
-															spellList.levels[i] = spellList.levels[i] or {}
-															spellList.levels[i].linkedProgressions = spellList.levels[i].linkedProgressions or {}
-															spellList.levels[i].linkedProgressions[progressionTableId] = spellList.levels[i].linkedProgressions[progressionTableId] or {}
+										if progressionTable then
+											for _, progressionLevel in pairs(progressionTable.progressionLevels) do
+												if progressionLevel.level == i and progressionLevel.spellLists then
+													for _, spells in pairs(progressionLevel.spellLists) do
+														for _, spellName in pairs(spells) do
+															local leveledLists = spellList.levels and spellList.levels[i]
+															if not leveledLists
+																or not leveledLists.linkedProgressions
+																or not TableUtils:IndexOf(leveledLists.linkedProgressions[progressionTableId],
+																	function(value)
+																		return TableUtils:IndexOf(value, spellName) ~= nil
+																	end)
+															then
+																spellList.levels = spellList.levels or {}
+																spellList.levels[i] = spellList.levels[i] or {}
+																spellList.levels[i].linkedProgressions = spellList.levels[i].linkedProgressions or {}
+																spellList.levels[i].linkedProgressions[progressionTableId] = spellList.levels[i].linkedProgressions
+																	[progressionTableId] or {}
 
-															local defaultPool = spellList.defaultPool or
-																ConfigurationStructure.config.mutations.settings.customLists.defaultPool.spellLists
+																local defaultPool = spellList.defaultPool or
+																	ConfigurationStructure.config.mutations.settings.customLists.defaultPool.spellLists
 
-															spellList.levels[i].linkedProgressions[progressionTableId][defaultPool] = spellList.levels[i].linkedProgressions[progressionTableId][defaultPool] or {}
+																spellList.levels[i].linkedProgressions[progressionTableId][defaultPool] = spellList.levels[i].linkedProgressions
+																	[progressionTableId][defaultPool] or {}
 
-															Logger:BasicDebug("Added %s to the default pool %s for later processing", spellName, defaultPool)
-															table.insert(spellList.levels[i].linkedProgressions[progressionTableId][defaultPool], spellName)
+																Logger:BasicDebug("Added %s to the default pool %s for later processing", spellName, defaultPool)
+																table.insert(spellList.levels[i].linkedProgressions[progressionTableId][defaultPool], spellName)
+															end
 														end
 													end
 												end
@@ -1473,19 +1477,24 @@ if Ext.IsServer() then
 									local leveledLists = spellList.levels[i]
 									if leveledLists then
 										if leveledLists.linkedProgressions then
-											for _, subLists in pairs(leveledLists.linkedProgressions) do
-												self:processSubLists(subLists, entity, addSpells, origValues)
-												if subLists.randomized then
-													for _, spellName in pairs(subLists.randomized) do
-														if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
-																return value.Id.OriginatorPrototype == spellName
-															end)
-														then
-															if not TableUtils:IndexOf(randomPool, spellName) then
-																table.insert(randomPool, spellName)
+											for progressionTableId, subLists in pairs(leveledLists.linkedProgressions) do
+												local progressionTable = ListConfigurationManager.progressionIndex[progressionTableId]
+												if progressionTable then
+													self:processSubLists(subLists, entity, addSpells, origValues)
+													if subLists.randomized then
+														for _, spellName in pairs(subLists.randomized) do
+															if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
+																	return value.Id.OriginatorPrototype == spellName
+																end)
+															then
+																if not TableUtils:IndexOf(randomPool, spellName) then
+																	table.insert(randomPool, spellName)
+																end
+															else
+																Logger:BasicDebug(
+																"Randomized spell %s from progression %s (%s - level %s) is already known, not adding to the random pool", spellName,
+																	progressionTableId, progressionTable.name, i)
 															end
-														else
-															Logger:BasicDebug("%s is already known, not adding to the random pool", spellName)
 														end
 													end
 												end

@@ -463,30 +463,33 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 			if passiveList.linkedProgressionTableIds and next(passiveList.linkedProgressionTableIds._real or passiveList.linkedProgressionTableIds) then
 				for _, progressionTableId in pairs(passiveList.linkedProgressionTableIds) do
 					local progressionTable = ListConfigurationManager.progressionIndex[progressionTableId]
-					for _, progressionLevel in pairs(progressionTable.progressionLevels) do
-						if progressionLevel.level == level and progressionLevel.spellLists then
-							for _, spells in pairs(progressionLevel.spellLists) do
-								for _, spellName in pairs(spells) do
-									local leveledLists = passiveList.levels and passiveList.levels[level]
-									if not leveledLists
-										or not leveledLists.linkedProgressions
-										or not TableUtils:IndexOf(leveledLists.linkedProgressions[progressionTableId],
-											function(value)
-												return TableUtils:IndexOf(value, spellName) ~= nil
-											end)
-									then
-										passiveList.levels = passiveList.levels or {}
-										passiveList.levels[level] = passiveList.levels[level] or {}
-										passiveList.levels[level].linkedProgressions = passiveList.levels[level].linkedProgressions or {}
-										passiveList.levels[level].linkedProgressions[progressionTableId] = passiveList.levels[level].linkedProgressions[progressionTableId] or {}
+					if progressionTable then
+						for _, progressionLevel in pairs(progressionTable.progressionLevels) do
+							if progressionLevel.level == level and progressionLevel.passiveLists then
+								for _, passives in pairs(progressionLevel.passiveLists) do
+									for _, passiveName in pairs(passives) do
+										local leveledLists = passiveList.levels and passiveList.levels[level]
+										if not leveledLists
+											or not leveledLists.linkedProgressions
+											or not TableUtils:IndexOf(leveledLists.linkedProgressions[progressionTableId],
+												function(value)
+													return TableUtils:IndexOf(value, passiveName) ~= nil
+												end)
+										then
+											passiveList.levels = passiveList.levels or {}
+											passiveList.levels[level] = passiveList.levels[level] or {}
+											passiveList.levels[level].linkedProgressions = passiveList.levels[level].linkedProgressions or {}
+											passiveList.levels[level].linkedProgressions[progressionTableId] = passiveList.levels[level].linkedProgressions[progressionTableId] or {}
 
-										local defaultPool = passiveList.defaultPool or
-											ConfigurationStructure.config.mutations.settings.customLists.defaultPool.passiveLists
+											local defaultPool = passiveList.defaultPool or
+												ConfigurationStructure.config.mutations.settings.customLists.defaultPool.passiveLists
 
-										passiveList.levels[level].linkedProgressions[progressionTableId][defaultPool] = passiveList.levels[level].linkedProgressions[progressionTableId][defaultPool] or {}
+											passiveList.levels[level].linkedProgressions[progressionTableId][defaultPool] = passiveList.levels[level].linkedProgressions
+												[progressionTableId][defaultPool] or {}
 
-										Logger:BasicDebug("Added %s to the default pool %s for later processing", spellName, defaultPool)
-										table.insert(passiveList.levels[level].linkedProgressions[progressionTableId][defaultPool], spellName)
+											Logger:BasicDebug("Added %s to the default pool %s for later processing", passiveName, defaultPool)
+											table.insert(passiveList.levels[level].linkedProgressions[progressionTableId][defaultPool], passiveName)
+										end
 									end
 								end
 							end
@@ -497,31 +500,32 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 			if leveledLists then
 				if leveledLists.linkedProgressions then
 					for progressionTableId, subLists in pairs(leveledLists.linkedProgressions) do
-						if subLists.guaranteed and next(subLists.guaranteed) then
-							for _, passiveId in pairs(subLists.guaranteed) do
-								if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
-									Logger:BasicDebug("Adding guaranteed passive %s from progression %s", passiveId, progressionTableId)
-									table.insert(appliedPassives, passiveId)
-								else
-									local progressionTable = ListConfigurationManager.progressionIndex[progressionTableId]
+						local progressionTable = ListConfigurationManager.progressionIndex[progressionTableId]
+						if progressionTable then
+							if subLists.guaranteed and next(subLists.guaranteed) then
+								for _, passiveId in pairs(subLists.guaranteed) do
+									if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
+										Logger:BasicDebug("Adding guaranteed passive %s from progression %s (%s - level %s)", passiveId, progressionTableId,
+											progressionTable.name, level)
 
-									Logger:BasicDebug("Guaranteed passive %s from progression %s (%s - level %s) is already known", passiveId, progressionTableId,
-										progressionTable.name, level)
+										table.insert(appliedPassives, passiveId)
+									else
+										Logger:BasicDebug("Guaranteed passive %s from progression %s (%s - level %s) is already known", passiveId, progressionTableId,
+											progressionTable.name, level)
+									end
 								end
 							end
-						end
 
-						if subLists.randomized and next(subLists.randomized) then
-							for _, passiveId in pairs(subLists.randomized) do
-								if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
-									if not TableUtils:IndexOf(randomPool, passiveId) then
-										table.insert(randomPool, passiveId)
+							if subLists.randomized and next(subLists.randomized) then
+								for _, passiveId in pairs(subLists.randomized) do
+									if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
+										if not TableUtils:IndexOf(randomPool, passiveId) then
+											table.insert(randomPool, passiveId)
+										end
+									else
+										Logger:BasicDebug("Randomized passive %s from progression %s (%s - level %s) is already known", passiveId, progressionTableId,
+											progressionTable.name, level)
 									end
-								else
-									local progressionTable = ListConfigurationManager.progressionIndex[progressionTableId]
-
-									Logger:BasicDebug("Randomized passive %s from progression %s (%s - level %s) is already known", passiveId, progressionTableId,
-										progressionTable.name, level)
 								end
 							end
 						end
