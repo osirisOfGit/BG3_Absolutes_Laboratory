@@ -368,7 +368,7 @@ function ClassesAndSubclassesMutator:handleDependencies(_, mutator, removeMissin
 			local class = Ext.StaticData.Get(classId, "ClassDescription")
 			if not class then
 				classGroup.classIds[classId] = nil
-				if not classGroup.classIds() then
+				if not next(classGroup.classIds._real or classGroup.classIds) then
 					mutator.values[c].delete = true
 				end
 			elseif not removeMissingDependencies then

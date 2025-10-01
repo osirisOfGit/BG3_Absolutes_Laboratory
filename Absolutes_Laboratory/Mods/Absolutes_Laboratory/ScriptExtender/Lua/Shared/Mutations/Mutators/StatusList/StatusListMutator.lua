@@ -427,7 +427,7 @@ function StatusListMutator:handleDependencies(export, mutator, removeMissingDepe
 	end
 
 	if mutator.values.statusLists then
-		ListConfigurationManager:HandleDependences(export, mutator, mutator.values.statusLists, removeMissingDependencies)
+		ListConfigurationManager:HandleDependences(export, mutator, mutator.values.statusLists, removeMissingDependencies, StatusListDesigner.configKey)
 	end
 end
 

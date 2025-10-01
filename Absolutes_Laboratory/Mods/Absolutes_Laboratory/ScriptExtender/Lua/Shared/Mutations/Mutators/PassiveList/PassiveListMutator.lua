@@ -428,7 +428,7 @@ function PassiveListMutator:handleDependencies(export, mutator, removeMissingDep
 	end
 
 	if mutator.values.passiveLists then
-		ListConfigurationManager:HandleDependences(export, mutator, mutator.values.passiveLists, removeMissingDependencies)
+		ListConfigurationManager:HandleDependences(export, mutator, mutator.values.passiveLists, removeMissingDependencies, PassiveListDesigner.configKey)
 	end
 end
 

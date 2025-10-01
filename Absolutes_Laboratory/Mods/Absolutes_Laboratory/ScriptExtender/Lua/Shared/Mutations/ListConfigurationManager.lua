@@ -226,13 +226,11 @@ end
 ---@param mutator Mutator
 ---@param lists Guid[]
 ---@param removeMissingDependencies boolean?
-function ListConfigurationManager:HandleDependences(export, mutator, lists, removeMissingDependencies)
-	self:buildProgressionIndex()
-
+function ListConfigurationManager:HandleDependences(export, mutator, lists, removeMissingDependencies, configKey)
 	local progressionSources = Ext.StaticData.GetSources("Progression")
 
 	local replaceMap = removeMissingDependencies == true
-		and export.listEntryReplaceMap
+		and export.lists.entryReplacerDictionary
 		or TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.lists.entryReplacerDictionary._real)
 
 	---@param statName string
@@ -269,99 +267,162 @@ function ListConfigurationManager:HandleDependences(export, mutator, lists, remo
 		end
 	end
 
-	if not export.listEntryReplaceMap[self.configKey] and replaceMap[self.configKey] and replaceMap[self.configKey] and next(replaceMap[self.configKey]) then
+	if not export.lists.entryReplacerDictionary[configKey] and replaceMap[configKey] and replaceMap[configKey] and next(replaceMap[configKey]) then
 		if not removeMissingDependencies then
-			replaceMap.modDependencies = export.listEntryReplaceMap.modDependencies
+			replaceMap.modDependencies = export.lists.entryReplacerDictionary.modDependencies
 		end
-		for statName, entriesToReplace in pairs(replaceMap[self.configKey]) do
+		for statName, entriesToReplace in pairs(replaceMap[configKey]) do
 			for i, statBeingReplaced in ipairs(entriesToReplace) do
 				if not buildStatDependency(statBeingReplaced, replaceMap) then
-					replaceMap[self.configKey][statName][i] = nil
+					replaceMap[configKey][statName][i] = nil
 				end
 			end
 
-			TableUtils:ReindexNumericTable(replaceMap[self.configKey][statName])
+			TableUtils:ReindexNumericTable(replaceMap[configKey][statName])
 		end
 		if not removeMissingDependencies then
-			export.listEntryReplaceMap.modDependencies = replaceMap.modDependencies
-			export.listEntryReplaceMap[self.configKey] = replaceMap[self.configKey]
+			export.lists.entryReplacerDictionary.modDependencies = replaceMap.modDependencies
+			export.lists.entryReplacerDictionary[configKey] = replaceMap[configKey]
 		end
 	end
 
-	for l, listId in pairs(lists) do
-		local list = MutationConfigurationProxy[self.configKey][listId]
+	for _, listId in pairs(lists) do
+		---@type CustomList
+		local list = MutationConfigurationProxy.lists[configKey][listId]
 		if list then
 			local listModId = list.modId
 			if not listModId then
 				--- @type CustomList
 				local listDef = removeMissingDependencies == true
-					and export[self.configKey][listId]
-					or TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations[self.configKey][listId]._real)
+					and export.lists[configKey][listId]
+					or TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.lists[configKey][listId]._real)
 
 				listId = listId .. "Exported"
+
+				if listDef.linkedProgressionTableIds then
+					for i, progressionTableId in pairs(listDef.linkedProgressionTableIds) do
+						local progressionTable = self.progressionIndex[progressionTableId]
+						if progressionTable then
+							for _, progressionLevel in pairs(progressionTable.progressionLevels) do
+								local progressionId = progressionLevel.id
+								local progressionSource = TableUtils:IndexOf(progressionSources, function(value)
+									return TableUtils:IndexOf(value, progressionId) ~= nil
+								end)
+								if progressionSource then
+									listDef.modDependencies = listDef.modDependencies or {}
+									if not listDef.modDependencies[progressionSource] then
+										local name, author, version = Helpers:BuildModFields(progressionSource)
+										if author == "Larian" then
+											goto continue
+										end
+										listDef.modDependencies[progressionSource] = {
+											modName = name,
+											modAuthor = author,
+											modVersion = version,
+											modId = progressionSource,
+											packagedItems = {}
+										}
+									end
+									listDef.modDependencies[progressionSource].packagedItems[progressionId] = progressionLevel.name
+								end
+								::continue::
+							end
+						elseif removeMissingDependencies then
+							listDef.linkedProgressionTableIds[i] = nil
+						end
+					end
+				end
 
 				if listDef.levels then
 					for level, levelSubList in pairs(listDef.levels) do
 						if levelSubList.linkedProgressions then
 							for progressionTableId, sublists in pairs(levelSubList.linkedProgressions) do
-								for _, entries in pairs(sublists) do
-									for i, entry in pairs(entries) do
-										if not buildStatDependency(entry, listDef) then
-											entries[i] = nil
-										end
-									end
-									TableUtils:ReindexNumericTable(entries)
-								end
-
-								local progressionId = SpellListDesigner.progressionTableToProgression[progressionTableId][level]
-								if progressionId then
-									---@type ResourceProgression
-									local progression = Ext.StaticData.Get(progressionId, "Progression")
-									if not progression then
-										levelSubList.linkedProgressions[progressionId] = nil
-									elseif not removeMissingDependencies then
-										local progressionSource = TableUtils:IndexOf(progressionSources, function(value)
-											return TableUtils:IndexOf(value, progressionId) ~= nil
-										end)
-										if progressionSource then
-											listDef.modDependencies = listDef.modDependencies or {}
-											if not listDef.modDependencies[progressionSource] then
-												local name, author, version = Helpers:BuildModFields(progressionSource)
-												if author == "Larian" then
-													goto continue
+								if self.progressionIndex[progressionTableId] then
+									for subListName, entries in pairs(sublists) do
+										if next(entries._real or entries) then
+											for i, entry in pairs(entries) do
+												if not buildStatDependency(entry, listDef) then
+													entries[i] = nil
 												end
-												listDef.modDependencies[progressionSource] = {
-													modName = name,
-													modAuthor = author,
-													modVersion = version,
-													modId = progressionSource,
-													packagedItems = {}
-												}
 											end
-											listDef.modDependencies[progressionSource].packagedItems[progressionId] = progression.Name
+											TableUtils:ReindexNumericTable(entries)
+										else
+											sublists[subListName].delete = true
+											sublists[subListName] = nil
 										end
-										::continue::
+									end
+									if not next(sublists._real or sublists) then
+										sublists.delete = true
+										levelSubList.linkedProgressions[progressionTableId] = nil
+										if not next(levelSubList.linkedProgressions._real or levelSubList.linkedProgressions) then
+											levelSubList.linkedProgressions.delete = true
+											levelSubList.linkedProgressions = nil
+										end
+										goto nextProgression
+									end
+
+									for _, progressionLevel in pairs(self.progressionIndex[progressionTableId].progressionLevels) do
+										if progressionLevel.level == level then
+											local progressionId = progressionLevel.id
+
+											---@type ResourceProgression
+											local progression = Ext.StaticData.Get(progressionId, "Progression")
+											if not progression then
+												levelSubList.linkedProgressions[progressionTableId] = nil
+											elseif not removeMissingDependencies then
+												local progressionSource = TableUtils:IndexOf(progressionSources, function(value)
+													return TableUtils:IndexOf(value, progressionId) ~= nil
+												end)
+												if progressionSource then
+													listDef.modDependencies = listDef.modDependencies or {}
+													if not listDef.modDependencies[progressionSource] then
+														local name, author, version = Helpers:BuildModFields(progressionSource)
+														if author == "Larian" then
+															goto continue
+														end
+														listDef.modDependencies[progressionSource] = {
+															modName = name,
+															modAuthor = author,
+															modVersion = version,
+															modId = progressionSource,
+															packagedItems = {}
+														}
+													end
+													listDef.modDependencies[progressionSource].packagedItems[progressionId] = progression.Name
+												end
+												::continue::
+											end
+										end
 									end
 								end
+								::nextProgression::
 							end
 						end
 
 						if levelSubList.manuallySelectedEntries then
-							for _, entries in pairs(levelSubList.manuallySelectedEntries) do
+							for e, entries in pairs(levelSubList.manuallySelectedEntries) do
 								for i, entry in pairs(entries) do
 									if not buildStatDependency(entry, listDef) then
 										entries[i] = nil
 									end
 								end
 								TableUtils:ReindexNumericTable(entries)
+								if not next(entries._real or entries) then
+									entries.delete = true
+									levelSubList.manuallySelectedEntries[e] = nil
+								end
+							end
+							if not next(levelSubList.manuallySelectedEntries._real or levelSubList.manuallySelectedEntries) then
+								levelSubList.manuallySelectedEntries.delete = true
+								levelSubList.manuallySelectedEntries = nil
 							end
 						end
 					end
 				end
 
-				export[self.configKey] = export[self.configKey] or {}
-				if not export[self.configKey][listId] then
-					export[self.configKey][listId] = listDef
+				export.lists[configKey] = export.lists[configKey] or {}
+				if not export.lists[configKey][listId] then
+					export.lists[configKey][listId] = listDef
 				end
 			else
 				local name, author, version = Helpers:BuildModFields(listModId)

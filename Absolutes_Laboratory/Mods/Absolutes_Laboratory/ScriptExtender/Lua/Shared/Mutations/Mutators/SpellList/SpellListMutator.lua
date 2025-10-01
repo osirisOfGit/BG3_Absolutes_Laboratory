@@ -941,7 +941,7 @@ function SpellListMutator:handleDependencies(export, mutator, removeMissingDepen
 				end
 
 				if leveledSpellPool.spellLists then
-					ListConfigurationManager:HandleDependences(export, mutator, leveledSpellPool.spellLists, removeMissingDependencies)
+					ListConfigurationManager:HandleDependences(export, mutator, leveledSpellPool.spellLists, removeMissingDependencies, SpellListDesigner.configKey)
 				end
 			end
 		end

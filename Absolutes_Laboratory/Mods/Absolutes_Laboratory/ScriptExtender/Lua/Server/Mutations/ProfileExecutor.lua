@@ -64,7 +64,7 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 
 			for _, entity in pairs(... and { ... } or Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
 				---@cast entity EntityHandle
-				
+
 				if (Osi.IsDead(entity.Uuid.EntityUuid) == 0 or not entity.DeadByDefault) and not entity.PartyMember and entity.ServerCharacter.Level == currentLevel then
 					mutatedEntities[entity.Uuid.EntityUuid] = true
 
@@ -197,7 +197,7 @@ Ext.RegisterConsoleCommand("Lab_TestTransient", function(cmd, ...)
 	MutationProfileExecutor:ExecuteProfile(true)
 end)
 
-Ext.RegisterConsoleCommand("Lab_ClearEntityClasses", function (cmd, ...)
+Ext.RegisterConsoleCommand("Lab_ClearEntityClasses", function(cmd, ...)
 	for _, entity in pairs(Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
 		entity:RemoveComponent("Classes")
 		entity:CreateComponent("Classes")

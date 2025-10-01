@@ -109,8 +109,8 @@ function MutationExternalProfileUtility:ValidateMutations(importedMutations)
 	end
 
 	for _, listType in pairs(MutationModProxy.listTypes) do
-		if importedMutations[listType] then
-			for _, list in pairs(importedMutations[listType]) do
+		if importedMutations.lists[listType] then
+			for _, list in pairs(importedMutations.lists[listType]) do
 				---@cast list CustomList
 				if not list.modId then
 					if list.modDependencies then
@@ -225,10 +225,12 @@ function MutationExternalProfileUtility:exportProfile(forMod, ...)
 		profiles = {},
 		folders = {},
 		prepPhaseMarkers = {},
-		spellLists = {},
-		statusLists = {},
-		passiveLists = {},
-		listEntryReplaceMap = {}
+		lists = {
+			spellLists = {},
+			statusLists = {},
+			passiveLists = {},
+			entryReplacerDictionary = {}
+		}
 	}
 
 	for _, listType in pairs(MutationModProxy.listTypes) do
@@ -393,17 +395,17 @@ function MutationExternalProfileUtility:importProfile(export)
 			end
 		end
 
-		if importedMutations.listEntryReplaceMap then
+		if importedMutations.lists.entryReplacerDictionary then
 			for _, listType in pairs(MutationModProxy.listTypes) do
-				if importedMutations.listEntryReplaceMap[listType] and next(importedMutations.listEntryReplaceMap[listType]) then
-					mutationConfig.listEntryReplaceMap = mutationConfig.listEntryReplaceMap or {}
-					mutationConfig.listEntryReplaceMap[listType] = mutationConfig.listEntryReplaceMap[listType] or {}
+				if importedMutations.lists.entryReplacerDictionary[listType] and next(importedMutations.lists.entryReplacerDictionary[listType]) then
+					mutationConfig.lists.entryReplacerDictionary = mutationConfig.lists.entryReplacerDictionary or {}
+					mutationConfig.lists.entryReplacerDictionary[listType] = mutationConfig.lists.entryReplacerDictionary[listType] or {}
 
-					for entryName, replacementMap in pairs(importedMutations.listEntryReplaceMap[listType]) do
-						mutationConfig.listEntryReplaceMap[listType][entryName] = mutationConfig.listEntryReplaceMap[listType][entryName] or {}
+					for entryName, replacementMap in pairs(importedMutations.lists.entryReplacerDictionary[listType]) do
+						mutationConfig.lists.entryReplacerDictionary[listType][entryName] = mutationConfig.lists.entryReplacerDictionary[listType][entryName] or {}
 						for _, replacement in ipairs(replacementMap) do
-							if not TableUtils:IndexOf(mutationConfig.listEntryReplaceMap[listType][entryName], replacement) then
-								table.insert(mutationConfig.listEntryReplaceMap[listType][entryName], replacement)
+							if not TableUtils:IndexOf(mutationConfig.lists.entryReplacerDictionary[listType][entryName], replacement) then
+								table.insert(mutationConfig.lists.entryReplacerDictionary[listType][entryName], replacement)
 							end
 						end
 					end
@@ -412,20 +414,20 @@ function MutationExternalProfileUtility:importProfile(export)
 		end
 
 		for _, listType in pairs(MutationModProxy.listTypes) do
-			if importedMutations[listType] then
-				for listId, list in pairs(importedMutations[listType]) do
-					if mutationConfig[listType][listId] then
-						mutationConfig[listType][listId].delete = true
+			if importedMutations.lists[listType] then
+				for listId, list in pairs(importedMutations.lists[listType]) do
+					if mutationConfig.lists[listType][listId] then
+						mutationConfig.lists[listType][listId].delete = true
 					end
 
-					if TableUtils:IndexOf(mutationConfig[listType], function(value)
+					if TableUtils:IndexOf(mutationConfig.lists[listType], function(value)
 							return value.name == list.name
 						end)
 					then
 						list.name = string.format("%s - %s", list.name, "Imported")
 					end
 
-					mutationConfig[listType][listId] = list
+					mutationConfig.lists[listType][listId] = list
 				end
 			end
 		end
