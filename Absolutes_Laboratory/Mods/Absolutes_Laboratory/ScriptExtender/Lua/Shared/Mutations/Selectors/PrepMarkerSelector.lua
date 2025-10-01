@@ -14,7 +14,7 @@ function PrepMarkerSelector:renderSelector(parent, existingSelector)
 	local markerTable = parent:AddTable("markerTable", 3)
 	local row = markerTable:AddRow()
 
-	for categoryId, prepPhaseCategory in TableUtils:OrderedPairs(prepPhaseCategories, function(key, value)
+	for categoryId, prepPhaseCategory in pairs(prepPhaseCategories, function(key, value)
 		return value.name
 	end) do
 		local box = row:AddCell():AddCheckbox(prepPhaseCategory.name, TableUtils:IndexOf(existingSelector.criteriaValue, categoryId) ~= nil)

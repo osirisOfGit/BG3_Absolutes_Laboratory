@@ -34,8 +34,8 @@ MutationConfigurationProxy = {
 				---@cast modCache +LocalModCache
 
 				if modCache.prepPhaseMarkers and next(modCache.prepPhaseMarkers) then
-					for markerId in pairs(modCache.prepPhaseMarkers) do
-						markerCategories[markerId] = MutationModProxy.ModProxy.prepPhaseMarkers[markerId]
+					for markerId, markerObject in pairs(modCache.prepPhaseMarkers) do
+						markerCategories[markerId] = markerObject
 					end
 				end
 			end

@@ -82,9 +82,11 @@ end
 ---@param entity EntityHandle
 ---@param entityVar MutatorEntityVar
 function MutatorInterface:applyMutator(entity, entityVar)
+	local entityName = EntityRecorder:GetEntityName(entity)
+	Ext.Utils.ProfileBegin("Lab Profiles - Applying Mutators On " .. entityName)
 	local time = Ext.Timer:MonotonicTime()
 	Logger:BasicDebug("=========================== STARTING MUTATION OF %s_%s ===========================",
-		entity.DisplayName and entity.DisplayName.Name:Get() or entity.ServerCharacter.Template.Name,
+		entityName,
 		entity.Uuid.EntityUuid)
 
 	for mutatorName in TableUtils:OrderedPairs(entityVar.appliedMutators, function(key)
@@ -93,7 +95,9 @@ function MutatorInterface:applyMutator(entity, entityVar)
 		local mTime = Ext.Timer:MonotonicTime()
 		Logger:BasicDebug("==== Starting mutator %s (priority %s) ====", mutatorName, self.registeredMutators[mutatorName]:priority())
 		local success, error = xpcall(function(...)
+			Ext.Utils.ProfileBegin(("Lab Profiles - Applying %s Mutator On %s"):format(mutatorName, entityName))
 			self.registeredMutators[mutatorName]:applyMutator(entity, entityVar)
+			Ext.Utils.ProfileEnd(("Lab Profiles - Applying %s Mutator On %s"):format(mutatorName, entityName))
 		end, debug.traceback)
 
 		if not success then
@@ -106,9 +110,10 @@ function MutatorInterface:applyMutator(entity, entityVar)
 	end
 
 	Logger:BasicDebug("=========================== FINISHED %s_%s in %dms ===========================",
-		entity.DisplayName and entity.DisplayName.Name:Get() or entity.ServerCharacter.Template.Name,
+		entityName,
 		entity.Uuid.EntityUuid,
 		Ext.Timer:MonotonicTime() - time)
+	Ext.Utils.ProfileEnd("Lab Profiles - Applying Mutators On " .. entityName)
 end
 
 ---@param entity EntityHandle
@@ -116,11 +121,13 @@ end
 ---@param primedEntityVar MutatorEntityVar? changes that are queued up to be applied
 ---@param reprocessTransient boolean? will be true if the profile is re-executed in a single session, i.e. when the player level ups while a level mutator is in play
 function MutatorInterface:undoMutator(entity, entityVar, primedEntityVar, reprocessTransient)
+	local entityName = EntityRecorder:GetEntityName(entity)
+	Ext.Utils.ProfileBegin("Lab Profiles - Undoing Mutators on " .. entityName)
 	if entityVar then
 		local time = Ext.Timer:MonotonicTime()
 
 		Logger:BasicDebug("=========================== STARTING UNDO FOR %s_%s ===========================",
-			entity.DisplayName and entity.DisplayName.Name:Get() or entity.ServerCharacter.Template.Name,
+			entityName,
 			entity.Uuid.EntityUuid)
 
 		for mutatorName in TableUtils:OrderedPairs(entityVar.originalValues, function(key)
@@ -133,7 +140,9 @@ function MutatorInterface:undoMutator(entity, entityVar, primedEntityVar, reproc
 				Logger:BasicDebug("==== Starting mutator %s ====", mutatorName)
 
 				local success, error = xpcall(function(...)
+					Ext.Utils.ProfileBegin(("Lab Profiles - Undoing %s Mutator On %s"):format(mutatorName, entityName))
 					self.registeredMutators[mutatorName]:undoMutator(entity, entityVar, primedEntityVar, reprocessTransient)
+					Ext.Utils.ProfileEnd(("Lab Profiles - Undoing %s Mutator On %s"):format(mutatorName, entityName))
 				end, debug.traceback)
 
 				if not success then
@@ -151,11 +160,12 @@ function MutatorInterface:undoMutator(entity, entityVar, primedEntityVar, reproc
 			end
 		end
 		Logger:BasicDebug("=========================== FINISHED UNDO FOR %s_%s in %dms ===========================",
-			entity.DisplayName and entity.DisplayName.Name:Get() or entity.ServerCharacter.Template.Name,
+			entityName,
 			entity.Uuid.EntityUuid,
 			Ext.Timer:MonotonicTime() - time)
 	end
 	entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = nil
+	Ext.Utils.ProfileEnd("Lab Profiles - Undoing Mutators on " .. entityName)
 end
 
 ---@return boolean isTransient if the mutator requires reapplication on game restart - i.e. health because it directly modifies the entity component

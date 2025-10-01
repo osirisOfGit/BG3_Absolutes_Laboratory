@@ -267,7 +267,7 @@ function ListConfigurationManager:HandleDependences(export, mutator, lists, remo
 		end
 	end
 
-	if not export.lists.entryReplacerDictionary[configKey] and replaceMap[configKey] and replaceMap[configKey] and next(replaceMap[configKey]) then
+	if replaceMap[configKey] and next(replaceMap[configKey]) then
 		if not removeMissingDependencies then
 			replaceMap.modDependencies = export.lists.entryReplacerDictionary.modDependencies
 		end

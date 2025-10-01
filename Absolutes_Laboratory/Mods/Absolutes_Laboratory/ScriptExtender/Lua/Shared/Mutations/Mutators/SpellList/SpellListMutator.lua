@@ -1414,9 +1414,9 @@ if Ext.IsServer() then
 								useGameLevel and EntityRecorder.Levels[cLevel] or cLevel)
 
 							if spellList.modId then
-								local modMap = MutationConfigurationProxy.lists.entryReplacerDictionary[spellList.modId]
-								if modMap and modMap.spellLists then
-									for replacer, toReplaceList in pairs(modMap.spellLists) do
+								local modMap = MutationConfigurationProxy.lists.entryReplacerDictionary.spellLists[spellList.modId]
+								if modMap then
+									for replacer, toReplaceList in pairs(modMap) do
 										if not replaceMap[replaceMap] then
 											replaceMap[replacer] = TableUtils:DeeplyCopyTable(toReplaceList)
 										else

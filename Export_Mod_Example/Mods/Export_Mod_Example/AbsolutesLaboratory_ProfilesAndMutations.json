@@ -14355,7 +14355,8 @@
         "lists": {
             "entryReplacerDictionary": [],
             "passiveLists": {
-                "00840f47-8859-4f73-b2ef-cd8c3f337ceaExported": {
+                "00840f47-8859-4f73-b2ef-cd8c3f337cea": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -14452,7 +14453,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "037b4847-c19b-4d93-8f58-35a41790aba7Exported": {
+                "037b4847-c19b-4d93-8f58-35a41790aba7": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -14548,7 +14550,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "041c9f97-92bf-42ee-bf5c-92eb444cbe10Exported": {
+                "041c9f97-92bf-42ee-bf5c-92eb444cbe10": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -14651,8 +14654,9 @@
                     ],
                     "useGameLevel": false
                 },
-                "06092c24-7444-43f2-af87-46f87850ef3cExported": {
+                "06092c24-7444-43f2-af87-46f87850ef3c": {
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -14767,8 +14771,9 @@
                     ],
                     "useGameLevel": false
                 },
-                "0796bc14-4bb3-450f-b812-94b4522bed9dExported": {
+                "0796bc14-4bb3-450f-b812-94b4522bed9d": {
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -14879,7 +14884,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "07a7537f-f3bd-4c93-9767-ec174e13aaa8Exported": {
+                "07a7537f-f3bd-4c93-9767-ec174e13aaa8": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -14957,7 +14963,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "096a0d6c-450c-4bd3-b37f-d9a677c19fb5Exported": {
+                "096a0d6c-450c-4bd3-b37f-d9a677c19fb5": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -15071,7 +15078,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "0a4adc40-06a8-4108-91f0-2e64b68557feExported": {
+                "0a4adc40-06a8-4108-91f0-2e64b68557fe": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -15175,7 +15183,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "0ab352b0-cbb1-43ee-9e69-b86ef474f938Exported": {
+                "0ab352b0-cbb1-43ee-9e69-b86ef474f938": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -15297,7 +15306,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "0b0789ab-6e95-4261-a700-77594d221cd6Exported": {
+                "0b0789ab-6e95-4261-a700-77594d221cd6": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -15392,8 +15402,9 @@
                     ],
                     "useGameLevel": false
                 },
-                "1a2f288a-e7f6-406e-bfb3-3c3018eb0b26Exported": {
+                "1a2f288a-e7f6-406e-bfb3-3c3018eb0b26": {
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -15506,7 +15517,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "1b666d78-d7c7-42e5-947f-4de946bc49cdExported": {
+                "1b666d78-d7c7-42e5-947f-4de946bc49cd": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -15641,7 +15653,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "1c727096-049d-4a57-92b6-3c2ad1650551Exported": {
+                "1c727096-049d-4a57-92b6-3c2ad1650551": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -15768,7 +15781,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "1e7df9e3-91c7-415d-b536-32085263f828Exported": {
+                "1e7df9e3-91c7-415d-b536-32085263f828": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -15866,7 +15880,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "24bbecac-61fa-45bf-a2f5-3f45b3706d9fExported": {
+                "24bbecac-61fa-45bf-a2f5-3f45b3706d9f": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -15915,7 +15930,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "24d82d01-0242-4c5a-876c-017584792ee1Exported": {
+                "24d82d01-0242-4c5a-876c-017584792ee1": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -16025,7 +16041,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "2826b33d-70b5-4917-b388-0903745cd75aExported": {
+                "2826b33d-70b5-4917-b388-0903745cd75a": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -16096,7 +16113,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "293ec0e0-1c79-4a3a-a299-64e97eda59c2Exported": {
+                "293ec0e0-1c79-4a3a-a299-64e97eda59c2": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -16190,7 +16208,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "30cfa5a6-3e65-4c92-b5d7-2f2587e609b9Exported": {
+                "30cfa5a6-3e65-4c92-b5d7-2f2587e609b9": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -16331,7 +16350,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "3406a7a8-7e6a-48e2-8184-389fa5a8e5d1Exported": {
+                "3406a7a8-7e6a-48e2-8184-389fa5a8e5d1": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -16534,8 +16554,9 @@
                     ],
                     "useGameLevel": false
                 },
-                "351f85fd-be90-465f-82fa-c83d86ad1e81Exported": {
+                "351f85fd-be90-465f-82fa-c83d86ad1e81": {
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -16608,7 +16629,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "364f5c61-475c-47d4-8676-defaa8597f4dExported": {
+                "364f5c61-475c-47d4-8676-defaa8597f4d": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -16702,7 +16724,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "37803a1f-255e-472f-8a11-ed9963868b91Exported": {
+                "37803a1f-255e-472f-8a11-ed9963868b91": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -16832,7 +16855,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "39bffae7-540d-4b7e-8eba-f2bba0d0e6e8Exported": {
+                "39bffae7-540d-4b7e-8eba-f2bba0d0e6e8": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -16920,7 +16944,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "3fde0728-5b78-462d-97ba-4364c7d686a3Exported": {
+                "3fde0728-5b78-462d-97ba-4364c7d686a3": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -16988,7 +17013,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "40211b4a-2a39-47f7-95f4-0251a592bae5Exported": {
+                "40211b4a-2a39-47f7-95f4-0251a592bae5": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -17059,7 +17085,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "459722f5-7719-4214-ba06-a49185c87d0eExported": {
+                "459722f5-7719-4214-ba06-a49185c87d0e": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -17117,8 +17144,9 @@
                     "name": "0. Healing Potions",
                     "useGameLevel": false
                 },
-                "46857778-dab6-42df-8c47-0922059ab07fExported": {
+                "46857778-dab6-42df-8c47-0922059ab07f": {
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -17233,7 +17261,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "4b1698ab-65fb-4055-859d-6ca521b0f7d6Exported": {
+                "4b1698ab-65fb-4055-859d-6ca521b0f7d6": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -17308,7 +17337,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "4d728335-bc9b-4863-8950-fea51c510b5cExported": {
+                "4d728335-bc9b-4863-8950-fea51c510b5c": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": [],
@@ -17379,7 +17409,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "4dd2cad2-22f8-46be-8009-2a72af481476Exported": {
+                "4dd2cad2-22f8-46be-8009-2a72af481476": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -17470,7 +17501,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "4e5c0852-ddce-478e-b242-324778048b0aExported": {
+                "4e5c0852-ddce-478e-b242-324778048b0a": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -17519,7 +17551,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "51b0e8bd-cf2a-4a19-8109-e943a6cf0418Exported": {
+                "51b0e8bd-cf2a-4a19-8109-e943a6cf0418": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -17622,8 +17655,9 @@
                     ],
                     "useGameLevel": false
                 },
-                "55cb2a9d-e20b-4d25-b7c8-1aaff1e9c6c5Exported": {
+                "55cb2a9d-e20b-4d25-b7c8-1aaff1e9c6c5": {
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -17880,7 +17914,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "5a72ab53-d92c-4013-abfe-f48ff8c36937Exported": {
+                "5a72ab53-d92c-4013-abfe-f48ff8c36937": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -18039,7 +18074,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "5d228586-265c-4c85-b75e-4452cefea3f6Exported": {
+                "5d228586-265c-4c85-b75e-4452cefea3f6": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -18135,8 +18171,9 @@
                     ],
                     "useGameLevel": false
                 },
-                "5e052319-b695-4b33-bdd0-958a724576e7Exported": {
+                "5e052319-b695-4b33-bdd0-958a724576e7": {
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -18233,7 +18270,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "5ef328a2-0309-47a2-a968-3d11fcf390f2Exported": {
+                "5ef328a2-0309-47a2-a968-3d11fcf390f2": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -18336,7 +18374,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "60817646-9be3-4e99-a0d4-1291a57ed5eaExported": {
+                "60817646-9be3-4e99-a0d4-1291a57ed5ea": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -18443,7 +18482,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "624939be-fda2-4e08-a527-5a8659abc844Exported": {
+                "624939be-fda2-4e08-a527-5a8659abc844": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -18539,7 +18579,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "63220fc8-1ff1-4ed3-bb05-c169207f2d93Exported": {
+                "63220fc8-1ff1-4ed3-bb05-c169207f2d93": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -18614,8 +18655,9 @@
                     ],
                     "useGameLevel": false
                 },
-                "67f2a466-2e85-44e8-ad7e-13bb9686da50Exported": {
+                "67f2a466-2e85-44e8-ad7e-13bb9686da50": {
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -18765,7 +18807,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "688fde77-a842-4002-85c9-7b695cac0e8fExported": {
+                "688fde77-a842-4002-85c9-7b695cac0e8f": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -18846,7 +18889,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "6e8d169e-16b8-4f28-a6dd-6de8fdb12219Exported": {
+                "6e8d169e-16b8-4f28-a6dd-6de8fdb12219": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -18949,8 +18993,9 @@
                     ],
                     "useGameLevel": false
                 },
-                "702be649-3462-4fc4-9dec-5e2d4c91a055Exported": {
+                "702be649-3462-4fc4-9dec-5e2d4c91a055": {
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -19057,7 +19102,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "758fc7dc-69d6-44f5-b999-56d1a1d989c2Exported": {
+                "758fc7dc-69d6-44f5-b999-56d1a1d989c2": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -19160,7 +19206,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "78b3f6f1-cf52-4e5d-80ff-a0f12f03dabcExported": {
+                "78b3f6f1-cf52-4e5d-80ff-a0f12f03dabc": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -19272,7 +19319,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "798101aa-aeaf-4caa-b9e4-522282105cd3Exported": {
+                "798101aa-aeaf-4caa-b9e4-522282105cd3": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -19486,7 +19534,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "7b7f73ab-b9b9-4ae4-a525-bd6f08aa672bExported": {
+                "7b7f73ab-b9b9-4ae4-a525-bd6f08aa672b": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -19726,7 +19775,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "7c74c066-bcbe-40db-b838-42fbe97e7aecExported": {
+                "7c74c066-bcbe-40db-b838-42fbe97e7aec": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -19829,8 +19879,9 @@
                     ],
                     "useGameLevel": false
                 },
-                "81d736ea-69f5-4abc-9513-ce582c9b1be6Exported": {
+                "81d736ea-69f5-4abc-9513-ce582c9b1be6": {
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -19971,7 +20022,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "83e9c587-e461-45a2-98ea-468e9fe2d0b6Exported": {
+                "83e9c587-e461-45a2-98ea-468e9fe2d0b6": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -20074,7 +20126,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "85754169-bfc2-4956-ba96-e8685e1a81d9Exported": {
+                "85754169-bfc2-4956-ba96-e8685e1a81d9": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -20332,7 +20385,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "86904105-4b5f-4811-ae1e-6de246f09b3fExported": {
+                "86904105-4b5f-4811-ae1e-6de246f09b3f": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -20526,7 +20580,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "8a162657-ac5c-4b82-aeea-26df6c00d168Exported": {
+                "8a162657-ac5c-4b82-aeea-26df6c00d168": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -20643,7 +20698,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "8ca7420b-9534-4149-b250-b3f3f489fe23Exported": {
+                "8ca7420b-9534-4149-b250-b3f3f489fe23": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -20700,8 +20756,9 @@
                     ],
                     "useGameLevel": false
                 },
-                "8e42e4aa-e897-480a-9118-26befcc9006dExported": {
+                "8e42e4aa-e897-480a-9118-26befcc9006d": {
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -20839,7 +20896,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "8f449f0e-fded-4cc9-a884-39227e91615eExported": {
+                "8f449f0e-fded-4cc9-a884-39227e91615e": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -20915,8 +20973,9 @@
                     ],
                     "useGameLevel": false
                 },
-                "9275bf56-7e36-41b2-aa71-96bb5eda71a2Exported": {
+                "9275bf56-7e36-41b2-aa71-96bb5eda71a2": {
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -21096,7 +21155,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "934d4833-db3b-4f61-b746-3d422ec0415eExported": {
+                "934d4833-db3b-4f61-b746-3d422ec0415e": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -21329,8 +21389,9 @@
                     ],
                     "useGameLevel": false
                 },
-                "9459bf15-4eac-4a35-b3cb-641cabe1ed3bExported": {
+                "9459bf15-4eac-4a35-b3cb-641cabe1ed3b": {
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -21430,7 +21491,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "955e8d5f-489b-43d8-8e33-6bfd172ef5eaExported": {
+                "955e8d5f-489b-43d8-8e33-6bfd172ef5ea": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -21628,7 +21690,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "99c68e0b-13f1-4441-92c1-d839970e0e6cExported": {
+                "99c68e0b-13f1-4441-92c1-d839970e0e6c": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -21709,7 +21772,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "9b4a23cc-8fcc-4b7f-94ad-7b00dec9fc18Exported": {
+                "9b4a23cc-8fcc-4b7f-94ad-7b00dec9fc18": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -21812,7 +21876,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "9ea82a06-6f62-4c2f-a1e5-a04ffb04d02cExported": {
+                "9ea82a06-6f62-4c2f-a1e5-a04ffb04d02c": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -21915,7 +21980,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "aebabe81-1558-405f-9aa0-2846b12dbac5Exported": {
+                "aebabe81-1558-405f-9aa0-2846b12dbac5": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -21988,8 +22054,9 @@
                     ],
                     "useGameLevel": false
                 },
-                "b93fd3da-917d-4243-8c0f-da5b461dbe35Exported": {
+                "b93fd3da-917d-4243-8c0f-da5b461dbe35": {
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -22171,7 +22238,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "c56ad8bb-38b4-479a-a253-6e5e65607738Exported": {
+                "c56ad8bb-38b4-479a-a253-6e5e65607738": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -22252,7 +22320,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "c6e9ce55-da7b-4d6b-a14a-6e2bdd663692Exported": {
+                "c6e9ce55-da7b-4d6b-a14a-6e2bdd663692": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -22380,8 +22449,9 @@
                     ],
                     "useGameLevel": false
                 },
-                "c71125b5-610c-43a5-bacc-0c559705b465Exported": {
+                "c71125b5-610c-43a5-bacc-0c559705b465": {
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -22482,8 +22552,9 @@
                     ],
                     "useGameLevel": false
                 },
-                "c92b3007-3c4b-4ed6-8eb0-0c5cb898affaExported": {
+                "c92b3007-3c4b-4ed6-8eb0-0c5cb898affa": {
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -22567,7 +22638,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "cc16b8df-efdb-4e6a-ad5f-51d9e794f2b8Exported": {
+                "cc16b8df-efdb-4e6a-ad5f-51d9e794f2b8": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -22657,8 +22729,9 @@
                     ],
                     "useGameLevel": false
                 },
-                "cdc267ac-0f9a-4d52-9de9-a26ca811869dExported": {
+                "cdc267ac-0f9a-4d52-9de9-a26ca811869d": {
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -22778,7 +22851,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "d0955063-49b8-4a26-bd11-65c531eaa99cExported": {
+                "d0955063-49b8-4a26-bd11-65c531eaa99c": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -22864,7 +22938,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "d3e68aca-ff03-4141-9118-7da8acf8dca5Exported": {
+                "d3e68aca-ff03-4141-9118-7da8acf8dca5": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -22979,7 +23054,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "d56ca80d-1432-4196-a01f-6a98af8699d3Exported": {
+                "d56ca80d-1432-4196-a01f-6a98af8699d3": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -23098,7 +23174,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "db16c77d-1837-4e22-8ca7-729029394626Exported": {
+                "db16c77d-1837-4e22-8ca7-729029394626": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -23226,7 +23303,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "e1ca45dd-8d61-48c9-979b-badb1fd6992cExported": {
+                "e1ca45dd-8d61-48c9-979b-badb1fd6992c": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -23320,7 +23398,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "e205fc67-27e2-4c39-92ab-2761b99dfdc6Exported": {
+                "e205fc67-27e2-4c39-92ab-2761b99dfdc6": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -23536,7 +23615,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "e24f76db-2f11-4d66-ba44-e6447e5a9cc1Exported": {
+                "e24f76db-2f11-4d66-ba44-e6447e5a9cc1": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -23649,7 +23729,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "e2a96ce6-6eb0-4f7e-bbf5-d402616689bfExported": {
+                "e2a96ce6-6eb0-4f7e-bbf5-d402616689bf": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -23760,7 +23841,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "e5777125-78bf-4f45-873d-41947ad9acaaExported": {
+                "e5777125-78bf-4f45-873d-41947ad9acaa": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -23840,7 +23922,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "e75bf9c6-87b6-492f-9489-2e57d40ddb73Exported": {
+                "e75bf9c6-87b6-492f-9489-2e57d40ddb73": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -24008,8 +24091,9 @@
                     ],
                     "useGameLevel": false
                 },
-                "ef63dc55-be76-4e60-9e5d-f5c180c747d1Exported": {
+                "ef63dc55-be76-4e60-9e5d-f5c180c747d1": {
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -24116,7 +24200,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "f00f89c9-a6f4-4657-908a-d8e89a2df085Exported": {
+                "f00f89c9-a6f4-4657-908a-d8e89a2df085": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -24185,7 +24270,8 @@
                     ],
                     "useGameLevel": false
                 },
-                "f87b12f5-fe48-4de3-b99f-c0e576c397afExported": {
+                "f87b12f5-fe48-4de3-b99f-c0e576c397af": {
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": {
                         "1": {
@@ -24261,8 +24347,9 @@
                     ],
                     "useGameLevel": false
                 },
-                "f93d9bc8-c72d-4c6f-9343-fa652af69525Exported": {
+                "f93d9bc8-c72d-4c6f-9343-fa652af69525": {
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "guaranteed",
                     "description": "",
                     "levels": [
                         {
@@ -24374,13 +24461,14 @@
                 }
             },
             "spellLists": {
-                "001e6f10-0d1d-49a1-bb28-df3c4e6903dfExported": {
+                "001e6f10-0d1d-49a1-bb28-df3c4e6903df": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {
@@ -24469,12 +24557,13 @@
                     "name": "Sorcerer - Draconic Bloodline - Black",
                     "useGameLevel": false
                 },
-                "0b1bd1b2-d951-4da4-9a60-d5e7ff0d1e54Exported": {
+                "0b1bd1b2-d951-4da4-9a60-d5e7ff0d1e54": {
                     "abilityPriorities": {
                         "primaryStat": "Dexterity",
                         "secondaryStat": "Charisma",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "4": {
@@ -24505,13 +24594,14 @@
                     "name": "Rogue - Swashbuckler",
                     "useGameLevel": false
                 },
-                "0d07ea18-9105-447a-ad8d-4865e71ce71cExported": {
+                "0d07ea18-9105-447a-ad8d-4865e71ce71c": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         [],
@@ -24606,12 +24696,13 @@
                     "name": "Sorcerer - Draconic Bloodline - Silver",
                     "useGameLevel": false
                 },
-                "0dc06f68-d2e3-46eb-ac12-dbd43ec52676Exported": {
+                "0dc06f68-d2e3-46eb-ac12-dbd43ec52676": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Dexterity",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "6": {
@@ -25086,13 +25177,14 @@
                     "name": "Bard - Lore",
                     "useGameLevel": false
                 },
-                "12d10c91-4081-4d15-94d1-2e06796def8fExported": {
+                "12d10c91-4081-4d15-94d1-2e06796def8f": {
                     "abilityPriorities": {
                         "primaryStat": "Strength",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Charisma"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         [],
@@ -25130,12 +25222,13 @@
                     "name": "Barbarian",
                     "useGameLevel": false
                 },
-                "178398ef-c180-4681-bb7f-0917478369fcExported": {
+                "178398ef-c180-4681-bb7f-0917478369fc": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         [],
@@ -25193,13 +25286,14 @@
                     "name": "Sorcerer - Storm Sorcery",
                     "useGameLevel": false
                 },
-                "18fa620b-183e-47dd-857c-c7daf395ccb4Exported": {
+                "18fa620b-183e-47dd-857c-c7daf395ccb4": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {},
@@ -25308,13 +25402,14 @@
                     "name": "Sorcerer - Draconic Bloodline - Brass",
                     "useGameLevel": false
                 },
-                "1d214884-22b1-43c2-887a-b5f2c5f7165aExported": {
+                "1d214884-22b1-43c2-887a-b5f2c5f7165a": {
                     "abilityPriorities": {
                         "primaryStat": "Intelligence",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         [],
@@ -25659,12 +25754,13 @@
                     "name": "Wizard - Conjuration",
                     "useGameLevel": false
                 },
-                "1fd52377-6f34-485f-9cd8-43fc378548bcExported": {
+                "1fd52377-6f34-485f-9cd8-43fc378548bc": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Dexterity",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "3": {
@@ -25702,13 +25798,14 @@
                     "name": "Bard - Swords",
                     "useGameLevel": false
                 },
-                "222c8b69-f572-4fb3-8322-2735b7dbfcdfExported": {
+                "222c8b69-f572-4fb3-8322-2735b7dbfcdf": {
                     "abilityPriorities": {
                         "primaryStat": "Dexterity",
                         "secondaryStat": "Intelligence",
                         "tertiaryStat": "Constitution"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         [],
@@ -25774,13 +25871,14 @@
                     "name": "Artificer - Battle Smith",
                     "useGameLevel": false
                 },
-                "2293b696-049f-4cec-83f3-72a508fd3389Exported": {
+                "2293b696-049f-4cec-83f3-72a508fd3389": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Dexterity",
                         "tertiaryStat": "Constitution"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {
@@ -25900,12 +25998,13 @@
                     "name": "Warlock",
                     "useGameLevel": false
                 },
-                "24b1fcaa-83a9-4f46-a471-ad7fe1514ef3Exported": {
+                "24b1fcaa-83a9-4f46-a471-ad7fe1514ef3": {
                     "abilityPriorities": {
                         "primaryStat": "Strength",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {
@@ -25938,12 +26037,13 @@
                     "name": "Fighter",
                     "useGameLevel": false
                 },
-                "274694e6-8958-4398-9548-35ec8d06c5eeExported": {
+                "274694e6-8958-4398-9548-35ec8d06c5ee": {
                     "abilityPriorities": {
                         "primaryStat": "Dexterity",
                         "secondaryStat": "Wisdom",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {
@@ -26004,13 +26104,14 @@
                     "name": "Monk",
                     "useGameLevel": false
                 },
-                "29ea6796-499d-4e0d-96cd-34c62932319eExported": {
+                "29ea6796-499d-4e0d-96cd-34c62932319e": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {},
@@ -26104,12 +26205,13 @@
                     "name": "Sorcerer - Draconic Bloodline - Bronze",
                     "useGameLevel": false
                 },
-                "2d31e031-4a3d-411f-b63a-80bd3c0b9bb6Exported": {
+                "2d31e031-4a3d-411f-b63a-80bd3c0b9bb6": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Dexterity",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "1": {
@@ -26292,12 +26394,13 @@
                     "name": "Warlock - Hexblade",
                     "useGameLevel": false
                 },
-                "2df4aab2-33ff-49e2-b5ed-946e83e9516bExported": {
+                "2df4aab2-33ff-49e2-b5ed-946e83e9516b": {
                     "abilityPriorities": {
                         "primaryStat": "Dexterity",
                         "secondaryStat": "Wisdom",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "3": {
@@ -26372,13 +26475,14 @@
                     "name": "Ranger - Swarmkeeper",
                     "useGameLevel": false
                 },
-                "3008d202-acb6-41b5-b7b4-eb8b72927f5dExported": {
+                "3008d202-acb6-41b5-b7b4-eb8b72927f5d": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Dexterity",
                         "tertiaryStat": "Constitution"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {
@@ -26564,12 +26668,13 @@
                     "name": "Warlock - Archfey",
                     "useGameLevel": false
                 },
-                "387477da-d251-4976-b444-308b88a8d4dfExported": {
+                "387477da-d251-4976-b444-308b88a8d4df": {
                     "abilityPriorities": {
                         "primaryStat": "Dexterity",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Intelligence"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {
@@ -26611,13 +26716,14 @@
                     "name": "Rogue",
                     "useGameLevel": false
                 },
-                "38b5fc97-0f35-4cac-b1ee-49d56a4aab56Exported": {
+                "38b5fc97-0f35-4cac-b1ee-49d56a4aab56": {
                     "abilityPriorities": {
                         "primaryStat": "Intelligence",
                         "secondaryStat": "Dexterity",
                         "tertiaryStat": "Constitution"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         [],
@@ -26953,12 +27059,13 @@
                     "name": "Wizard - Divination",
                     "useGameLevel": false
                 },
-                "3ba4df30-4b20-419c-97c1-4b0ad1ffac25Exported": {
+                "3ba4df30-4b20-419c-97c1-4b0ad1ffac25": {
                     "abilityPriorities": {
                         "primaryStat": "Dexterity",
                         "secondaryStat": "Wisdom",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "3": {
@@ -27025,12 +27132,13 @@
                     "name": "Monk - Drunken Master",
                     "useGameLevel": false
                 },
-                "40005a2d-c340-481f-ba46-c5f17a50aa88Exported": {
+                "40005a2d-c340-481f-ba46-c5f17a50aa88": {
                     "abilityPriorities": {
                         "primaryStat": "Wisdom",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Strength"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "1": {
@@ -27217,13 +27325,14 @@
                     "name": "Cleric",
                     "useGameLevel": false
                 },
-                "42667ad8-b891-46c6-be21-3cb73f650ea2Exported": {
+                "42667ad8-b891-46c6-be21-3cb73f650ea2": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         [],
@@ -27303,12 +27412,13 @@
                     "name": "Sorcerer - Shadow Magic",
                     "useGameLevel": false
                 },
-                "4ddd9371-a8aa-4f0a-8450-c6f2631ac7e4Exported": {
+                "4ddd9371-a8aa-4f0a-8450-c6f2631ac7e4": {
                     "abilityPriorities": {
                         "primaryStat": "Wisdom",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "2": [],
@@ -27396,13 +27506,14 @@
                     "name": "Druid - Moon",
                     "useGameLevel": false
                 },
-                "4e98a911-59c6-4dea-ba39-93822c206b4eExported": {
+                "4e98a911-59c6-4dea-ba39-93822c206b4e": {
                     "abilityPriorities": {
                         "primaryStat": "Intelligence",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         [],
@@ -27738,12 +27849,13 @@
                     "name": "Wizard - Abjuration",
                     "useGameLevel": false
                 },
-                "4fe4e6e5-c559-4347-8ef4-e2995cc76648Exported": {
+                "4fe4e6e5-c559-4347-8ef4-e2995cc76648": {
                     "abilityPriorities": {
                         "primaryStat": "Wisdom",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Strength"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "1": {
@@ -27834,12 +27946,13 @@
                     "name": "Cleric - Life",
                     "useGameLevel": false
                 },
-                "5516ed15-c33e-41bd-bfb2-c6b6261564b0Exported": {
+                "5516ed15-c33e-41bd-bfb2-c6b6261564b0": {
                     "abilityPriorities": {
                         "primaryStat": "Dexterity",
                         "secondaryStat": "Intelligence",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "3": {
@@ -28111,13 +28224,14 @@
                     "name": "Rogue - Arcane Trickster",
                     "useGameLevel": false
                 },
-                "55760174-9c18-4f9a-97f8-7b7c6d09e261Exported": {
+                "55760174-9c18-4f9a-97f8-7b7c6d09e261": {
                     "abilityPriorities": {
                         "primaryStat": "Strength",
                         "secondaryStat": "Intelligence",
                         "tertiaryStat": "Constitution"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         [],
@@ -28195,12 +28309,13 @@
                     "name": "Fighter - Psi Warrior",
                     "useGameLevel": false
                 },
-                "559b9b56-c165-46ba-a269-8a38260a9745Exported": {
+                "559b9b56-c165-46ba-a269-8a38260a9745": {
                     "abilityPriorities": {
                         "primaryStat": "Wisdom",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Strength"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "1": {
@@ -28264,12 +28379,13 @@
                     "name": "Cleric - Trickery",
                     "useGameLevel": false
                 },
-                "5640fdb1-782e-4d46-ac4f-22e8382b19b9Exported": {
+                "5640fdb1-782e-4d46-ac4f-22e8382b19b9": {
                     "abilityPriorities": {
                         "primaryStat": "Wisdom",
                         "secondaryStat": "Dexterity",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "3": {
@@ -28324,12 +28440,13 @@
                     "name": "Monk - Open Hand",
                     "useGameLevel": false
                 },
-                "63df243e-f5e0-48f0-8bb9-59fc97e649a7Exported": {
+                "63df243e-f5e0-48f0-8bb9-59fc97e649a7": {
                     "abilityPriorities": {
                         "primaryStat": "Wisdom",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "2": {
@@ -28393,13 +28510,14 @@
                     "name": "Druid - Spores",
                     "useGameLevel": false
                 },
-                "6b1ca05c-32f1-4f78-b1bc-24c9a18e38eeExported": {
+                "6b1ca05c-32f1-4f78-b1bc-24c9a18e38ee": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {},
@@ -28508,12 +28626,13 @@
                     "name": "Sorcerer - Draconic Bloodline - Red",
                     "useGameLevel": false
                 },
-                "6e9b7e1f-24ab-4cd4-a141-686edce58dc0Exported": {
+                "6e9b7e1f-24ab-4cd4-a141-686edce58dc0": {
                     "abilityPriorities": {
                         "primaryStat": "Strength",
                         "secondaryStat": "Charisma",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {
@@ -28703,12 +28822,13 @@
                     "name": "Paladin",
                     "useGameLevel": false
                 },
-                "70007b5c-3fa6-42c7-8d05-5a08071fd639Exported": {
+                "70007b5c-3fa6-42c7-8d05-5a08071fd639": {
                     "abilityPriorities": {
                         "primaryStat": "Dexterity",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Intelligence"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "9": {
@@ -28728,12 +28848,13 @@
                     "name": "Rogue - Assassin",
                     "useGameLevel": false
                 },
-                "70de75b4-5acf-42f6-98b4-92c355287cd7Exported": {
+                "70de75b4-5acf-42f6-98b4-92c355287cd7": {
                     "abilityPriorities": {
                         "primaryStat": "Wisdom",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Strength"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "1": {
@@ -28805,13 +28926,14 @@
                     "name": "Cleric - Knowledge",
                     "useGameLevel": false
                 },
-                "71e5938b-43c6-441e-938e-227f95c2c294Exported": {
+                "71e5938b-43c6-441e-938e-227f95c2c294": {
                     "abilityPriorities": {
                         "primaryStat": "Intelligence",
                         "secondaryStat": "Dexterity",
                         "tertiaryStat": "Constitution"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         [],
@@ -28912,12 +29034,13 @@
                     "name": "Artificer - Alchemist",
                     "useGameLevel": false
                 },
-                "753b64eb-928c-42de-87e5-76d172ebf8c0Exported": {
+                "753b64eb-928c-42de-87e5-76d172ebf8c0": {
                     "abilityPriorities": {
                         "primaryStat": "Strength",
                         "secondaryStat": "Charisma",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "1": {
@@ -28990,13 +29113,14 @@
                     "name": "Paladin - Devotion",
                     "useGameLevel": false
                 },
-                "773defe4-e792-4c04-bd67-fefab1dbc6b8Exported": {
+                "773defe4-e792-4c04-bd67-fefab1dbc6b8": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {
@@ -29278,12 +29402,13 @@
                     "name": "Sorcerer",
                     "useGameLevel": false
                 },
-                "7ba651a5-4696-4d10-a696-2418e025d1b1Exported": {
+                "7ba651a5-4696-4d10-a696-2418e025d1b1": {
                     "abilityPriorities": {
                         "primaryStat": "Strength",
                         "secondaryStat": "Charisma",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {
@@ -29363,13 +29488,14 @@
                     "name": "Paladin - Conquest",
                     "useGameLevel": false
                 },
-                "81136cb6-b5ac-4320-945d-2372061a1d7fExported": {
+                "81136cb6-b5ac-4320-945d-2372061a1d7f": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {
@@ -29450,12 +29576,13 @@
                     "name": "Sorcerer - Draconic Bloodline - Green",
                     "useGameLevel": false
                 },
-                "816636a5-4e31-46ea-831d-d1f952a74225Exported": {
+                "816636a5-4e31-46ea-831d-d1f952a74225": {
                     "abilityPriorities": {
                         "primaryStat": "Dexterity",
                         "secondaryStat": "Wisdom",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "3": {
@@ -29500,12 +29627,13 @@
                     "name": "Ranger - Beast Master",
                     "useGameLevel": false
                 },
-                "841da7ed-9970-40fe-a95b-e278812be2cdExported": {
+                "841da7ed-9970-40fe-a95b-e278812be2cd": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Dexterity",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "1": {
@@ -29682,12 +29810,13 @@
                     "name": "Warlock - Fiend",
                     "useGameLevel": false
                 },
-                "850ad087-9bd4-493f-b62f-b6fe52767dd1Exported": {
+                "850ad087-9bd4-493f-b62f-b6fe52767dd1": {
                     "abilityPriorities": {
                         "primaryStat": "Wisdom",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Strength"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {
@@ -29759,13 +29888,14 @@
                     "name": "Cleric - Light",
                     "useGameLevel": false
                 },
-                "86d7de35-33d8-48dd-883c-cd38e3164094Exported": {
+                "86d7de35-33d8-48dd-883c-cd38e3164094": {
                     "abilityPriorities": {
                         "primaryStat": "Strength",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Charisma"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         [],
@@ -29856,12 +29986,13 @@
                     "name": "Barbarian - Berserker",
                     "useGameLevel": false
                 },
-                "888a5a9e-9df8-4c72-948d-6a6de36b23ceExported": {
+                "888a5a9e-9df8-4c72-948d-6a6de36b23ce": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Dexterity",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "3": [],
@@ -29923,12 +30054,13 @@
                     "name": "Bard - Valour",
                     "useGameLevel": false
                 },
-                "8c7363c1-179d-4f1e-ada1-d6caef0c2585Exported": {
+                "8c7363c1-179d-4f1e-ada1-d6caef0c2585": {
                     "abilityPriorities": {
                         "primaryStat": "Strength",
                         "secondaryStat": "Intelligence",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "3": {
@@ -30136,13 +30268,14 @@
                     "name": "Fighter - Eldritch Knight",
                     "useGameLevel": false
                 },
-                "8d1826fb-3246-46ab-8c6a-bca09e4cc632Exported": {
+                "8d1826fb-3246-46ab-8c6a-bca09e4cc632": {
                     "abilityPriorities": {
                         "primaryStat": "Dexterity",
                         "secondaryStat": "Intelligence",
                         "tertiaryStat": "Constitution"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {
@@ -30431,13 +30564,14 @@
                     "name": "Artificer",
                     "useGameLevel": false
                 },
-                "8f3b1adf-83de-4ab9-a30d-7a4e03f6086fExported": {
+                "8f3b1adf-83de-4ab9-a30d-7a4e03f6086f": {
                     "abilityPriorities": {
                         "primaryStat": "Dexterity",
                         "secondaryStat": "Intelligence",
                         "tertiaryStat": "Constitution"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         [],
@@ -30507,12 +30641,13 @@
                     "name": "Artificer - Armourer",
                     "useGameLevel": false
                 },
-                "92f4dd8b-c20f-4268-8145-4c918bca9a1bExported": {
+                "92f4dd8b-c20f-4268-8145-4c918bca9a1b": {
                     "abilityPriorities": {
                         "primaryStat": "Wisdom",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "2": {
@@ -30568,13 +30703,14 @@
                     "name": "Druid - Land",
                     "useGameLevel": false
                 },
-                "9579f565-17f1-4b3d-8596-e4a0160574d2Exported": {
+                "9579f565-17f1-4b3d-8596-e4a0160574d2": {
                     "abilityPriorities": {
                         "primaryStat": "Intelligence",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         [],
@@ -30917,12 +31053,13 @@
                     "name": "Wizard - Evocation",
                     "useGameLevel": false
                 },
-                "9b81812d-6b63-48a2-8053-1911ed07ad56Exported": {
+                "9b81812d-6b63-48a2-8053-1911ed07ad56": {
                     "abilityPriorities": {
                         "primaryStat": "Strength",
                         "secondaryStat": "Charisma",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {
@@ -30959,12 +31096,13 @@
                     "name": "Paladin - Crown",
                     "useGameLevel": false
                 },
-                "9d2f9e02-2811-4430-b5c5-659ebe65fd0cExported": {
+                "9d2f9e02-2811-4430-b5c5-659ebe65fd0c": {
                     "abilityPriorities": {
                         "primaryStat": "Dexterity",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Intelligence"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "9": {
@@ -30997,12 +31135,13 @@
                     "name": "Rogue - Thief",
                     "useGameLevel": false
                 },
-                "a22624a8-85a0-4751-9706-5f68f9be0be8Exported": {
+                "a22624a8-85a0-4751-9706-5f68f9be0be8": {
                     "abilityPriorities": {
                         "primaryStat": "Dexterity",
                         "secondaryStat": "Wisdom",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "3": {
@@ -31077,12 +31216,13 @@
                     "name": "Ranger - Gloom Stalker",
                     "useGameLevel": false
                 },
-                "a3eed417-c9db-4d84-9754-eda96c45b1bbExported": {
+                "a3eed417-c9db-4d84-9754-eda96c45b1bb": {
                     "abilityPriorities": {
                         "primaryStat": "Strength",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Charisma"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "3": {
@@ -31124,22 +31264,24 @@
                     "name": "Barbarian - Wild Magic",
                     "useGameLevel": false
                 },
-                "a4b78b56-fe02-4274-bb43-c510e8912a06Exported": {
+                "a4b78b56-fe02-4274-bb43-c510e8912a06": {
                     "abilityPriorities": {
                         "primaryStat": "Strength",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "name": "Fighter - Champion",
                     "useGameLevel": false
                 },
-                "a5127650-94e7-4466-ae85-c3977f80ac76Exported": {
+                "a5127650-94e7-4466-ae85-c3977f80ac76": {
                     "abilityPriorities": {
                         "primaryStat": "Strength",
                         "secondaryStat": "Charisma",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "1": {
@@ -31216,32 +31358,35 @@
                     "name": "Paladin - Ancients",
                     "useGameLevel": false
                 },
-                "a5509eb1-e910-4c0f-8877-b2ca41130840Exported": {
+                "a5509eb1-e910-4c0f-8877-b2ca41130840": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "name": "Sorcerer - Wild Magic",
                     "useGameLevel": false
                 },
-                "a8e623a3-925b-445a-ae55-059c43b05296Exported": {
+                "a8e623a3-925b-445a-ae55-059c43b05296": {
                     "abilityPriorities": {
                         "primaryStat": "Strength",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "name": "Fighter - Battle Master",
                     "useGameLevel": false
                 },
-                "ab3c3d6b-8f92-449b-a504-db227efd55b0Exported": {
+                "ab3c3d6b-8f92-449b-a504-db227efd55b0": {
                     "abilityPriorities": {
                         "primaryStat": "Wisdom",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Strength"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "1": {
@@ -31310,12 +31455,13 @@
                     "name": "Cleric - Nature",
                     "useGameLevel": false
                 },
-                "b17f4e8c-a5f3-4636-a425-158015da44d1Exported": {
+                "b17f4e8c-a5f3-4636-a425-158015da44d1": {
                     "abilityPriorities": {
                         "primaryStat": "Wisdom",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Strength"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "1": [],
@@ -31353,13 +31499,14 @@
                     "name": "Cleric - Death",
                     "useGameLevel": false
                 },
-                "b85fb545-af53-4255-b67c-77eeb6a1713aExported": {
+                "b85fb545-af53-4255-b67c-77eeb6a1713a": {
                     "abilityPriorities": {
                         "primaryStat": "Intelligence",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         [],
@@ -31702,12 +31849,13 @@
                     "name": "Wizard - Illusion",
                     "useGameLevel": false
                 },
-                "bae21dbd-d27a-4b88-b663-a494e8bb4f40Exported": {
+                "bae21dbd-d27a-4b88-b663-a494e8bb4f40": {
                     "abilityPriorities": {
                         "primaryStat": "Wisdom",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Strength"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "1": [],
@@ -31745,13 +31893,14 @@
                     "name": "Cleric - Tempest",
                     "useGameLevel": false
                 },
-                "bc990e07-4a8f-4a5d-a54a-afddd6d4df34Exported": {
+                "bc990e07-4a8f-4a5d-a54a-afddd6d4df34": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Dexterity",
                         "tertiaryStat": "Constitution"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {
@@ -32261,12 +32410,13 @@
                     "name": "Bard",
                     "useGameLevel": false
                 },
-                "c17c3029-2d2d-4036-a3bc-7cd0523f915bExported": {
+                "c17c3029-2d2d-4036-a3bc-7cd0523f915b": {
                     "abilityPriorities": {
                         "primaryStat": "Wisdom",
                         "secondaryStat": "Dexterity",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "3": {
@@ -32325,12 +32475,13 @@
                     "name": "Monk - Four Elements",
                     "useGameLevel": false
                 },
-                "ce36b803-53d6-4d24-800f-deb427f4fadaExported": {
+                "ce36b803-53d6-4d24-800f-deb427f4fada": {
                     "abilityPriorities": {
                         "primaryStat": "Wisdom",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "1": {
@@ -32614,12 +32765,13 @@
                     "name": "Druid",
                     "useGameLevel": false
                 },
-                "d009e26b-5160-4b02-92b2-9efccc00d684Exported": {
+                "d009e26b-5160-4b02-92b2-9efccc00d684": {
                     "abilityPriorities": {
                         "primaryStat": "Wisdom",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Strength"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "1": [],
@@ -32698,12 +32850,13 @@
                     "name": "Cleric - War",
                     "useGameLevel": false
                 },
-                "d0aaebfe-eabe-499c-bbc5-7936c4f55ebbExported": {
+                "d0aaebfe-eabe-499c-bbc5-7936c4f55ebb": {
                     "abilityPriorities": {
                         "primaryStat": "Strength",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Charisma"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "3": {
@@ -32736,12 +32889,13 @@
                     "name": "Barbarian - Wildheart",
                     "useGameLevel": false
                 },
-                "d1ea0a41-ffa2-44f7-a108-adff16dd1d00Exported": {
+                "d1ea0a41-ffa2-44f7-a108-adff16dd1d00": {
                     "abilityPriorities": {
                         "primaryStat": "Dexterity",
                         "secondaryStat": "Strength",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         [],
@@ -32805,13 +32959,14 @@
                     "name": "Fighter - Arcane Archer",
                     "useGameLevel": false
                 },
-                "d2abaedd-edc1-41e1-b799-ac17fec56518Exported": {
+                "d2abaedd-edc1-41e1-b799-ac17fec56518": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {},
@@ -32905,12 +33060,13 @@
                     "name": "Sorcerer - Draconic Bloodline - Blue",
                     "useGameLevel": false
                 },
-                "d52f208d-ea93-44f3-820f-fe0da86463feExported": {
+                "d52f208d-ea93-44f3-820f-fe0da86463fe": {
                     "abilityPriorities": {
                         "primaryStat": "Dexterity",
                         "secondaryStat": "Wisdom",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {},
@@ -32951,13 +33107,14 @@
                     "name": "Ranger - Hunter",
                     "useGameLevel": false
                 },
-                "d8b41956-78b2-4382-957f-ab868b961e46Exported": {
+                "d8b41956-78b2-4382-957f-ab868b961e46": {
                     "abilityPriorities": {
                         "primaryStat": "Intelligence",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {
@@ -33273,13 +33430,14 @@
                     "name": "Wizard - Necromancy",
                     "useGameLevel": false
                 },
-                "d8ed83d4-c762-41ee-86e3-ac407379cd76Exported": {
+                "d8ed83d4-c762-41ee-86e3-ac407379cd76": {
                     "abilityPriorities": {
                         "primaryStat": "Intelligence",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {
@@ -33419,12 +33577,13 @@
                     "name": "Wizard",
                     "useGameLevel": false
                 },
-                "ddbe67ea-c797-4a9a-bb03-81279f48846bExported": {
+                "ddbe67ea-c797-4a9a-bb03-81279f48846b": {
                     "abilityPriorities": {
                         "primaryStat": "Wisdom",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "2": {
@@ -33464,13 +33623,14 @@
                     "name": "Druid - Stars",
                     "useGameLevel": false
                 },
-                "dfed6c97-82c2-46bc-baea-45eccb88f98eExported": {
+                "dfed6c97-82c2-46bc-baea-45eccb88f98e": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Dexterity",
                         "tertiaryStat": "Constitution"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         [],
@@ -33520,13 +33680,14 @@
                     "name": "Bard - Glamour",
                     "useGameLevel": false
                 },
-                "e2be2a6a-1865-45c4-aac5-c3b0b96693beExported": {
+                "e2be2a6a-1865-45c4-aac5-c3b0b96693be": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {
@@ -33637,13 +33798,14 @@
                     "name": "Sorcerer - Draconic Bloodline - White",
                     "useGameLevel": false
                 },
-                "e8537e6b-4b04-4077-9b60-f32c7d1774bdExported": {
+                "e8537e6b-4b04-4077-9b60-f32c7d1774bd": {
                     "abilityPriorities": {
                         "primaryStat": "Dexterity",
                         "secondaryStat": "Intelligence",
                         "tertiaryStat": "Constitution"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         [],
@@ -33719,12 +33881,13 @@
                     "name": "Artificer - Artillerist",
                     "useGameLevel": false
                 },
-                "e8eab38e-6981-4227-83be-9a2a7f98dfc6Exported": {
+                "e8eab38e-6981-4227-83be-9a2a7f98dfc6": {
                     "abilityPriorities": {
                         "primaryStat": "Strength",
                         "secondaryStat": "Charisma",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "1": {
@@ -33786,12 +33949,13 @@
                     "name": "Paladin - Vengeance",
                     "useGameLevel": false
                 },
-                "e9c679e2-4e94-4af8-8a3a-eaf5aa0ec1a1Exported": {
+                "e9c679e2-4e94-4af8-8a3a-eaf5aa0ec1a1": {
                     "abilityPriorities": {
                         "primaryStat": "Dexterity",
                         "secondaryStat": "Wisdom",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "3": {
@@ -33858,13 +34022,14 @@
                     "name": "Monk - Shadow",
                     "useGameLevel": false
                 },
-                "eb2b651a-a627-4882-86ec-31a22fc120c8Exported": {
+                "eb2b651a-a627-4882-86ec-31a22fc120c8": {
                     "abilityPriorities": {
                         "primaryStat": "Intelligence",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         [],
@@ -34330,13 +34495,14 @@
                     "name": "Wizard - Transmutation",
                     "useGameLevel": false
                 },
-                "ee13b419-37ce-451d-92e3-ac3ec2b2054dExported": {
+                "ee13b419-37ce-451d-92e3-ac3ec2b2054d": {
                     "abilityPriorities": {
                         "primaryStat": "Intelligence",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         [],
@@ -34672,13 +34838,14 @@
                     "name": "Wizard - Enchantment",
                     "useGameLevel": false
                 },
-                "ef7168b9-0ebc-4239-b49c-42d497a11e0eExported": {
+                "ef7168b9-0ebc-4239-b49c-42d497a11e0e": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {
@@ -34767,12 +34934,13 @@
                     "name": "Sorcerer - Draconic Bloodline - Copper",
                     "useGameLevel": false
                 },
-                "f0343874-5835-4f79-ae1d-4a8b8da11a75Exported": {
+                "f0343874-5835-4f79-ae1d-4a8b8da11a75": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Dexterity",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "1": {
@@ -34947,13 +35115,14 @@
                     "name": "Warlock - Great Old One",
                     "useGameLevel": false
                 },
-                "f14aa6f5-e051-4746-87fa-52d9f9540a13Exported": {
+                "f14aa6f5-e051-4746-87fa-52d9f9540a13": {
                     "abilityPriorities": {
                         "primaryStat": "Intelligence",
                         "secondaryStat": "Dexterity",
                         "tertiaryStat": "Constitution"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {
@@ -35342,12 +35511,13 @@
                     "name": "Wizard - Bladesinging",
                     "useGameLevel": false
                 },
-                "f8d5e7f7-2b33-479c-9b54-9e344a47d841Exported": {
+                "f8d5e7f7-2b33-479c-9b54-9e344a47d841": {
                     "abilityPriorities": {
                         "primaryStat": "Strength",
                         "secondaryStat": "Charisma",
                         "tertiaryStat": "Constitution"
                     },
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": {
                         "1": {
@@ -35401,13 +35571,14 @@
                     "name": "Paladin - Oathbreaker",
                     "useGameLevel": false
                 },
-                "fa26f0b1-c3f4-46f0-8126-41d95fe51bedExported": {
+                "fa26f0b1-c3f4-46f0-8126-41d95fe51bed": {
                     "abilityPriorities": {
                         "primaryStat": "Charisma",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Dexterity"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         {},
@@ -35516,13 +35687,14 @@
                     "name": "Sorcerer - Draconic Bloodline - Gold",
                     "useGameLevel": false
                 },
-                "fb64ac14-dad0-4bc3-a255-2746779786bdExported": {
+                "fb64ac14-dad0-4bc3-a255-2746779786bd": {
                     "abilityPriorities": {
                         "primaryStat": "Strength",
                         "secondaryStat": "Constitution",
                         "tertiaryStat": "Charisma"
                     },
                     "blacklistSameEntriesInHigherProgressionLevels": true,
+                    "defaultPool": "randomized",
                     "description": "",
                     "levels": [
                         [],

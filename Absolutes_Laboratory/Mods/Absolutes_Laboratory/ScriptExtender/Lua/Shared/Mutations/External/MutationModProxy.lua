@@ -115,19 +115,7 @@ MutationModProxy.ModProxy = {
 		end
 	}),
 	lists = {
-		entryReplacerDictionary = setmetatable({}, {
-			__mode = "k",
-			__index = function(t, k)
-				setModProxyFields(t, k, "entryReplacerDictionary")
-				return modList[k].lists.entryReplacerDictionary
-			end,
-			__call = function(t)
-				return TableUtils:CountElements(modList)
-			end,
-			__pairs = function(t)
-				return pairs(modList)
-			end
-		}),
+		entryReplacerDictionary = {},
 		spellLists = setmetatable({}, {
 			__mode = "k",
 			__index = function(t, k)
@@ -170,6 +158,19 @@ MutationModProxy.ModProxy = {
 	}
 }
 
+for _, listType in pairs(MutationModProxy.listTypes) do
+	MutationModProxy.ModProxy.lists.entryReplacerDictionary[listType] = setmetatable({}, {
+		__mode = "k",
+		__index = function(t, k)
+			setModProxyFields(t, k, "entryReplacerDictionary")
+			return modList[k] and modList[k].lists and modList[k].lists.entryReplacerDictionary and modList[k].lists.entryReplacerDictionary[listType]
+		end,
+		__call = function(t)
+			return TableUtils:CountElements(modList)
+		end
+	})
+end
+
 ---@param modId Guid
 ---@return MutationsConfig?
 ---@return Guid?
@@ -209,8 +210,15 @@ function MutationModProxy:ImportMutationsFromMods()
 					end
 				end
 
+				if mutations.prepPhaseMarkers and next(mutations.prepPhaseMarkers) then
+					modEntry.prepPhaseMarkers = {}
+					for markerId, markerObject in pairs(mutations.prepPhaseMarkers) do
+						modEntry.prepPhaseMarkers[markerId] = markerObject
+					end
+				end
+
 				if mutations.lists then
-					modEntry.lists = modEntry.lists or {}
+					modEntry.lists = {}
 					ListConfigurationManager:maintainLists(mutations)
 					if mutations.lists.spellLists and next(mutations.lists.spellLists) then
 						modEntry.lists.spellLists = {}
@@ -236,9 +244,11 @@ function MutationModProxy:ImportMutationsFromMods()
 					if mutations.lists.entryReplacerDictionary and next(mutations.lists.entryReplacerDictionary) then
 						modEntry.lists.entryReplacerDictionary = {}
 						for listName, replacerDict in pairs(mutations.lists.entryReplacerDictionary) do
-							modEntry.lists.entryReplacerDictionary[listName] = {}
-							for entryName, toReplace in pairs(replacerDict) do
-								modEntry.lists.entryReplacerDictionary[entryName] = toReplace
+							if listName ~= "modDependencies" then
+								modEntry.lists.entryReplacerDictionary[listName] = {}
+								for entryName, toReplace in pairs(replacerDict) do
+									modEntry.lists.entryReplacerDictionary[listName][entryName] = toReplace
+								end
 							end
 						end
 					end

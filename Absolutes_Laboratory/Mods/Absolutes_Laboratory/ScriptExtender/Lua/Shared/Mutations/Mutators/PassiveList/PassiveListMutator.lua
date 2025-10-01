@@ -81,7 +81,7 @@ Using entity level will use the entity's character level, post Character Level M
 				PassiveListDesigner:launch(passiveListId)
 			end
 
-			if list.spellListDependencies and list.spellListDependencies() then
+			if list.spellListDependencies and next(list.spellListDependencies._real or list.spellListDependencies) then
 				local sep = mutatorSection:AddCollapsingHeader("Spell List Dependencies ( ? )")
 				sep.IDContext = passiveListId
 				sep.Font = "Small"
@@ -701,9 +701,9 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 				end
 
 				if levelToUse > 0 and passiveList.modId then
-					local modReplaceMap = MutationConfigurationProxy.lists.entryReplacerDictionary[passiveList.modId]
-					if modReplaceMap.passiveLists then
-						for statReplacement, statsToReplace in pairs(modReplaceMap.passiveLists) do
+					local modReplaceMap = MutationConfigurationProxy.lists.entryReplacerDictionary.passiveLists[passiveList.modId]
+					if modReplaceMap then
+						for statReplacement, statsToReplace in pairs(modReplaceMap) do
 							if not replaceMap[statReplacement] then
 								replaceMap[statReplacement] = statsToReplace
 							else

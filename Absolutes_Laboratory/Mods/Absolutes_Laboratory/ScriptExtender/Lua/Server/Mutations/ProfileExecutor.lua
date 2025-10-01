@@ -23,6 +23,7 @@ MutationProfileExecutor = {}
 local mutatedEntities = {}
 
 function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
+	Ext.Utils.ProfileBegin("Lab Profile Execution")
 	local activeProfile = MutationConfigurationProxy.profiles[Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile]
 	local success, error = xpcall(function(...)
 		local trackerFile = FileUtils:LoadTableFile(EntityRecorder.trackerFilename)
@@ -74,7 +75,7 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 						appliedMutatorsPath = {},
 						originalValues = {}
 					}
-
+					Ext.Utils.ProfileBegin("Lab Profiles - Selecting and Building Pool On " .. EntityRecorder:GetEntityName(entity))
 					for i, mProfileRule in TableUtils:OrderedPairs(activeProfile.mutationRules) do
 						local mutation = MutationConfigurationProxy.folders[mProfileRule.mutationFolderId].mutations[mProfileRule.mutationId]
 
@@ -105,6 +106,7 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 							end
 						end
 					end
+					Ext.Utils.ProfileEnd("Lab Profiles - Selecting and Building Pool On " .. EntityRecorder:GetEntityName(entity))
 
 					local didUndo = false
 					if entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] then
@@ -170,6 +172,7 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 			activeProfile.name .. (activeProfile.modId and string.format(" (from mod %s)", Ext.Mod.GetMod(activeProfile.modId).Info.Name) or ""),
 			error)
 	end
+	Ext.Utils.ProfileEnd("Lab Profile Execution")
 end
 
 Ext.Osiris.RegisterListener("LevelGameplayReady", 2, "after", function(levelName, isEditorMode)

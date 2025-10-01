@@ -47,6 +47,14 @@ EntityRecorder.Levels = {
 ---@field Template GUIDSTRING
 ---@field XPReward Guid
 
+---@param entity EntityHandle
+---@return string
+function EntityRecorder:GetEntityName(entity)
+	return (entity.DisplayName and entity.DisplayName.Name:Get())
+		or (entity.ServerCharacter.Template and entity.ServerCharacter.Template.DisplayName:Get())
+		or entity.Uuid.EntityUuid
+end
+
 if Ext.IsClient() then
 	---@type {[GUIDSTRING]: EntityRecord}
 	EntityRecorder.newlyScannedEntities = {}
@@ -279,7 +287,7 @@ else
 									recordedEntities[entity.Uuid.EntityUuid] = {}
 									local entityRecord = recordedEntities[entity.Uuid.EntityUuid]
 
-									entityRecord.Name = (entity.DisplayName and entity.DisplayName.Name:Get())
+									entityRecord.Name = (entity.DisplayName and EntityRecorder:GetEntityName(entity))
 										or (entity.ServerCharacter.Template and entity.ServerCharacter.Template.DisplayName:Get())
 										or entity.Uuid.EntityUuid
 
@@ -349,9 +357,7 @@ else
 				indexedEntities[next(indexedEntities)][entity.Uuid.EntityUuid] = {}
 				local entityRecord = indexedEntities[next(indexedEntities)][entity.Uuid.EntityUuid]
 
-				entityRecord.Name = (entity.DisplayName and entity.DisplayName.Name:Get())
-					or (entity.ServerCharacter.Template and entity.ServerCharacter.Template.DisplayName:Get())
-					or entity.Uuid.EntityUuid
+				entityRecord.Name = EntityRecorder:GetEntityName(entity)
 
 				entityRecord.Icon = entity.Icon.Icon
 				entityRecord.Race = entity.Race.Race

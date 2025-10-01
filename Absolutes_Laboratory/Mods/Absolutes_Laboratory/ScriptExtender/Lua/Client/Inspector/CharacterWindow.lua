@@ -30,8 +30,7 @@ function CharacterWindow:BuildWindow(parent, id)
 			end)
 		end)
 
-		Styler:CheapTextAlign((entity.DisplayName and entity.DisplayName.Name:Get()) or entity.ClientCharacter.Template.DisplayName:Get() or entity.ClientCharacter.Template.Name,
-			displayCell, "Big")
+		Styler:CheapTextAlign(entity.ClientCharacter:EntityName(), displayCell, "Big")
 
 		Styler:MiddleAlignedColumnLayout(displayCell, function(ele)
 			ele:AddButton("Go To").OnClick = function()
