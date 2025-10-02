@@ -279,13 +279,13 @@ function LevelMutator:applyMutator(entity, entityVar)
 			---@type EntityHandle
 			local playerEntity = Ext.Entity.Get(player)
 
-			if playerEntity.AvailableLevel.Level > targetLevel then
-				targetLevel = playerEntity.AvailableLevel.Level
+			if playerEntity.EocLevel.Level > targetLevel then
+				targetLevel = playerEntity.EocLevel.Level
 			end
 		end
 		return targetLevel
 	end
-	entityVar.originalValues[self.name] = entity.AvailableLevel.Level
+	entityVar.originalValues[self.name] = entity.EocLevel.Level
 
 	---@type LevelMutator
 	local mutator = entityVar.appliedMutators[self.name]

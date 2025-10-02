@@ -86,8 +86,11 @@ function ProgressionProxy:buildProgressionIndex()
 
 				if type(self.progressionTableMappings[progression.TableUUID]) == "table" then
 					table.insert(self.progressionTableMappings[progression.TableUUID], progression.ResourceUUID)
-				else
-					Logger:BasicWarning("Progression TableUUID %s on progression %s (%s) is the same as a previously registered ResourceUUID - not sure how?", progression.TableUUID, progression.ResourceUUID, progression.Name)
+				elseif progression.TableUUID ~= "00000000-0000-0000-0000-000000000000" then
+					Logger:BasicWarning("Progression TableUUID %s on progression %s (%s) is the same as a previously registered ResourceUUID - not sure how?",
+						progression.TableUUID,
+						progression.ResourceUUID,
+						progression.Name)
 				end
 
 				if not self.translationMap[progression.TableUUID] then
