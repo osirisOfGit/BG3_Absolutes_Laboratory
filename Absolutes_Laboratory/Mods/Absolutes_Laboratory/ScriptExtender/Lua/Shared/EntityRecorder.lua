@@ -50,8 +50,9 @@ EntityRecorder.Levels = {
 ---@param entity EntityHandle
 ---@return string
 function EntityRecorder:GetEntityName(entity)
+	local char = entity.ServerCharacter or entity.ClientCharacter
 	return (entity.DisplayName and entity.DisplayName.Name:Get())
-		or (entity.ServerCharacter.Template and entity.ServerCharacter.Template.DisplayName:Get())
+		or (char.Template and char.Template.DisplayName:Get())
 		or entity.Uuid.EntityUuid
 end
 
