@@ -157,7 +157,7 @@ function Styler:SelectableText(parent, id, text)
 	local inputText = parent:AddInputText("##" .. (id or text), tostring(text))
 	inputText.AutoSelectAll = true
 	inputText.ItemReadOnly = true
-	inputText.SizeHint = Styler:ScaleFactor({ #text * 15, 0 })
+	inputText.SizeHint = Styler:ScaleFactor({ self:calculateTextDimensions(text) })
 	inputText:SetColor("FrameBg", { 1, 1, 1, 0 })
 	return inputText
 end
@@ -173,6 +173,15 @@ function Styler:ScaleFactor(dimensionalArray)
 	end
 	-- testing monitor for development is 1440p
 	return Ext.IMGUI.GetViewportSize()[2] / 1440
+end
+
+---@param parent ExtuiTreeParent
+---@return ExtuiPopup
+function Styler:Popup(parent)
+	local popup = parent:AddPopup("")
+	popup:SetColor("PopupBg", { 0, 0, 0, 1 })
+	popup:SetColor("Border", { 1, 0, 0, 0.5 })
+	return popup
 end
 
 ---@param parent ExtuiTreeParent
@@ -474,10 +483,10 @@ end
 ---@return integer height
 function Styler:calculateTextDimensions(text, min_width)
 	local base_line_height = 21 -- Base line height
-	local base_padding = 0      -- Base padding for InputText widget
-	local line_padding = 0.0    -- Additional padding per line for multiline InputText
-	local min_height = 30       -- Minimum height for single line
-	local max_height = 1600     -- Maximum height to prevent huge blocks
+	local base_padding = 0   -- Base padding for InputText widget
+	local line_padding = 0.0 -- Additional padding per line for multiline InputText
+	local min_height = 30    -- Minimum height for single line
+	local max_height = 1600  -- Maximum height to prevent huge blocks
 	local char_width = 11
 	local width_padding = 20
 	min_width = min_width or 400

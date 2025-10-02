@@ -9,6 +9,7 @@ Ext.Require("Shared/EntityRecorder.lua")
 
 Ext.Require("Server/ClientHelpers.lua")
 Ext.Require("Server/Mutations/ProfileExecutor.lua")
+Ext.Require("Server/Mutations/ExecutionDiagramGenerator.lua")
 
 Ext.Require("Shared/Mutations/MutationConfigurationProxy.lua")
 Ext.Require("Shared/Mutations/Selectors/SelectorInterface.lua")

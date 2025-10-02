@@ -10,3 +10,4 @@ Channels.TeleportEntityToHost = Ext.Net.CreateChannel(ModuleUUID, "TeleportEntit
 Channels.ActivateMutationProfile = Ext.Net.CreateChannel(ModuleUUID, "ActivateMutationProfile")
 
 Channels.ProfileExecutionStatus = Ext.Net.CreateChannel(ModuleUUID, "ProfileExecutionStatus")
+Channels.GenerateMutationDiagram = Ext.Net.CreateChannel(ModuleUUID, "GenerateMutationDiagram")
