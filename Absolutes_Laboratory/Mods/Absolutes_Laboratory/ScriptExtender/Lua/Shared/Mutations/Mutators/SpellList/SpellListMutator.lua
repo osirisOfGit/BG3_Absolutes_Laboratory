@@ -907,7 +907,7 @@ function SpellListMutator:handleDependencies(export, mutator, removeMissingDepen
 				if not container.modDependencies[spell.OriginalModId] then
 					local name, author, version = Helpers:BuildModFields(spell.OriginalModId)
 					if author == "Larian" then
-						return
+						return true
 					end
 
 					container.modDependencies[spell.OriginalModId] = {

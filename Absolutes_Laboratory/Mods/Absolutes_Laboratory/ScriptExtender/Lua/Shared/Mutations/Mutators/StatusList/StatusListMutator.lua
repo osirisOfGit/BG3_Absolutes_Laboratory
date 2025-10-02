@@ -403,7 +403,7 @@ function StatusListMutator:handleDependencies(export, mutator, removeMissingDepe
 				if not container.modDependencies[status.OriginalModId] then
 					local name, author, version = Helpers:BuildModFields(status.OriginalModId)
 					if author == "Larian" then
-						return
+						return true
 					end
 
 					container.modDependencies[status.OriginalModId] = {

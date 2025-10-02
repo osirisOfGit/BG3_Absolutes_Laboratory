@@ -404,7 +404,7 @@ function PassiveListMutator:handleDependencies(export, mutator, removeMissingDep
 				if not container.modDependencies[passive.OriginalModId] then
 					local name, author, version = Helpers:BuildModFields(passive.OriginalModId)
 					if author == "Larian" then
-						return
+						return true
 					end
 
 					container.modDependencies[passive.OriginalModId] = {
