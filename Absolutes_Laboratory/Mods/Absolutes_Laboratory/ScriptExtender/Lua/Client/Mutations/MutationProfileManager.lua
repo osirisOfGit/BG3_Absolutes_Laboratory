@@ -149,14 +149,14 @@ function MutationProfileManager:init(parent)
 		self.profileRulesParent = Styler:TwoColumnTable(rightPanel)
 		self.profileRulesParent.Borders = false
 		self.profileRulesParent.Resizable = false
-		self.profileRulesParent.ColumnDefs[1].Width = 600 * Styler:ScaleFactor()
+		self.profileRulesParent.ColumnDefs[1].Width = 200 * Styler:ScaleFactor()
 
 		local profileRulesRow = self.profileRulesParent:AddRow()
 
 		self.rulesOrderGroup = profileRulesRow:AddCell():AddChildWindow("rulesOrderGroup")
 		self.rulesOrderGroup.UserData = "keep"
 		local profilerManagerWindow = self.rulesOrderGroup:AddChildWindow("RulesOrder")
-		profilerManagerWindow.Size = Styler:ScaleFactor({ 600, 120 })
+		profilerManagerWindow.Size = Styler:ScaleFactor({ 400, 120 })
 		profilerManagerWindow.UserData = "keep"
 		Styler:MiddleAlignedColumnLayout(profilerManagerWindow, function(ele)
 			self.profileManagerParent = ele
@@ -418,11 +418,13 @@ function MutationProfileManager:BuildFolderManager()
 
 			if TableUtils:CountElements(folders) > 1 then
 				local movePopup = mutationPopup:AddPopup(mutationId .. "Move")
-				for otherfolderId, otherFolder in TableUtils:OrderedPairs(folders) do
+				for otherfolderId, otherFolder in TableUtils:OrderedPairs(folders, function(key, value)
+					return value.name
+				end) do
 					if otherfolderId ~= folderId then
 						movePopup:AddSelectable(otherFolder.name).OnClick = function()
 							otherFolder.mutations[mutationId] = mutation._real
-							mutation.delete = true
+								mutation.delete = true
 							for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
 								for _, mutRule in TableUtils:OrderedPairs(profile.mutationRules) do
 									if mutRule.mutationFolderId == folderId and mutRule.mutationId == mutationId then
@@ -1093,6 +1095,8 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 		end
 	end
 
+	local longestTextWidth = Styler:ScaleFactor() * 200
+
 	local function buildSlots(numOfMutations, prepPhase)
 		if prepPhase then
 			self.rulesOrderGroup:AddSeparatorText("Prep Mutations"):SetStyle("SeparatorTextAlign", 0.5)
@@ -1220,7 +1224,8 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 				local folders = MutationConfigurationProxy.folders
 
 				local mutationButton = row:AddButton(folders[mutationRule.mutationFolderId].name ..
-				"/" .. folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId].name)
+					"/" .. folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId].name)
+				longestTextWidth = Styler:calculateTextDimensions(mutationButton.Label, longestTextWidth)
 
 				if folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId].modId then
 					mutationButton.Label = "(M) " .. mutationButton.Label
@@ -1344,6 +1349,8 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 
 	buildSlots(numOfPrepMutations, true)
 	buildSlots(numOfMutations)
+
+	self.profileRulesParent.ColumnDefs[1].Width = longestTextWidth
 end
 
 Profiles_Docs = {

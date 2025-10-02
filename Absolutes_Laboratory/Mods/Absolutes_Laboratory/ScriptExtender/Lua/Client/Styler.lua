@@ -466,3 +466,68 @@ function Styler:ScaledFont(element, elefontSize)
 	element.Font = self.FontSize[math.max(1, math.min(#Styler.FontSize, mcmFontSize + targetFontDiff))]
 	return element
 end
+
+---@param text string
+---@param min_width number?
+---@return number optimal width
+---@return integer height
+function Styler:calculateTextDimensions(text, min_width)
+	local base_line_height = 21 -- Base line height
+	local base_padding = 0      -- Base padding for InputText widget
+	local line_padding = 0.0    -- Additional padding per line for multiline InputText
+	local min_height = 30       -- Minimum height for single line
+	local max_height = 1600     -- Maximum height to prevent huge blocks
+	local char_width = 11
+	local width_padding = 20
+	min_width = min_width or 400
+
+	-- Initialize variables for both calculations
+	local line_count = 0
+	local max_line_length = 0
+
+	-- Normalize line endings and split into lines
+	local normalized_text = (text or ""):gsub("\r\n", "\n"):gsub("\r", "\n")
+
+	-- Function to calculate visual width of a line (accounting for tabs)
+	local function calculate_visual_width(line)
+		local visual_width = 0
+		local tab_size = 4 -- Standard tab size (4 spaces)
+
+		for i = 1, #line do
+			local char = line:sub(i, i)
+			if char == '\t' then
+				-- Tab expands to next multiple of tab_size
+				local spaces_to_next_tab = tab_size - (visual_width % tab_size)
+				visual_width = visual_width + spaces_to_next_tab
+			else
+				visual_width = visual_width + 1
+			end
+		end
+
+		return visual_width
+	end
+
+	-- Handle empty text case
+	if normalized_text == "" then
+		line_count = 1
+		max_line_length = 0
+	else
+		-- Split text into lines and process in single pass
+		for line in (normalized_text .. "\n"):gmatch("([^\n]*)\n") do
+			line_count = line_count + 1
+			local visual_width = calculate_visual_width(line)
+			max_line_length = math.max(max_line_length, visual_width)
+		end
+	end
+
+	-- Calculate optimal width based on content
+	local estimated_content_width = max_line_length * char_width
+	local optimal_width = math.max(min_width, estimated_content_width + width_padding)
+
+	-- Calculate height with scaling padding for multiline content
+	local scaling_padding = base_padding + (line_count * line_padding)
+	local calculated_height = (line_count * base_line_height) + scaling_padding
+	calculated_height = math.max(min_height, math.min(calculated_height, max_height))
+
+	return self:ScaleFactor() * optimal_width, self:ScaleFactor() * calculated_height
+end

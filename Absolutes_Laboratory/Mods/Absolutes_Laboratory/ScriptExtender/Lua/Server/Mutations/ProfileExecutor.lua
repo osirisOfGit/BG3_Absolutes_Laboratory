@@ -50,58 +50,54 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 			---@type {[string] : number}
 			local eligible = {}
 
-			local tickListener
 			local tickCounter = 0
 			local entityCounter = 0
 
-			Ext.OnNextTick(function(e)
-				tickListener = Ext.Events.Tick:Subscribe(function(e)
-					if Logger:IsLogLevelEnabled(Logger.PrintTypes.DEBUG) then
-						Logger:BasicDebug("%s entities left to process, %s currently eligible", TableUtils:CountElements(entitiesToProcess), TableUtils:CountElements(eligible))
-					end
-					if not next(entitiesToProcess) then
-						Logger:BasicInfo("======= Mutated %s Entities in %dms (%d ticks) under Profile %s =======",
-							entityCounter,
-							(Ext.Timer:MonotonicTime() - time),
-							tickCounter,
-							activeProfile.name .. (activeProfile.modId and string.format(" (from mod %s)", Ext.Mod.GetMod(activeProfile.modId).Info.Name) or ""))
-						Ext.Events.Tick:Unsubscribe(tickListener)
-						tickListener = nil
-					else
-						tickCounter = tickCounter + 1
-						for entityId, funct in pairs(entitiesToProcess) do
-							---@type EntityHandle
-							local entity = Ext.Entity.Get(entityId)
-							if entity.Vars.Absolutes_Laboratory_Undone_Components then
-								for _, component in ipairs(entity.Vars.Absolutes_Laboratory_Undone_Components) do
-									if entity:GetReplicationFlags(component) ~= 0 then
-										if Logger:IsLogLevelEnabled(Logger.PrintTypes.TRACE) then
-											Logger:BasicTrace("Entity %s's component %s was dirty with flag %d, not eligible for processing yet",
-												entityId,
-												component,
-												tonumber(entity:GetReplicationFlags(component)))
-										end
-
-										if eligible[entityId] then
-											eligible[entityId] = nil
-										end
-										goto continue
+			local function checkCompletion()
+				if Logger:IsLogLevelEnabled(Logger.PrintTypes.DEBUG) then
+					Logger:BasicDebug("%s entities left to process, %s currently eligible", TableUtils:CountElements(entitiesToProcess), TableUtils:CountElements(eligible))
+				end
+				if not next(entitiesToProcess) then
+					Logger:BasicInfo("======= Mutated %s Entities in %dms under Profile %s =======",
+						entityCounter,
+						(Ext.Timer:MonotonicTime() - time),
+						activeProfile.name .. (activeProfile.modId and string.format(" (from mod %s)", Ext.Mod.GetMod(activeProfile.modId).Info.Name) or ""))
+					ListConfigurationManager.progressionIndex()
+				else
+					tickCounter = tickCounter + 1
+					for entityId, funct in pairs(entitiesToProcess) do
+						---@type EntityHandle
+						local entity = Ext.Entity.Get(entityId)
+						if entity.Vars.Absolutes_Laboratory_Undone_Components then
+							for _, component in ipairs(entity.Vars.Absolutes_Laboratory_Undone_Components) do
+								if entity:GetReplicationFlags(component) ~= 0 then
+									if Logger:IsLogLevelEnabled(Logger.PrintTypes.TRACE) then
+										Logger:BasicTrace("Entity %s's component %s was dirty with flag %d, not eligible for processing yet",
+											entityId,
+											component,
+											tonumber(entity:GetReplicationFlags(component)))
 									end
-								end
-								if eligible[entityId] and eligible[entityId] >= 1 then
-									Logger:BasicDebug("Completed undo for %s after %d ticks", EntityRecorder:GetEntityName(entity), tickCounter)
-									funct()
-									eligible[entityId] = nil
-									entitiesToProcess[entityId] = nil
-								else
-									eligible[entityId] = (eligible[entityId] or 0) + 1
+
+									if eligible[entityId] then
+										eligible[entityId] = nil
+									end
+									goto continue
 								end
 							end
-							::continue::
+							if eligible[entityId] and eligible[entityId] >= 1 then
+								Logger:BasicDebug("Completed undo for %s after %d ms", EntityRecorder:GetEntityName(entity), tickCounter * 10)
+								funct()
+								eligible[entityId] = nil
+								entitiesToProcess[entityId] = nil
+							else
+								eligible[entityId] = (eligible[entityId] or 0) + 1
+							end
 						end
+						::continue::
 					end
-				end, { Priority = 999 })
-			end)
+					Ext.Timer.WaitFor(10, checkCompletion)
+				end
+			end
 
 			-- ---@type thread
 			-- local delayedProcessor = coroutine.create(function(...)
@@ -190,11 +186,17 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 				end
 			end
 
+			Ext.OnNextTick(checkCompletion)
+			Ext.OnNextTick(function(e)
+				ListConfigurationManager:buildProgressionIndex()
+			end)
+
 			if not next(entitiesToProcess) then
 				Logger:BasicInfo("======= Mutated %s Entities in %dms under Profile %s =======",
 					entityCounter,
 					(Ext.Timer:MonotonicTime() - time),
 					activeProfile.name .. (activeProfile.modId and string.format(" (from mod %s)", Ext.Mod.GetMod(activeProfile.modId).Info.Name) or ""))
+				ListConfigurationManager.progressionIndex()
 			end
 		else
 			local time = Ext.Timer:MonotonicTime()

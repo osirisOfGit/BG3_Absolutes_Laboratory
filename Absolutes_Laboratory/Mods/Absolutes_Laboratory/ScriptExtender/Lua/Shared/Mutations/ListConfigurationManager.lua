@@ -36,7 +36,7 @@ local progressionLevel = {
 ListConfigurationManager = {
 	---@type {[tableUUID] : ProgressionTable}
 	progressionIndex = setmetatable({}, {
-		__mode = "v",
+		__mode = Ext.IsClient() and "v" or nil,
 		__index = function(t, k)
 			ListConfigurationManager:buildProgressionIndex(k)
 			return rawget(t, k)
