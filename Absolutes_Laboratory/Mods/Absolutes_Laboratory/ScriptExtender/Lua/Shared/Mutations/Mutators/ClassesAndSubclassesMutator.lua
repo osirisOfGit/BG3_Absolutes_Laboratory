@@ -405,8 +405,7 @@ function ClassesAndSubclassesMutator:handleDependencies(_, mutator, removeMissin
 end
 
 function ClassesAndSubclassesMutator:undoMutator(entity, entityVar)
-	entity:RemoveComponent("Classes")
-	entity:CreateComponent("Classes")
+	entity.Classes.Classes = {}
 	if entityVar.originalValues[self.name] then
 		for _, classDef in pairs(entityVar.originalValues[self.name].classes) do
 			---@cast classDef ClassInfo
