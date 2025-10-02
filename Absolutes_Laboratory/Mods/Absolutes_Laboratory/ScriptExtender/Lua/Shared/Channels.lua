@@ -8,3 +8,5 @@ Channels.TeleportToLevel = Ext.Net.CreateChannel(ModuleUUID, "TeleportToLevel")
 Channels.TeleportToEntity = Ext.Net.CreateChannel(ModuleUUID, "TeleportToEntity")
 Channels.TeleportEntityToHost = Ext.Net.CreateChannel(ModuleUUID, "TeleportEntityToHost")
 Channels.ActivateMutationProfile = Ext.Net.CreateChannel(ModuleUUID, "ActivateMutationProfile")
+
+Channels.ProfileExecutionStatus = Ext.Net.CreateChannel(ModuleUUID, "ProfileExecutionStatus")

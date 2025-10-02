@@ -149,7 +149,7 @@ function MutationProfileManager:init(parent)
 		self.profileRulesParent = Styler:TwoColumnTable(rightPanel)
 		self.profileRulesParent.Borders = false
 		self.profileRulesParent.Resizable = false
-		self.profileRulesParent.ColumnDefs[1].Width = 200 * Styler:ScaleFactor()
+		self.profileRulesParent.ColumnDefs[1].Width = 400 * Styler:ScaleFactor()
 
 		local profileRulesRow = self.profileRulesParent:AddRow()
 
