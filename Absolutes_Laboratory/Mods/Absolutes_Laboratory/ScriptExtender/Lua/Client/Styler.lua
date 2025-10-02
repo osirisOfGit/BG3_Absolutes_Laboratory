@@ -467,6 +467,7 @@ function Styler:ScaledFont(element, elefontSize)
 	return element
 end
 
+--- Credit to Mazzle (RangeFinder, EzDocs) for this
 ---@param text string
 ---@param min_width number?
 ---@return number optimal width

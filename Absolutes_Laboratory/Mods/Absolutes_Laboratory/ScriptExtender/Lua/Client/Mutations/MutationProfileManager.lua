@@ -156,7 +156,7 @@ function MutationProfileManager:init(parent)
 		self.rulesOrderGroup = profileRulesRow:AddCell():AddChildWindow("rulesOrderGroup")
 		self.rulesOrderGroup.UserData = "keep"
 		local profilerManagerWindow = self.rulesOrderGroup:AddChildWindow("RulesOrder")
-		profilerManagerWindow.Size = Styler:ScaleFactor({ 400, 120 })
+		profilerManagerWindow.Size = Styler:ScaleFactor({ 0, 120 })
 		profilerManagerWindow.UserData = "keep"
 		Styler:MiddleAlignedColumnLayout(profilerManagerWindow, function(ele)
 			self.profileManagerParent = ele
@@ -424,7 +424,7 @@ function MutationProfileManager:BuildFolderManager()
 					if otherfolderId ~= folderId then
 						movePopup:AddSelectable(otherFolder.name).OnClick = function()
 							otherFolder.mutations[mutationId] = mutation._real
-								mutation.delete = true
+							mutation.delete = true
 							for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
 								for _, mutRule in TableUtils:OrderedPairs(profile.mutationRules) do
 									if mutRule.mutationFolderId == folderId and mutRule.mutationId == mutationId then
@@ -1095,7 +1095,7 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 		end
 	end
 
-	local longestTextWidth = Styler:ScaleFactor() * 200
+	local longestTextWidth = Styler:ScaleFactor() * 400
 
 	local function buildSlots(numOfMutations, prepPhase)
 		if prepPhase then
