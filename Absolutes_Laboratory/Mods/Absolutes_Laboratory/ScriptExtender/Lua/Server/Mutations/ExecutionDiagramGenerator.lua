@@ -113,29 +113,38 @@ class Entity entityNode]]
 
 					entityVar.appliedMutatorsPath[mutator.targetProperty][i] = mProfileRule
 
-					for existingMutation, existingMutators in pairs(stateTracker) do
+					local additiveWith
+					for existingMutation, existingMutators in TableUtils:OrderedPairs(stateTracker) do
 						local index = TableUtils:IndexOf(existingMutators, function(value)
 							return value:find(noSpaceName) ~= nil
 						end)
 						if index then
-							overridenTextBlock = overridenTextBlock .. ([[
-	%s --> %s: Additive With
-]]):format(existingMutation .. "mutator" .. noSpaceName, mutatorName)
+							additiveWith = existingMutation .. "mutator" .. noSpaceName
 						end
 					end
+					if additiveWith then
+						overridenTextBlock = overridenTextBlock .. ([[
+	%s --> %s: Additive With
+]]):format(additiveWith, mutatorName)
+					end
 				else
-					for existingMutation, existingMutators in pairs(stateTracker) do
+					local overrides
+					for existingMutation, existingMutators in TableUtils:OrderedPairs(stateTracker) do
 						local index = TableUtils:IndexOf(existingMutators, function(value)
 							return value:find(noSpaceName) ~= nil
 						end)
 						if index then
-							overridenTextBlock = overridenTextBlock .. ([[
-		%s --> %s: Overwritten By
-]]):format(existingMutation .. "mutator" .. noSpaceName, mutatorName)
+							overrides = existingMutation .. "mutator" .. noSpaceName
 
 							existingMutators[index] = nil
 						end
 					end
+					if overrides then
+						overridenTextBlock = overridenTextBlock .. ([[
+%s --> %s: Overwritten By
+]]):format(overrides, mutatorName)
+					end
+
 					entityVar.appliedMutators[mutator.targetProperty] = mutator
 					entityVar.appliedMutatorsPath[mutator.targetProperty] = { [i] = mProfileRule }
 				end
