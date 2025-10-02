@@ -26,27 +26,7 @@ local stage = {
 ---@field timeElapsed number
 ---@field error string?
 
-local function fadeOut(delay)
-	-- if delay then
-	-- 	backgroundWindow:SetBgAlpha(100)
-	-- 	window:SetBgAlpha(100)
-	-- 	Ext.Timer.WaitFor(3000, fadeOut)
-	-- 	return
-	-- end
-
-	if window:GetStyle("Alpha") > 0 then
-		backgroundWindow:SetStyle("Alpha", backgroundWindow:GetStyle("Alpha") - 0.1)
-		window:SetStyle("Alpha", window:GetStyle("Alpha") - 0.1)
-		Ext.Timer.WaitFor(300, fadeOut)
-	else
-		backgroundWindow:Destroy()
-		backgroundWindow = nil
-		window:Destroy()
-		window = nil
-	end
-end
-
----@type ExtuiGroup
+---@type ExtuiWindow
 local updaterGroup
 Channels.ProfileExecutionStatus:SetHandler(
 ---@param data ProfileExecutionStatus
@@ -57,13 +37,13 @@ Channels.ProfileExecutionStatus:SetHandler(
 			backgroundWindow.NoMove = true
 			backgroundWindow.Closeable = false
 			backgroundWindow.NoResize = true
-			backgroundWindow.AlwaysAutoResize = true
 			backgroundWindow.Scaling = "Scaled"
-			-- backgroundWindow:SetBgAlpha(0)
-			backgroundWindow:SetStyle("Alpha", 100)
-			-- backgroundWindow:SetColor("FrameBg", { 1, 1, 1, 0 })
-			-- backgroundWindow:SetColor("WindowBg", { 1, 1, 1, 0 })
-			backgroundWindow:AddImage("Background_Image", { 860, 484 }):SetStyle("Alpha", 0.5)
+			backgroundWindow.NoNav = true
+			backgroundWindow:SetBgAlpha(0)
+			backgroundWindow:SetColor("WindowBg", { 0, 0, 0, 0 })
+			backgroundWindow:SetColor("FrameBg", { 0, 0, 0, 0 })
+			backgroundWindow:AddImage("Background_Image", { 860, 484 })
+			backgroundWindow.AlwaysAutoResize = true
 
 			window = Ext.IMGUI.NewWindow("ProfileExecutionStatus")
 			window.NoTitleBar = true
@@ -71,38 +51,47 @@ Channels.ProfileExecutionStatus:SetHandler(
 			window.Closeable = false
 			window.Scaling = "Scaled"
 			window.NoResize = true
-			window:SetColor("ChildBg", { 0, 0, 0, 0.1 })
+			window.NoNav = true
 			window:SetBgAlpha(0)
-			window:SetStyle("Alpha", 100)
 			window:SetColor("FrameBg", { 1, 1, 1, 0 })
-			window:SetColor("WindowBg", { 1, 1, 1, 0 })
+			window:SetColor("WindowBg", { 0, 0, 0, 0 })
+
+			window:SetColor("ChildBg", { 0, 0, 0, 0.6 })
 			window:SetColor("Text", { 1, 1, 1, 1 })
 
 			Ext.OnNextTick(function(e)
-				backgroundWindow:SetPos({ 0, 0 }, "Always")
+				backgroundWindow:SetPos(Styler:ScaleFactor({ -10, -10 }), "Always")
+				window:SetSize(backgroundWindow.LastSize, "Always")
 				Ext.OnNextTick(function(e)
-					window:SetPos({ 0, 0 }, "Always")
-					window:SetSize(backgroundWindow.LastSize)
+					window:SetPos(Styler:ScaleFactor({ -10, -10 }), "Always")
 				end)
 			end)
 
-			updaterGroup = window:AddGroup("Updating")
+			window:AddDummy(0, 180)
+			updaterGroup = window:AddChildWindow("Updating")
 		end
 
 		Helpers:KillChildren(updaterGroup)
-		Styler:ScaledFont(updaterGroup:AddText("Executing Absolute's Laboratory Profile " .. data.profile), "Large")
+		Styler:CheapTextAlign("Executing Profile " .. data.profile, updaterGroup, "Large")
 
 		if data.stage ~= "Complete" then
 			Styler:ScaledFont(updaterGroup:AddText(
 					("Stage %d: %s | Time Elapsed: %dms | Number Of Entities: %d"):format(stage[data.stage], data.stage, data.timeElapsed, data.numberOfEntitiesBeingProcessed)),
 				"Big")
 
-			---@type ExtuiProgressBar
-			local progressBar = updaterGroup:AddProgressBar()
-			progressBar.Value = data.numberOfEntitiesProcessed / data.numberOfEntitiesBeingProcessed
+			if data.stage ~= "Selecting" then
+				Styler:MiddleAlignedColumnLayout(updaterGroup, function(ele)
+					---@type ExtuiProgressBar
+					local progressBar = updaterGroup:AddProgressBar()
+					if data.stage == "Applying" then
+						progressBar.Value = data.numberOfEntitiesProcessed / data.numberOfEntitiesBeingProcessed
+					end
+					progressBar:SetColor("PlotHistogram", { 1, 1, 1, 1 })
+				end)
+			end
 			Styler:CheapTextAlign("Currently Processing: " .. data.currentEntity, updaterGroup)
 		else
-			Styler:CheapTextAlign("Completed!", updaterGroup, "Large").SameLine = true
+			Styler:CheapTextAlign("Completed!", updaterGroup, "Large")
 
 			Styler:ScaledFont(updaterGroup:AddText("Stats:"), "Big")
 			local statusTable = updaterGroup:AddTable("stats", 2)
@@ -119,7 +108,27 @@ Channels.ProfileExecutionStatus:SetHandler(
 			row:AddCell():AddText("Total Entities Mutated")
 			row:AddCell():AddText(tostring(data.numberOfEntitiesProcessed))
 
+			local stepDelay = 10
+			local minHeight = window.LastSize[2] * 0.1
+			local function fadeOut()
+				local height = window.LastSize[2]
 
-			fadeOut(true)
+				if height > minHeight then
+					height = math.max(0, height - (height * 0.03)) -- Reduce by 10%
+
+					window:SetSize({ window.LastSize[1], height }, "Always")
+					backgroundWindow:SetSize({ backgroundWindow.LastSize[1], height }, "Always")
+					updaterGroup.Size = { 0, math.max(0, updaterGroup.LastSize[2] - (updaterGroup.LastSize[2] * 0.003)) }
+
+					Ext.Timer.WaitFor(stepDelay, fadeOut)
+				else
+					backgroundWindow:Destroy()
+					backgroundWindow = nil
+					window:Destroy()
+					window = nil
+				end
+			end
+			backgroundWindow.AlwaysAutoResize = false
+			Ext.Timer.WaitFor(3000, fadeOut)
 		end
 	end)
