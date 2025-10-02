@@ -1350,7 +1350,7 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 	buildSlots(numOfPrepMutations, true)
 	buildSlots(numOfMutations)
 
-	self.profileRulesParent.ColumnDefs[1].Width = longestTextWidth
+	-- self.profileRulesParent.ColumnDefs[1].Width = longestTextWidth
 end
 
 Profiles_Docs = {
