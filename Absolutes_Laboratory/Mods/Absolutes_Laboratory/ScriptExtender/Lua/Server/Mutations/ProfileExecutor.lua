@@ -54,12 +54,15 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 			}
 
 			local sendCount = 0
+			local executorView = MCM.Get("profile_execution_view")
 			local function broadcastStatus()
-				if sendCount == 10 or profileExecutorStatus.stage == "Complete" then
-					Channels.ProfileExecutionStatus:Broadcast(profileExecutorStatus)
-					sendCount = 0
+				if executorView ~= "Off" then
+					if sendCount == 10 or profileExecutorStatus.stage == "Complete" then
+						Channels.ProfileExecutionStatus:Broadcast(profileExecutorStatus)
+						sendCount = 0
+					end
+					sendCount = sendCount + 1
 				end
-				sendCount = sendCount + 1
 			end
 
 			local time = Ext.Timer:MonotonicTime()

@@ -23,6 +23,26 @@
 							}
 						}
 					]
+				},
+				{
+					"SectionId": "Mutations",
+					"SectionName": "Mutations",
+					"Settings": [
+						{
+							"Id": "profile_execution_view",
+							"Name": "Profile Execution Status View",
+							"Description": "Sets how/if the Profile Execution Status window gets displayed. Changes will not be reflected mid-execution.",
+							"Type": "enum",
+							"Default": "Detailed",
+							"Options": {
+								"Choices": [
+									"Detailed",
+									"Simple",
+									"Off"
+								]
+							}
+						}
+					]
 				}
 			],
 			"Settings": [
