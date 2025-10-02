@@ -27,5 +27,6 @@ function NetChannel:RequestToServer(data, replyCallback) end
 ---@param replyCallback fun(data:any?)
 function NetChannel:RequestToClient(data, user, replyCallback) end
 
+
 ---@type {[string]: ExtenderNetChannel}
 Channels = {}

@@ -21,6 +21,7 @@ Ext.Require("Client/Inspector/CharacterInspector.lua")
 Ext.Require("Shared/Mutations/MutationConfigurationProxy.lua")
 Ext.Require("Client/Mutations/MutationExternalProfileUtility.lua")
 Ext.Require("Client/Mutations/MutationProfileManager.lua")
+Ext.Require("Client/Mutations/ProfileExecutionStatus.lua")
 
 ---@type MazzleDocsConfig
 Absolutes_Lab_Doc_Config = {

@@ -42,6 +42,26 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 		end
 
 		if activeProfile and next(activeProfile.mutationRules) then
+			---@type ProfileExecutionStatus
+			local profileExecutorStatus = {
+				stage = "Selecting",
+				currentEntity = "N/A",
+				totalNumberOfEntities = 0,
+				numberOfEntitiesBeingProcessed = 0,
+				numberOfEntitiesProcessed = 0,
+				profile = activeProfile.name,
+				timeElapsed = 0,
+			}
+
+			local sendCount = 0
+			local function broadcastStatus()
+				if sendCount == 10 or profileExecutorStatus.stage == "Complete" then
+					Channels.ProfileExecutionStatus:Broadcast(profileExecutorStatus)
+					sendCount = 0
+				end
+				sendCount = sendCount + 1
+			end
+
 			local time = Ext.Timer:MonotonicTime()
 
 			---@type {[string] : fun()}
@@ -63,6 +83,10 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 						(Ext.Timer:MonotonicTime() - time),
 						activeProfile.name .. (activeProfile.modId and string.format(" (from mod %s)", Ext.Mod.GetMod(activeProfile.modId).Info.Name) or ""))
 					ListConfigurationManager.progressionIndex()
+
+					profileExecutorStatus.stage = "Complete"
+					profileExecutorStatus.timeElapsed = (Ext.Timer:MonotonicTime() - time)
+					broadcastStatus()
 				else
 					tickCounter = tickCounter + 1
 					for entityId, funct in pairs(entitiesToProcess) do
@@ -86,9 +110,16 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 							end
 							if eligible[entityId] and eligible[entityId] >= 1 then
 								Logger:BasicDebug("Completed undo for %s after %d ms", EntityRecorder:GetEntityName(entity), tickCounter * 10)
+								profileExecutorStatus.stage = "Applying"
+								profileExecutorStatus.timeElapsed = (Ext.Timer:MonotonicTime() - time)
+								profileExecutorStatus.currentEntity = EntityRecorder:GetEntityName(entity) ..
+									(" (%s)"):format(entity.Uuid.EntityUuid:sub(#entity.Uuid.EntityUuid - 5))
+								broadcastStatus()
+
 								funct()
 								eligible[entityId] = nil
 								entitiesToProcess[entityId] = nil
+								profileExecutorStatus.numberOfEntitiesProcessed = profileExecutorStatus.numberOfEntitiesProcessed + 1
 							else
 								eligible[entityId] = (eligible[entityId] or 0) + 1
 							end
@@ -118,6 +149,8 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 				---@cast entity EntityHandle
 
 				if (Osi.IsDead(entity.Uuid.EntityUuid) == 0 or not entity.DeadByDefault) and not entity.PartyMember and entity.ServerCharacter.Level == currentLevel then
+					profileExecutorStatus.totalNumberOfEntities = profileExecutorStatus.totalNumberOfEntities + 1
+
 					mutatedEntities[entity.Uuid.EntityUuid] = true
 
 					---@type MutatorEntityVar
@@ -138,6 +171,12 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 						end
 
 						if cachedSelectors[mProfileRule.mutationFolderId][mProfileRule.mutationId]:Test(entity, entityVar) then
+							profileExecutorStatus.timeElapsed = (Ext.Timer:MonotonicTime() - time)
+							profileExecutorStatus.numberOfEntitiesBeingProcessed = profileExecutorStatus.numberOfEntitiesBeingProcessed + 1
+							profileExecutorStatus.currentEntity = EntityRecorder:GetEntityName(entity) .. (" (%s)"):format(entity.Uuid.EntityUuid:sub(#entity.Uuid.EntityUuid - 5))
+							broadcastStatus()
+
+
 							for _, mutator in pairs(mutation.mutators) do
 								if entityVar.appliedMutators[mutator.targetProperty]
 									and mProfileRule.additive
@@ -155,6 +194,8 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 									entityVar.appliedMutatorsPath[mutator.targetProperty] = { [i] = mProfileRule }
 								end
 							end
+
+							profileExecutorStatus.numberOfEntitiesProcessed = profileExecutorStatus.numberOfEntitiesProcessed + 1
 						end
 					end
 					Ext.Utils.ProfileEnd("Lab Profiles - Selecting and Building Pool On " .. EntityRecorder:GetEntityName(entity))
@@ -163,6 +204,13 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 					if entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] then
 						didUndo = true
 						Ext.OnNextTick(function(e)
+							profileExecutorStatus.stage = "Undoing"
+							profileExecutorStatus.timeElapsed = (Ext.Timer:MonotonicTime() - time)
+							profileExecutorStatus.numberOfEntitiesProcessed = profileExecutorStatus.numberOfEntitiesProcessed + 1
+							profileExecutorStatus.currentEntity = EntityRecorder:GetEntityName(entity) .. (" (%s)"):format(entity.Uuid.EntityUuid:sub(#entity.Uuid.EntityUuid - 5))
+
+							broadcastStatus()
+
 							MutatorInterface:undoMutator(entity, entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME], entityVar, rerunTransient)
 						end)
 					end
@@ -186,12 +234,20 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 				end
 			end
 
-			Ext.OnNextTick(checkCompletion)
 			Ext.OnNextTick(function(e)
+				profileExecutorStatus.stage = "Applying"
+				profileExecutorStatus.numberOfEntitiesProcessed = 0
+				broadcastStatus()
+
+				checkCompletion()
 				ListConfigurationManager:buildProgressionIndex()
 			end)
 
 			if not next(entitiesToProcess) then
+				profileExecutorStatus.stage = "Complete"
+				profileExecutorStatus.timeElapsed = (Ext.Timer:MonotonicTime() - time)
+				broadcastStatus()
+
 				Logger:BasicInfo("======= Mutated %s Entities in %dms under Profile %s =======",
 					entityCounter,
 					(Ext.Timer:MonotonicTime() - time),

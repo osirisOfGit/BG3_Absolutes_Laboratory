@@ -183,9 +183,8 @@ function Logger:BasicInfo(content, ...)
     end
 end
 
-local bufferLimit = 50 -- Adjust buffer size as needed
+local bufferLimit = 50
 
---- Flushes the buffer to the log file
 function Logger:FlushLogBuffer()
     if #self.logBuffer == 0 then return end
     local fileContent = FileUtils:LoadFile(self.fileName) or ""
@@ -194,7 +193,6 @@ function Logger:FlushLogBuffer()
     self.logBuffer = {}
 end
 
---- Saves the log to the log.txt using a buffer
 function Logger:LogMessage(message)
     local logMessage = (self.prefix and (GetTimestamp() .. " ") or "") .. message
     table.insert(self.logBuffer, logMessage)
@@ -214,12 +212,10 @@ function Logger:LogMessage(message)
     end
 end
 
---- Optionally, flush buffer on shutdown or at key moments
 function Logger:Flush()
     self:FlushLogBuffer()
 end
 
---- Wipes the log file
 function Logger:ClearLogFile()
     if FileUtils:LoadFile(self.fileName) then
         Ext.IO.SaveFile(FileUtils:BuildAbsoluteFileTargetPath(self.fileName), "")
