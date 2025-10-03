@@ -310,139 +310,162 @@ function MutationProfileManager:BuildFolderManager()
 
 			local mutationPopup = folderHeader:AddPopup(mutationId)
 
-			mutationPopup:AddSelectable("Copy").OnClick = function()
-				---@type Mutation
-				local mut = TableUtils:DeeplyCopyTable(mutation._real)
-				mut.name = mut.name .. "COPY"
+			local function buildPopup()
+				Helpers:KillChildren(mutationPopup)
+				mutationPopup:AddSelectable("Copy").OnClick = function()
+					---@type Mutation
+					local mut = TableUtils:DeeplyCopyTable(mutation._real)
+					mut.name = mut.name .. "COPY"
 
-				folder.mutations[FormBuilder:generateGUID()] = mut
-				self:BuildFolderManager()
-			end
+					folder.mutations[FormBuilder:generateGUID()] = mut
+					self:BuildFolderManager()
+				end
 
-			---@type ExtuiSelectable
-			local select = mutationPopup:AddSelectable(mutation.prepPhase and "Unmark As Prep Mutation (?)" or "Mark As Prep Mutation (?)", "DontClosePopups")
-			select:Tooltip():AddText(
-				"\t A Prep Mutation is a mutation that is run before all others, assigning specified categories to the selected entities so they can be reused by Selectors in main mutations, greatly simplifying regular mutators. Prep mutations are marked via (P) in their button name")
-			select.OnClick = function()
-				mutation.prepPhase = not mutation.prepPhase
-				mutation.mutators.delete = true
-				mutation.mutators = mutation.prepPhase and { {
-						targetProperty = "Prep Phase Marker"
-					} --[[@as Mutator]] }
-					or {}
+				---@type ExtuiSelectable
+				local select = mutationPopup:AddSelectable(mutation.prepPhase and "Unmark As Prep Mutation (?)" or "Mark As Prep Mutation (?)", "DontClosePopups")
+				select:Tooltip():AddText(
+					"\t A Prep Mutation is a mutation that is run before all others, assigning specified categories to the selected entities so they can be reused by Selectors in main mutations, greatly simplifying regular mutators. Prep mutations are marked via (P) in their button name")
+				select.OnClick = function()
+					mutation.prepPhase = not mutation.prepPhase
+					mutation.mutators.delete = true
+					mutation.mutators = mutation.prepPhase and { {
+							targetProperty = "Prep Phase Marker"
+						} --[[@as Mutator]] }
+						or {}
 
-				mutationSelectable.Label = ("%s%s"):format(mutation.prepPhase and "(P) " or "", mutation.name)
+					mutationSelectable.Label = ("%s%s"):format(mutation.prepPhase and "(P) " or "", mutation.name)
 
-				if not mutation.prepPhase then
-					for _, mutationRule in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles[activeProfileId].prepPhaseMutations) do
-						if mutationRule.mutationId == mutationSelectable.UserData.mutationId and mutationRule.mutationFolderId == mutationSelectable.UserData.mutationFolderId then
-							mutationRule.delete = true
-							break
+					if not mutation.prepPhase then
+						for _, mutationRule in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles[activeProfileId].prepPhaseMutations) do
+							if mutationRule.mutationId == mutationSelectable.UserData.mutationId and mutationRule.mutationFolderId == mutationSelectable.UserData.mutationFolderId then
+								mutationRule.delete = true
+								break
+							end
+						end
+					else
+						for _, mutationRule in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles[activeProfileId].mutationRules) do
+							if mutationRule.mutationId == mutationSelectable.UserData.mutationId and mutationRule.mutationFolderId == mutationSelectable.UserData.mutationFolderId then
+								mutationRule.delete = true
+								break
+							end
 						end
 					end
-				else
-					for _, mutationRule in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles[activeProfileId].mutationRules) do
-						if mutationRule.mutationId == mutationSelectable.UserData.mutationId and mutationRule.mutationFolderId == mutationSelectable.UserData.mutationFolderId then
-							mutationRule.delete = true
-							break
+					mutationSelectable:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
+
+					mutationSelectable:OnClick()
+					for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
+						TableUtils:ReindexNumericTable(profile.mutationRules)
+						TableUtils:ReindexNumericTable(profile.prepPhaseMutations)
+					end
+					self:BuildFolderManager()
+				end
+				mutationPopup:AddSelectable("Edit Details").OnClick = function()
+					Helpers:KillChildren(self.popup)
+					self.popup:Open()
+					FormBuilder:CreateForm(self.popup, function(formResults)
+							mutation.name = formResults.Name
+							mutation.description = formResults.Description
+
+							self:BuildFolderManager()
+						end,
+						{
+							{
+								label = "Name",
+								type = "Text",
+								errorMessageIfEmpty = "Required Field",
+								defaultValue = mutation.name
+							},
+							{
+								label = "Description",
+								type = "Multiline",
+								defaultValue = mutation.description
+							}
+						}
+					)
+				end
+
+				if activeProfileId and not MutationConfigurationProxy.profiles[activeProfileId].modId then
+					local index = TableUtils:IndexOf(MutationConfigurationProxy.profiles[activeProfileId].mutationRules, function(value)
+						return value.mutationFolderId == folderId and value.mutationId == mutationId
+					end)
+					if index then
+						---@param select ExtuiSelectable
+						mutationPopup:AddSelectable("Remove From Active Profile", "DontClosePopups").OnClick = function(select)
+							if select.Label ~= "Remove From Active Profile" then
+								MutationConfigurationProxy.profiles[activeProfileId].mutationRules[index].delete = true
+								self:BuildFolderManager()
+							else
+								select.Label = "Are You Sure?"
+								Styler:Color(select, "ErrorText")
+								select.DontClosePopups = false
+							end
 						end
 					end
 				end
-				mutationSelectable:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
 
-				mutationSelectable:OnClick()
-				for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
-					TableUtils:ReindexNumericTable(profile.mutationRules)
-					TableUtils:ReindexNumericTable(profile.prepPhaseMutations)
-				end
-				self:BuildFolderManager()
-			end
-			mutationPopup:AddSelectable("Edit Details").OnClick = function()
-				Helpers:KillChildren(self.popup)
-				self.popup:Open()
-				FormBuilder:CreateForm(self.popup, function(formResults)
-						mutation.name = formResults.Name
-						mutation.description = formResults.Description
+				---@param selectable ExtuiSelectable
+				mutationPopup:AddSelectable("Delete", "DontClosePopups").OnClick = function(selectable)
+					if selectable.Label ~= "Delete" then
+						mutation.delete = true
+
+						for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
+							local largestIndex = 0
+
+							local toDelete = {}
+							for i, mutRule in TableUtils:OrderedPairs(profile.mutationRules) do
+								largestIndex = i > largestIndex and i or largestIndex
+
+								if mutRule.mutationFolderId == folderId and mutRule.mutationId == mutationId then
+									toDelete[#toDelete + 1] = i - #toDelete
+								end
+							end
+
+							for _, indexToDelete in ipairs(toDelete) do
+								for x = indexToDelete, largestIndex do
+									if profile.mutationRules[x] then
+										profile.mutationRules[x].delete = true
+									end
+									profile.mutationRules[x] = TableUtils:DeeplyCopyTable(profile.mutationRules._real[x + 1])
+								end
+							end
+						end
 
 						self:BuildFolderManager()
-					end,
-					{
-						{
-							label = "Name",
-							type = "Text",
-							errorMessageIfEmpty = "Required Field",
-							defaultValue = mutation.name
-						},
-						{
-							label = "Description",
-							type = "Multiline",
-							defaultValue = mutation.description
-						}
-					}
-				)
-			end
-
-			---@param selectable ExtuiSelectable
-			mutationPopup:AddSelectable("Delete", "DontClosePopups").OnClick = function(selectable)
-				if selectable.Label ~= "Delete" then
-					mutation.delete = true
-
-					for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
-						local largestIndex = 0
-
-						local toDelete = {}
-						for i, mutRule in TableUtils:OrderedPairs(profile.mutationRules) do
-							largestIndex = i > largestIndex and i or largestIndex
-
-							if mutRule.mutationFolderId == folderId and mutRule.mutationId == mutationId then
-								toDelete[#toDelete + 1] = i - #toDelete
-							end
-						end
-
-						for _, indexToDelete in ipairs(toDelete) do
-							for x = indexToDelete, largestIndex do
-								if profile.mutationRules[x] then
-									profile.mutationRules[x].delete = true
-								end
-								profile.mutationRules[x] = TableUtils:DeeplyCopyTable(profile.mutationRules._real[x + 1])
-							end
-						end
+					else
+						selectable.Label = "Are You Sure? This Will Delete From All Profiles"
+						Styler:Color(selectable, "ErrorText")
 					end
-
-					self:BuildFolderManager()
-				else
-					selectable.Label = "Are You Sure? This Will Delete From All Profiles"
-					Styler:Color(selectable, "ErrorText")
 				end
-			end
 
-			if TableUtils:CountElements(folders) > 1 then
-				local movePopup = mutationPopup:AddPopup(mutationId .. "Move")
-				for otherfolderId, otherFolder in TableUtils:OrderedPairs(folders, function(key, value)
-					return value.name
-				end) do
-					if otherfolderId ~= folderId then
-						movePopup:AddSelectable(otherFolder.name).OnClick = function()
-							otherFolder.mutations[mutationId] = mutation._real
-							mutation.delete = true
-							for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
-								for _, mutRule in TableUtils:OrderedPairs(profile.mutationRules) do
-									if mutRule.mutationFolderId == folderId and mutRule.mutationId == mutationId then
-										mutRule.mutationFolderId = otherfolderId
+				if TableUtils:CountElements(folders) > 1 then
+					local movePopup = mutationPopup:AddPopup(mutationId .. "Move")
+					for otherfolderId, otherFolder in TableUtils:OrderedPairs(folders, function(key, value)
+						return value.name
+					end) do
+						if otherfolderId ~= folderId then
+							movePopup:AddSelectable(otherFolder.name).OnClick = function()
+								otherFolder.mutations[mutationId] = mutation._real
+								mutation.delete = true
+								for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
+									for _, mutRule in TableUtils:OrderedPairs(profile.mutationRules) do
+										if mutRule.mutationFolderId == folderId and mutRule.mutationId == mutationId then
+											mutRule.mutationFolderId = otherfolderId
+										end
 									end
 								end
+								self:BuildFolderManager()
 							end
-							self:BuildFolderManager()
 						end
 					end
-				end
-				mutationPopup:AddSelectable("Move To Folder", "DontClosePopups").OnClick = function()
-					movePopup:Open()
+					mutationPopup:AddSelectable("Move To Folder", "DontClosePopups").OnClick = function()
+						movePopup:Open()
+					end
 				end
 			end
 
 			mutationSelectable.OnRightClick = function()
 				mutationPopup:Open()
+				buildPopup()
 			end
 			mutationSelectable.OnClick = function()
 				Helpers:KillChildren(self.mutationDesigner)
@@ -659,6 +682,25 @@ function MutationProfileManager:BuildModFolders()
 
 							ConfigurationStructure.config.mutations.folders[FormBuilder:generateGUID()] = folderCopy
 							self:BuildFolderManager()
+						end
+
+						if activeProfileId and not MutationConfigurationProxy.profiles[activeProfileId].modId then
+							local index = TableUtils:IndexOf(MutationConfigurationProxy.profiles[activeProfileId].mutationRules, function(value)
+								return value.mutationFolderId == folderId and value.mutationId == mutationId
+							end)
+							---@param select ExtuiSelectable
+							modPopup:AddSelectable("Remove From Active Profile", "DontClosePopups").OnClick = function(select)
+								if select.Label ~= "Remove From Active Profile" then
+									MutationConfigurationProxy.profiles[activeProfileId].mutationRules[index].delete = true
+									self:BuildProfileManager()
+									mutationSelectable.CanDrag = true
+									mutationSelectable:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
+								else
+									select.Label = "Are You Sure?"
+									Styler:Color(select, "ErrorText")
+									select.DontClosePopups = false
+								end
+							end
 						end
 					end
 					mutationSelectable.OnClick = function()
@@ -1056,8 +1098,10 @@ end
 local prepHide = false
 local mainHide = false
 
+local activeMutation
 ---@param lastMutationActive string?
 function MutationProfileManager:BuildRuleManager(lastMutationActive)
+	lastMutationActive = lastMutationActive or activeMutation
 	Helpers:KillChildren(self.rulesOrderGroup)
 	activeMutationView = nil
 
@@ -1139,43 +1183,34 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 				---@param dropped ExtuiSelectable|ExtuiButton
 				row.OnDragDrop = function(row, dropped)
 					if tonumber(dropped.ParentElement.UserData) then
+						local ruleToCopyOver = TableUtils:DeeplyCopyTable(rulesToUse[dropped.ParentElement.UserData]._real)
 						rulesToUse[dropped.ParentElement.UserData].delete = true
+
 						if rulesToUse[row.UserData] then
 							rulesToUse[dropped.ParentElement.UserData] = rulesToUse[row.UserData]._real
+							rulesToUse[row.UserData].delete = true
 						end
+
+						rulesToUse[row.UserData] = ruleToCopyOver
 					else
 						dropped:SetColor("Text", { 0.86, 0.79, 0.68, 0.28 })
 						dropped.CanDrag = false
 
 						if rulesToUse[row.UserData] then
-							local removeRule = rulesToUse[row.UserData]
-							for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
-								---@cast ele ExtuiCollapsingHeader
-								if ele.UserData == removeRule.mutationFolderId then
-									for _, mutation in pairs(ele.Children) do
-										---@cast mutation ExtuiSelectable
-
-										if mutation.UserData and mutation.UserData.mutationId == removeRule.mutationId then
-											mutation.CanDrag = true
-											mutation:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
-											goto continue
-										end
-									end
+							for i = numOfMutations, tonumber(row.UserData), -1 do
+								if rulesToUse[i] then
+									rulesToUse[i + 1] = TableUtils:DeeplyCopyTable(rulesToUse[i]._real)
+									rulesToUse[i].delete = true
 								end
 							end
-							::continue::
 						end
-					end
 
-					if rulesToUse[row.UserData] then
-						rulesToUse[row.UserData].delete = true
+						rulesToUse[row.UserData] = {
+							additive = dropped.UserData.additive,
+							mutationFolderId = dropped.UserData.mutationFolderId,
+							mutationId = dropped.UserData.mutationId,
+						}
 					end
-
-					rulesToUse[row.UserData] = {
-						additive = dropped.UserData.additive,
-						mutationFolderId = dropped.UserData.mutationFolderId,
-						mutationId = dropped.UserData.mutationId,
-					}
 
 					self:BuildRuleManager(activeMutationView and activeMutationView.Label)
 				end
@@ -1225,6 +1260,13 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 
 				local mutationButton = row:AddButton(folders[mutationRule.mutationFolderId].name ..
 					"/" .. folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId].name)
+
+				mutationButton.UserData = {
+					additive = mutationRule.additive,
+					mutationFolderId = mutationRule.mutationFolderId,
+					mutationId = mutationRule.mutationId,
+				}
+
 				longestTextWidth = Styler:calculateTextDimensions(mutationButton.Label, longestTextWidth)
 
 				if folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId].modId then
@@ -1316,6 +1358,7 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 						end
 					end).SameLine = true
 
+					activeMutation = mutationButton.Label
 					MutationDesigner:RenderMutationManager(self.mutationDesigner:AddGroup("designer"), mutation)
 				end
 

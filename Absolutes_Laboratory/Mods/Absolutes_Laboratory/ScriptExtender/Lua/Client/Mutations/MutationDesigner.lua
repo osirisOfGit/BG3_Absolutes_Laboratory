@@ -9,9 +9,12 @@ local disabledButtonColor = { 0, 0, 0, 0 }
 ---@type ExtuiPopup
 local popup
 
+local lastViewedMutator
+
 ---@param parent ExtuiTreeParent
 ---@param existingMutation Mutation
 function MutationDesigner:RenderMutationManager(parent, existingMutation)
+	lastViewedMutator = nil
 	Helpers:KillChildren(parent)
 	popup = parent:AddPopup("")
 	popup:SetColor("PopupBg", { 0, 0, 0, 1 })
@@ -679,10 +682,12 @@ function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMut
 
 			activeMutatorHandle = select
 
+			lastViewedMutator = mutator.targetProperty
+
 			MutatorInterface.registeredMutators[mutator.targetProperty]:renderMutator(designer, mutator)
 		end
 
-		if mutator.targetProperty == activeMutator or (not activeMutator and not activeMutatorHandle) then
+		if mutator.targetProperty == activeMutator or mutator.targetProperty == lastViewedMutator or (not activeMutator and not activeMutatorHandle and not lastViewedMutator) then
 			select.Selected = true
 			select.OnClick()
 		end

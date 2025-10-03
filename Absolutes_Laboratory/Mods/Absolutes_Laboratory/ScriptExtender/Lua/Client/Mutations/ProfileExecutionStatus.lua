@@ -138,12 +138,12 @@ Channels.ProfileExecutionStatus:SetHandler(
 				row:AddCell():AddText(tostring(data.numberOfEntitiesProcessed))
 
 				local stepDelay = 10
-				local minHeight = window.LastSize[2] * 0.1
+				local minHeight = window.LastSize[2] * 0.2
 				local function fadeOut()
 					local height = window.LastSize[2]
 
 					if height > minHeight then
-						height = math.max(0, height - (height * 0.03)) -- Reduce by 10%
+						height = math.max(0, height - (height * 0.03)) 
 
 						window:SetSize({ window.LastSize[1], height }, "Always")
 						backgroundWindow:SetSize({ backgroundWindow.LastSize[1], height }, "Always")

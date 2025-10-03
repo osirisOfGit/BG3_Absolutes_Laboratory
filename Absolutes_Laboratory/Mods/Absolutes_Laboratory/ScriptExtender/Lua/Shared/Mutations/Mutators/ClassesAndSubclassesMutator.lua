@@ -271,8 +271,12 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 
 		if classConditionalGroup.spellListDependencies then
 			for i, spellListId in TableUtils:OrderedPairs(classConditionalGroup.spellListDependencies, function(key, value)
-				return MutationConfigurationProxy.lists.spellLists[value].name
-			end) do
+					return MutationConfigurationProxy.lists.spellLists[value].name
+				end,
+				function(key, value)
+					return MutationConfigurationProxy.lists.spellLists[value] ~= nil
+				end)
+			do
 				local delete = Styler:ImageButton(conditionalCell:AddImageButton("delete" .. spellListId, "ico_red_x", { 16, 16 }))
 				delete.OnClick = function()
 					for x = i, TableUtils:CountElements(classConditionalGroup.spellListDependencies) do
