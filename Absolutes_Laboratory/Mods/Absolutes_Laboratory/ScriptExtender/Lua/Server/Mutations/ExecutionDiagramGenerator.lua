@@ -166,7 +166,7 @@ class Entity entityNode]]
 	return diagramResult
 end
 
-Ext.RegisterConsoleCommand("Lab_GenerateDiagram", function(cmd, ...)
+Ext.RegisterConsoleCommand("Lab_GenerateMutationDiagram", function(cmd, ...)
 	if #{ ... } > 1 then
 		Logger:BasicError("Only enter 1 EntityId!")
 		return
