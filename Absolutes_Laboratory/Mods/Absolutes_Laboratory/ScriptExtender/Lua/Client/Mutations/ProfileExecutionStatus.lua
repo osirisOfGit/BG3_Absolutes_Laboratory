@@ -36,7 +36,6 @@ Channels.ProfileExecutionStatus:SetHandler(
 	function(data, _)
 		if not window then
 			profileView = MCM.Get("profile_execution_view") or profileView
-			_D(profileView)
 
 			backgroundWindow = Ext.IMGUI.NewWindow("backgroundWindow")
 			backgroundWindow.NoSavedSettings = true
@@ -80,7 +79,6 @@ Channels.ProfileExecutionStatus:SetHandler(
 			end
 
 			local function sizing()
-				_D(backgroundWindow.LastSize)
 				if backgroundWindow.LastSize[2] and backgroundWindow.LastSize[2] > 200 then
 					window:SetSize(backgroundWindow.LastSize, "Always")
 					window:SetPos(Styler:ScaleFactor({ -10, -10 }), "Always")
@@ -125,6 +123,10 @@ Channels.ProfileExecutionStatus:SetHandler(
 							data.numberOfEntitiesBeingProcessed))
 				end)
 			end
+
+			if MCM.Get("log_level") >= Logger.PrintTypes.DEBUG then
+				Styler:Color(Styler:CheapTextAlign("Debug Logs Are Currently Enabled - This Will Slow Things Down!", updaterGroup), "ErrorText")
+			end
 		else
 			Styler:CheapTextAlign("Completed!", updaterGroup, "Large")
 
@@ -147,18 +149,17 @@ Channels.ProfileExecutionStatus:SetHandler(
 				row:AddCell():AddText("Total Entities Mutated")
 				row:AddCell():AddText(tostring(data.numberOfEntitiesProcessed))
 
-				local stepDelay = 10
-				local minHeight = window.LastSize[2] * 0.1
+				local stepDelay = 33
+				local minHeight = window.LastSize[2] * 0.025
 				local lastSize = window.LastSize[2]
 				local function fadeOut()
 					local height = window.LastSize[2]
 
 					if height > minHeight then
-						height = math.max(0, height - (height * 0.03))
+						height = math.max(0, height - minHeight)
 
 						window:SetSize({ window.LastSize[1], height }, "Always")
 						backgroundWindow:SetSize({ backgroundWindow.LastSize[1], height }, "Always")
-						updaterGroup.Size = { 0, math.max(0, updaterGroup.LastSize[2] - (updaterGroup.LastSize[2] * 0.003)) }
 						if lastSize ~= height then
 							lastSize = height
 							Ext.Timer.WaitFor(stepDelay, fadeOut)

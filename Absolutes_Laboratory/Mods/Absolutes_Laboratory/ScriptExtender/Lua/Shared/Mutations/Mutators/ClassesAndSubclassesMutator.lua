@@ -378,6 +378,7 @@ function ClassesAndSubclassesMutator:handleDependencies(_, mutator, removeMissin
 				classGroup.classIds[classId] = nil
 				if not next(classGroup.classIds._real or classGroup.classIds) then
 					mutator.values[c].delete = true
+					mutator.values[c] = nil
 				end
 			elseif not removeMissingDependencies then
 				local classSource = TableUtils:IndexOf(classesIndex, function(value)

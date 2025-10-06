@@ -7,13 +7,17 @@ local updateTimer
 
 local informedUserOfHostRestriction = false
 
+local lastBackupTime
 local createRevolvingBackups = coroutine.wrap(function(...)
 	local i = 0
 	while true do
-		i = i + 1
-		FileUtils:SaveTableToFile(("config-BACKUP-%s.json"):format(i), real_config_table)
-		if i == 5 then
-			i = 0
+		if not lastBackupTime or (lastBackupTime - Ext.Timer.MonotonicTime()) >= 60000 then
+			i = i + 1
+			FileUtils:SaveTableToFile(("config-BACKUP-%s.json"):format(i), real_config_table)
+			lastBackupTime = Ext.Timer.MonotonicTime()
+			if i == 5 then
+				i = 0
+			end
 		end
 		coroutine.yield()
 	end
@@ -117,6 +121,10 @@ Ext.Require("Shared/Configurations/MutationsConfig.lua")
 
 local function CopyConfigsIntoReal(table_from_file, proxy_table)
 	for key, value in pairs(table_from_file) do
+		if key == "delete" then
+			table_from_file[key] = nil
+			goto continue
+		end
 		if type(key) == "string" and tonumber(key) then
 			key = tonumber(key)
 		end
@@ -149,6 +157,7 @@ local function CopyConfigsIntoReal(table_from_file, proxy_table)
 		-- 		key,
 		-- 		type(value) == "table" and Ext.Json.Stringify(value) or value)
 		-- end
+		::continue::
 	end
 end
 

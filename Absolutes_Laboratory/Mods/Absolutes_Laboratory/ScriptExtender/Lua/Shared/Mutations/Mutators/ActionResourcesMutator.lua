@@ -1,8 +1,8 @@
 ---@class ActionResourcesMutatorImpl : MutatorInterface
 ActionResourcesMutator = MutatorInterface:new("Action Resources")
 ActionResourcesMutator.affectedComponents = {
-		"BoostsContainer"
-	}
+	"BoostsContainer"
+}
 function ActionResourcesMutator:priority()
 	return self:recordPriority(ClassesAndSubclassesMutator:priority() + 1)
 end
@@ -386,6 +386,7 @@ function ActionResourcesMutator:renderMutator(parent, mutator)
 				if not resource then
 					Logger:BasicWarning("Action Resource %s doesn't exist, removing from config", actionResourceConfig.resourceId)
 					actionResourceConfig.delete = true
+					config[i] = nil
 					TableUtils:ReindexNumericTable(config)
 					buildGeneral(group, config)
 					return
@@ -783,6 +784,7 @@ function ActionResourcesMutator:handleDependencies(export, mutator, removeMissin
 		for i, actionResourceConfig in pairs(mutator.values.general) do
 			if not record(actionResourceConfig) then
 				mutator.values.general[i].delete = true
+				mutator.values.general[i] = nil
 			end
 		end
 		TableUtils:ReindexNumericTable(mutator.values.general)
@@ -796,9 +798,11 @@ function ActionResourcesMutator:handleDependencies(export, mutator, removeMissin
 				---@type ResourceClassDescription
 				local class = Ext.StaticData.Get(classId, "ClassDescription")
 				if not class then
+					classConfig.requiresClasses[ci].delete = true
 					classConfig.requiresClasses[ci] = nil
 					if not classConfig.requiresClasses() then
 						mutator.values.classDependent[co].delete = true
+						mutator.values.classDependent[co] = nil
 						goto continueClass
 					end
 				elseif not removeMissingDependencies then
@@ -831,8 +835,10 @@ function ActionResourcesMutator:handleDependencies(export, mutator, removeMissin
 			for i, resourceConfig in TableUtils:OrderedPairs(classConfig.actionResources) do
 				if not record(resourceConfig) then
 					classConfig.actionResources[i].delete = true
+					classConfig.actionResources[i] = nil
 					if (not classConfig.__real and not next(classConfig.actionResources)) or (classConfig.__real and not classConfig.actionResources()) then
 						mutator.values.classDependent[co].delete = true
+						mutator.values.classDependent[co] = nil
 						goto continueClass
 					end
 				end
