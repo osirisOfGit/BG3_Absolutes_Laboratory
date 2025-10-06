@@ -9,6 +9,8 @@ Logger.fileName = "log.txt"
 Logger.logBuffer = {}
 Logger.timer = nil
 Logger.prefix = true
+---@type "buffer"|"timer"
+Logger.mode = "buffer"
 
 Logger.PrintTypes = {
     TRACE = 5,
@@ -197,23 +199,28 @@ function Logger:LogMessage(message)
     local logMessage = (self.prefix and (GetTimestamp() .. " ") or "") .. message
     table.insert(self.logBuffer, logMessage)
 
-    if self.timer then
-        Ext.Timer.Cancel(self.timer)
-        self.timer = nil
-    end
-
-    if #self.logBuffer >= bufferLimit then
-        self:FlushLogBuffer()
-    else
-        self.timer = Ext.Timer.WaitFor(500, function()
-            self:FlushLogBuffer()
+    if self.mode == "buffer" then
+        if self.timer then
+            Ext.Timer.Cancel(self.timer)
             self.timer = nil
-        end)
-    end
-end
+        end
 
-function Logger:Flush()
-    self:FlushLogBuffer()
+        if #self.logBuffer >= bufferLimit then
+            self:FlushLogBuffer()
+        else
+            self.timer = Ext.Timer.WaitFor(500, function()
+                self:FlushLogBuffer()
+                self.timer = nil
+            end)
+        end
+    else
+        if not self.timer then
+            self.timer = Ext.Timer.WaitFor(3000, function()
+                self:FlushLogBuffer()
+                self.timer = nil
+            end)
+        end
+    end
 end
 
 function Logger:ClearLogFile()

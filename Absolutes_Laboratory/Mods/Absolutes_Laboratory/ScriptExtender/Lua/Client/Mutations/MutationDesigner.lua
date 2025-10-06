@@ -660,7 +660,7 @@ function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMut
 	for i, mutator in TableUtils:OrderedPairs(mutators, function(key, value)
 		return MutatorInterface.registeredMutators[value.targetProperty]:priority()
 	end) do
-		local delete = Styler:ImageButton(sideBar:AddImageButton("delete" .. mutator.targetProperty, "ico_red_x", { 16, 16 }))
+		local delete = Styler:ImageButton(sideBar:AddImageButton("delete" .. mutator.targetProperty, "ico_red_x", Styler:ScaleFactor({ 16, 16 })))
 		delete.OnClick = function()
 			for x = i, TableUtils:CountElements(mutators) do
 				mutators[x].delete = true

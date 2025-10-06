@@ -27,7 +27,7 @@ local stage = {
 ---@field error string?
 
 ---@type "Detailed"|"Simple"|"Off"
-local profileView
+local profileView = "Simple"
 
 ---@type ExtuiWindow
 local updaterGroup
@@ -35,7 +35,7 @@ Channels.ProfileExecutionStatus:SetHandler(
 ---@param data ProfileExecutionStatus
 	function(data, _)
 		if not window then
-			profileView = MCM.Get("profile_execution_view")
+			profileView = MCM.Get("profile_execution_view") or profileView
 
 			backgroundWindow = Ext.IMGUI.NewWindow("backgroundWindow")
 			backgroundWindow.NoTitleBar = true
@@ -75,7 +75,9 @@ Channels.ProfileExecutionStatus:SetHandler(
 					window:SetSize(backgroundWindow.LastSize, "Always")
 				end
 				Ext.OnNextTick(function(e)
-					window:SetPos(Styler:ScaleFactor({ -10, -10 }), "Always")
+					Ext.OnNextTick(function(e)
+						window:SetPos(Styler:ScaleFactor({ -10, -10 }), "Always")
+					end)
 				end)
 			end)
 
@@ -138,18 +140,26 @@ Channels.ProfileExecutionStatus:SetHandler(
 				row:AddCell():AddText(tostring(data.numberOfEntitiesProcessed))
 
 				local stepDelay = 10
-				local minHeight = window.LastSize[2] * 0.2
+				local minHeight = window.LastSize[2] * 0.1
+				local lastSize = window.LastSize[2]
 				local function fadeOut()
 					local height = window.LastSize[2]
 
 					if height > minHeight then
-						height = math.max(0, height - (height * 0.03)) 
+						height = math.max(0, height - (height * 0.03))
 
 						window:SetSize({ window.LastSize[1], height }, "Always")
 						backgroundWindow:SetSize({ backgroundWindow.LastSize[1], height }, "Always")
 						updaterGroup.Size = { 0, math.max(0, updaterGroup.LastSize[2] - (updaterGroup.LastSize[2] * 0.003)) }
-
-						Ext.Timer.WaitFor(stepDelay, fadeOut)
+						if lastSize ~= height then
+							lastSize = height
+							Ext.Timer.WaitFor(stepDelay, fadeOut)
+						else
+							backgroundWindow:Destroy()
+							backgroundWindow = nil
+							window:Destroy()
+							window = nil
+						end
 					else
 						backgroundWindow:Destroy()
 						backgroundWindow = nil

@@ -259,7 +259,6 @@ function MutationExternalProfileUtility:exportProfile(forMod, ...)
 			local folder = MutationConfigurationProxy.folders[mutationRule.mutationFolderId]
 
 			if not folder.modId then
-				mutationRule.mutationFolderId = mutationRule.mutationFolderId .. "Exported"
 				if not export.folders[mutationRule.mutationFolderId] then
 					export.folders[mutationRule.mutationFolderId] = {
 						name = folder.name,

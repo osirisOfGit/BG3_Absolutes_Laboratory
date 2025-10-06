@@ -23,6 +23,7 @@ MutationProfileExecutor = {}
 local mutatedEntities = {}
 
 function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
+	Logger.mode = "timer"
 	Ext.Utils.ProfileBegin("Lab Profile Execution")
 	local activeProfile = MutationConfigurationProxy.profiles[Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile]
 	local success, error = xpcall(function(...)
@@ -279,6 +280,7 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 			error)
 	end
 	Ext.Utils.ProfileEnd("Lab Profile Execution")
+	Logger.mode = "buffer"
 end
 
 Ext.Osiris.RegisterListener("LevelGameplayReady", 2, "after", function(levelName, isEditorMode)

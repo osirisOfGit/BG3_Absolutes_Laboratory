@@ -14,17 +14,17 @@ end
 MutationConfigurationProxy = {
 	profiles = setmetatable({}, {
 		__index = function(t, k)
-			return mutationsConfig.profiles[k] or MutationModProxy.ModProxy.profiles[k]
+			return MutationModProxy.ModProxy.profiles[k] or mutationsConfig.profiles[k]
 		end
 	}),
 	folders = setmetatable({}, {
 		__index = function(t, k)
-			return mutationsConfig.folders[k] or MutationModProxy.ModProxy.folders[k]
+			return MutationModProxy.ModProxy.folders[k] or mutationsConfig.folders[k]
 		end
 	}),
 	prepPhaseMarkers = setmetatable({}, {
 		__index = function(t, k)
-			return mutationsConfig.prepPhaseMarkers[k] or MutationModProxy.ModProxy.prepPhaseMarkers[k]
+			return MutationModProxy.ModProxy.prepPhaseMarkers[k] or mutationsConfig.prepPhaseMarkers[k]
 		end,
 		__pairs = function(t)
 			---@type {[Guid]: PrepMarkerCategory}
@@ -48,7 +48,7 @@ MutationConfigurationProxy = {
 	lists = {
 		spellLists = setmetatable({}, {
 			__index = function(t, k)
-				return mutationsConfig.lists.spellLists[k] or MutationModProxy.ModProxy.lists.spellLists[k]
+				return MutationModProxy.ModProxy.lists.spellLists[k] or mutationsConfig.lists.spellLists[k]
 			end,
 			__pairs = function(t)
 				---@type {[Guid]: CustomList}
@@ -71,7 +71,7 @@ MutationConfigurationProxy = {
 		}),
 		passiveLists = setmetatable({}, {
 			__index = function(t, k)
-				return mutationsConfig.lists.passiveLists[k] or MutationModProxy.ModProxy.lists.passiveLists[k]
+				return MutationModProxy.ModProxy.lists.passiveLists[k] or mutationsConfig.lists.passiveLists[k]
 			end,
 			__pairs = function(t)
 				---@type {[Guid]: CustomList}
@@ -94,7 +94,7 @@ MutationConfigurationProxy = {
 		}),
 		statusLists = setmetatable({}, {
 			__index = function(t, k)
-				return mutationsConfig.lists.statusLists[k] or MutationModProxy.ModProxy.lists.statusLists[k]
+				return MutationModProxy.ModProxy.lists.statusLists[k] or mutationsConfig.lists.statusLists[k]
 			end,
 			__pairs = function(t)
 				---@type {[Guid]: CustomList}
