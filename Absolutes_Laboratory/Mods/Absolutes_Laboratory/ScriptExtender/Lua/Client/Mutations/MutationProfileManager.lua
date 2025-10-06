@@ -315,7 +315,7 @@ function MutationProfileManager:BuildFolderManager()
 				mutationPopup:AddSelectable("Copy").OnClick = function()
 					---@type Mutation
 					local mut = TableUtils:DeeplyCopyTable(mutation._real)
-					mut.name = mut.name .. "COPY"
+					mut.name = mut.name .. " (COPY)"
 
 					folder.mutations[FormBuilder:generateGUID()] = mut
 					self:BuildFolderManager()
