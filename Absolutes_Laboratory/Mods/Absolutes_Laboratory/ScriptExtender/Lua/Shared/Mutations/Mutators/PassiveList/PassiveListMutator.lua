@@ -777,7 +777,7 @@ function PassiveListMutator:generateDocs()
 					text = [[
 Dependency On: None
 Transient: No
-Additive: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is always applied first]]
+Composable: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is always applied first]]
 				} --[[@as MazzleDocsCallOut]],
 				{
 					type = "Separator"

@@ -402,7 +402,7 @@ function LevelMutator:generateDocs()
 					text = [[
 Dependency On: None
 Transient: No
-Additive: No]]
+Composable: No]]
 				} --[[@as MazzleDocsCallOut]],
 				{
 					type = "Separator"

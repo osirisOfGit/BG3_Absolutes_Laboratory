@@ -1141,7 +1141,7 @@ function ActionResourcesMutator:generateDocs()
 					text = [[
 Dependency On: Classes/Subclasses
 Transient: No (Unless the game is restarted, then yes)
-Additive: Yes - Resources will be merged together into one pool, with later mutators overwriting earlier ones if the same resource is configured]]
+Composable: Yes - Resources will be merged together into one pool, with later mutators overwriting earlier ones if the same resource is configured]]
 				} --[[@as MazzleDocsCallOut]],
 				{
 					type = "Separator"

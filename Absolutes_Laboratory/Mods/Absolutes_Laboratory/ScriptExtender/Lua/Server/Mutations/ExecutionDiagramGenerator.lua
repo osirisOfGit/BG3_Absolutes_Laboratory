@@ -68,7 +68,7 @@ stateDiagram-v2
 	note: Template - %s
 	note: Stat - %s
 	note: Id - %s
-]]):format(EntityRecorder:GetEntityName(entity), entity.ServerCharacter.Template.DisplayName:Get() or entity.ServerCharacter.Template, entity.Data.StatsId, entity.Uuid.EntityUuid)
+]]):format(EntityRecorder:GetEntityName(entity), entity.ServerCharacter.Template.Name, entity.Data.StatsId, entity.Uuid.EntityUuid)
 
 	---@type MutatorEntityVar
 	local entityVar = {
@@ -124,7 +124,7 @@ class Entity entityNode]]
 					end
 					if additiveWith then
 						overridenTextBlock = overridenTextBlock .. ([[
-	%s --> %s: Additive With
+	%s --> %s: Composes With
 ]]):format(additiveWith, mutatorName)
 					end
 				else

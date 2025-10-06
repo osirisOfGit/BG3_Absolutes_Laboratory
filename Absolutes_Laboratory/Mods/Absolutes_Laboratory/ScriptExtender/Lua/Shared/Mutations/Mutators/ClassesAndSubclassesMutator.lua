@@ -575,7 +575,7 @@ function ClassesAndSubclassesMutator:generateDocs()
 					text = [[
 Dependency On: Spell Lists
 Transient: Yes
-Additive: Yes - Class Groups will be added into one pool and randomly chosen from (post filtering)]]
+Composable: Yes - Class Groups will be combined into one pool and one will be randomly chosen (post filtering)]]
 				} --[[@as MazzleDocsCallOut]],
 				{
 					type = "Separator"

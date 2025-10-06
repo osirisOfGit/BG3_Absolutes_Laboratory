@@ -1375,7 +1375,7 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 					local additiveCheckbox = row:AddCheckbox("", mutationRule.additive)
 					additiveCheckbox.Disabled = activeProfile.modId ~= nil
 					additiveCheckbox:Tooltip():AddText(
-						"\t If checked, relevant mutators under this mutation will be _additive_, meaning they will be combined with any mutators of the same type that are applicable from mutations earlier in the flow.\n If unchecked, mutators of the same type from earlier mutations will be replaced with these.")
+						"\t If checked, relevant mutators under this mutation will be _composable_, meaning they will be combined with any mutators of the same type that are applicable from mutations earlier in the flow. See the documentation for each mutator to see when and how this applies.\n If unchecked, composible mutators of the same type from earlier mutations will be replaced with these.")
 
 					additiveCheckbox.SameLine = true
 					additiveCheckbox.OnChange = function()
@@ -1414,9 +1414,9 @@ You can have any number of profiles using any number of mutations, but only one 
 
 The active Profiles is saved to a ModVar, so it will only be available in saves created once it was activated and afterwards - loading a save before you activated a profile will not have it loaded (unless it's your default profile and you haven't disabled the default for that save).
 
-Mutations are applied in the order specified - later Mutations override earlier ones, but certain mutators have an additive property.
+Mutations are applied in the order specified - later Mutations override earlier ones, but certain mutators have a 'composable' property.
 
-The details of what this means are specified in each applicable mutator's page, but you can allow these mutators to be additive by checking the checkbox next to the mutation - if this is not checked, simple override behavior will be used instead.
+The details of what this means are specified in each applicable mutator's page, but you can allow these mutators to be composable by checking the checkbox next to the mutation - if this is not checked, simple override behavior will be used instead.
 
 Create your profile using the Gear icon next to the dropdown - once your profile is created, drag and drop mutations from the left sidebar into the profile section, onto the buttons - you can do it for blank or populated buttons.]]
 			},
@@ -1438,8 +1438,8 @@ Create your profile using the Gear icon next to the dropdown - once your profile
 				type = "Bullet",
 				text = {
 					"Mutations: A group of Mutators and Selectors",
+					"Selectors: Defines what NPCs should be targeted for the Mutators - must run the Scanner in the Inspector tab for the Dry Run to work. Can have duplicate Selector types, but order matters - see Selectors page.",
 					"Mutators: Defines how the NPC should be changed (mutated) if selected by the Selectors. Each Mutation can only have one of each type of Mutator. Order doesn't matter within the context of a Mutation",
-					"Selectors: Defines what NPCs should be targeted for the Mutators - must run the Scanner in the Inspector tab for the Dry Run to work. Can have duplicate Selector types, but order matters - see Selectors page."
 				}
 			}
 		}
