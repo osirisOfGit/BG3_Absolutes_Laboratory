@@ -789,7 +789,7 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 		if ListConfigurationManager.progressionIndex[progressionTableId] then
 			Styler:ScaledFont(entryListGroup:AddSeparatorText(ListConfigurationManager.progressionIndex[progressionTableId].name), "Big"):SetStyle("SeparatorTextAlign", 0.05)
 			subListsClone[self.activeList.defaultPool or self.settings.defaultPool[self.configKey]] = subListsClone
-			[self.activeList.defaultPool or self.settings.defaultPool[self.configKey]] or {}
+				[self.activeList.defaultPool or self.settings.defaultPool[self.configKey]] or {}
 		else
 			return
 		end

@@ -80,8 +80,7 @@
                                             }
                                         ],
                                         "randomizedSpellPoolSize": [
-                                            2,
-                                            1
+                                            2
                                         ]
                                     }
                                 ]
@@ -974,8 +973,7 @@
                                             }
                                         ],
                                         "randomizedSpellPoolSize": [
-                                            2,
-                                            1
+                                            2
                                         ]
                                     }
                                 ]
@@ -1137,10 +1135,10 @@
                                         {
                                             "additiveCurve": false,
                                             "delete": true,
-                                            "levelMap": {
-                                                "17": 1,
-                                                "19": 1
-                                            },
+                                            "levelMap": [
+                                                1,
+                                                1
+                                            ],
                                             "resourceId": "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
                                             "resourceLevel": 5
                                         },
@@ -1166,40 +1164,6 @@
                                 "criteriaValue": [
                                     "f076b8a3-68b3-47e5-af20-ba93ecd1c1ad",
                                     "2910a1a8-ded1-4ead-a4fb-57c4f4918046"
-                                ],
-                                "inclusive": true,
-                                "subSelectors": []
-                            }
-                        ]
-                    },
-                    "7e1fb29a-d716-42ff-aedd-9f44842f1ce7": {
-                        "description": "General feats for all casters",
-                        "mutators": [
-                            {
-                                "targetProperty": "PassiveList",
-                                "useGameLevel": false,
-                                "values": {
-                                    "passiveLists": [
-                                        "6fa0f496-efa9-4bc5-ba40-a65089fe0383"
-                                    ],
-                                    "randomizedPassivePoolSize": [
-                                        1
-                                    ]
-                                }
-                            }
-                        ],
-                        "name": "Caster",
-                        "selectors": [
-                            {
-                                "criteriaCategory": "Prep Marker",
-                                "criteriaValue": [
-                                    "71efbd0c-10a6-41b8-9add-598eed11afc3",
-                                    "bb06bab9-5b7d-4ec8-bc55-e4dd64afe74b",
-                                    "6c3f19f2-6209-41ea-90d5-09978964378a",
-                                    "94945836-3898-486b-95e1-2a62a07234a1",
-                                    "f9d9b432-3671-4cfe-9187-92504bf2fbad",
-                                    "fb2c85dd-12a4-43c1-9aae-5fe4f5230592",
-                                    "ca03edad-074a-41c0-9b65-9b663ec7afd3"
                                 ],
                                 "inclusive": true,
                                 "subSelectors": []
@@ -1319,10 +1283,10 @@
                                         {
                                             "additiveCurve": false,
                                             "delete": true,
-                                            "levelMap": {
-                                                "13": 1,
-                                                "20": 1
-                                            },
+                                            "levelMap": [
+                                                1,
+                                                13
+                                            ],
                                             "resourceId": "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
                                             "resourceLevel": 7
                                         },
@@ -1598,8 +1562,7 @@
                                             }
                                         ],
                                         "randomizedSpellPoolSize": [
-                                            2,
-                                            1
+                                            2
                                         ]
                                     }
                                 ]
@@ -1669,7 +1632,7 @@
                                     "classDependent": [],
                                     "general": [
                                         {
-                                            "additiveCurve": false,
+                                            "additiveCurve": true,
                                             "delete": true,
                                             "levelMap": [
                                                 3,
@@ -1683,7 +1646,7 @@
                                             "resourceLevel": 0
                                         },
                                         {
-                                            "additiveCurve": false,
+                                            "additiveCurve": true,
                                             "delete": true,
                                             "levelMap": [
                                                 1
@@ -1692,7 +1655,7 @@
                                             "resourceLevel": 0
                                         },
                                         {
-                                            "additiveCurve": false,
+                                            "additiveCurve": true,
                                             "delete": true,
                                             "levelMap": {
                                                 "3": 4,
@@ -2443,11 +2406,13 @@
                                                 {
                                                     "additiveCurve": false,
                                                     "delete": true,
-                                                    "levelMap": {
-                                                        "3": 4,
-                                                        "7": 3,
-                                                        "10": 3
-                                                    },
+                                                    "levelMap": [
+                                                        4,
+                                                        1,
+                                                        1,
+                                                        1,
+                                                        3
+                                                    ],
                                                     "resourceId": "2de674bc-8f69-4b57-8fea-ca7632f20935",
                                                     "resourceLevel": 0
                                                 }
@@ -3471,21 +3436,6 @@
                                         "delete": true,
                                         "id": "MMM_HARPYMATRIARCH",
                                         "includeChildren": false
-                                    },
-                                    {
-                                        "delete": true,
-                                        "id": "MMM_MIMICBOSS",
-                                        "includeChildren": false
-                                    },
-                                    {
-                                        "delete": true,
-                                        "id": "SCL_HeWhoWas",
-                                        "includeChildren": false
-                                    },
-                                    {
-                                        "delete": true,
-                                        "id": "MOO_PrisonWarden",
-                                        "includeChildren": false
                                     }
                                 ],
                                 "inclusive": true,
@@ -3501,8 +3451,7 @@
                                             4
                                         ],
                                         "packagedItems": {
-                                            "MMM_HARPYMATRIARCH": "MMM_HARPYMATRIARCH",
-                                            "MMM_MIMICBOSS": "MMM_MIMICBOSS"
+                                            "MMM_HARPYMATRIARCH": "MMM_HARPYMATRIARCH"
                                         }
                                     },
                                     "4511f6b4-7422-efd2-8db1-31f6352c8a9a": {
@@ -3520,15 +3469,6 @@
                                         }
                                     }
                                 },
-                                "subSelectors": []
-                            },
-                            "OR",
-                            {
-                                "criteriaCategory": "Entity",
-                                "criteriaValue": [
-                                    "6068a46e-bbe4-4fc6-b955-cd8886fa5542"
-                                ],
-                                "inclusive": true,
                                 "subSelectors": []
                             }
                         ]
@@ -5014,11 +4954,6 @@
                                         "delete": true,
                                         "id": "MMM_OLGREGG",
                                         "includeChildren": false
-                                    },
-                                    {
-                                        "delete": true,
-                                        "id": "INT_Emperor",
-                                        "includeChildren": false
                                     }
                                 ],
                                 "inclusive": true,
@@ -6364,6 +6299,16 @@
                                     {
                                         "delete": true,
                                         "id": "LOW_Illasera",
+                                        "includeChildren": false
+                                    },
+                                    {
+                                        "delete": true,
+                                        "id": "WYR_Gortash",
+                                        "includeChildren": false
+                                    },
+                                    {
+                                        "delete": true,
+                                        "id": "WYR_Gortash_ManifestationOfTyranny",
                                         "includeChildren": false
                                     }
                                 ],
@@ -8261,8 +8206,7 @@
                                             }
                                         ],
                                         "randomizedSpellPoolSize": [
-                                            2,
-                                            1
+                                            2
                                         ]
                                     }
                                 ]
@@ -9067,8 +9011,7 @@
                                             }
                                         ],
                                         "randomizedSpellPoolSize": [
-                                            2,
-                                            1
+                                            2
                                         ]
                                     }
                                 ]
@@ -9608,8 +9551,7 @@
                                             }
                                         ],
                                         "randomizedSpellPoolSize": [
-                                            2,
-                                            1
+                                            2
                                         ]
                                     }
                                 ]
@@ -9963,10 +9905,10 @@
                                         {
                                             "additiveCurve": false,
                                             "delete": true,
-                                            "levelMap": {
-                                                "5": 2,
-                                                "7": 1
-                                            },
+                                            "levelMap": [
+                                                1,
+                                                2
+                                            ],
                                             "resourceId": "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
                                             "resourceLevel": 2
                                         },
@@ -10795,8 +10737,7 @@
                                             }
                                         ],
                                         "randomizedSpellPoolSize": [
-                                            2,
-                                            1
+                                            2
                                         ]
                                     }
                                 ]
@@ -10846,7 +10787,7 @@
                                         {
                                             "actionResources": [
                                                 {
-                                                    "additiveCurve": false,
+                                                    "additiveCurve": true,
                                                     "delete": true,
                                                     "levelMap": {
                                                         "2": 2,
@@ -10870,8 +10811,6 @@
                                             "additiveCurve": false,
                                             "delete": true,
                                             "levelMap": [
-                                                1,
-                                                1,
                                                 1,
                                                 1,
                                                 1,
@@ -11139,6 +11078,501 @@
                     }
                 },
                 "name": "2. Class: Wizard"
+            },
+            "a60288f3-006a-4f15-9c9c-e59bfdee0af5Exported": {
+                "description": "",
+                "mutations": {
+                    "01420501-e2fb-43eb-a4bd-3e87c2348f33": {
+                        "description": "",
+                        "mutators": [
+                            {
+                                "modDependencies": [],
+                                "targetProperty": "PassiveList",
+                                "useGameLevel": false,
+                                "values": {
+                                    "passives": [
+                                        "FeyAncestry",
+                                        "Darkvision"
+                                    ],
+                                    "randomizedPassivePoolSize": [
+                                        1
+                                    ]
+                                }
+                            }
+                        ],
+                        "name": "Elf",
+                        "selectors": [
+                            {
+                                "criteriaCategory": "Race",
+                                "criteriaValue": {
+                                    "RaceId": "6c038dcb-7eb5-431d-84f8-cecfaf1c0c5a",
+                                    "SubRaceIds": []
+                                },
+                                "inclusive": true,
+                                "modDependencies": [],
+                                "subSelectors": []
+                            },
+                            "OR"
+                        ]
+                    },
+                    "08f3f64f-2f9a-4f10-a972-54ad879a05f9": {
+                        "description": "",
+                        "mutators": [
+                            {
+                                "modDependencies": [],
+                                "targetProperty": "PassiveList",
+                                "useGameLevel": false,
+                                "values": {
+                                    "passives": [
+                                        "SavageAttacks",
+                                        "RelentlessEndurance",
+                                        "Darkvision"
+                                    ],
+                                    "randomizedPassivePoolSize": [
+                                        1
+                                    ]
+                                }
+                            }
+                        ],
+                        "name": "Half-Orc",
+                        "selectors": [
+                            {
+                                "criteriaCategory": "Race",
+                                "criteriaValue": {
+                                    "RaceId": "899d275e-9893-490a-9cd5-be856794929f",
+                                    "SubRaceIds": [
+                                        "5c39a726-71c8-4748-ba8d-f768b3c11a91"
+                                    ]
+                                },
+                                "inclusive": true,
+                                "modDependencies": [],
+                                "subSelectors": []
+                            }
+                        ]
+                    },
+                    "098f1310-d490-4655-9954-efd4633b0d09": {
+                        "description": "",
+                        "mutators": [
+                            {
+                                "modDependencies": [],
+                                "targetProperty": "PassiveList",
+                                "useGameLevel": false,
+                                "values": {
+                                    "passives": [
+                                        "Tiefling_HellishResistance",
+                                        "Darkvision"
+                                    ],
+                                    "randomizedPassivePoolSize": [
+                                        1
+                                    ]
+                                }
+                            }
+                        ],
+                        "name": "Tiefling",
+                        "selectors": [
+                            {
+                                "criteriaCategory": "Race",
+                                "criteriaValue": {
+                                    "RaceId": "b6dccbed-30f3-424b-a181-c4540cf38197",
+                                    "SubRaceIds": []
+                                },
+                                "inclusive": true,
+                                "modDependencies": [],
+                                "subSelectors": []
+                            }
+                        ]
+                    },
+                    "17598d6e-a094-45a2-b7d0-b1f2fe81ec1b": {
+                        "description": "",
+                        "mutators": [
+                            {
+                                "modDependencies": [],
+                                "targetProperty": "PassiveList",
+                                "useGameLevel": false,
+                                "values": {
+                                    "passives": [
+                                        "MartialAdvantage"
+                                    ],
+                                    "randomizedPassivePoolSize": [
+                                        1
+                                    ]
+                                }
+                            }
+                        ],
+                        "name": "Hobgoblin",
+                        "selectors": [
+                            {
+                                "criteriaCategory": "Race",
+                                "criteriaValue": {
+                                    "RaceId": "899d275e-9893-490a-9cd5-be856794929f",
+                                    "SubRaceIds": [
+                                        "a234ff21-6324-4ce2-977a-ae921475c046"
+                                    ]
+                                },
+                                "inclusive": true,
+                                "modDependencies": [],
+                                "subSelectors": []
+                            }
+                        ]
+                    },
+                    "21ed4c7d-8205-4864-95f0-a1173b6e1241": {
+                        "description": "",
+                        "mutators": [
+                            {
+                                "modDependencies": [],
+                                "modifiers": {
+                                    "CharacterLevel": {
+                                        "extraData": [],
+                                        "value": 0
+                                    },
+                                    "GameLevel": {
+                                        "extraData": [],
+                                        "value": 0
+                                    },
+                                    "XPReward": {
+                                        "extraData": [],
+                                        "value": 0
+                                    }
+                                },
+                                "targetProperty": "PassiveList",
+                                "useGameLevel": false,
+                                "values": {
+                                    "passives": [
+                                        "FeyAncestry",
+                                        "HumanMilitia",
+                                        "Darkvision"
+                                    ],
+                                    "randomizedPassivePoolSize": [
+                                        1
+                                    ]
+                                }
+                            }
+                        ],
+                        "name": "Half-Elf",
+                        "selectors": [
+                            {
+                                "criteriaCategory": "Race",
+                                "criteriaValue": {
+                                    "RaceId": "45f4ac10-3c89-4fb2-b37d-f973bb9110c0",
+                                    "SubRaceIds": []
+                                },
+                                "inclusive": true,
+                                "modDependencies": [],
+                                "subSelectors": []
+                            }
+                        ]
+                    },
+                    "572eca08-62a9-46d4-b3b4-bece421db7c1": {
+                        "description": "",
+                        "mutators": [
+                            {
+                                "modDependencies": [],
+                                "targetProperty": "PassiveList",
+                                "useGameLevel": false,
+                                "values": {
+                                    "passives": [
+                                        "Gnome_Cunning",
+                                        "Gnome_Speed",
+                                        "Darkvision"
+                                    ],
+                                    "randomizedPassivePoolSize": [
+                                        1
+                                    ]
+                                }
+                            }
+                        ],
+                        "name": "Gnome",
+                        "selectors": [
+                            {
+                                "criteriaCategory": "Race",
+                                "criteriaValue": {
+                                    "RaceId": "f1b3f884-4029-4f0f-b158-1f9fe0ae5a0d",
+                                    "SubRaceIds": []
+                                },
+                                "inclusive": true,
+                                "modDependencies": [],
+                                "subSelectors": []
+                            }
+                        ]
+                    },
+                    "6824e643-5235-45cc-acbb-9d25361c1d7c": {
+                        "description": "",
+                        "mutators": [
+                            {
+                                "modDependencies": [],
+                                "targetProperty": "PassiveList",
+                                "useGameLevel": false,
+                                "values": {
+                                    "passives": [
+                                        "HumanVersatility",
+                                        "HumanMilitia"
+                                    ],
+                                    "randomizedPassivePoolSize": [
+                                        1
+                                    ]
+                                }
+                            }
+                        ],
+                        "name": "Human",
+                        "selectors": [
+                            {
+                                "criteriaCategory": "Race",
+                                "criteriaValue": {
+                                    "RaceId": "899d275e-9893-490a-9cd5-be856794929f",
+                                    "SubRaceIds": [
+                                        "0eb594cb-8820-4be6-a58d-8be7a1a98fba"
+                                    ]
+                                },
+                                "inclusive": true,
+                                "modDependencies": [],
+                                "subSelectors": []
+                            }
+                        ]
+                    },
+                    "694598ad-205a-4094-b2c7-d70d3368c19c": {
+                        "description": "Excluding Lorroakan so he doesn't receive AttackOfOpportunity (messes with his Elemental Retort reaction)",
+                        "mutators": [
+                            {
+                                "modDependencies": [],
+                                "targetProperty": "PassiveList",
+                                "useGameLevel": false,
+                                "values": {
+                                    "passives": [
+                                        "DarknessRules",
+                                        "AttackOfOpportunity"
+                                    ],
+                                    "randomizedPassivePoolSize": [
+                                        1
+                                    ]
+                                }
+                            }
+                        ],
+                        "name": "0. Humanoid",
+                        "selectors": [
+                            {
+                                "criteriaCategory": "Race",
+                                "criteriaValue": {
+                                    "RaceId": "899d275e-9893-490a-9cd5-be856794929f",
+                                    "SubRaceIds": []
+                                },
+                                "inclusive": true,
+                                "modDependencies": [],
+                                "subSelectors": []
+                            },
+                            "AND",
+                            {
+                                "criteriaCategory": "Stats",
+                                "criteriaValue": [
+                                    {
+                                        "delete": true,
+                                        "id": "LOW_RamazithsTower_Lorroakan",
+                                        "includeChildren": false
+                                    }
+                                ],
+                                "inclusive": false,
+                                "modDependencies": [],
+                                "subSelectors": []
+                            }
+                        ]
+                    },
+                    "859338c5-98d8-475e-a850-516728fadd15": {
+                        "description": "",
+                        "mutators": [
+                            {
+                                "modDependencies": [],
+                                "targetProperty": "PassiveList",
+                                "useGameLevel": false,
+                                "values": {
+                                    "passives": [
+                                        "DeepGnome_StoneCamouflage",
+                                        "SuperiorDarkvision"
+                                    ],
+                                    "randomizedPassivePoolSize": [
+                                        1
+                                    ]
+                                }
+                            }
+                        ],
+                        "name": "Gnome - Deep",
+                        "selectors": [
+                            {
+                                "criteriaCategory": "Race",
+                                "criteriaValue": {
+                                    "RaceId": "f1b3f884-4029-4f0f-b158-1f9fe0ae5a0d",
+                                    "SubRaceIds": [
+                                        "3560f4a2-c0b8-4f8b-baf8-6b6eaef0c160"
+                                    ]
+                                },
+                                "inclusive": true,
+                                "modDependencies": [],
+                                "subSelectors": []
+                            }
+                        ]
+                    },
+                    "abec05f0-b045-4184-bf86-231f8e4250fa": {
+                        "description": "",
+                        "mutators": [
+                            {
+                                "modDependencies": [],
+                                "targetProperty": "PassiveList",
+                                "useGameLevel": false,
+                                "values": {
+                                    "passives": [
+                                        "Halfling_Lucky",
+                                        "Halfling_Brave"
+                                    ],
+                                    "randomizedPassivePoolSize": [
+                                        1
+                                    ]
+                                }
+                            }
+                        ],
+                        "name": "Halfling",
+                        "selectors": [
+                            {
+                                "criteriaCategory": "Race",
+                                "criteriaValue": {
+                                    "RaceId": "78cd3bcc-1c43-4a2a-aa80-c34322c16a04",
+                                    "SubRaceIds": []
+                                },
+                                "inclusive": true,
+                                "modDependencies": [],
+                                "subSelectors": []
+                            }
+                        ]
+                    },
+                    "c3d5e66b-8177-4e02-b3eb-b0fd39c093c9": {
+                        "description": "",
+                        "mutators": [
+                            {
+                                "modDependencies": [],
+                                "targetProperty": "PassiveList",
+                                "useGameLevel": false,
+                                "values": {
+                                    "passives": [
+                                        "SuperiorDarkvision",
+                                        "SunlightSensitivity"
+                                    ],
+                                    "randomizedPassivePoolSize": [
+                                        1
+                                    ]
+                                }
+                            }
+                        ],
+                        "name": "Drow",
+                        "selectors": [
+                            {
+                                "criteriaCategory": "Race",
+                                "criteriaValue": {
+                                    "RaceId": "4f5d1434-5175-4fa9-b7dc-ab24fba37929",
+                                    "SubRaceIds": []
+                                },
+                                "inclusive": true,
+                                "modDependencies": [],
+                                "subSelectors": []
+                            }
+                        ]
+                    },
+                    "c8dae6d7-d499-4755-acc4-e75fb05ab79f": {
+                        "description": "",
+                        "mutators": [
+                            {
+                                "modDependencies": [],
+                                "targetProperty": "PassiveList",
+                                "useGameLevel": false,
+                                "values": {
+                                    "passives": [
+                                        "Brute_Bugbear"
+                                    ],
+                                    "randomizedPassivePoolSize": [
+                                        1
+                                    ]
+                                }
+                            }
+                        ],
+                        "name": "Bugbear",
+                        "selectors": [
+                            {
+                                "criteriaCategory": "Race",
+                                "criteriaValue": {
+                                    "RaceId": "899d275e-9893-490a-9cd5-be856794929f",
+                                    "SubRaceIds": [
+                                        "241b8b4d-763f-48e6-b1f8-a261ec0ef36b"
+                                    ]
+                                },
+                                "inclusive": true,
+                                "modDependencies": [],
+                                "subSelectors": []
+                            }
+                        ]
+                    },
+                    "cb1573ae-8896-4b52-9a4c-693ebd89d539": {
+                        "description": "",
+                        "mutators": [
+                            {
+                                "modDependencies": [],
+                                "targetProperty": "PassiveList",
+                                "useGameLevel": false,
+                                "values": {
+                                    "passives": [
+                                        "Duergar_DuergarResilience",
+                                        "SunlightSensitivity"
+                                    ],
+                                    "randomizedPassivePoolSize": [
+                                        1
+                                    ]
+                                }
+                            }
+                        ],
+                        "name": "Dwarf - Duergar",
+                        "selectors": [
+                            {
+                                "criteriaCategory": "Race",
+                                "criteriaValue": {
+                                    "RaceId": "0ab2874d-cfdc-405e-8a97-d37bfbb23c52",
+                                    "SubRaceIds": [
+                                        "fe584d14-71ea-4bee-8ba0-99f780d4c957"
+                                    ]
+                                },
+                                "inclusive": true,
+                                "modDependencies": [],
+                                "subSelectors": []
+                            }
+                        ]
+                    },
+                    "e8419506-e00a-46a6-b1dc-491c382c96df": {
+                        "description": "",
+                        "mutators": [
+                            {
+                                "modDependencies": [],
+                                "targetProperty": "PassiveList",
+                                "useGameLevel": false,
+                                "values": {
+                                    "passives": [
+                                        "Dwarf_DwarvenResilience"
+                                    ],
+                                    "randomizedPassivePoolSize": [
+                                        1
+                                    ]
+                                }
+                            }
+                        ],
+                        "name": "Dwarf",
+                        "selectors": [
+                            {
+                                "criteriaCategory": "Race",
+                                "criteriaValue": {
+                                    "RaceId": "0ab2874d-cfdc-405e-8a97-d37bfbb23c52",
+                                    "SubRaceIds": []
+                                },
+                                "inclusive": true,
+                                "modDependencies": [],
+                                "subSelectors": []
+                            }
+                        ]
+                    }
+                },
+                "name": "3. Racial Passives"
             },
             "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported": {
                 "description": "",
@@ -12060,7 +12494,6 @@
                                                 2,
                                                 1,
                                                 1,
-                                                1,
                                                 1
                                             ],
                                             "resourceId": "6740f9f4-125d-4321-89e0-771fccd64622",
@@ -12351,8 +12784,7 @@
                                             }
                                         ],
                                         "randomizedSpellPoolSize": [
-                                            2,
-                                            1
+                                            2
                                         ]
                                     }
                                 ]
@@ -12404,11 +12836,10 @@
                                                 {
                                                     "additiveCurve": false,
                                                     "delete": true,
-                                                    "levelMap": {
-                                                        "2": 2,
-                                                        "5": 1,
-                                                        "9": 1
-                                                    },
+                                                    "levelMap": [
+                                                        1,
+                                                        3
+                                                    ],
                                                     "resourceId": "f86ca432-354f-4298-b7d0-0949eff3aa48",
                                                     "resourceLevel": 0
                                                 }
@@ -17552,14 +17983,14 @@
                             "linkedProgressions": {
                                 "ba4e707e-4bbd-4630-963b-ce2f2947f971": {
                                     "blackListed": [
-                                        "FightingStyle_Defense",
-                                        "FightingStyle_TwoWeaponFighting"
+                                        "FightingStyle_Defense"
                                     ],
                                     "guaranteed": [
                                         "FightingStyle_Archery",
                                         "FightingStyle_Dueling",
                                         "FightingStyle_GreatWeaponFighting",
-                                        "FightingStyle_Protection"
+                                        "FightingStyle_Protection",
+                                        "FightingStyle_TwoWeaponFighting"
                                     ]
                                 }
                             },
@@ -17608,6 +18039,9 @@
                                     "GreatWeaponMaster_BonusAttack",
                                     "PolearmMaster_AttackOfOpportunity",
                                     "PolearmMaster_BonusAttack",
+                                    "DualWielder_PassiveBonuses",
+                                    "DualWielder_BonusAC",
+                                    "DualWielder_Focus_Attack",
                                     "ShieldMaster_PassiveBonuses",
                                     "ShieldMaster_Block",
                                     "ShieldMaster_Blow"
@@ -17775,6 +18209,20 @@
                             ],
                             "packagedItems": {
                                 "LAB_Progression_Fighter": "! Class: Fighter"
+                            }
+                        },
+                        "91904cf1-28f4-4544-bbfc-6a7809930d8a": {
+                            "modAuthor": "crunchydeer",
+                            "modId": "91904cf1-28f4-4544-bbfc-6a7809930d8a",
+                            "modName": "Dual Wielding Tweaks (-3 Attack Rolls)",
+                            "modVersion": [
+                                0,
+                                0,
+                                0,
+                                1
+                            ],
+                            "packagedItems": {
+                                "DualWielder_Focus_Attack": "Dual Wielding Master"
                             }
                         },
                         "a2c4b0fc-e745-41df-81b7-fa53950d86a0": {
@@ -18910,89 +19358,6 @@
                     "spellListDependencies": [
                         "81136cb6-b5ac-4320-945d-2372061a1d7f"
                     ],
-                    "useGameLevel": false
-                },
-                "6fa0f496-efa9-4bc5-ba40-a65089fe0383": {
-                    "blacklistSameEntriesInHigherProgressionLevels": true,
-                    "defaultPool": "guaranteed",
-                    "description": "",
-                    "levels": [
-                        [],
-                        [],
-                        {},
-                        [],
-                        [],
-                        {
-                            "manuallySelectedEntries": {
-                                "guaranteed": [
-                                    "SpellSniper_Critical",
-                                    "SpellSniper_Empowered"
-                                ]
-                            }
-                        },
-                        [],
-                        [],
-                        {
-                            "manuallySelectedEntries": {
-                                "guaranteed": [
-                                    "WarCaster_Bonuses",
-                                    "UAWarCaster_Reactions_2014"
-                                ]
-                            }
-                        },
-                        [],
-                        [],
-                        [],
-                        [],
-                        [],
-                        [],
-                        [],
-                        [],
-                        [],
-                        [],
-                        [],
-                        [],
-                        [],
-                        [],
-                        [],
-                        [],
-                        [],
-                        [],
-                        [],
-                        [],
-                        []
-                    ],
-                    "modDependencies": {
-                        "61a154cf-07a9-42bf-b209-1d562770a520": {
-                            "modAuthor": "wesslen",
-                            "modId": "61a154cf-07a9-42bf-b209-1d562770a520",
-                            "modName": "UAWarCaster",
-                            "modVersion": [
-                                1,
-                                9,
-                                1,
-                                0
-                            ],
-                            "packagedItems": {
-                                "UAWarCaster_Reactions_2014": "War Caster: Opportunity Spell"
-                            }
-                        },
-                        "c2f1a230-8c0c-481b-9ab2-987e27d7db05": {
-                            "modAuthor": "Cahoot and Ajax",
-                            "modId": "c2f1a230-8c0c-481b-9ab2-987e27d7db05",
-                            "modName": "FeatsOverhaul",
-                            "modVersion": [
-                                1,
-                                4,
-                                4,
-                                0
-                            ],
-                            "packagedItems": {
-                                "SpellSniper_Empowered": "Spell Sniper: Empowered Spells"
-                            }
-                        }
-                    },
-                    "name": "0. Caster",
                     "useGameLevel": false
                 },
                 "702be649-3462-4fc4-9dec-5e2d4c91a055": {
@@ -21759,14 +22124,7 @@
                             "linkedProgressions": {
                                 "6e7b7bad-e122-4679-8b3c-8f8987a9d466": {
                                     "blackListed": [
-                                        "SD_PrimalOrder_Warden",
-                                        "SD_PrimalOrder_Magician_ProduceFlame",
-                                        "SD_PrimalOrder_Magician_StarryWisp",
-                                        "SD_PrimalOrder_Magician_ThornWhip",
-                                        "SD_PrimalOrder_Magician_Resistance",
-                                        "SD_PrimalOrder_Magician_Guidance",
-                                        "SD_PrimalOrder_Magician_PoisonSpray",
-                                        "SD_PrimalOrder_Magician_Shillelagh"
+                                        "SD_PrimalOrder_Warden"
                                     ],
                                     "guaranteed": [
                                         "UnlockedSpellSlotLevel1"
@@ -21989,13 +22347,6 @@
                                 "SD_ElementalFury_PrimalStrike": "Primal Strike",
                                 "SD_ImprovedElementalFury": "Improved Elemental Fury",
                                 "SD_ImprovedElementalFury_PotentSpellcasting": "SD_ImprovedElementalFury_PotentSpellcasting",
-                                "SD_PrimalOrder_Magician_Guidance": "Primal Order: Magician (Guidance)",
-                                "SD_PrimalOrder_Magician_PoisonSpray": "Primal Order: Magician (Poison Spray)",
-                                "SD_PrimalOrder_Magician_ProduceFlame": "Primal Order: Magician (Produce Flame)",
-                                "SD_PrimalOrder_Magician_Resistance": "Primal Order: Magician (Resistance)",
-                                "SD_PrimalOrder_Magician_Shillelagh": "Primal Order: Magician (Shillelagh)",
-                                "SD_PrimalOrder_Magician_StarryWisp": "Primal Order: Magician (Starry Wisp)",
-                                "SD_PrimalOrder_Magician_ThornWhip": "Primal Order: Magician (Thorn Whip)",
                                 "SD_PrimalOrder_Warden": "Primal Order: Warden",
                                 "SD_WSRecovery": "Wild Shape Recovery",
                                 "SD_WS_THP_NM": "SD_WS_THP_NM",
@@ -22375,7 +22726,7 @@
                             },
                             "manuallySelectedEntries": {
                                 "guaranteed": [
-                                    "SYR_Feat_DeadlyAlacrity_Passive"
+                                    "Alert"
                                 ]
                             }
                         },
@@ -22481,7 +22832,7 @@
                         {
                             "manuallySelectedEntries": {
                                 "guaranteed": [
-                                    "SavageAttacker"
+                                    "SYR_Feat_DeadlyAlacrity_Passive"
                                 ]
                             }
                         },
@@ -27592,17 +27943,7 @@
                             }
                         },
                         [],
-                        {
-                            "linkedProgressions": {
-                                "a7a958f1-d858-4021-9fa7-cf87e7d71377": {
-                                    "blackListed": [
-                                        "Target_ATT_Foresight",
-                                        "Target_ATT_PowerWordKill",
-                                        "Target_PowerWordKill"
-                                    ]
-                                }
-                            }
-                        },
+                        {},
                         [],
                         [],
                         [],
@@ -27648,7 +27989,6 @@
                                 2
                             ],
                             "packagedItems": {
-                                "04a1d09a-5264-42d1-8554-f2831b7f135a": "Warlock",
                                 "9d27c48e-930f-42ce-a4a7-188005d51304": "Warlock"
                             }
                         },
@@ -27663,9 +28003,7 @@
                                 0
                             ],
                             "packagedItems": {
-                                "Target_ATT_DominateMonster": "Dominate Monster",
-                                "Target_ATT_Foresight": "Foresight",
-                                "Target_ATT_PowerWordKill": "Power Word: Kill"
+                                "Target_ATT_DominateMonster": "Dominate Monster"
                             }
                         },
                         "fb5f528d-4d48-4bf2-a668-2274d3cfba96": {
@@ -32505,9 +32843,7 @@
                                         "Target_Darkvision",
                                         "Target_ContinualFlame",
                                         "Target_ArcaneLock",
-                                        "Target_ProtectionFromPoison",
-                                        "Target_Invisibility",
-                                        "Target_EnhanceAbility"
+                                        "Target_ProtectionFromPoison"
                                     ],
                                     "startOfCombatOnly": [
                                         "Target_MagicWeapon"
@@ -32544,8 +32880,7 @@
                                         "Target_ContinualFlame",
                                         "Target_ArcaneLock",
                                         "Target_CreateFoodAndWater",
-                                        "Target_ProtectionFromEnergy",
-                                        "Target_Catnap"
+                                        "Target_ProtectionFromEnergy"
                                     ],
                                     "onLoadOnly": [
                                         "Shout_WaterWalk"
@@ -35729,11 +36064,10 @@
                                         "Target_BigbyHand",
                                         "Target_Mislead",
                                         "Shout_Spjm_CreateSpelljammerHelm",
-                                        "Target_DominatePerson",
-                                        "Target_FingerOfDeath"
+                                        "Target_DominatePerson"
                                     ],
                                     "guaranteed": [
-                                        "Projectile_NegativeEnergyFlood"
+                                        "Target_FingerOfDeath"
                                     ]
                                 }
                             }
@@ -35746,9 +36080,6 @@
                                         "Target_TrueSeeing",
                                         "Target_HorridWilting",
                                         "Teleportation_ArcaneGate"
-                                    ],
-                                    "guaranteed": [
-                                        "Target_CircleOfDeath"
                                     ]
                                 }
                             }
@@ -35918,7 +36249,6 @@
                                 0
                             ],
                             "packagedItems": {
-                                "Projectile_NegativeEnergyFlood": "Negative Energy Flood",
                                 "Shout_BorrowedKnowledge": "Borrowed Knowledge",
                                 "Shout_DetectMagic": "Detect Magic",
                                 "Shout_WardingWind": "Warding Wind",
@@ -38717,9 +39047,6 @@
             "f076b8a3-68b3-47e5-af20-ba93ecd1c1ad": {
                 "name": "Ranger"
             },
-            "f9d9b432-3671-4cfe-9187-92504bf2fbad": {
-                "name": "Wizard"
-            },
             "fb2c85dd-12a4-43c1-9aae-5fe4f5230592": {
                 "name": "Warlock"
             }
@@ -38728,624 +39055,619 @@
             "5b507bce-93eb-4bf0-b576-7b67834e91cdExported": {
                 "defaultActive": false,
                 "description": "",
-                "mutationRules": {
-                    "1": {
-                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
-                        "mutationId": "e200778b-654b-4704-96b2-5efd697a6f4a"
-                    },
-                    "2": {
-                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
-                        "mutationId": "9059762c-dbdc-47ca-b4c7-222c697df915"
-                    },
-                    "3": {
-                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
-                        "mutationId": "6cb4cadc-21bc-4ac2-88fe-ad49c0de4ac2"
-                    },
-                    "4": {
-                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
-                        "mutationId": "77b6b8b7-dbe5-43c6-bd12-113d3d1b631f"
-                    },
-                    "5": {
-                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
-                        "mutationId": "3a3d25e4-ab3a-4686-b196-209f22eda56f"
-                    },
-                    "6": {
-                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
-                        "mutationId": "972ab632-b025-4d14-9359-f062b4574c34"
-                    },
-                    "7": {
-                        "additive": true,
-                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
-                        "mutationId": "09d7aa42-0016-4e86-a509-866d526b745a"
-                    },
-                    "8": {
-                        "additive": true,
-                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
-                        "mutationId": "86378f73-e45b-45a6-94bf-860353f88641"
-                    },
-                    "9": {
-                        "additive": true,
-                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
-                        "mutationId": "8eec41ec-0839-4b99-859a-d48caecd01ed"
-                    },
-                    "10": {
-                        "additive": true,
-                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
-                        "mutationId": "c32daac7-63c1-4ae6-8150-9fc86267bc41"
-                    },
-                    "11": {
-                        "additive": true,
-                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
-                        "mutationId": "b0a63635-04eb-4a84-833d-b880784281c8"
-                    },
-                    "12": {
-                        "additive": true,
-                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
-                        "mutationId": "c0633b44-b6b3-47b1-b695-546dbb721c4a"
-                    },
-                    "13": {
-                        "additive": true,
-                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
-                        "mutationId": "ed325101-3c8f-4ff9-8074-e1a0ba9efe90"
-                    },
-                    "14": {
-                        "additive": true,
-                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
-                        "mutationId": "92fb7eb7-d639-4fbd-8ae6-584b167a51ad"
-                    },
-                    "15": {
+                "mutationRules": [
+                    {
                         "additive": true,
                         "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
                         "mutationId": "59e0915c-04af-4bb0-acfe-9a99eb82f448"
                     },
-                    "16": {
-                        "additive": true,
-                        "mutationFolderId": "5124516e-e1fa-45e0-8609-6b7d9933652eExported",
-                        "mutationId": "b764f266-98b8-4963-b1d4-8cbc3f8656ee"
-                    },
-                    "17": {
-                        "additive": true,
-                        "mutationFolderId": "5124516e-e1fa-45e0-8609-6b7d9933652eExported",
-                        "mutationId": "7e1fb29a-d716-42ff-aedd-9f44842f1ce7"
-                    },
-                    "18": {
-                        "additive": true,
-                        "mutationFolderId": "5124516e-e1fa-45e0-8609-6b7d9933652eExported",
-                        "mutationId": "bea47af7-912b-4ae7-af67-1ec563f41cc2"
-                    },
-                    "19": {
-                        "additive": true,
-                        "mutationFolderId": "5124516e-e1fa-45e0-8609-6b7d9933652eExported",
-                        "mutationId": "69382471-7f82-4748-b82c-1ee0f9f6ea2e"
-                    },
-                    "20": {
-                        "additive": true,
-                        "mutationFolderId": "8c880fe7-f872-4830-845f-95661d161c64Exported",
-                        "mutationId": "2193ce3e-540a-4b2f-afa9-5651f8603c38"
-                    },
-                    "21": {
-                        "additive": true,
-                        "mutationFolderId": "8c880fe7-f872-4830-845f-95661d161c64Exported",
-                        "mutationId": "0596c4b4-f412-46da-9c3e-740c4225b729"
-                    },
-                    "22": {
-                        "additive": true,
-                        "mutationFolderId": "8c880fe7-f872-4830-845f-95661d161c64Exported",
-                        "mutationId": "bba92943-9302-4bca-9bfb-5eaee2359abc"
-                    },
-                    "23": {
-                        "additive": true,
-                        "mutationFolderId": "8c880fe7-f872-4830-845f-95661d161c64Exported",
-                        "mutationId": "5cbd04b9-cb93-4f8b-8ef6-a8889122bea0"
-                    },
-                    "24": {
-                        "additive": true,
-                        "mutationFolderId": "8c880fe7-f872-4830-845f-95661d161c64Exported",
-                        "mutationId": "135e6967-6172-4317-8cbc-041c9d89b231"
-                    },
-                    "25": {
-                        "additive": true,
-                        "mutationFolderId": "8c880fe7-f872-4830-845f-95661d161c64Exported",
-                        "mutationId": "b60bd26e-e680-47b8-9822-21b965c42fe0"
-                    },
-                    "26": {
+                    {
                         "additive": true,
                         "mutationFolderId": "d0493823-b80e-4473-bbb4-7c15538cbb9eExported",
                         "mutationId": "9b91a405-7626-45e8-b1cc-fc4448a7e28d"
                     },
-                    "27": {
+                    {
                         "additive": true,
                         "mutationFolderId": "d0493823-b80e-4473-bbb4-7c15538cbb9eExported",
                         "mutationId": "9608b3a8-8611-4f76-be2a-7fedc9abf7cd"
                     },
-                    "28": {
+                    {
                         "additive": true,
                         "mutationFolderId": "d0493823-b80e-4473-bbb4-7c15538cbb9eExported",
                         "mutationId": "2b369771-d364-4493-9aa7-8699d0ee0d67"
                     },
-                    "29": {
+                    {
                         "additive": true,
                         "mutationFolderId": "d0493823-b80e-4473-bbb4-7c15538cbb9eExported",
                         "mutationId": "697329af-fcc4-45df-8084-f6aeb5de8f12"
                     },
-                    "30": {
+                    {
                         "additive": true,
                         "mutationFolderId": "d0493823-b80e-4473-bbb4-7c15538cbb9eExported",
                         "mutationId": "d9553102-2fc7-4496-893b-820d803eaf1c"
                     },
-                    "31": {
+                    {
                         "additive": true,
                         "mutationFolderId": "d0493823-b80e-4473-bbb4-7c15538cbb9eExported",
                         "mutationId": "96d4899c-0bbf-4a5b-bda2-0e4bf81ca4c6"
                     },
-                    "32": {
+                    {
                         "additive": true,
                         "mutationFolderId": "849ecb2c-f852-4659-b5d4-8dbf1dc7aadeExported",
                         "mutationId": "fedd52e6-67f7-468b-a6c2-f0fb220941f3"
                     },
-                    "33": {
+                    {
                         "additive": true,
                         "mutationFolderId": "849ecb2c-f852-4659-b5d4-8dbf1dc7aadeExported",
                         "mutationId": "ea30aaf2-657e-44a3-8d03-9aff965d0ce3"
                     },
-                    "34": {
+                    {
                         "additive": true,
                         "mutationFolderId": "849ecb2c-f852-4659-b5d4-8dbf1dc7aadeExported",
                         "mutationId": "1e9acad9-7bae-4cc3-9187-8d7b580e11f7"
                     },
-                    "35": {
+                    {
                         "additive": true,
                         "mutationFolderId": "849ecb2c-f852-4659-b5d4-8dbf1dc7aadeExported",
                         "mutationId": "358c667e-a29b-4637-bf05-de7f3cd269ad"
                     },
-                    "36": {
+                    {
                         "additive": true,
                         "mutationFolderId": "849ecb2c-f852-4659-b5d4-8dbf1dc7aadeExported",
                         "mutationId": "c951bf18-e459-4c7d-85c4-5820a85adc1f"
                     },
-                    "37": {
+                    {
                         "additive": true,
                         "mutationFolderId": "849ecb2c-f852-4659-b5d4-8dbf1dc7aadeExported",
                         "mutationId": "d8062e1e-b39d-41b4-8758-574b630dc98e"
                     },
-                    "38": {
+                    {
                         "additive": true,
                         "mutationFolderId": "77ccb8b2-fbba-47f5-ab90-d87ae4007712Exported",
                         "mutationId": "7b7f9842-df7f-438a-819e-eb84ec579381"
                     },
-                    "39": {
+                    {
                         "additive": true,
                         "mutationFolderId": "77ccb8b2-fbba-47f5-ab90-d87ae4007712Exported",
                         "mutationId": "c6fbdcee-1277-4f80-a140-1170fab92bc2"
                     },
-                    "40": {
+                    {
                         "additive": true,
                         "mutationFolderId": "77ccb8b2-fbba-47f5-ab90-d87ae4007712Exported",
                         "mutationId": "e9fc675f-8652-4929-86d9-d9fdfc9a18fb"
                     },
-                    "41": {
+                    {
                         "additive": true,
                         "mutationFolderId": "77ccb8b2-fbba-47f5-ab90-d87ae4007712Exported",
                         "mutationId": "6e453ea9-0ce2-4ba9-99df-37228e0d7f30"
                     },
-                    "42": {
+                    {
                         "additive": true,
                         "mutationFolderId": "77ccb8b2-fbba-47f5-ab90-d87ae4007712Exported",
                         "mutationId": "8f23fd60-b093-4cbf-ad5c-d73e1bcaeb58"
                     },
-                    "43": {
+                    {
                         "additive": true,
                         "mutationFolderId": "77ccb8b2-fbba-47f5-ab90-d87ae4007712Exported",
                         "mutationId": "52a1bcab-68fd-4f82-94f4-efa0090a6f18"
                     },
-                    "44": {
+                    {
                         "additive": true,
                         "mutationFolderId": "77ccb8b2-fbba-47f5-ab90-d87ae4007712Exported",
                         "mutationId": "83a14245-2f90-4df0-b767-59d2d86a113d"
                     },
-                    "45": {
+                    {
                         "additive": true,
                         "mutationFolderId": "77ccb8b2-fbba-47f5-ab90-d87ae4007712Exported",
                         "mutationId": "5e01eec7-7ea4-47c7-85b4-81c0f82858c6"
                     },
-                    "46": {
+                    {
                         "additive": true,
                         "mutationFolderId": "77ccb8b2-fbba-47f5-ab90-d87ae4007712Exported",
                         "mutationId": "65bacd68-6cf3-4007-ad9e-70ccf2444b6e"
                     },
-                    "47": {
+                    {
                         "additive": true,
                         "mutationFolderId": "77ccb8b2-fbba-47f5-ab90-d87ae4007712Exported",
                         "mutationId": "9599947e-ca0b-4a70-aefe-15ca976d2835"
                     },
-                    "48": {
+                    {
                         "additive": true,
                         "mutationFolderId": "dcd821f5-dc65-495e-a631-aed8c763fedeExported",
                         "mutationId": "55d31b8f-49e6-4b36-8827-04df22abca84"
                     },
-                    "49": {
+                    {
                         "additive": true,
                         "mutationFolderId": "dcd821f5-dc65-495e-a631-aed8c763fedeExported",
                         "mutationId": "2cb00cf3-5791-4fd3-8263-fb710921d43a"
                     },
-                    "50": {
+                    {
                         "additive": true,
                         "mutationFolderId": "dcd821f5-dc65-495e-a631-aed8c763fedeExported",
                         "mutationId": "406b8a81-8962-43ac-aac2-c1e48b8bc1d6"
                     },
-                    "51": {
+                    {
                         "additive": true,
                         "mutationFolderId": "dcd821f5-dc65-495e-a631-aed8c763fedeExported",
                         "mutationId": "e2e42bb6-a77f-4f33-9be0-f5b1ef6ccb7d"
                     },
-                    "52": {
+                    {
                         "additive": true,
                         "mutationFolderId": "dcd821f5-dc65-495e-a631-aed8c763fedeExported",
                         "mutationId": "442cc5a9-1301-4f9b-a6f1-d6814e0cdc04"
                     },
-                    "53": {
+                    {
                         "additive": true,
                         "mutationFolderId": "dcd821f5-dc65-495e-a631-aed8c763fedeExported",
                         "mutationId": "e81ea63e-1257-4d9e-85ea-9f4d57a96dd2"
                     },
-                    "54": {
+                    {
                         "additive": true,
                         "mutationFolderId": "66d74e33-4cba-4ac9-80ae-4637d78fab60Exported",
                         "mutationId": "b05c79fb-367a-4856-8e34-21cf8a2c650f"
                     },
-                    "55": {
+                    {
                         "additive": true,
                         "mutationFolderId": "66d74e33-4cba-4ac9-80ae-4637d78fab60Exported",
                         "mutationId": "c2c13aa5-bf80-4155-b362-89473b4caced"
                     },
-                    "56": {
+                    {
                         "additive": true,
                         "mutationFolderId": "66d74e33-4cba-4ac9-80ae-4637d78fab60Exported",
                         "mutationId": "56d493a3-fca2-4fb0-b393-115a96f6b12d"
                     },
-                    "57": {
+                    {
                         "additive": true,
                         "mutationFolderId": "66d74e33-4cba-4ac9-80ae-4637d78fab60Exported",
                         "mutationId": "b319d031-1a8c-4a86-af27-2c1d93f392c3"
                     },
-                    "58": {
+                    {
                         "additive": true,
                         "mutationFolderId": "66d74e33-4cba-4ac9-80ae-4637d78fab60Exported",
                         "mutationId": "ca688bfb-f748-4673-aafe-74f129e5c99e"
                     },
-                    "59": {
-                        "additive": true,
-                        "mutationFolderId": "66d74e33-4cba-4ac9-80ae-4637d78fab60Exported",
-                        "mutationId": "10371cf2-48b6-48f3-b48a-358f0ab98cd6"
-                    },
-                    "60": {
+                    {
                         "additive": true,
                         "mutationFolderId": "66d74e33-4cba-4ac9-80ae-4637d78fab60Exported",
                         "mutationId": "63002083-d0b3-48bd-a888-d8568d93affc"
                     },
-                    "61": {
+                    {
                         "additive": true,
                         "mutationFolderId": "ef2885e6-8e3f-4473-9b53-eccef4109a9dExported",
                         "mutationId": "f9b82e85-5ad7-43d7-9c16-547734de06ba"
                     },
-                    "62": {
+                    {
                         "additive": true,
                         "mutationFolderId": "ef2885e6-8e3f-4473-9b53-eccef4109a9dExported",
                         "mutationId": "78339819-82db-44ca-bf07-deced0a761f7"
                     },
-                    "63": {
+                    {
                         "additive": true,
                         "mutationFolderId": "ef2885e6-8e3f-4473-9b53-eccef4109a9dExported",
                         "mutationId": "59a84eef-9661-4f42-9e9e-09776b189371"
                     },
-                    "64": {
+                    {
                         "additive": true,
                         "mutationFolderId": "ef2885e6-8e3f-4473-9b53-eccef4109a9dExported",
                         "mutationId": "7983f917-10dc-4b5d-ab46-75442dbac0ca"
                     },
-                    "65": {
+                    {
                         "additive": true,
                         "mutationFolderId": "ef2885e6-8e3f-4473-9b53-eccef4109a9dExported",
                         "mutationId": "3fc83610-35bc-415a-8046-5884ee90bacb"
                     },
-                    "66": {
+                    {
                         "additive": true,
                         "mutationFolderId": "ef2885e6-8e3f-4473-9b53-eccef4109a9dExported",
                         "mutationId": "5a8e803c-8216-4ef4-a05e-5102f3dd6a51"
                     },
-                    "67": {
+                    {
                         "additive": true,
                         "mutationFolderId": "5f5c5d9a-c6a3-4b73-8bed-f6f0b37cb574Exported",
                         "mutationId": "3aff7709-2927-430b-b786-b0efad0d5d16"
                     },
-                    "68": {
+                    {
                         "additive": true,
                         "mutationFolderId": "5f5c5d9a-c6a3-4b73-8bed-f6f0b37cb574Exported",
                         "mutationId": "ddb5c555-cc8b-422d-b165-823d628c95d3"
                     },
-                    "69": {
-                        "additive": true,
-                        "mutationFolderId": "5f5c5d9a-c6a3-4b73-8bed-f6f0b37cb574Exported",
-                        "mutationId": "5c9ca49a-e56c-4e02-8c17-4ddff576009b"
-                    },
-                    "70": {
+                    {
                         "additive": true,
                         "mutationFolderId": "5f5c5d9a-c6a3-4b73-8bed-f6f0b37cb574Exported",
                         "mutationId": "345ef0d6-e4ee-40e7-8950-bc2e03172995"
                     },
-                    "71": {
+                    {
                         "additive": true,
                         "mutationFolderId": "5f5c5d9a-c6a3-4b73-8bed-f6f0b37cb574Exported",
                         "mutationId": "9c84b287-63cd-47ee-a2e3-477f0c14df4f"
                     },
-                    "72": {
+                    {
                         "additive": true,
                         "mutationFolderId": "5f5c5d9a-c6a3-4b73-8bed-f6f0b37cb574Exported",
                         "mutationId": "8ffd5131-7336-4a4e-b4fb-b8bff02cf4bb"
                     },
-                    "73": {
+                    {
                         "additive": true,
                         "mutationFolderId": "5f5c5d9a-c6a3-4b73-8bed-f6f0b37cb574Exported",
                         "mutationId": "af402842-0b97-4e8f-890d-3ea7860d4e91"
                     },
-                    "74": {
+                    {
                         "additive": true,
                         "mutationFolderId": "5f5c5d9a-c6a3-4b73-8bed-f6f0b37cb574Exported",
                         "mutationId": "2e45c232-1a2c-4a49-b0c0-175742ae3ab8"
                     },
-                    "75": {
+                    {
                         "additive": true,
                         "mutationFolderId": "50133ac7-f7a7-452d-8830-f9fe551ccdaeExported",
                         "mutationId": "7cb7c725-25b1-4659-bcd1-e748400f910c"
                     },
-                    "76": {
+                    {
                         "additive": true,
                         "mutationFolderId": "50133ac7-f7a7-452d-8830-f9fe551ccdaeExported",
                         "mutationId": "01349d4e-c970-435f-b865-d94cca809267"
                     },
-                    "77": {
+                    {
                         "additive": true,
                         "mutationFolderId": "50133ac7-f7a7-452d-8830-f9fe551ccdaeExported",
                         "mutationId": "588d6fe8-f47a-4969-a0ea-77eb86038817"
                     },
-                    "78": {
+                    {
                         "additive": true,
                         "mutationFolderId": "50133ac7-f7a7-452d-8830-f9fe551ccdaeExported",
                         "mutationId": "7b491a69-31eb-4b4d-b697-e5f5ab30765f"
                     },
-                    "79": {
+                    {
                         "additive": true,
                         "mutationFolderId": "50133ac7-f7a7-452d-8830-f9fe551ccdaeExported",
                         "mutationId": "955a77d0-1c3d-48a3-a94d-02b2b42d1622"
                     },
-                    "80": {
+                    {
                         "additive": true,
                         "mutationFolderId": "50133ac7-f7a7-452d-8830-f9fe551ccdaeExported",
                         "mutationId": "53d8bfdf-8551-4265-8488-59ecb4e19064"
                     },
-                    "81": {
+                    {
                         "additive": true,
                         "mutationFolderId": "ffe32c30-73b0-4dcb-8df9-149b30a2759dExported",
                         "mutationId": "132366ea-548a-49ef-b93d-567cc338d66d"
                     },
-                    "82": {
+                    {
                         "additive": true,
                         "mutationFolderId": "ffe32c30-73b0-4dcb-8df9-149b30a2759dExported",
                         "mutationId": "2d9d1a4a-ffd5-4005-944d-62a5838102cc"
                     },
-                    "83": {
+                    {
                         "additive": true,
                         "mutationFolderId": "ffe32c30-73b0-4dcb-8df9-149b30a2759dExported",
                         "mutationId": "a0837c71-a731-4b67-a631-8e83710ec07e"
                     },
-                    "84": {
+                    {
                         "additive": true,
                         "mutationFolderId": "ffe32c30-73b0-4dcb-8df9-149b30a2759dExported",
                         "mutationId": "ffb42da1-d6b3-4537-bb13-4b8779fd9baa"
                     },
-                    "85": {
+                    {
                         "additive": true,
                         "mutationFolderId": "ffe32c30-73b0-4dcb-8df9-149b30a2759dExported",
                         "mutationId": "249ae56a-c54e-441e-bf9f-891499cfb162"
                     },
-                    "86": {
+                    {
                         "additive": true,
                         "mutationFolderId": "ffe32c30-73b0-4dcb-8df9-149b30a2759dExported",
                         "mutationId": "5eff2038-0bb7-4a0c-acfc-ee52b2643766"
                     },
-                    "87": {
+                    {
                         "additive": true,
                         "mutationFolderId": "37348e88-ec70-4b6f-b57d-581528220d1cExported",
                         "mutationId": "3543b47a-6701-4073-8d6d-f5c321542e9a"
                     },
-                    "88": {
+                    {
                         "mutationFolderId": "37348e88-ec70-4b6f-b57d-581528220d1cExported",
                         "mutationId": "f1ca1c74-1d88-42c0-9621-4ca694e97717"
                     },
-                    "89": {
+                    {
                         "mutationFolderId": "37348e88-ec70-4b6f-b57d-581528220d1cExported",
                         "mutationId": "7417278d-1b6b-409a-a706-29e755445031"
                     },
-                    "90": {
+                    {
                         "mutationFolderId": "37348e88-ec70-4b6f-b57d-581528220d1cExported",
                         "mutationId": "7e79c5d3-4310-4895-8806-0c73ff33fd1f"
                     },
-                    "91": {
+                    {
                         "additive": true,
                         "mutationFolderId": "37348e88-ec70-4b6f-b57d-581528220d1cExported",
                         "mutationId": "1772ada4-036b-4fcd-9dfc-7b6166a6340d"
                     },
-                    "92": {
+                    {
                         "additive": true,
                         "mutationFolderId": "37348e88-ec70-4b6f-b57d-581528220d1cExported",
                         "mutationId": "370ddff3-3f90-4c1c-b161-9f8485073200"
                     },
-                    "93": {
+                    {
                         "additive": true,
                         "mutationFolderId": "37348e88-ec70-4b6f-b57d-581528220d1cExported",
                         "mutationId": "cd04c91a-0771-40c2-84dc-64ea2430580c"
                     },
-                    "94": {
+                    {
                         "additive": true,
                         "mutationFolderId": "37348e88-ec70-4b6f-b57d-581528220d1cExported",
                         "mutationId": "600e5ff8-ce1b-4f5a-9b08-6ac78885bb7b"
                     },
-                    "95": {
+                    {
                         "additive": true,
                         "mutationFolderId": "81db892e-fae4-4009-92c3-28254516245eExported",
                         "mutationId": "fb385f0c-1854-4cc9-a180-f32b606b16ec"
                     },
-                    "96": {
+                    {
                         "additive": true,
                         "mutationFolderId": "81db892e-fae4-4009-92c3-28254516245eExported",
                         "mutationId": "fe1084b9-1873-4f08-8be4-1416ac4f3318"
                     },
-                    "97": {
+                    {
                         "additive": true,
                         "mutationFolderId": "81db892e-fae4-4009-92c3-28254516245eExported",
                         "mutationId": "40bbc6d0-fddf-4898-a306-3c8881b619f2"
                     },
-                    "98": {
+                    {
                         "additive": true,
                         "mutationFolderId": "81db892e-fae4-4009-92c3-28254516245eExported",
                         "mutationId": "bc17dc12-dacc-4ba3-8b1e-41052291dac8"
                     },
-                    "99": {
+                    {
                         "additive": true,
                         "mutationFolderId": "81db892e-fae4-4009-92c3-28254516245eExported",
                         "mutationId": "8eb5a2ff-711e-4db2-b2ed-cee98bea2e41"
                     },
-                    "100": {
+                    {
                         "additive": true,
                         "mutationFolderId": "81db892e-fae4-4009-92c3-28254516245eExported",
                         "mutationId": "c990dcca-49a1-4ec8-8e1f-fbf12fb8eb6f"
                     },
-                    "101": {
+                    {
                         "additive": true,
                         "mutationFolderId": "99b2da81-a99f-410d-926b-96457dce27c1Exported",
                         "mutationId": "6a621514-3893-40ed-894d-5afed46e38d8"
                     },
-                    "102": {
+                    {
                         "additive": true,
                         "mutationFolderId": "99b2da81-a99f-410d-926b-96457dce27c1Exported",
                         "mutationId": "511f3d40-f1a4-4097-b8df-5677798aeb5d"
                     },
-                    "103": {
+                    {
                         "additive": true,
                         "mutationFolderId": "99b2da81-a99f-410d-926b-96457dce27c1Exported",
                         "mutationId": "d5df1d88-2509-4c75-9c90-8e03efedcc10"
                     },
-                    "104": {
+                    {
                         "additive": true,
                         "mutationFolderId": "99b2da81-a99f-410d-926b-96457dce27c1Exported",
                         "mutationId": "880d70ce-eede-4c5c-b271-3c808bfd3714"
                     },
-                    "105": {
+                    {
                         "additive": true,
                         "mutationFolderId": "99b2da81-a99f-410d-926b-96457dce27c1Exported",
                         "mutationId": "91e12613-36cc-4338-aa6e-0b8ff6acacd4"
                     },
-                    "106": {
+                    {
                         "additive": true,
                         "mutationFolderId": "99b2da81-a99f-410d-926b-96457dce27c1Exported",
                         "mutationId": "c50ba90c-83ad-4fb5-a9bf-d2190f34699e"
                     },
-                    "107": {
+                    {
                         "additive": true,
                         "mutationFolderId": "99b2da81-a99f-410d-926b-96457dce27c1Exported",
                         "mutationId": "545ceade-fdb7-4979-a839-923dac7e4369"
                     },
-                    "108": {
+                    {
                         "additive": true,
                         "mutationFolderId": "99b2da81-a99f-410d-926b-96457dce27c1Exported",
                         "mutationId": "11d04681-7911-46c8-8c2e-94fa2afa2fef"
                     },
-                    "109": {
+                    {
                         "additive": true,
                         "mutationFolderId": "99b2da81-a99f-410d-926b-96457dce27c1Exported",
                         "mutationId": "4f22b623-80ef-4a76-8bc1-92c506bcc8ac"
                     },
-                    "110": {
+                    {
                         "additive": true,
                         "mutationFolderId": "99b2da81-a99f-410d-926b-96457dce27c1Exported",
                         "mutationId": "238767f1-ef61-413d-9b3b-0dd656ef63fb"
                     },
-                    "111": {
+                    {
                         "additive": true,
                         "mutationFolderId": "99b2da81-a99f-410d-926b-96457dce27c1Exported",
                         "mutationId": "0fff4382-ba40-49fd-9718-e9a3c7572817"
                     },
-                    "115": {
+                    {
                         "additive": true,
-                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5",
+                        "mutationFolderId": "5124516e-e1fa-45e0-8609-6b7d9933652eExported",
+                        "mutationId": "b764f266-98b8-4963-b1d4-8cbc3f8656ee"
+                    },
+                    {
+                        "additive": true,
+                        "mutationFolderId": "5124516e-e1fa-45e0-8609-6b7d9933652eExported",
+                        "mutationId": "bea47af7-912b-4ae7-af67-1ec563f41cc2"
+                    },
+                    {
+                        "additive": true,
+                        "mutationFolderId": "5124516e-e1fa-45e0-8609-6b7d9933652eExported",
+                        "mutationId": "69382471-7f82-4748-b82c-1ee0f9f6ea2e"
+                    },
+                    {
+                        "additive": true,
+                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5Exported",
                         "mutationId": "694598ad-205a-4094-b2c7-d70d3368c19c"
                     },
-                    "116": {
+                    {
                         "additive": true,
-                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5",
+                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5Exported",
                         "mutationId": "c8dae6d7-d499-4755-acc4-e75fb05ab79f"
                     },
-                    "117": {
+                    {
                         "additive": true,
-                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5",
+                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5Exported",
                         "mutationId": "c3d5e66b-8177-4e02-b3eb-b0fd39c093c9"
                     },
-                    "118": {
+                    {
                         "additive": true,
-                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5",
+                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5Exported",
                         "mutationId": "e8419506-e00a-46a6-b1dc-491c382c96df"
                     },
-                    "119": {
+                    {
                         "additive": true,
-                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5",
+                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5Exported",
                         "mutationId": "cb1573ae-8896-4b52-9a4c-693ebd89d539"
                     },
-                    "120": {
+                    {
                         "additive": true,
-                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5",
+                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5Exported",
                         "mutationId": "01420501-e2fb-43eb-a4bd-3e87c2348f33"
                     },
-                    "121": {
+                    {
                         "additive": true,
-                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5",
+                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5Exported",
                         "mutationId": "572eca08-62a9-46d4-b3b4-bece421db7c1"
                     },
-                    "122": {
+                    {
                         "additive": true,
-                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5",
+                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5Exported",
                         "mutationId": "859338c5-98d8-475e-a850-516728fadd15"
                     },
-                    "123": {
+                    {
                         "additive": true,
-                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5",
+                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5Exported",
                         "mutationId": "21ed4c7d-8205-4864-95f0-a1173b6e1241"
                     },
-                    "124": {
+                    {
                         "additive": true,
-                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5",
+                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5Exported",
                         "mutationId": "08f3f64f-2f9a-4f10-a972-54ad879a05f9"
                     },
-                    "125": {
+                    {
                         "additive": true,
-                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5",
+                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5Exported",
                         "mutationId": "abec05f0-b045-4184-bf86-231f8e4250fa"
                     },
-                    "126": {
+                    {
                         "additive": true,
-                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5",
+                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5Exported",
                         "mutationId": "17598d6e-a094-45a2-b7d0-b1f2fe81ec1b"
                     },
-                    "127": {
+                    {
                         "additive": true,
-                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5",
+                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5Exported",
                         "mutationId": "6824e643-5235-45cc-acbb-9d25361c1d7c"
                     },
-                    "128": {
+                    {
                         "additive": true,
-                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5",
+                        "mutationFolderId": "a60288f3-006a-4f15-9c9c-e59bfdee0af5Exported",
                         "mutationId": "098f1310-d490-4655-9954-efd4633b0d09"
+                    },
+                    {
+                        "additive": true,
+                        "mutationFolderId": "8c880fe7-f872-4830-845f-95661d161c64Exported",
+                        "mutationId": "2193ce3e-540a-4b2f-afa9-5651f8603c38"
+                    },
+                    {
+                        "additive": true,
+                        "mutationFolderId": "8c880fe7-f872-4830-845f-95661d161c64Exported",
+                        "mutationId": "0596c4b4-f412-46da-9c3e-740c4225b729"
+                    },
+                    {
+                        "additive": true,
+                        "mutationFolderId": "8c880fe7-f872-4830-845f-95661d161c64Exported",
+                        "mutationId": "bba92943-9302-4bca-9bfb-5eaee2359abc"
+                    },
+                    {
+                        "additive": true,
+                        "mutationFolderId": "8c880fe7-f872-4830-845f-95661d161c64Exported",
+                        "mutationId": "5cbd04b9-cb93-4f8b-8ef6-a8889122bea0"
+                    },
+                    {
+                        "additive": true,
+                        "mutationFolderId": "8c880fe7-f872-4830-845f-95661d161c64Exported",
+                        "mutationId": "135e6967-6172-4317-8cbc-041c9d89b231"
+                    },
+                    {
+                        "additive": true,
+                        "mutationFolderId": "8c880fe7-f872-4830-845f-95661d161c64Exported",
+                        "mutationId": "b60bd26e-e680-47b8-9822-21b965c42fe0"
+                    },
+                    {
+                        "additive": true,
+                        "mutationFolderId": "66d74e33-4cba-4ac9-80ae-4637d78fab60Exported",
+                        "mutationId": "10371cf2-48b6-48f3-b48a-358f0ab98cd6"
+                    },
+                    {
+                        "additive": true,
+                        "mutationFolderId": "5f5c5d9a-c6a3-4b73-8bed-f6f0b37cb574Exported",
+                        "mutationId": "5c9ca49a-e56c-4e02-8c17-4ddff576009b"
+                    },
+                    {
+                        "additive": true,
+                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
+                        "mutationId": "86378f73-e45b-45a6-94bf-860353f88641"
+                    },
+                    {
+                        "additive": true,
+                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
+                        "mutationId": "09d7aa42-0016-4e86-a509-866d526b745a"
+                    },
+                    {
+                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
+                        "mutationId": "77b6b8b7-dbe5-43c6-bd12-113d3d1b631f"
+                    },
+                    {
+                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
+                        "mutationId": "e200778b-654b-4704-96b2-5efd697a6f4a"
+                    },
+                    {
+                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
+                        "mutationId": "3a3d25e4-ab3a-4686-b196-209f22eda56f"
+                    },
+                    {
+                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
+                        "mutationId": "9059762c-dbdc-47ca-b4c7-222c697df915"
+                    },
+                    {
+                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
+                        "mutationId": "972ab632-b025-4d14-9359-f062b4574c34"
+                    },
+                    {
+                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
+                        "mutationId": "6cb4cadc-21bc-4ac2-88fe-ad49c0de4ac2"
+                    },
+                    {
+                        "additive": true,
+                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
+                        "mutationId": "8eec41ec-0839-4b99-859a-d48caecd01ed"
+                    },
+                    {
+                        "additive": true,
+                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
+                        "mutationId": "c32daac7-63c1-4ae6-8150-9fc86267bc41"
+                    },
+                    {
+                        "additive": true,
+                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
+                        "mutationId": "b0a63635-04eb-4a84-833d-b880784281c8"
+                    },
+                    {
+                        "additive": true,
+                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
+                        "mutationId": "c0633b44-b6b3-47b1-b695-546dbb721c4a"
+                    },
+                    {
+                        "additive": true,
+                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
+                        "mutationId": "ed325101-3c8f-4ff9-8074-e1a0ba9efe90"
+                    },
+                    {
+                        "additive": true,
+                        "mutationFolderId": "af8834b4-b765-4912-92a2-8f0b8e0a1cd1Exported",
+                        "mutationId": "92fb7eb7-d639-4fbd-8ae6-584b167a51ad"
                     }
-                },
+                ],
                 "name": "Cahoot",
                 "prepPhaseMutations": [
                     {

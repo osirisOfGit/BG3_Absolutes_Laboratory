@@ -29,15 +29,17 @@ local stage = {
 ---@type "Detailed"|"Simple"|"Off"
 local profileView = "Simple"
 
----@type ExtuiWindow
+---@type ExtuiChildWindow|ExtuiGroup
 local updaterGroup
 Channels.ProfileExecutionStatus:SetHandler(
 ---@param data ProfileExecutionStatus
 	function(data, _)
 		if not window then
 			profileView = MCM.Get("profile_execution_view") or profileView
+			_D(profileView)
 
 			backgroundWindow = Ext.IMGUI.NewWindow("backgroundWindow")
+			backgroundWindow.NoSavedSettings = true
 			backgroundWindow.NoTitleBar = true
 			backgroundWindow.NoMove = true
 			backgroundWindow.Closeable = false
@@ -52,6 +54,7 @@ Channels.ProfileExecutionStatus:SetHandler(
 			backgroundWindow.Visible = profileView == "Detailed"
 
 			window = Ext.IMGUI.NewWindow("ProfileExecutionStatus")
+			window.NoSavedSettings = true
 			window.NoTitleBar = true
 			window.NoMove = true
 			window.Closeable = false
@@ -69,24 +72,29 @@ Channels.ProfileExecutionStatus:SetHandler(
 			window:SetColor("ChildBg", { 0, 0, 0, 0.6 })
 			window:SetColor("Text", { 1, 1, 1, 1 })
 
-			Ext.OnNextTick(function(e)
-				backgroundWindow:SetPos(Styler:ScaleFactor({ -10, -10 }), "Always")
-				if profileView == "Detailed" then
-					window:SetSize(backgroundWindow.LastSize, "Always")
-				end
-				Ext.OnNextTick(function(e)
-					Ext.OnNextTick(function(e)
-						window:SetPos(Styler:ScaleFactor({ -10, -10 }), "Always")
-					end)
-				end)
-			end)
-
 			if profileView == "Detailed" then
 				window:AddDummy(0, 180)
 				updaterGroup = window:AddChildWindow("Updating")
 			else
 				updaterGroup = window:AddGroup("Updating")
 			end
+
+			local function sizing()
+				_D(backgroundWindow.LastSize)
+				if backgroundWindow.LastSize[2] and backgroundWindow.LastSize[2] > 200 then
+					window:SetSize(backgroundWindow.LastSize, "Always")
+					window:SetPos(Styler:ScaleFactor({ -10, -10 }), "Always")
+				else
+					Ext.Timer.WaitFor(10, sizing)
+				end
+			end
+
+			Ext.OnNextTick(function(e)
+				backgroundWindow:SetPos(Styler:ScaleFactor({ -10, -10 }), "Always")
+				if profileView == "Detailed" then
+					sizing()
+				end
+			end)
 		end
 
 		Helpers:KillChildren(updaterGroup)
