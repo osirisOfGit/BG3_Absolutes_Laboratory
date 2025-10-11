@@ -452,31 +452,20 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				} --[[@as MazzleDoctsBullet]],
 				{
 					type = "Separator"
-				},
-				{
-					type = "SubHeading",
-					text = "Changelog"
-				},
-				{
-					type = "SubHeading",
-					text = "1.7.0"
-				},
-				{
-					type = "Bullet",
-					text = {
-						"Fix execution variable so it doesn't always try to calculate the prime 3 if they're already set"
-					}
-				},
-				{
-					type = "SubHeading",
-					text = "1.6.0"
-				},
-				{
-					type = "Bullet",
-					text = { "?"
-					}
 				}
 			}
 		}
 	} --[[@as MazzleDocsDocumentation]]
+end
+
+---@return {[string]: MazzleDocsContentItem}
+function AbilitiesMutator:generateChangelog()
+	return {
+		["1.7.0"] = {
+			type = "Bullet",
+			text = {
+				"Fix execution variable so it doesn't always try to calculate the prime 3 if they're already set"
+			}
+		} --[[@as MazzleDocsContentItem]]
+	}
 end

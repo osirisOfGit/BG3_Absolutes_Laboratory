@@ -823,3 +823,7 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 		}
 	} --[[@as MazzleDocsDocumentation]]
 end
+
+function StatusListMutator:generateChangelog()
+	
+end

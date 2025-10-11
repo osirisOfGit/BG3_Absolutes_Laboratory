@@ -471,35 +471,27 @@ If the Base level is calculated relative to the Players's level (threshold is no
 						"should be 2 levels lower than the player, but Minibosses should be -1/+2 levels and Bosses should be +3/+5."
 					}
 				} --[[@as MazzleDoctsBullet]],
-				{
-					type = "Separator"
-				},
-				{
-					type = "SubHeading",
-					text = "Changelog"
-				},
-				{
-					type = "SubHeading",
-					text = "1.7.0"
-				},
-				{
-					type = "Bullet",
-					text = {
-						"Changes the on level up behavior to trigger when the EocLevel component changes instead of the AvailableLevel component, preventing it from firing mid-combat"
-					}
-				},
-				{
-					type = "SubHeading",
-					text = "1.6.0"
-				},
-				{
-					type = "Bullet",
-					text = {
-						"Adds Level Thresholds",
-						"Adds option to base the static increase/decrease on the entity's level, not the player's level"
-					}
-				}
 			}
 		}
 	} --[[@as MazzleDocsDocumentation]]
+end
+
+---@return {[string]: MazzleDocsContentItem}
+function LevelMutator:generateChangelog()
+	return {
+		["1.7.0"] = {
+			type = "Bullet",
+			text = {
+				"Changes the on level up behavior to trigger when the EocLevel component changes instead of the AvailableLevel component, preventing it from firing mid-combat",
+				"Use EocLevel for all player-centric calculations"
+			}
+		} --[[@as MazzleDocsContentItem]],
+		["1.6.0"] = {
+			type = "Bullet",
+			text = {
+				"Adds Level Thresholds",
+				"Adds option to base the static increase/decrease on the entity's level, not the player's level"
+			}
+		} --[[@as MazzleDocsContentItem]]
+	}
 end

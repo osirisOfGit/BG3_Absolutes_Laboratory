@@ -748,27 +748,19 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 						"TODO"
 					}
 				} --[[@as MazzleDoctsBullet]],
-				{
-					type = "Separator"
-				},
-				{
-					type = "SubHeading",
-					text = "Changelog"
-				},
-				{
-					type = "SubHeading",
-					text = "1.7.0 (N/A)"
-				},
-				{
-					type = "SubHeading",
-					text = "1.6.0"
-				},
-				{
-					type = "Bullet",
-					text = { "?"
-					}
-				}
 			}
 		}
 	} --[[@as MazzleDocsDocumentation]]
+end
+
+---@return {[string]: MazzleDocsContentItem}
+function BoostsMutator:generateChangelog()
+	return {
+		["1.7.0"] = {
+			type = "Bullet",
+			text = {
+				"Deprecated the previous implementation, implementing a new version"
+			}
+		} --[[@as MazzleDocsContentItem]]
+	}
 end

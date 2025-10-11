@@ -197,3 +197,7 @@ end
 function PrepPhaseMarkerMutator:undoMutator(entity, entityVar)
 	-- entity.Vars.Absolutes_Lab_Prep_Phase_Marker = nil
 end
+
+function PrepPhaseMarkerMutator:generateChangelog()
+	-- NOOP
+end

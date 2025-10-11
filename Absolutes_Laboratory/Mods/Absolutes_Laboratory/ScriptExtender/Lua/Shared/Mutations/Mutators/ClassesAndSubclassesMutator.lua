@@ -643,33 +643,20 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 						"TODO"
 					}
 				} --[[@as MazzleDoctsBullet]],
-				{
-					type = "Separator"
-				},
-				{
-					type = "SubHeading",
-					text = "Changelog"
-				},
-				{
-					type = "SubHeading",
-					text = "1.7.0"
-				},
-				{
-					type = "Bullet",
-					text = {
-						"Sligtly widens inputs and makes sure UI elements scale appropriately"
-					}
-				},
-				{
-					type = "SubHeading",
-					text = "1.6.0"
-				},
-				{
-					type = "Bullet",
-					text = { "?"
-					}
-				}
 			}
 		}
 	} --[[@as MazzleDocsDocumentation]]
+end
+
+---@return {[string]: MazzleDocsContentItem}
+function ClassesAndSubclassesMutator:generateChangelog()
+	return {
+		["1.7.0"] = {
+			type = "Bullet",
+			text = {
+				"Sligtly widens inputs and makes sure UI elements scale appropriately",
+				"Changes from Transient to _not_ transient, allowing Lab to undo the changes itself"
+			}
+		} --[[@as MazzleDocsContentItem]]
+	}
 end

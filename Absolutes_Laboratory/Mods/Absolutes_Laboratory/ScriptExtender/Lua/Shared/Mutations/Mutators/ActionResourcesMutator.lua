@@ -1211,24 +1211,19 @@ As this only affects scenarios where a user saves mid-combat and restarts the ga
 						"1 Extra Action Point if they're just a Rogue, or 2 if they're equally multiclassed as a Rogue and a Fighter"
 					}
 				} --[[@as MazzleDoctsBullet]],
-				{
-					type = "Separator"
-				},
-				{
-					type = "SubHeading",
-					text = "Changelog"
-				},
-				{
-					type = "SubHeading",
-					text = "1.7.0"
-				},
-				{
-					type = "Bullet",
-					text = {
-						"Deprecated the previous implementation, implementing a new version"
-					}
-				}
 			}
 		}
 	} --[[@as MazzleDocsDocumentation]]
+end
+
+---@return {[string]: MazzleDocsContentItem}
+function ActionResourcesMutator:generateChangelog()
+	return {
+		["1.7.0"] = {
+			type = "Bullet",
+			text = {
+				"Deprecated the previous implementation, implementing a new version"
+			}
+		} --[[@as MazzleDocsContentItem]]
+	}
 end

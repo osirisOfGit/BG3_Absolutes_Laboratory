@@ -522,3 +522,16 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 		}
 	} --[[@as MazzleDocsDocumentation]]
 end
+
+---@return {[string]: MazzleDocsContentItem}
+function ProgressionsMutator:generateChangelog()
+	return {
+		["1.7.0"] = {
+			type = "Bullet",
+			text = {
+				"Changes the on level up behavior to trigger when the EocLevel component changes instead of the AvailableLevel component, preventing it from firing mid-combat",
+				"Use EocLevel for all player-centric calculations"
+			}
+		} --[[@as MazzleDocsContentItem]],
+	}
+end

@@ -579,25 +579,20 @@ If a Static and a Dyanmic Health Mutator in different Mutations make it to the f
 						"5% every Game Level, subtracting 1% for every rung up on the XPReward ladder (so Bosses will be (5% - 5%))"
 					}
 				} --[[@as MazzleDoctsBullet]],
-				{
-					type = "Separator"
-				},
-				{
-					type = "SubHeading",
-					text = "Changelog"
-				},
-				{
-					type = "SubHeading",
-					text = "1.6.0"
-				},
-				{
-					type = "Bullet",
-					text = {
-						"Fix execution when the math ain't whole numbers",
-						"Changes Additive behavior for Health Mutators - Dynamic overwrites Dynamic, Static Overwrites Static, but Static and Dynamic can be run together (Static will always run first)"
-					}
-				}
 			}
 		}
 	} --[[@as MazzleDocsDocumentation]]
+end
+
+---@return {[string]: MazzleDocsContentItem}
+function HealthMutator:generateChangelog()
+	return {
+		["1.6.0"] = {
+			type = "Bullet",
+			text = {
+				"Fix execution when the math ain't whole numbers",
+				"Changes Additive behavior for Health Mutators - Dynamic overwrites Dynamic, Static Overwrites Static, but Static and Dynamic can be run together (Static will always run first)"
+			}
+		} --[[@as MazzleDocsContentItem]]
+	}
 end
