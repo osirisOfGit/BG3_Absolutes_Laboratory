@@ -838,7 +838,7 @@ Composable: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is alwa
 				},
 				{
 					type = "SubHeading",
-					text = "Mechanics"
+					text = "Client-Side Content"
 				},
 				{
 					type = "Content",

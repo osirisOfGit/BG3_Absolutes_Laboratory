@@ -1153,20 +1153,19 @@ Composable: Yes - Resources will be merged together into one pool, with later mu
 				{
 					type = "Content",
 					text = [[Conceptually, this mutator is fairly straightforward - assign Action Resources to entities by defining their resource curve, mimicking progressions;
-however, ther are important technical nuances that need to be strictly observed as documented below.]]
+however, there are important technical nuances that need to be strictly observed as documented below.]]
 				},
 				{
 					type = "Separator"
 				},
 				{
 					type = "SubHeading",
-					text = "Mechanics"
+					text = "Client-Side Content"
 				},
 				{
 					type = "Content",
 					text = [[
-There are two main sections - General and Class-specific. General configs use the current level of the entity (according to the EocLevel component) when applying, and
-Class-specific overwrite General configs where applicable, and use the **sum** of all the relevant classes on the entity (i.e. if you give 1 spell slot per level to Warlock and Wizard, and the selected entity is level 6 but has 2 levels in Wizard and Warlock, they'll only be given 4 spell slots).
+There are two main sections - General and Class-specific. General configs use the current level of the entity (according to the EocLevel component) when applying, and Class-specific overwrite General configs where applicable, and use the **sum** of all the relevant classes on the entity (i.e. if you give 1 spell slot per level to Warlock and Wizard, and the selected entity is level 6 but has 2 levels in Wizard and Warlock, they'll only be given 4 spell slots).
 
 An important behavior to note is that this mutator _adds_ the defined amount of resources to the entity, according to their current level; meaning, if the entity is currently level 4 and has 3 Ki Points, and you give them 2 Ki Points per level starting from level 2, they'll end up with 9 Ki Points.
 However, if you specify Level 1 in the config, then that will override the existing amount on the entity, using that number as the base - in the previous example, if you give them 1 Ki Point at Level 1, and 2 every level after, they'll end with 7 Ki Points (1 + (2 * 3)), as opposed to (3 + (2 * 3)).

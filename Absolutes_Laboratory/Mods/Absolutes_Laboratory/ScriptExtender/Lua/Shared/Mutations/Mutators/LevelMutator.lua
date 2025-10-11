@@ -423,7 +423,7 @@ The 'Entity' mentioned throughout refers strictly to the Entity being mutated - 
 				},
 				{
 					type = "SubHeading",
-					text = "Mechanics"
+					text = "Client-Side Content"
 				},
 				{
 					type = "Content",

@@ -391,9 +391,9 @@ function AbilitiesMutator:generateDocs()
 					prefix = "",
 					prefix_color = "Yellow",
 					text = [[
-Dependency On: None
-Transient: No
-Composable: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is always applied first]]
+Dependency On: Spell Lists
+Transient: Yes
+Composable: No]]
 				} --[[@as MazzleDocsCallOut]],
 				{
 					type = "Separator"
@@ -404,23 +404,18 @@ Composable: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is alwa
 				},
 				{
 					type = "Content",
-					text = [[TODO]]
+					text = [[This mutator allows you to reroll an entity's Abilities, the same way a player would, creating variety in enemy abilities while still ensuring proper difficulty curves.]]
 				},
 				{
 					type = "Separator"
 				},
 				{
 					type = "SubHeading",
-					text = "Mechanics"
+					text = "Client-Side Content"
 				},
 				{
 					type = "Content",
-					text = [[
-The mutator is laid out as follows:
-
-TODO
-
-The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
+					text = [[See Tooltips in the Mutator for explanations of the content]]
 				},
 				{
 					type = "Separator"
@@ -431,7 +426,19 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				},
 				{
 					type = "Content",
-					text = [[ TODO ]]
+					text = [[When determining which Abilities get the highest scores, the following is done in order:
+
+1. Check the Overrides section - anything set here will override the following
+2. Check the spell list that had the most levels assigned - if that has Primary Abilities set, use those
+	i. If more than one list was assigned, check the next with the second-highest amount of levels assigned
+	ii. Use the assigned ability priority if currently unset (i.e. the first spell list didn't set Primary)
+	iii. If the second spell list's Secondary Ability is the same as the first List's Tertiary Ability, swap the secondary and the tertiary
+		a. If the second list's Second Ability is not the same as the first's tertiary, make it the tertiary ability
+3. Inspect the entity's current ability scores and use that to determine any missing Ability priorites, including 4/5/6
+
+Priorities 4/5/6 currently can't be set by the user, as that seemed superfluous to me, but open to changing it if necessary.
+
+These values are set via the `Osi.AddBoosts` function, constructing an `Ability(%s,%d)` expression for each ability.]]
 				},
 				{
 					type = "Separator"
@@ -447,7 +454,8 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				{
 					type = "Bullet",
 					text = {
-						"TODO"
+						"should have a random spread mimicking the player's assignments, using their current ability scores as the priorities for rolls",
+						"should have a tight, high-value spread that are assigned per their assigned spell list, then their current ability scores"
 					}
 				} --[[@as MazzleDoctsBullet]],
 				{

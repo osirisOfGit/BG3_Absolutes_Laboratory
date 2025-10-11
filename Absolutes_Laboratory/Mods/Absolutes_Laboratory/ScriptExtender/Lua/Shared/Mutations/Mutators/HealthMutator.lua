@@ -533,7 +533,7 @@ The Modifiers are additive to the base amount, but also allow setting negative a
 				},
 				{
 					type = "SubHeading",
-					text = "Mechanics"
+					text = "Client-Side Content"
 				},
 				{
 					type = "Content",
@@ -576,7 +576,7 @@ If a Static and a Dyanmic Health Mutator in different Mutations make it to the f
 					text = {
 						"that aren't bosses should have 50% more health, otherwise they should have 100% more",
 						"should have a 10% increase every Game Level until IRN_Main_A, at which point they start losing 5% every Game level",
-						"5% every Game Level, subtracting 1% for every rung up on the XPReward ladder (so Bosses will be (5% - 5%))"
+						"gain 5% every Game Level, subtracting 1% for every rung up on the XPReward ladder (so Bosses will be (5% - 5% = 0%) on the TUT ship)"
 					}
 				} --[[@as MazzleDoctsBullet]],
 			}

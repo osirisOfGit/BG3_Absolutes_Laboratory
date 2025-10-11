@@ -439,7 +439,7 @@ If you're not getting the results you want and know it's not a situation where y
 		return -1 * (M + m + p)
 	end) do
 		if version == currentVer then
-			version = version .. " (CURRENT)"
+			version = version .. " (Current)"
 		end
 		table.insert(existingSlides[#existingSlides].content, {
 			type = "SubHeading",

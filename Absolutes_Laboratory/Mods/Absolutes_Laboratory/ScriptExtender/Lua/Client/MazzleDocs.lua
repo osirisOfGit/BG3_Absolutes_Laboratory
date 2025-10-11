@@ -46,7 +46,7 @@ function MazzleDocs:addDocButton(parent, document, configConsumer)
 			return -1 * (M + m + p)
 		end) do
 			if version == currentVer then
-				version = version .. " (CURRENT)"
+				version = version .. " (Current)"
 			end
 
 			table.insert(mutatorChangelog.content, {

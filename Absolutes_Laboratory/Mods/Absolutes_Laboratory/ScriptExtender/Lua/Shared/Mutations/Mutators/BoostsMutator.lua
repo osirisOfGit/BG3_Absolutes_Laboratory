@@ -689,9 +689,9 @@ function BoostsMutator:generateDocs()
 					prefix = "",
 					prefix_color = "Yellow",
 					text = [[
-Dependency On: None
-Transient: No
-Composable: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is always applied first]]
+Dependency On: None, but priority is set to run last
+Transient: No, unless the game is restarted
+Composable: Yes - Boosts will be merged together into one pool, allowing duplicate boosts of the same type to persist]]
 				} --[[@as MazzleDocsCallOut]],
 				{
 					type = "Separator"
@@ -709,7 +709,7 @@ Composable: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is alwa
 				},
 				{
 					type = "SubHeading",
-					text = "Mechanics"
+					text = "Client-Side Content"
 				},
 				{
 					type = "Content",

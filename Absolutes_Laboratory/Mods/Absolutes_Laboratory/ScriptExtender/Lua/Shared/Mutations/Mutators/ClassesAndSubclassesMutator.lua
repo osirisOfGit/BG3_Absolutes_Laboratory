@@ -595,7 +595,7 @@ Still, it's good flavour, useful in those cases, and a valuable dependency for t
 				},
 				{
 					type = "SubHeading",
-					text = "Mechanics"
+					text = "Client-Side Content"
 				},
 				{
 					type = "Content",
