@@ -71,7 +71,7 @@ Using entity level will use the entity's character level, post Character Level M
 	displayTable.Resizable = true
 	displayTable.Borders = true
 
-	local popup = parent:AddPopup("spellListMutatorPopup")
+	local popup = Styler:Popup(parent)
 
 	for sMG, spellMutatorGroup in TableUtils:OrderedPairs(mutator.values) do
 		local parentRow = displayTable:AddRow()
@@ -168,12 +168,18 @@ Using entity level will use the entity's character level, post Character Level M
 							Helpers:KillChildren(popup)
 							popup:Open()
 
+							local userSep = popup:AddSeparatorText("Your Lists")
+							userSep:SetStyle("SeparatorTextAlign", 0.5)
+
+							local userLists = popup:AddChildWindow("userLists")
+							userLists.Size = { 500, 500 }
+
 							for id, spellList in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.lists.spellLists, function(key)
 								return configuredSpellLists[key].name
 							end) do
 								if mutator.useGameLevel == spellList.useGameLevel then
 									---@type ExtuiSelectable
-									local select = popup:AddSelectable(spellList.name, "DontClosePopups")
+									local select = userLists:AddSelectable(spellList.name, "DontClosePopups")
 									select.IDContext = id
 									select.Selected = TableUtils:IndexOf(leveledSpellPool.spellLists, id) ~= nil
 									select.OnClick = function()
@@ -188,6 +194,13 @@ Using entity level will use the entity's character level, post Character Level M
 										renderPools()
 									end
 								end
+							end
+
+							if #userLists.Children == 0 then
+								userLists:Destroy()
+								userSep:Destroy()
+							else
+								userLists.Size = { 0, math.min(500, 40 * (#userLists.Children)) }
 							end
 
 							if MutationModProxy.ModProxy.lists.spellLists() then
@@ -210,9 +223,11 @@ Using entity level will use the entity's character level, post Character Level M
 									for modId, spellLists in TableUtils:OrderedPairs(modSpellLists, function(key, value)
 										return Ext.Mod.GetMod(key).Info.Name
 									end) do
-										local modGroup = popup:AddGroup("Mods" .. modId)
+										local modSep = popup:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name)
+										modSep.Font = "Small"
 
-										modGroup:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name).Font = "Small"
+										local modGroup = popup:AddChildWindow("Mods" .. modId)
+										modGroup.Size = { 500, 500 }
 
 										for _, guid in TableUtils:OrderedPairs(spellLists, function(key, value)
 											return MutationModProxy.ModProxy.lists.spellLists[value].name
@@ -235,8 +250,11 @@ Using entity level will use the entity's character level, post Character Level M
 												end
 											end
 										end
-										if #modGroup.Children == 1 then
+										if #modGroup.Children == 0 then
 											modGroup:Destroy()
+											modSep:Destroy()
+										else
+											modGroup.Size = { 0, math.min(500, 80 * (#modGroup.Children)) }
 										end
 									end
 								end
@@ -1237,8 +1255,7 @@ if Ext.IsServer() then
 		end
 
 		local replaceMap = TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.lists.entryReplacerDictionary)
-		replaceMap.passiveLists = replaceMap.spellLists or {}
-		local replaceMap = replaceMap.spellLists
+		replaceMap.spellLists = replaceMap.spellLists or {}
 
 		---@cast spellListMutators SpellListMutator[]
 
@@ -1433,12 +1450,12 @@ if Ext.IsServer() then
 									local modMap = MutationConfigurationProxy.lists.entryReplacerDictionary.spellLists[spellList.modId]
 									if modMap then
 										for replacer, toReplaceList in pairs(modMap) do
-											if not replaceMap[replaceMap] then
-												replaceMap[replacer] = TableUtils:DeeplyCopyTable(toReplaceList)
+											if not replaceMap.spellLists[replaceMap.spellLists] then
+												replaceMap.spellLists[replacer] = TableUtils:DeeplyCopyTable(toReplaceList)
 											else
 												for _, toReplace in ipairs(toReplaceList) do
-													if not TableUtils:IndexOf(replaceMap[replacer]) then
-														table.insert(replaceMap[replacer], toReplace)
+													if not TableUtils:IndexOf(replaceMap.spellLists[replacer]) then
+														table.insert(replaceMap.spellLists[replacer], toReplace)
 													end
 												end
 											end
@@ -1600,9 +1617,9 @@ if Ext.IsServer() then
 											table.insert(appliedLinkedLists, linkedSpellListId)
 
 											local linkedList = MutationConfigurationProxy.lists.spellLists[linkedSpellListId]
-											Logger:BasicDebug("### Starting List %s, linked from %s ###", linkedList.name, list.name)
+											Logger:BasicDebug("### STARTING List %s, linked from %s ###", linkedList.name, list.name)
 											applySpellList(linkedSpellListId, list.name)
-											Logger:BasicDebug("### Finished List %s, linked from %s ###", linkedList.name, list.name)
+											Logger:BasicDebug("### FINISHED List %s, linked from %s ###", linkedList.name, list.name)
 
 											recursivelyApplyLinkedLists(linkedList)
 										end
@@ -1618,9 +1635,9 @@ if Ext.IsServer() then
 			for i = #origValues.addedSpells, 1, -1 do
 				local appliedSpell = origValues.addedSpells[i]
 
-				if replaceMap[appliedSpell] then
+				if replaceMap.spellLists[appliedSpell] then
 					for _, toReplace in ipairs(entity.SpellBook.Spells) do
-						if TableUtils:IndexOf(replaceMap[appliedSpell], function(value)
+						if TableUtils:IndexOf(replaceMap.spellLists[appliedSpell], function(value)
 								return value == toReplace.Id.OriginatorPrototype
 							end)
 						then
@@ -1636,7 +1653,7 @@ if Ext.IsServer() then
 
 					if spellSystem.AddSpells[entity] then
 						for s, spellMeta in pairs(spellSystem.AddSpells[entity]) do
-							if TableUtils:IndexOf(replaceMap[appliedSpell], spellMeta.SpellId.OriginatorPrototype) then
+							if TableUtils:IndexOf(replaceMap.spellLists[appliedSpell], spellMeta.SpellId.OriginatorPrototype) then
 								if TableUtils:IndexOf(origValues.addedSpells, spellMeta.SpellId.OriginatorPrototype) then
 									origValues.addedSpells[TableUtils:IndexOf(origValues.addedSpells, spellMeta.SpellId.OriginatorPrototype)] = nil
 									TableUtils:ReindexNumericTable(origValues.addedSpells)

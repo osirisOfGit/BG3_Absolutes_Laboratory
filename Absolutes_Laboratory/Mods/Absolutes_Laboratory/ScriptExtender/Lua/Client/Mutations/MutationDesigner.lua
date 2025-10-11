@@ -16,10 +16,7 @@ local lastViewedMutator
 function MutationDesigner:RenderMutationManager(parent, existingMutation)
 	lastViewedMutator = nil
 	Helpers:KillChildren(parent)
-	popup = parent:AddPopup("")
-	popup:SetColor("PopupBg", { 0, 0, 0, 1 })
-	popup:SetColor("Border", { 1, 0, 0, 0.5 })
-	popup.AutoClosePopups = true
+	popup = Styler:Popup(parent)
 
 	if existingMutation.modId then
 		Styler:CheapTextAlign("Mod-Added Mutation - You can browse, but not edit", parent, "Large"):SetColor("Text", { 1, 0, 0, 0.45 })

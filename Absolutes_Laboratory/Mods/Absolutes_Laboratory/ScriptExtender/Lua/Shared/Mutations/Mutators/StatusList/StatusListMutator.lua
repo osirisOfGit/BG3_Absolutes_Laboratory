@@ -452,7 +452,8 @@ end
 ---@param statusList CustomList
 ---@param numRandomStatusesPerLevel number[]
 ---@param appliedStatuses string[]
-local function applyStatusLists(entity, levelToUse, statusList, numRandomStatusesPerLevel, appliedStatuses)
+---@param appliedLists Guid[]
+local function applyStatusLists(entity, levelToUse, statusList, numRandomStatusesPerLevel, appliedStatuses, appliedLists)
 	Logger:BasicDebug("Applying levels %s to %s of list %s",
 		statusList.useGameLevel and EntityRecorder.Levels[1] or 1,
 		statusList.useGameLevel and EntityRecorder.Levels[levelToUse] or levelToUse,
@@ -523,6 +524,25 @@ local function applyStatusLists(entity, levelToUse, statusList, numRandomStatuse
 			Logger:BasicDebug("Skipping level %s for random status assignment due to configured size being 0", statusList.useGameLevel and EntityRecorder.Levels[level] or level)
 		end
 	end
+
+	---@param listToProcess CustomList
+	local function recursivelyApplyLists(listToProcess)
+		if listToProcess.linkedLists and next(listToProcess.linkedLists._real or listToProcess.linkedLists) then
+			for _, linkedListId in pairs(listToProcess.linkedLists) do
+				if not TableUtils:IndexOf(appliedLists, linkedListId) then
+					table.insert(appliedLists, linkedListId)
+
+					local linkedList = MutationConfigurationProxy.lists.statusLists[linkedListId]
+					Logger:BasicDebug("### STARTING List %s, linked from %s ###", linkedList.name, listToProcess.name)
+					applyStatusLists(entity, levelToUse, linkedList, numRandomStatusesPerLevel, appliedStatuses, appliedLists)
+					Logger:BasicDebug("### FINISHED List %s, linked from %s ###", linkedList.name, listToProcess.name)
+
+					recursivelyApplyLists(linkedList)
+				end
+			end
+		end
+	end
+	recursivelyApplyLists(statusList)
 end
 
 function StatusListMutator:applyMutator(entity, entityVar)
@@ -590,9 +610,11 @@ function StatusListMutator:applyMutator(entity, entityVar)
 	end
 
 
+	---@type EntryReplacerDictionary
 	local replaceMap = TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.lists.entryReplacerDictionary)
 	replaceMap.statusLists = replaceMap.statusLists or {}
-	local replaceMap = replaceMap.statusLists
+
+	local appliedLists = {}
 
 	if next(statusListsPool) then
 		if not usingListsWithSpellListDeps then
@@ -614,12 +636,12 @@ function StatusListMutator:applyMutator(entity, entityVar)
 						local modReplaceMap = MutationConfigurationProxy.lists.entryReplacerDictionary[statusList.modId]
 						if modReplaceMap.statusLists then
 							for statReplacement, statsToReplace in pairs(modReplaceMap.statusLists) do
-								if not replaceMap[statReplacement] then
-									replaceMap[statReplacement] = statsToReplace
+								if not replaceMap.statusLists[statReplacement] then
+									replaceMap.statusLists[statReplacement] = statsToReplace
 								else
 									for _, toReplace in ipairs(statsToReplace) do
-										if not TableUtils:IndexOf(replaceMap[statReplacement], toReplace) then
-											table.insert(replaceMap[statReplacement])
+										if not TableUtils:IndexOf(replaceMap.statusLists[statReplacement], toReplace) then
+											table.insert(replaceMap.statusLists[statReplacement])
 										end
 									end
 								end
@@ -629,7 +651,7 @@ function StatusListMutator:applyMutator(entity, entityVar)
 						end
 					end
 
-					applyStatusLists(entity, levelToUse, statusList, numRandomStatusesPerLevel, appliedStatuses)
+					applyStatusLists(entity, levelToUse, statusList, numRandomStatusesPerLevel, appliedStatuses, appliedLists)
 					break
 				end
 			end
@@ -650,12 +672,12 @@ function StatusListMutator:applyMutator(entity, entityVar)
 					local modReplaceMap = MutationConfigurationProxy.lists.entryReplacerDictionary[statusList.modId]
 					if modReplaceMap.statusLists then
 						for statReplacement, statsToReplace in pairs(modReplaceMap.statusLists) do
-							if not replaceMap[statReplacement] then
-								replaceMap[statReplacement] = statsToReplace
+							if not replaceMap.statusLists[statReplacement] then
+								replaceMap.statusLists[statReplacement] = statsToReplace
 							else
 								for _, toReplace in ipairs(statsToReplace) do
-									if not TableUtils:IndexOf(replaceMap[statReplacement], toReplace) then
-										table.insert(replaceMap[statReplacement])
+									if not TableUtils:IndexOf(replaceMap.statusLists[statReplacement], toReplace) then
+										table.insert(replaceMap.statusLists[statReplacement])
 									end
 								end
 							end
@@ -665,7 +687,7 @@ function StatusListMutator:applyMutator(entity, entityVar)
 					end
 				end
 
-				applyStatusLists(entity, levelToUse, statusList, numRandomStatusesPerLevel, appliedStatuses)
+				applyStatusLists(entity, levelToUse, statusList, numRandomStatusesPerLevel, appliedStatuses, appliedLists)
 			end
 		end
 	end
@@ -673,8 +695,8 @@ function StatusListMutator:applyMutator(entity, entityVar)
 	if next(appliedStatuses) then
 		for i = #appliedStatuses, 1, -1 do
 			local statusToApply = appliedStatuses[i]
-			if statusToApply and replaceMap[statusToApply] then
-				for _, statusToRemove in pairs(replaceMap[statusToApply]) do
+			if statusToApply and replaceMap.statusLists[statusToApply] then
+				for _, statusToRemove in pairs(replaceMap.statusLists[statusToApply]) do
 					if Osi.HasActiveStatus(entity.Uuid.EntityUuid, statusToRemove) == 1 then
 						Osi.RemoveStatus(entity.Uuid.EntityUuid, statusToRemove, entity.Uuid.EntityUuid)
 						Logger:BasicDebug("Removed %s from the entity as it's marked to be removed by %s", statusToRemove, statusToApply)

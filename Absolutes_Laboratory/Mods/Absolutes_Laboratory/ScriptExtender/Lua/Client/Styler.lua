@@ -179,8 +179,10 @@ end
 ---@return ExtuiPopup
 function Styler:Popup(parent)
 	local popup = parent:AddPopup("")
+	popup.NoSavedSettings = true
 	popup:SetColor("PopupBg", { 0, 0, 0, 1 })
 	popup:SetColor("Border", { 1, 0, 0, 0.5 })
+	popup:SetColor("ChildBg", { 0, 0, 0, 1 })
 	return popup
 end
 

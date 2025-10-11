@@ -54,10 +54,7 @@ local activeMutationView
 ---@param parent ExtuiTreeParent
 function MutationProfileManager:init(parent)
 	if not self.userFolderGroup then
-		self.popup = parent:AddPopup("ProfileManager")
-		self.popup:SetColor("PopupBg", { 0, 0, 0, 1 })
-		self.popup:SetColor("Border", { 1, 0, 0, 0.5 })
-		self.popup.AutoClosePopups = true
+		self.popup = Styler:Popup(parent)
 		self.popup.UserData = "closeOnSubmit"
 
 		local parentTable = Styler:TwoColumnTable(parent, "mutationsMain")

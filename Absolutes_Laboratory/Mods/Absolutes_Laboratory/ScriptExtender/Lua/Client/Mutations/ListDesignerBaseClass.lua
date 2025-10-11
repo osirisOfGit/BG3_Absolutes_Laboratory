@@ -480,11 +480,11 @@ function ListDesignerBaseClass:buildDesigner()
 		self:customizeDesigner(ele)
 	end)
 
-	local sep = extraOptionsCell:AddSeparatorText("Linked Spell Lists (?)")
+	local sep = extraOptionsCell:AddSeparatorText(("Linked %s (?)"):format(self.name))
 	sep:SetStyle("SeparatorTextAlign", 0.5)
 	sep:Tooltip():AddText([[
 	Any lists linked to this one will be applied whenever this list is, allowing you to create a 'Base' list that all specializations can be linked to,
-eliminating the need for duplication between lists. 
+eliminating the need for duplication between lists.
 This logic will be run recursively, applying the lists linked to the linked lists (with protections against applying the same list multiple times).]])
 
 	local linkedTable = extraOptionsCell:AddTable("LinkedLists", 1)
@@ -512,7 +512,7 @@ This logic will be run recursively, applying the lists linked to the linked list
 			link.Font = "Small"
 			link.SameLine = true
 			link.OnClick = function()
-				SpellListDesigner:launch(listId)
+				self:launch(listId)
 			end
 		end
 	end
@@ -555,14 +555,14 @@ This logic will be run recursively, applying the lists linked to the linked list
 			end
 
 			if #userLists.Children == 1 then
-				userListSep:Destroy()
 				userLists:Destroy()
 			else
 				userLists.Size = { 0, math.min(500, 80 * (#userLists.Children - 1)) }
 			end
 
 			if MutationModProxy.ModProxy.lists[self.configKey]() then
-				self.popup:AddSeparatorText("Mod Lists"):SetStyle("SeparatorTextAlign", 0.5)
+				local modListsSep = self.popup:AddSeparatorText("Mod Lists")
+				modListsSep:SetStyle("SeparatorTextAlign", 0.5)
 
 				---@type {[Guid]: Guid[]}
 				local modLists = {}
@@ -572,8 +572,8 @@ This logic will be run recursively, applying the lists linked to the linked list
 
 					if modCache.lists and modCache.lists[self.configKey] and next(modCache.lists[self.configKey]) then
 						modLists[modId] = {}
+						table.insert(modLists[modId], spellListId)
 						for spellListId in pairs(modCache.lists[self.configKey]) do
-							table.insert(modLists[modId], spellListId)
 						end
 					end
 				end
@@ -612,9 +612,11 @@ This logic will be run recursively, applying the lists linked to the linked list
 						if #modGroup.Children == 1 then
 							modGroup:Destroy()
 						else
-							modGroup.Size = { 0, math.min(500, 80 * (#modGroup.Children - 1)) }
+							modGroup.Size = { 0, math.min(500, 40 * (#modGroup.Children - 1)) }
 						end
 					end
+				else
+					modListsSep:Destroy()
 				end
 			end
 		end
