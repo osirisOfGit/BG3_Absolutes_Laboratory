@@ -260,6 +260,8 @@ ConfigurationStructure.DynamicClassDefinitions.customLeveledList = {
 	levels = nil,
 	---@type Guid[]
 	linkedProgressionTableIds = {},
+	---@type Guid[]
+	linkedLists = {},
 	---@type Guid[]?
 	spellListDependencies = nil,
 	---@type ModDependencies

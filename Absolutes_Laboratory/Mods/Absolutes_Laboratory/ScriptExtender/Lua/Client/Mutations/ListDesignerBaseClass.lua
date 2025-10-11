@@ -107,6 +107,7 @@ function ListDesignerBaseClass:launch(activeListId)
 		self.mainWindow.Font = MCM.Get("font_size", "755a8a72-407f-4f0d-9a33-274ac0f0b53d")
 		self.mainWindow.Closeable = true
 		self.mainWindow:SetStyle("WindowMinSize", 300 * Styler:ScaleFactor(), 150 * Styler:ScaleFactor())
+		self.mainWindow.Scaling = "Scaled"
 
 		self.layoutTable = self.mainWindow:AddTable(self.name, 3)
 		self.layoutTable.Resizable = true
@@ -473,8 +474,150 @@ function ListDesignerBaseClass:buildDesigner()
 		end)
 	end)
 
-	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function(ele)
+	local extraOptionsCell = extraOptionsRow:AddCell()
+
+	Styler:MiddleAlignedColumnLayout(extraOptionsCell, function(ele)
 		self:customizeDesigner(ele)
+	end)
+
+	local sep = extraOptionsCell:AddSeparatorText("Linked Spell Lists (?)")
+	sep:SetStyle("SeparatorTextAlign", 0.5)
+	sep:Tooltip():AddText([[
+	Any lists linked to this one will be applied whenever this list is, allowing you to create a 'Base' list that all specializations can be linked to,
+eliminating the need for duplication between lists. 
+This logic will be run recursively, applying the lists linked to the linked lists (with protections against applying the same list multiple times).]])
+
+	local linkedTable = extraOptionsCell:AddTable("LinkedLists", 1)
+	linkedTable.BordersOuter = true
+	linkedTable.NoSavedSettings = true
+
+	local linkedCell = linkedTable:AddRow():AddCell()
+	self.activeList.linkedLists = self.activeList.linkedLists or {}
+	local function buildTable()
+		Helpers:KillChildren(linkedCell)
+		TableUtils:ReindexNumericTable(self.activeList.linkedLists)
+
+		for s, listId in ipairs(self.activeList.linkedLists) do
+			local spellList = MutationConfigurationProxy.lists[self.configKey][listId]
+
+			local delete = Styler:ImageButton(linkedCell:AddImageButton("delete" .. spellList.name, "ico_red_x", { 16, 16 }))
+			delete.Disabled = self.activeList.modId ~= nil
+			delete.OnClick = function()
+				self.activeList.linkedLists[s].delete = true
+				TableUtils:ReindexNumericTable(self.activeList.linkedLists)
+				buildTable()
+			end
+
+			local link = linkedCell:AddTextLink(spellList.name .. (spellList.modId and string.format(" (from %s)", Ext.Mod.GetMod(spellList.modId).Info.Name) or ""))
+			link.Font = "Small"
+			link.SameLine = true
+			link.OnClick = function()
+				SpellListDesigner:launch(listId)
+			end
+		end
+	end
+	buildTable()
+
+	Styler:MiddleAlignedColumnLayout(extraOptionsCell, function(ele)
+		local addDependencyButton = ele:AddButton(("Link A %s"):format(self.name))
+		Styler:ScaledFont(addDependencyButton, "Small")
+		addDependencyButton.Disabled = self.activeList.modId ~= nil
+		addDependencyButton.OnClick = function()
+			Helpers:KillChildren(self.popup)
+			self.popup:Open()
+
+			local userLists = self.popup:AddChildWindow("UserLists")
+			userLists:SetColor("ChildBg", { 0, 0, 0, 1 })
+
+			local userListSep = userLists:AddSeparatorText("Local Lists")
+			userListSep:SetStyle("SeparatorTextAlign", 0.5)
+
+			for id, list in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.lists[self.configKey], function(key, list)
+				return list.name
+			end) do
+				if self.activeList.useGameLevel == list.useGameLevel and self.activeListHandle.IDContext ~= id then
+					---@type ExtuiSelectable
+					local select = userLists:AddSelectable(list.name, "DontClosePopups")
+					select.IDContext = id
+					select.Selected = TableUtils:IndexOf(self.activeList.linkedLists, id) ~= nil
+					select.OnClick = function()
+						local index = TableUtils:IndexOf(self.activeList.linkedLists, id)
+						if index then
+							self.activeList.linkedLists[index] = nil
+							select.Selected = false
+						else
+							select.Selected = true
+							table.insert(self.activeList.linkedLists, id)
+						end
+						buildTable()
+					end
+				end
+			end
+
+			if #userLists.Children == 1 then
+				userListSep:Destroy()
+				userLists:Destroy()
+			else
+				userLists.Size = { 0, math.min(500, 80 * (#userLists.Children - 1)) }
+			end
+
+			if MutationModProxy.ModProxy.lists[self.configKey]() then
+				self.popup:AddSeparatorText("Mod Lists"):SetStyle("SeparatorTextAlign", 0.5)
+
+				---@type {[Guid]: Guid[]}
+				local modLists = {}
+
+				for modId, modCache in pairs(MutationModProxy.ModProxy.lists[self.configKey]) do
+					---@cast modCache +LocalModCache
+
+					if modCache.lists and modCache.lists[self.configKey] and next(modCache.lists[self.configKey]) then
+						modLists[modId] = {}
+						for spellListId in pairs(modCache.lists[self.configKey]) do
+							table.insert(modLists[modId], spellListId)
+						end
+					end
+				end
+
+				if next(modLists) then
+					for modId, lists in TableUtils:OrderedPairs(modLists, function(key, value)
+						return Ext.Mod.GetMod(key).Info.Name
+					end) do
+						self.popup:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name).Font = "Small"
+
+						local modGroup = self.popup:AddChildWindow("Mods" .. modId)
+						modGroup:SetColor("ChildBg", { 0, 0, 0, 1 })
+						modGroup.Size = { 0, 500 }
+
+						for _, guid in TableUtils:OrderedPairs(lists, function(key, value)
+							return MutationModProxy.ModProxy.lists[self.configKey][value].name
+						end) do
+							local spellList = MutationModProxy.ModProxy.lists[self.configKey][guid]
+							if self.activeList.useGameLevel == spellList.useGameLevel and self.activeListHandle.IDContext ~= guid then
+								---@type ExtuiSelectable
+								local select = modGroup:AddSelectable(spellList.name, "DontClosePopups")
+								select.Selected = TableUtils:IndexOf(self.activeList.linkedLists, guid) ~= nil
+								select.OnClick = function()
+									local index = TableUtils:IndexOf(self.activeList.linkedLists, guid)
+									if index then
+										self.activeList.linkedLists[index] = nil
+										select.Selected = false
+									else
+										select.Selected = true
+										table.insert(self.activeList.linkedLists, guid)
+									end
+									buildTable()
+								end
+							end
+						end
+						if #modGroup.Children == 1 then
+							modGroup:Destroy()
+						else
+							modGroup.Size = { 0, math.min(500, 80 * (#modGroup.Children - 1)) }
+						end
+					end
+				end
+			end
+		end
 	end)
 
 	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function(ele)

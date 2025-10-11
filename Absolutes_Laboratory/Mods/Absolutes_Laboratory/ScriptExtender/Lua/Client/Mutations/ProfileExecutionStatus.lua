@@ -153,6 +153,10 @@ Channels.ProfileExecutionStatus:SetHandler(
 				local minHeight = window.LastSize[2] * 0.025
 				local lastSize = window.LastSize[2]
 				local function fadeOut()
+					if not window then
+						return
+					end
+
 					local height = window.LastSize[2]
 
 					if height > minHeight then

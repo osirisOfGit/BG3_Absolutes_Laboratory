@@ -1368,7 +1368,7 @@ if Ext.IsServer() then
 			---@type AppliedSpellLists
 			local appliedLists = {}
 
-			local trueAppliedLists = {}
+			local appliedSpellListsForEntityVar = {}
 
 			for lSP, leveledSpellPool in ipairs(spellMutatorGroup.leveledSpellPool) do
 				if (useGameLevel and EntityRecorder.Levels[entity.Level.LevelName] >= leveledSpellPool.anchorLevel)
@@ -1408,180 +1408,208 @@ if Ext.IsServer() then
 								startingSpellListLevel = startingSpellListLevel + 1
 								maxAppliedLevel = 0
 							end
-							appliedLists[nextAnchor] = spellListId
-
 							local cLevel = nextAnchor - maxAppliedLevel
-							trueAppliedLists[spellListId] = (trueAppliedLists[spellListId] or 0) + math.max(1, (cLevel - startingSpellListLevel))
 
-							local spellList = TableUtils:DeeplyCopyTable(MutationConfigurationProxy.lists.spellLists[spellListId]._real or
-								MutationConfigurationProxy.lists.spellLists[spellListId])
+							local mainSpellList = MutationConfigurationProxy.lists.spellLists[spellListId]
 
-							Logger:BasicDebug("Selected spellList %s (%s) for anchor level %s, using levels %s-%s",
-								spellList.name .. (spellList.modId and (" from mod " .. Ext.Mod.GetMod(spellList.modId).Info.Name) or ""),
-								spellListId,
-								useGameLevel and EntityRecorder.Levels[leveledSpellPool.anchorLevel] or leveledSpellPool.anchorLevel,
-								useGameLevel and EntityRecorder.Levels[startingSpellListLevel == 0 and 1 or startingSpellListLevel] or startingSpellListLevel,
-								useGameLevel and EntityRecorder.Levels[cLevel] or cLevel)
-
-							if spellList.modId then
-								local modMap = MutationConfigurationProxy.lists.entryReplacerDictionary.spellLists[spellList.modId]
-								if modMap then
-									for replacer, toReplaceList in pairs(modMap) do
-										if not replaceMap[replaceMap] then
-											replaceMap[replacer] = TableUtils:DeeplyCopyTable(toReplaceList)
-										else
-											for _, toReplace in ipairs(toReplaceList) do
-												if not TableUtils:IndexOf(replaceMap[replacer]) then
-													table.insert(replaceMap[replacer], toReplace)
-												end
-											end
-										end
-									end
-									Logger:BasicDebug("Added replacer map entries from Mod %s's replaceMap as it was chosen to be applied",
-										Ext.Mod.GetMod(spellList.modId).Info.Name)
+							local function applySpellList(spellListId)
+								if not appliedLists[nextAnchor] then
+									appliedLists[nextAnchor] = spellListId
 								end
-							end
 
-							for i = startingSpellListLevel, cLevel do
-								---@type EntryName[]
-								local randomPool = {}
-								if spellList.linkedProgressionTableIds and next(spellList.linkedProgressionTableIds._real or spellList.linkedProgressionTableIds) then
-									for _, progressionTableId in pairs(spellList.linkedProgressionTableIds) do
-										local progressionTable = ListConfigurationManager.progressionIndex[progressionTableId]
-										if progressionTable then
-											for _, progressionLevel in pairs(progressionTable.progressionLevels) do
-												if progressionLevel.level == i and progressionLevel.spellLists then
-													for _, spells in pairs(progressionLevel.spellLists) do
-														for _, spellName in pairs(spells) do
-															local leveledLists = spellList.levels and spellList.levels[i]
-															if (not leveledLists
-																	or not leveledLists.linkedProgressions
-																	or not TableUtils:IndexOf(leveledLists.linkedProgressions[progressionTableId],
-																		function(value)
-																			return TableUtils:IndexOf(value, spellName) ~= nil
-																		end))
-																and (not spellList.blacklistSameEntriesInHigherProgressionLevels or not ListConfigurationManager:hasSameEntryInLowerLevel(progressionTableId, i, spellName, "spellLists"))
-															then
-																spellList.levels = spellList.levels or {}
-																spellList.levels[i] = spellList.levels[i] or {}
-																spellList.levels[i].linkedProgressions = spellList.levels[i].linkedProgressions or {}
-																spellList.levels[i].linkedProgressions[progressionTableId] = spellList.levels[i].linkedProgressions
-																	[progressionTableId] or {}
+								appliedSpellListsForEntityVar[spellListId] = (appliedSpellListsForEntityVar[spellListId] or 0) + math.max(1, (cLevel - startingSpellListLevel))
 
-																local defaultPool = spellList.defaultPool or
-																	ConfigurationStructure.config.mutations.settings.customLists.defaultPool.spellLists
+								local spellList = TableUtils:DeeplyCopyTable(MutationConfigurationProxy.lists.spellLists[spellListId]._real or
+									MutationConfigurationProxy.lists.spellLists[spellListId])
 
-																spellList.levels[i].linkedProgressions[progressionTableId][defaultPool] = spellList.levels[i].linkedProgressions
-																	[progressionTableId][defaultPool] or {}
+								Logger:BasicDebug("Selected spellList %s (%s) for anchor level %s, using levels %s-%s",
+									spellList.name .. (spellList.modId and (" from mod " .. Ext.Mod.GetMod(spellList.modId).Info.Name) or ""),
+									spellListId,
+									useGameLevel and EntityRecorder.Levels[leveledSpellPool.anchorLevel] or leveledSpellPool.anchorLevel,
+									useGameLevel and EntityRecorder.Levels[startingSpellListLevel == 0 and 1 or startingSpellListLevel] or startingSpellListLevel,
+									useGameLevel and EntityRecorder.Levels[cLevel] or cLevel)
 
-																Logger:BasicDebug("Added %s to the default pool %s for later processing", spellName, defaultPool)
-																table.insert(spellList.levels[i].linkedProgressions[progressionTableId][defaultPool], spellName)
-															end
-														end
+								if spellList.modId then
+									local modMap = MutationConfigurationProxy.lists.entryReplacerDictionary.spellLists[spellList.modId]
+									if modMap then
+										for replacer, toReplaceList in pairs(modMap) do
+											if not replaceMap[replaceMap] then
+												replaceMap[replacer] = TableUtils:DeeplyCopyTable(toReplaceList)
+											else
+												for _, toReplace in ipairs(toReplaceList) do
+													if not TableUtils:IndexOf(replaceMap[replacer]) then
+														table.insert(replaceMap[replacer], toReplace)
 													end
 												end
 											end
 										end
+										Logger:BasicDebug("Added replacer map entries from Mod %s's replaceMap as it was chosen to be applied",
+											Ext.Mod.GetMod(spellList.modId).Info.Name)
 									end
 								end
-								if spellList.levels then
-									local leveledLists = spellList.levels[i]
-									if leveledLists then
-										if leveledLists.linkedProgressions then
-											for progressionTableId, subLists in pairs(leveledLists.linkedProgressions) do
-												local progressionTable = ListConfigurationManager.progressionIndex[progressionTableId]
-												if progressionTable then
-													self:processSubLists(subLists, entity, addSpells, origValues)
-													if subLists.randomized then
-														for _, spellName in pairs(subLists.randomized) do
-															if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
-																	return value.Id.OriginatorPrototype == spellName
-																end)
-															then
-																if not TableUtils:IndexOf(randomPool, spellName) then
-																	table.insert(randomPool, spellName)
+
+								for i = startingSpellListLevel, cLevel do
+									---@type EntryName[]
+									local randomPool = {}
+									if spellList.linkedProgressionTableIds and next(spellList.linkedProgressionTableIds._real or spellList.linkedProgressionTableIds) then
+										for _, progressionTableId in pairs(spellList.linkedProgressionTableIds) do
+											local progressionTable = ListConfigurationManager.progressionIndex[progressionTableId]
+											if progressionTable then
+												for _, progressionLevel in pairs(progressionTable.progressionLevels) do
+													if progressionLevel.level == i and progressionLevel.spellLists then
+														for _, spells in pairs(progressionLevel.spellLists) do
+															for _, spellName in pairs(spells) do
+																local leveledLists = spellList.levels and spellList.levels[i]
+																if (not leveledLists
+																		or not leveledLists.linkedProgressions
+																		or not TableUtils:IndexOf(leveledLists.linkedProgressions[progressionTableId],
+																			function(value)
+																				return TableUtils:IndexOf(value, spellName) ~= nil
+																			end))
+																	and (not spellList.blacklistSameEntriesInHigherProgressionLevels or not ListConfigurationManager:hasSameEntryInLowerLevel(progressionTableId, i, spellName, "spellLists"))
+																then
+																	spellList.levels = spellList.levels or {}
+																	spellList.levels[i] = spellList.levels[i] or {}
+																	spellList.levels[i].linkedProgressions = spellList.levels[i].linkedProgressions or {}
+																	spellList.levels[i].linkedProgressions[progressionTableId] = spellList.levels[i].linkedProgressions
+																		[progressionTableId] or {}
+
+																	local defaultPool = spellList.defaultPool or
+																		ConfigurationStructure.config.mutations.settings.customLists.defaultPool.spellLists
+
+																	spellList.levels[i].linkedProgressions[progressionTableId][defaultPool] = spellList.levels[i].linkedProgressions
+																		[progressionTableId][defaultPool] or {}
+
+																	Logger:BasicDebug("Added %s to the default pool %s for later processing", spellName, defaultPool)
+																	table.insert(spellList.levels[i].linkedProgressions[progressionTableId][defaultPool], spellName)
 																end
-															else
-																Logger:BasicDebug(
-																	"Randomized spell %s from progression %s (%s - level %s) is already known, not adding to the random pool",
-																	spellName,
-																	progressionTableId, progressionTable.name, i)
 															end
 														end
 													end
 												end
 											end
 										end
-										if leveledLists.manuallySelectedEntries then
-											self:processSubLists(leveledLists.manuallySelectedEntries, entity, addSpells, origValues)
-
-											if leveledLists.manuallySelectedEntries.randomized then
-												for _, spellName in pairs(leveledLists.manuallySelectedEntries.randomized) do
-													if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
-															return value.Id.OriginatorPrototype == spellName
-														end)
-													then
-														if not TableUtils:IndexOf(randomPool, spellName) then
-															table.insert(randomPool, spellName)
+									end
+									if spellList.levels then
+										local leveledLists = spellList.levels[i]
+										if leveledLists then
+											if leveledLists.linkedProgressions then
+												for progressionTableId, subLists in pairs(leveledLists.linkedProgressions) do
+													local progressionTable = ListConfigurationManager.progressionIndex[progressionTableId]
+													if progressionTable then
+														self:processSubLists(subLists, entity, addSpells, origValues)
+														if subLists.randomized then
+															for _, spellName in pairs(subLists.randomized) do
+																if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
+																		return value.Id.OriginatorPrototype == spellName
+																	end)
+																then
+																	if not TableUtils:IndexOf(randomPool, spellName) then
+																		table.insert(randomPool, spellName)
+																	end
+																else
+																	Logger:BasicDebug(
+																		"Randomized spell %s from progression %s (%s - level %s) is already known, not adding to the random pool",
+																		spellName,
+																		progressionTableId, progressionTable.name, i)
+																end
+															end
 														end
-													else
-														Logger:BasicDebug("%s is already known, not adding to the random pool", spellName)
+													end
+												end
+											end
+											if leveledLists.manuallySelectedEntries then
+												self:processSubLists(leveledLists.manuallySelectedEntries, entity, addSpells, origValues)
+
+												if leveledLists.manuallySelectedEntries.randomized then
+													for _, spellName in pairs(leveledLists.manuallySelectedEntries.randomized) do
+														if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
+																return value.Id.OriginatorPrototype == spellName
+															end)
+														then
+															if not TableUtils:IndexOf(randomPool, spellName) then
+																table.insert(randomPool, spellName)
+															end
+														else
+															Logger:BasicDebug("%s is already known, not adding to the random pool", spellName)
+														end
 													end
 												end
 											end
 										end
 									end
-								end
 
-								local numRandomSpellsToPick = 0
-								if spellMutatorGroup.randomizedSpellPoolSize[maxAppliedLevel + i] then
-									numRandomSpellsToPick = spellMutatorGroup.randomizedSpellPoolSize[maxAppliedLevel + i]
-								else
-									local maxLevel = nil
-									for level, _ in pairs(spellMutatorGroup.randomizedSpellPoolSize) do
-										if level < (maxAppliedLevel + i) and (not maxLevel or level > maxLevel) then
-											maxLevel = level
-										end
-									end
-									if maxLevel then
-										numRandomSpellsToPick = spellMutatorGroup.randomizedSpellPoolSize[maxLevel]
-									end
-								end
-
-								if numRandomSpellsToPick > 0 then
-									Logger:BasicDebug("Giving %s random spells out of %s from level %s", numRandomSpellsToPick, #randomPool,
-										useGameLevel and EntityRecorder.Levels[i] or i)
-									local spellsToGive = {}
-									if #randomPool <= numRandomSpellsToPick then
-										spellsToGive = randomPool
+									local numRandomSpellsToPick = 0
+									if spellMutatorGroup.randomizedSpellPoolSize[maxAppliedLevel + i] then
+										numRandomSpellsToPick = spellMutatorGroup.randomizedSpellPoolSize[maxAppliedLevel + i]
 									else
-										for _ = 1, numRandomSpellsToPick do
-											local num = math.random(#randomPool)
-											table.insert(spellsToGive, randomPool[num])
-											table.remove(randomPool, num)
+										local maxLevel = nil
+										for level, _ in pairs(spellMutatorGroup.randomizedSpellPoolSize) do
+											if level < (maxAppliedLevel + i) and (not maxLevel or level > maxLevel) then
+												maxLevel = level
+											end
+										end
+										if maxLevel then
+											numRandomSpellsToPick = spellMutatorGroup.randomizedSpellPoolSize[maxLevel]
 										end
 									end
 
-									for _, spellName in pairs(spellsToGive) do
-										addSpells[#addSpells + 1] = {
-											PrepareType = "AlwaysPrepared",
-											SpellId = {
-												OriginatorPrototype = spellName,
-												SourceType = "SpellSet2"
-											},
-											PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
-											SpellCastingAbility = entity.Stats.SpellCastingAbility
-										}
+									if numRandomSpellsToPick > 0 then
+										Logger:BasicDebug("Giving %s random spells out of %s from level %s", numRandomSpellsToPick, #randomPool,
+											useGameLevel and EntityRecorder.Levels[i] or i)
+										local spellsToGive = {}
+										if #randomPool <= numRandomSpellsToPick then
+											spellsToGive = randomPool
+										else
+											for _ = 1, numRandomSpellsToPick do
+												local num = math.random(#randomPool)
+												table.insert(spellsToGive, randomPool[num])
+												table.remove(randomPool, num)
+											end
+										end
 
-										origValues.addedSpells = origValues.addedSpells or {}
-										table.insert(origValues.addedSpells, spellName)
-										Logger:BasicDebug("Added spell %s", spellName)
+										for _, spellName in pairs(spellsToGive) do
+											addSpells[#addSpells + 1] = {
+												PrepareType = "AlwaysPrepared",
+												SpellId = {
+													OriginatorPrototype = spellName,
+													SourceType = "SpellSet2"
+												},
+												PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
+												SpellCastingAbility = entity.Stats.SpellCastingAbility
+											}
+
+											origValues.addedSpells = origValues.addedSpells or {}
+											table.insert(origValues.addedSpells, spellName)
+											Logger:BasicDebug("Added spell %s", spellName)
+										end
+									else
+										Logger:BasicDebug("Skipping level %s for random spell assignment due to configured size being 0",
+											useGameLevel and EntityRecorder.Levels[maxAppliedLevel + i] or maxAppliedLevel + i)
 									end
-								else
-									Logger:BasicDebug("Skipping level %s for random spell assignment due to configured size being 0",
-										useGameLevel and EntityRecorder.Levels[maxAppliedLevel + i] or maxAppliedLevel + i)
 								end
 							end
+							applySpellList(spellListId)
+
+							local appliedLinkedLists = { spellListId }
+							---@param list SpellList
+							local function recursivelyApplyLinkedLists(list)
+								if list.linkedLists and next(list.linkedLists._real or list.linkedLists) then
+									for _, linkedSpellListId in pairs(list.linkedLists) do
+										if not TableUtils:IndexOf(appliedLinkedLists, linkedSpellListId) then
+											table.insert(appliedLinkedLists, linkedSpellListId)
+
+											local linkedList = MutationConfigurationProxy.lists.spellLists[linkedSpellListId]
+											Logger:BasicDebug("### Starting List %s, linked from %s ###", linkedList.name, list.name)
+											applySpellList(linkedSpellListId, list.name)
+											Logger:BasicDebug("### Finished List %s, linked from %s ###", linkedList.name, list.name)
+
+											recursivelyApplyLinkedLists(linkedList)
+										end
+									end
+								end
+							end
+							recursivelyApplyLinkedLists(mainSpellList)
 						end
 					end
 				end
@@ -1622,7 +1650,7 @@ if Ext.IsServer() then
 				end
 			end
 
-			entityVar.appliedMutators[self.name].appliedLists = trueAppliedLists
+			entityVar.appliedMutators[self.name].appliedLists = appliedSpellListsForEntityVar
 		else
 			entityVar.appliedMutators[self.name] = nil
 			entityVar.originalValues[self.name] = nil
