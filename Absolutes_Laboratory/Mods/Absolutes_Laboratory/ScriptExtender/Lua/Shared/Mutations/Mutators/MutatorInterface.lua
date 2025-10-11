@@ -288,10 +288,11 @@ As of this writing, end users don't have to really care about this, as it's acco
 	} --[[@as MazzleDocsSlide]])
 
 	for _, mutator in TableUtils:OrderedPairs(self.registeredMutators, function(key, value)
-		return value:priority()
+		return value.name
 	end) do
 		local docs = mutator:generateDocs()
 		if docs then
+			---@type {[string]: MazzleDocsContentItem}
 			local changelog = mutator:generateChangelog()
 			if changelog and next(changelog) then
 				local currentVer = ""
@@ -352,9 +353,7 @@ function MutatorInterface:generateChangelog()
 		end
 	end
 
-	for _, mutator in TableUtils:OrderedPairs(self.registeredMutators, function(key, value)
-		return value:priority()
-	end) do
+	for _, mutator in TableUtils:OrderedPairs(self.registeredMutators) do
 		---@type {[string]: MazzleDocsContentItem}
 		local changelog = mutator:generateChangelog()
 		if changelog and next(changelog) then
@@ -364,11 +363,8 @@ function MutatorInterface:generateChangelog()
 				M, m, p = tonumber(M), tonumber(m), tonumber(p)
 				return -1 * (M + m + p)
 			end) do
-				if version == currentVer then
-					version = version .. " (Current)"
-				end
-				changelog[version] = changelog[version] or {}
-				changelog[version][mutator.name] = changelogEntry
+				changelogs[version] = changelogs[version] or {}
+				changelogs[version][mutator.name] = changelogEntry
 			end
 		end
 	end

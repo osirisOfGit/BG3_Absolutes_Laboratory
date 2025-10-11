@@ -18,26 +18,50 @@ function MazzleDocs:addDocButton(parent, document, configConsumer)
 			configConsumer(config)
 		end
 
-		table.insert(document, {
-			Topic = "General",
+		local currentVer = ""
+		for i, ver in ipairs(Ext.Mod.GetMod(ModuleUUID).Info.PublishVersion) do
+			currentVer = currentVer .. tostring(ver)
+			if i < 3 then
+				currentVer = currentVer .. "."
+			end
+		end
+
+		local mutatorSlide = {
+			Topic = "Master Changelog",
 			content = {
 				{
 					type = "Heading",
-					text = "Miscellaneous Changelog"
-				},
-				{
-					type = "Heading",
-					text = "1.7.0"
-				},
-				{
-					type = "Bullet",
-					text = {
-						"Fixed the Profile section of Mutations not scrolling alongside the Folder view",
-						"Fixed Hide/Show buttons in Profile section resetting on any change to the profile"
-					}
+					text = "Mutators"
 				}
 			}
-		} --[[@as MazzleDocsSlide]])
+		} --[[@as MazzleDocsSlide]]
+
+		for version, mutatorChangelogs in TableUtils:OrderedPairs(MutatorInterface:generateChangelog(), function(key, value)
+			-- To Sort Descending Order
+			local M, m, p = key:match("^(%d+)%.(%d+)%.(%d+)$")
+			M, m, p = tonumber(M), tonumber(m), tonumber(p)
+			return -1 * (M + m + p)
+		end) do
+			if version == currentVer then
+				version = currentVer .. " (CURRENT)"
+			end
+
+			table.insert(mutatorSlide.content, {
+				type = "Heading",
+				text = version
+			} --[[@as MazzleDocsContentItem]])
+
+			for mutatorName, changelog in TableUtils:OrderedPairs(mutatorChangelogs) do
+				table.insert(mutatorSlide.content, {
+					type = "SubHeading",
+					text = mutatorName
+				} --[[@as MazzleDocsContentItem]])
+
+				table.insert(mutatorSlide.content, changelog)
+			end
+		end
+
+		table.insert(document, mutatorSlide)
 
 		self.Create_Mazzle_Docs(document, config)
 	end
@@ -68,7 +92,7 @@ end
 ---@class MazzleDocsImageConfig
 ---@field atlas_key string Name of the image atlas
 ---@field columns integer Number of images in each row
----@field rows integer Number of images in each column  
+---@field rows integer Number of images in each column
 ---@field image_width integer Width of each individual image
 ---@field image_height integer Height of each individual image
 
@@ -137,7 +161,7 @@ end
 
 ---@alias MazzleDoctsFontSize
 ---| "Tiny"
----| "Small" 
+---| "Small"
 ---| "Normal"
 ---| "Medium"
 ---| "Large"
@@ -150,7 +174,7 @@ end
 ---@field highlighted? boolean Display on dark red banner for tutorial goals
 
 ---@class MazzleDocsSubHeading : MazzleDocsContentItem
----@field type "SubHeading" 
+---@field type "SubHeading"
 ---@field text string|string[] The subheading text content (string or array)
 
 ---@class MazzleDocsContent : MazzleDocsContentItem
