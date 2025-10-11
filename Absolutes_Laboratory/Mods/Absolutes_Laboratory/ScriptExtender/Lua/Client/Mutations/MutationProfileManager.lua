@@ -1396,7 +1396,8 @@ end
 
 Profiles_Docs = {
 	{
-		Topic = "Profiles",
+		Topic = "Mutations",
+		SubTopic = "Profiles",
 		content = {
 			{
 				type = "Heading",
@@ -1442,7 +1443,8 @@ Create your profile using the Gear icon next to the dropdown - once your profile
 		}
 	},
 	{
-		Topic = "Profiles",
+		Topic = "Mutations",
+		SubTopic = "Profiles",
 		content = {
 			{
 				type = "Heading",

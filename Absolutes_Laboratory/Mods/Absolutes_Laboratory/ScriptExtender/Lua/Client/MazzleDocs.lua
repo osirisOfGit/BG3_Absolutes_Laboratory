@@ -20,14 +20,17 @@ function MazzleDocs:addDocButton(parent, document, configConsumer)
 
 		local currentVer = ""
 		for i, ver in ipairs(Ext.Mod.GetMod(ModuleUUID).Info.PublishVersion) do
-			currentVer = currentVer .. tostring(ver)
-			if i < 3 then
-				currentVer = currentVer .. "."
+			if i < 4 then
+				currentVer = currentVer .. tostring(ver)
+				if i < 3 then
+					currentVer = currentVer .. "."
+				end
 			end
 		end
 
-		local mutatorSlide = {
+		local mutatorChangelog = {
 			Topic = "Master Changelog",
+			SubTopic = "Mutations",
 			content = {
 				{
 					type = "Heading",
@@ -36,32 +39,61 @@ function MazzleDocs:addDocButton(parent, document, configConsumer)
 			}
 		} --[[@as MazzleDocsSlide]]
 
-		for version, mutatorChangelogs in TableUtils:OrderedPairs(MutatorInterface:generateChangelog(), function(key, value)
+		for version, mutatorChangelogs in TableUtils:OrderedPairs(MutatorInterface:generateChangelog(), function(key)
 			-- To Sort Descending Order
 			local M, m, p = key:match("^(%d+)%.(%d+)%.(%d+)$")
 			M, m, p = tonumber(M), tonumber(m), tonumber(p)
 			return -1 * (M + m + p)
 		end) do
 			if version == currentVer then
-				version = currentVer .. " (CURRENT)"
+				version = version .. " (CURRENT)"
 			end
 
-			table.insert(mutatorSlide.content, {
+			table.insert(mutatorChangelog.content, {
 				type = "Heading",
 				text = version
 			} --[[@as MazzleDocsContentItem]])
 
 			for mutatorName, changelog in TableUtils:OrderedPairs(mutatorChangelogs) do
-				table.insert(mutatorSlide.content, {
+				table.insert(mutatorChangelog.content, {
 					type = "SubHeading",
 					text = mutatorName
 				} --[[@as MazzleDocsContentItem]])
 
-				table.insert(mutatorSlide.content, changelog)
+				table.insert(mutatorChangelog.content, changelog)
 			end
 		end
+		table.insert(document, mutatorChangelog)
 
-		table.insert(document, mutatorSlide)
+		local masterSelectorChangelogs = {
+			Topic = "Master Changelog",
+			SubTopic = "Mutations",
+			content = {
+				{
+					type = "Heading",
+					text = "Selectors"
+				}
+			}
+		} --[[@as MazzleDocsSlide]]
+
+		for version, selectorChangelog in TableUtils:OrderedPairs(SelectorInterface:generateChangelog(), function(key)
+			-- To Sort Descending Order
+			local M, m, p = key:match("^(%d+)%.(%d+)%.(%d+)$")
+			M, m, p = tonumber(M), tonumber(m), tonumber(p)
+			return -1 * (M + m + p)
+		end) do
+			if version == currentVer then
+				version = version .. " (CURRENT)"
+			end
+
+			table.insert(masterSelectorChangelogs.content, {
+				type = "Heading",
+				text = version
+			} --[[@as MazzleDocsContentItem]])
+
+			table.insert(masterSelectorChangelogs.content, selectorChangelog)
+		end
+		table.insert(document, masterSelectorChangelogs)
 
 		self.Create_Mazzle_Docs(document, config)
 	end

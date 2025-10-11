@@ -411,49 +411,68 @@ If you're not getting the results you want and know it's not a situation where y
 		end
 	end
 
-	for _, changelog in ipairs(changelogs) do
-		table.insert(existingSlides, changelog)
+	local currentVer = ""
+	for i, ver in ipairs(Ext.Mod.GetMod(ModuleUUID).Info.PublishVersion) do
+		if i < 4 then
+			currentVer = currentVer .. tostring(ver)
+			if i < 3 then
+				currentVer = currentVer .. "."
+			end
+		end
+	end
+
+	table.insert(existingSlides, {
+		Topic = self.topic,
+		SubTopic = self.subTopic,
+		content = {
+			{
+				type = "Heading",
+				text = "Changelog"
+			}
+		}
+	} --[[@as MazzleDocsSlide]])
+
+	for version, changelog in TableUtils:OrderedPairs(self:generateChangelog(), function(key, value)
+		-- To Sort Descending Order
+		local M, m, p = key:match("^(%d+)%.(%d+)%.(%d+)$")
+		M, m, p = tonumber(M), tonumber(m), tonumber(p)
+		return -1 * (M + m + p)
+	end) do
+		if version == currentVer then
+			version = version .. " (CURRENT)"
+		end
+		table.insert(existingSlides[#existingSlides].content, {
+			type = "SubHeading",
+			text = version
+		} --[[@as MazzleDocsContentItem]])
+
+		table.insert(existingSlides[#existingSlides].content, changelog)
 	end
 
 	return existingSlides
 end
 
-changelogs = {
-	{
-		Topic = SelectorInterface.topic,
-		SubTopic = SelectorInterface.subTopic,
-		content = {
-			{
-				type = "Heading",
-				text = "Changelog"
-			},
-			{
-				type = "Heading",
-				text = "1.7.0"
-			},
-			{
-				type = "Bullet",
-				text = {
-					"Fixes a bug when deleting the first selector in a chain"
-				}
-			},
-			{
-				type = "Heading",
-				text = "1.6.0"
-			},
-			{
-				type = "Bullet",
-				text = {
-					"Add static sizes to sidebar searches in selectors",
-					"Add Size Selector (new Recorder Property)",
-					"Fix Race selector when races have invalid parent guids",
-					"Fixes Entities in the Selector with the same names causing IMGUI conflicts",
-					"Doesn't search by entity id unless there are 36 characters",
-					"Adds Up/Down Arrows to allow resorting",
-					"Fix all selectors that use a search box so already selected items will render with a highlight",
-					"Fix a bug that would break the selector list if you clicked on \"Add a Selector\", didn't choose anything, then clicked it again",
-				}
+---@return {[string]: MazzleDocsContentItem}
+function SelectorInterface:generateChangelog()
+	return {
+		["1.7.0"] = {
+			type = "Bullet",
+			text = {
+				"Fixes a bug when deleting the first selector in a chain"
 			}
-		}
+		} --[[@as MazzleDocsContentItem]],
+		["1.6.0"] = {
+			type = "Bullet",
+			text = {
+				"Add static sizes to sidebar searches in selectors",
+				"Add Size Selector (new Recorder Property)",
+				"Fix Race selector when races have invalid parent guids",
+				"Fixes Entities in the Selector with the same names causing IMGUI conflicts",
+				"Doesn't search by entity id unless there are 36 characters",
+				"Adds Up/Down Arrows to allow resorting",
+				"Fix all selectors that use a search box so already selected items will render with a highlight",
+				"Fix a bug that would break the selector list if you clicked on \"Add a Selector\", didn't choose anything, then clicked it again",
+			}
+		} --[[@as MazzleDocsContentItem]]
 	}
-}
+end

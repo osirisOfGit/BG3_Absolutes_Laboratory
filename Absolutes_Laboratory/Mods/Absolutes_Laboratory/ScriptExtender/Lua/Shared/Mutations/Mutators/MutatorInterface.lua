@@ -297,9 +297,11 @@ As of this writing, end users don't have to really care about this, as it's acco
 			if changelog and next(changelog) then
 				local currentVer = ""
 				for i, ver in ipairs(Ext.Mod.GetMod(ModuleUUID).Info.PublishVersion) do
-					currentVer = currentVer .. tostring(ver)
-					if i < 3 then
-						currentVer = currentVer .. "."
+					if i < 4 then
+						currentVer = currentVer .. tostring(ver)
+						if i < 3 then
+							currentVer = currentVer .. "."
+						end
 					end
 				end
 
@@ -347,9 +349,11 @@ function MutatorInterface:generateChangelog()
 
 	local currentVer = ""
 	for i, ver in ipairs(Ext.Mod.GetMod(ModuleUUID).Info.PublishVersion) do
-		currentVer = currentVer .. tostring(ver)
-		if i < 3 then
-			currentVer = currentVer .. "."
+		if i < 4 then
+			currentVer = currentVer .. tostring(ver)
+			if i < 3 then
+				currentVer = currentVer .. "."
+			end
 		end
 	end
 
