@@ -510,7 +510,6 @@ function ListConfigurationManager:maintainLists(configBase)
 end
 
 Ext.RegisterConsoleCommand("Lab_DumpProgressions", function(cmd, ...)
-	local tableUUIDS = { ... }
 	local self = ListConfigurationManager
 
 	self.progressionIndex()

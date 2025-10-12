@@ -1397,6 +1397,89 @@ end
 Profiles_Docs = {
 	{
 		Topic = "Mutations",
+		content = {
+			{
+				type = "Heading",
+				text = "Console Commands"
+			},
+			{
+				type = "Content",
+				text =
+				"This slide documents all SE Console Commands that Lab has created for use by anyone - the code examples are useful for copy-pasting into your own console if you want."
+			},
+			{
+				type = "SubHeading",
+				text = "Client Only"
+			},
+			{
+				type = "Separator"
+			},
+			{
+				type = "Section",
+				text = [[!Lab_MetaBlock <Mod UUIDs> - generates the meta.lsx Dependency block for the specified mods, printing them out in the console for whatever use you want ]]
+			},
+			{
+				type = "Code",
+				text = [[client
+!Lab_MetaBlock 61e8471b-4eda-4493-829d-e3c29ecc36c3 a17a3a3d-5c16-404a-910a-68ae9e47f247
+]]
+			},
+			{
+				type = "SubHeading",
+				text = "Server Only"
+			},
+			{
+				type = "Section",
+				text =
+				[[!Lab_ClearEntityClasses - Clears the Classes component of all entities loaded onto the server - useful only to force reset entities that had the Classes and Subclasses mutator applied pre-1.7.0.
+Run this, disable your profile, save, reload, enable your profile, save, reload to ensure it's fully cleared.]]
+			},
+			{
+				type = "Code",
+				text = [[server
+!Lab_ClearEntityClasses
+]]
+			},
+			{
+				type = "Separator"
+			},
+			{
+				type = "Section",
+				text = {
+					"!Lab_GenerateMutationDiagram <entityId> - generates the code to render a Mermaid diagram for the specified Entity (only one can be specified), showing what mutations would apply to them in the current profile, and which mutators compose and overwrite each other.",
+					"You can get the EntityUUID by copying it from the last field in the Inspector - alternatively, if you've already run your profile against an entity, you'll find a button to run this command for you in their Mutations tab within the Inspector.",
+					"The output will also be written to %localappdata%/Larian Studios/Baldur's Gate 3/Script Extender/Absolutes_Laboratory/DiagramOutputs/<entity name - last 5 characters of their uuid>.txt"
+				}
+			},
+			{
+				type = "Code",
+				text = [[server
+!Lab_GenerateMutationDiagram cad1854b-8f41-4038-b640-156ee0272f81
+
+Enter the generated code in https://www.mermaidchart.com/play (Hit Edit code in the bottom left)
+]]
+			},
+			{
+				type = "SubHeading",
+				text = "Either Client or Server"
+			},
+			{
+				type = "Section",
+				text = {
+					"!Lab_DumpProgressions - writes Lab's index of all progressions currently available in the game to %localappdata%/Larian Studios/Baldur's Gate 3/Script Extender/Absolutes_Laboratory/ProgressionDumper.txt.",
+					"This is not a true representation of the progressions, only what Lab indexes for use in the List Mutators"
+				}
+			},
+			{
+				type = "Code",
+				text = [[server
+!Lab_DumpProgressions
+]]
+			}
+		}
+	},
+	{
+		Topic = "Mutations",
 		SubTopic = "Profiles",
 		content = {
 			{
@@ -1569,9 +1652,9 @@ What it'll look like in BG3MM, followed by an example meta.lsx with the Exported
 			}
 		}
 	},
-	--#region Mutations
 	{
 		Topic = "Mutations",
+		SubTopic = "Profiles",
 		content = {
 			{
 				type = "Heading",
@@ -1598,7 +1681,6 @@ Lab pre-packages a number of Markers that can be used by anyone - these can't be
 			} --[[@as MazzleDocsImage]]
 		}
 	}
-	--#endregion
 }
 
 SelectorInterface:generateDocs(Profiles_Docs)

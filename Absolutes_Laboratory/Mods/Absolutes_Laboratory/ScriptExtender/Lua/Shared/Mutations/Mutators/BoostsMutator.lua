@@ -702,7 +702,7 @@ Composable: Yes - Boosts will be merged together into one pool, allowing duplica
 				},
 				{
 					type = "Content",
-					text = [[TODO]]
+					text = [[This mutator allows you the most amount of freedom to mutate the selected entities; anything you can do in a boost, you can do here.]]
 				},
 				{
 					type = "Separator"
@@ -714,9 +714,12 @@ Composable: Yes - Boosts will be merged together into one pool, allowing duplica
 				{
 					type = "Content",
 					text = [[
-The mutator is laid out as follows:
+There are three main components to this mutator:
+At the top are the Boost Builders, which provide a convenient WYSIWIG builder for the simpler but cumbersome Boosts. Boosts that were considered but ultimately excluded are listed at the bottom of the page.
 
-TODO
+Next is the Custom Boosts section - this is a freeform text box that allows you to specify as many boosts as you want, in any format - Lab will automatically handle spacing, newlines, and semi-colons for you where required.
+
+Last up is purely a display section - it gives you a sample of the Raw Boost status that will be applied so you can validate your work in the NorbDev validator; it'll also render your boosts using Lab's Functor Parser, providing the same behavior available in the Inspector.
 
 The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
 				},
@@ -729,7 +732,10 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				},
 				{
 					type = "Content",
-					text = [[ TODO ]]
+					text =
+					[[Much like the Action Resource Mutator, this mutator constructs a unique status for each entity it applies to, in the form of `ABSOLUTES_LAB_BOOSTS_BOOST_{last 12 characters of the entity's UUID}`
+This allows all boosts to persist through reloads, preventing any refreshing of values affected - this behavior will _not_ be prevented if the game is restarted however, as the created status isn't backed by a file and can't be created until a save is loaded into.
+This only matters when a player saves mid-combat and restarts the game, so it should very rarely impact their experience.]]
 				},
 				{
 					type = "Separator"
@@ -748,6 +754,42 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 						"TODO"
 					}
 				} --[[@as MazzleDoctsBullet]],
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Short List of Possible Boosts for use in the Custom Boosts section"
+				},
+				{
+					type = "Code",
+					text =
+					[[See the master list of boosts and their parameters at https://github.com/Norbyte/lslib/blob/master/LSLibDefinitions.xml#L653
+====================================
+AbilityOverrideMinimum AbilityOverrideMinimum(Strength,23);
+ActionResource ActionResource(SpellSlot,4,1);
+ActiveCharacterLight ActiveCharacterLight(c46e7ba8-e746-7020-5146-287474d7b9f7)
+AiArchetypeOverride AiArchetypeOverride(mage,1);
+AttackSpellOverride AttackSpellOverride(Target_MainHandAttack_Sahuagin, Target_MainHandAttack);
+Attribute Attribute(ObscurityWithoutSneaking)
+CannotHarmCauseEntity CannotHarmCauseEntity(CannotHarmSanctuary)
+CriticalHit CriticalHit(AttackRoll,Success,Always,18);
+Detach N/A
+DownedStatus DownedStatus(DOWNED); DownedStatus(STEEL_WATCHER_INVULNERABILITY,-1)
+GameplayLight GameplayLight(6,false,0.1)
+Immunity - N/A
+IncreaseMaxHP - IncreaseMaxHP(10%);
+Lootable N/A
+MinimumRollResult MinimumRollResult(Damage,20)
+MonkWeaponDamageDiceOverride MonkWeaponDamageDiceOverride(LevelMapValue(SpiritualWeapon_2d8))
+Skill Skill(Intimidation, 2)
+ProficiencyBonus ProficiencyBonus(Skill,Arcana)
+ProficiencyBonusOverride ProficiencyBonusOverride(Owner.LevelMapValue(StandardProficiencyBonusScale))
+UnlockInterrupt UnlockInterrupt(Interrupt_LegendaryResistance)
+UnlockSpell UnlockSpell(Projectile_ChromaticOrb,,d136c5d9-0ff0-43da-acce-a74a07f8d6bf,,);
+UnlockSpellVariant "UnlockSpellVariant(MindSanctuaryCheck(),ModifyTooltipDescription());
+VoicebarkBlock N/A]]
+				}
 			}
 		}
 	} --[[@as MazzleDocsDocumentation]]
@@ -759,7 +801,7 @@ function BoostsMutator:generateChangelog()
 		["1.7.0"] = {
 			type = "Bullet",
 			text = {
-				"Deprecated the previous implementation, implementing a new version"
+				"IDR :sadge:"
 			}
 		} --[[@as MazzleDocsContentItem]]
 	}
