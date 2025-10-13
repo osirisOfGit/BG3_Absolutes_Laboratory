@@ -165,6 +165,10 @@ function ListDesignerBaseClass:launch(activeListId)
 		self.popup:SetColor("PopupBg", { 0, 0, 0, 1 })
 		self.popup:SetColor("Border", { 1, 0, 0, 0.5 })
 
+		local docsButton = MazzleDocs:addDocButton(self.designerSection, MutatorInterface:generateDocs({}))
+		docsButton.SameLine = true
+		docsButton.UserData = "keep"
+
 		local colorSettings = self.designerSection:AddGroup("colorSetting")
 		colorSettings.UserData = "keep"
 		colorSettings:AddText("Click A Color To Change It, Hover for Tooltips: "):SetStyle("Alpha", 0.6)
@@ -2102,4 +2106,105 @@ function ListDesignerBaseClass:CheckIfEntryIsInListLevel(leveledSubList, entryNa
 	end
 
 	return false
+end
+
+---@return MazzleDocsDocumentation
+function ListDesignerBaseClass:generateDocs()
+	return {
+		{
+			Topic = MutatorInterface.Topic,
+			SubTopic = MutatorInterface.SubTopic,
+			content = {
+				{
+					type = "Heading",
+					text = "List Designer",
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Summary"
+				},
+				{
+					type = "Content",
+					text =
+					[[The List Designer is a component shared by the Spell, Passive, and Status List Mutators - it serves as a straightforward GUI to construct progression-like distributions of spells/passives/statuses, with some interesting additions.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "CallOut",
+					prefix = "Keybinds",
+					prefix_color = "Green",
+					centered = true,
+					text =
+					[[[Left-Click] - If the entry is already present in the list (the middle section), opens a popup showing the different pools you can set it to (or delete it, if it's not linked). Does nothing if the entry is in the right sidebar (browser section)
+					
+[Ctrl + Left-Click] - Adds or removes (if already selected) the clicked entry to/from a multiselect operation - the entry will be highlighted in green, and every entry highlighted this way will be included when dragging/dropping or changing the assigned pool.
+
+[Shift + Left-Click] - Requires an active multiselect group to exist within the same context - If the clicked entry is not part of the current multiselect, it will add the clicked entry and all entries between it and the last entry added to the multiselect (chronologically speaking).
+	If the entry is already in the multiselect, it will do the same, but remove all active entries without adding any. Both operations can be done on the left or right side of the last selected entry.
+		
+[Alt + Hover] - Opens a tooltip previewing the complete entry for the hovered stat, same way it would be displayed in the Inspector
+
+[Alt + Left Click] - Opens a new window containing the same information for that stat entry as the inspector.]]
+				} --[[@as MazzleDocsCallOut]],
+				{
+					type = "SubHeading",
+					text = "Client-Side Content"
+				},
+				{
+					type = "Content",
+					text = [[
+The mutator is laid out as follows:
+
+TODO
+
+The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Server-Side Implementation"
+				},
+				{
+					type = "Content",
+					text = [[ TODO ]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Example Use Cases"
+				},
+				{
+					type = "Section",
+					text = "Selected entities:"
+				},
+				{
+					type = "Bullet",
+					text = {
+						"TODO"
+					}
+				} --[[@as MazzleDoctsBullet]],
+			}
+		}
+	} --[[@as MazzleDocsDocumentation]]
+end
+
+---@return {[string]: MazzleDocsContentItem}
+function ListDesignerBaseClass:generateChangelog()
+	return {
+		["1.7.0"] = {
+			type = "Bullet",
+			text = {
+				"Fix execution variable so it doesn't always try to calculate the prime 3 if they're already set"
+			}
+		} --[[@as MazzleDocsContentItem]]
+	}
 end

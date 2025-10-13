@@ -287,57 +287,62 @@ As of this writing, end users don't have to really care about this, as it's acco
 		}
 	} --[[@as MazzleDocsSlide]])
 
+	---@param docs MazzleDocsSlide[]
+	---@param changelog {[string] : MazzleDocsContentItem}
+	local function addSlides(docs, changelog)
+		if changelog and next(changelog) then
+			local currentVer = ""
+			for i, ver in ipairs(Ext.Mod.GetMod(ModuleUUID).Info.PublishVersion) do
+				if i < 4 then
+					currentVer = currentVer .. tostring(ver)
+					if i < 3 then
+						currentVer = currentVer .. "."
+					end
+				end
+			end
+
+			table.insert(docs[#docs].content, {
+				type = "Separator"
+			} --[[@as MazzleDocsContentItem]])
+
+			table.insert(docs[#docs].content, {
+				type = "Heading",
+				text = "Changelog"
+			} --[[@as MazzleDocsContentItem]])
+
+			for version, changelogEntry in TableUtils:OrderedPairs(changelog, function(key, value)
+				-- To Sort Descending Order
+				local M, m, p = key:match("^(%d+)%.(%d+)%.(%d+)$")
+				M, m, p = tonumber(M), tonumber(m), tonumber(p)
+				return -1 * (M + m + p)
+			end) do
+				if version == currentVer then
+					version = version .. " (Current)"
+				end
+
+				table.insert(docs[#docs].content, {
+					type = "SubHeading",
+					text = version
+				} --[[@as MazzleDocsContentItem]])
+
+				table.insert(docs[#docs].content, changelogEntry)
+			end
+		end
+		for _, slide in ipairs(docs) do
+			table.insert(existingSlides, slide)
+		end
+	end
+
 	for _, mutator in TableUtils:OrderedPairs(self.registeredMutators, function(key, value)
 		return value.name
 	end) do
 		local docs = mutator:generateDocs()
 		if docs then
-			---@type {[string]: MazzleDocsContentItem}
-			local changelog = mutator:generateChangelog()
-			if changelog and next(changelog) then
-				local currentVer = ""
-				for i, ver in ipairs(Ext.Mod.GetMod(ModuleUUID).Info.PublishVersion) do
-					if i < 4 then
-						currentVer = currentVer .. tostring(ver)
-						if i < 3 then
-							currentVer = currentVer .. "."
-						end
-					end
-				end
-
-				table.insert(docs[#docs].content, {
-					type = "Separator"
-				} --[[@as MazzleDocsContentItem]])
-
-				table.insert(docs[#docs].content, {
-					type = "Heading",
-					text = "Changelog"
-				} --[[@as MazzleDocsContentItem]])
-
-				for version, changelogEntry in TableUtils:OrderedPairs(changelog, function(key, value)
-					-- To Sort Descending Order
-					local M, m, p = key:match("^(%d+)%.(%d+)%.(%d+)$")
-					M, m, p = tonumber(M), tonumber(m), tonumber(p)
-					return -1 * (M + m + p)
-				end) do
-					if version == currentVer then
-						version = version .. " (Current)"
-					end
-
-					table.insert(docs[#docs].content, {
-						type = "SubHeading",
-						text = version
-					} --[[@as MazzleDocsContentItem]])
-
-					table.insert(docs[#docs].content, changelogEntry)
-				end
-			end
-
-			for _, slide in ipairs(docs) do
-				table.insert(existingSlides, slide)
-			end
+			addSlides(docs, mutator:generateChangelog())
 		end
 	end
+
+	addSlides(ListDesignerBaseClass:generateDocs(), ListDesignerBaseClass:generateChangelog())
 
 	return existingSlides
 end
@@ -357,21 +362,27 @@ function MutatorInterface:generateChangelog()
 		end
 	end
 
+	local function addChangelog(changelog, mutatorName)
+		for version, changelogEntry in TableUtils:OrderedPairs(changelog, function(key)
+			-- To Sort Descending Order
+			local M, m, p = key:match("^(%d+)%.(%d+)%.(%d+)$")
+			M, m, p = tonumber(M), tonumber(m), tonumber(p)
+			return -1 * (M + m + p)
+		end) do
+			changelogs[version] = changelogs[version] or {}
+			changelogs[version][mutatorName] = changelogEntry
+		end
+	end
+
 	for _, mutator in TableUtils:OrderedPairs(self.registeredMutators) do
 		---@type {[string]: MazzleDocsContentItem}
 		local changelog = mutator:generateChangelog()
 		if changelog and next(changelog) then
-			for version, changelogEntry in TableUtils:OrderedPairs(changelog, function(key)
-				-- To Sort Descending Order
-				local M, m, p = key:match("^(%d+)%.(%d+)%.(%d+)$")
-				M, m, p = tonumber(M), tonumber(m), tonumber(p)
-				return -1 * (M + m + p)
-			end) do
-				changelogs[version] = changelogs[version] or {}
-				changelogs[version][mutator.name] = changelogEntry
-			end
+			addChangelog(changelog, mutator.name)
 		end
 	end
+
+	addChangelog(ListDesignerBaseClass:generateChangelog(), "List Designer")
 
 	return changelogs
 end

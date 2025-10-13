@@ -275,10 +275,16 @@ function Styler:HyperlinkRenderable(renderable, item, modifier, modifierOnHover,
 	return function()
 		if not modifier or Ext.ClientInput.GetInputManager().PressedModifiers == modifier then
 			window = Ext.IMGUI.NewWindow(item)
+			window.Scaling = "Scaled"
+			window.NoSavedSettings = true
 			window.HorizontalScrollbar = true
 			window:SetStyle("WindowMinSize", 100 * self:ScaleFactor(), 100 * self:ScaleFactor())
 			window:SetSize({ 0, 0 }, "FirstUseEver")
 			window.Closeable = true
+
+			if MCM then
+				window.Font = MCM.Get("font_size", "755a8a72-407f-4f0d-9a33-274ac0f0b53d")
+			end
 
 			window.OnClose = function()
 				window:Destroy()

@@ -1412,9 +1412,6 @@ Profiles_Docs = {
 				text = "Client Only"
 			},
 			{
-				type = "Separator"
-			},
-			{
 				type = "Section",
 				text = [[!Lab_MetaBlock <Mod UUIDs> - generates the meta.lsx Dependency block for the specified mods, printing them out in the console for whatever use you want ]]
 			},
