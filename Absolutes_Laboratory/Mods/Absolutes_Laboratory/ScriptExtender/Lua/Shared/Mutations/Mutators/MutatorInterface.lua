@@ -333,6 +333,8 @@ As of this writing, end users don't have to really care about this, as it's acco
 		end
 	end
 
+	addSlides(ListDesignerBaseClass:generateDocs(), ListDesignerBaseClass:generateChangelog())
+
 	for _, mutator in TableUtils:OrderedPairs(self.registeredMutators, function(key, value)
 		return value.name
 	end) do
@@ -341,8 +343,6 @@ As of this writing, end users don't have to really care about this, as it's acco
 			addSlides(docs, mutator:generateChangelog())
 		end
 	end
-
-	addSlides(ListDesignerBaseClass:generateDocs(), ListDesignerBaseClass:generateChangelog())
 
 	return existingSlides
 end
@@ -374,6 +374,7 @@ function MutatorInterface:generateChangelog()
 		end
 	end
 
+	addChangelog(ListDesignerBaseClass:generateChangelog(), "List Designer")
 	for _, mutator in TableUtils:OrderedPairs(self.registeredMutators) do
 		---@type {[string]: MazzleDocsContentItem}
 		local changelog = mutator:generateChangelog()
@@ -382,7 +383,6 @@ function MutatorInterface:generateChangelog()
 		end
 	end
 
-	addChangelog(ListDesignerBaseClass:generateChangelog(), "List Designer")
 
 	return changelogs
 end

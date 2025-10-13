@@ -2153,27 +2153,35 @@ function ListDesignerBaseClass:generateDocs()
 				} --[[@as MazzleDocsCallOut]],
 				{
 					type = "SubHeading",
-					text = "Client-Side Content"
+					text = "The Layout"
 				},
 				{
 					type = "Content",
-					text = [[
-The mutator is laid out as follows:
+					text = [[Most of the explanations of this component are left to the tooltips - thus, this section will only cover high-level details to help you get familiar.
+There are three sections: 
 
-TODO
+The left sidebar contains all known Lists, both from your config.json and from any mods loaded. This works very similiarly to the mutations section, just with a few less options, like folders and copying other lists (latter is out of laziness and lack of demand :P)
 
-The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
+The middle section is the 'Designer' section - this is where you'll inspect, build, and configure your lists to contain your intended distribution of stats. This can be done according to the level of the selected entity, or the Game level they're currently in (see toggle in the options section, right side)
+
+The right section is the 'Browser' section - here is where you can browse and link progressions or just browse for loose stat entries of the same type as the list (spells, passives, statuses). When you open up a List Designer for the first time in a loaded save, you'll notice a brief frozen period - this is due to Lab indexing all available progressions]]
 				},
 				{
 					type = "Separator"
 				},
 				{
 					type = "SubHeading",
-					text = "Server-Side Implementation"
+					text = "Building Your List"
 				},
 				{
 					type = "Content",
-					text = [[ TODO ]]
+					text = [[You have two options to build your lists, which can be combined with each other: Loose Stats and Linked Progressions (linked progressions are not applicable for Status Lists or if distributing by Game Level instead of Entity Level).
+
+When you open up a progression in the Browser section, you have two buttons available: Link and Copy All. Copy all will add all entries to your list according to their respective levels in the Progression (or level 1 if distributing by Game Level).
+
+Linking will instead create a sort of Symbolic link to that progression's TableUUID - no entries will actually be added to the config (with the exception of AICanNotUse Spells, which are auto-blacklisted), just the TableUUID.
+This allows Lab to dynamically pull in all relevant stats for that progression in the active game state and internally assign them to the default pool (when exporting the list for use in Mods, the default pool will be exported as well, ensuring the intended behavior regardless of the user's settings). This means that you can add or remove mods that affect the relevant progression(s) and Lab will automatically adjust to the new state.
+If you move any stats to a pool that isn't the default, they will be added to the config.json, creating a direct dependency on the mod that added that stat, if applicable.]]
 				},
 				{
 					type = "Separator"
