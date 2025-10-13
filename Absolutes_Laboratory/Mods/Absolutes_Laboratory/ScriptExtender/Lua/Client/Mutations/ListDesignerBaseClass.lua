@@ -2158,7 +2158,7 @@ function ListDesignerBaseClass:generateDocs()
 				{
 					type = "Content",
 					text = [[Most of the explanations of this component are left to the tooltips - thus, this section will only cover high-level details to help you get familiar.
-There are three sections: 
+There are three sections:
 
 The left sidebar contains all known Lists, both from your config.json and from any mods loaded. This works very similiarly to the mutations section, just with a few less options, like folders and copying other lists (latter is out of laziness and lack of demand :P)
 
@@ -2175,31 +2175,20 @@ The right section is the 'Browser' section - here is where you can browse and li
 				},
 				{
 					type = "Content",
-					text = [[You have two options to build your lists, which can be combined with each other: Loose Stats and Linked Progressions (linked progressions are not applicable for Status Lists or if distributing by Game Level instead of Entity Level).
+					text =
+					[[You have two options to build your lists, which can be combined with each other: Loose Stats and Linked Progressions (linked progressions are not applicable for Status Lists or if distributing by Game Level instead of Entity Level).
 
 When you open up a progression in the Browser section, you have two buttons available: Link and Copy All. Copy all will add all entries to your list according to their respective levels in the Progression (or level 1 if distributing by Game Level).
 
 Linking will instead create a sort of Symbolic link to that progression's TableUUID - no entries will actually be added to the config (with the exception of AICanNotUse Spells, which are auto-blacklisted), just the TableUUID.
 This allows Lab to dynamically pull in all relevant stats for that progression in the active game state and internally assign them to the default pool (when exporting the list for use in Mods, the default pool will be exported as well, ensuring the intended behavior regardless of the user's settings). This means that you can add or remove mods that affect the relevant progression(s) and Lab will automatically adjust to the new state.
-If you move any stats to a pool that isn't the default, they will be added to the config.json, creating a direct dependency on the mod that added that stat, if applicable.]]
+
+If you move any stats to a pool that isn't the default, they will be added to the config.json, creating a direct dependency on the mod that added that stat, if applicable.
+
+Additionally, due to the above behavior, stats from Linked Progressions can't be moved to different levels - they are distributed the exact same way the progression is. This also plays into multi-select behavior, as you can't select stats in different levels, or loose stats + progression stats.
+
+You can additionally or exclusively add loose stats to your list - just drag and drop entries from the Browser (either tab) into the level you want them in (using keybinds mentioned above to do multiple), and that's it! You can move them between levels freely, and they'll be exported in your config.]]
 				},
-				{
-					type = "Separator"
-				},
-				{
-					type = "SubHeading",
-					text = "Example Use Cases"
-				},
-				{
-					type = "Section",
-					text = "Selected entities:"
-				},
-				{
-					type = "Bullet",
-					text = {
-						"TODO"
-					}
-				} --[[@as MazzleDoctsBullet]],
 			}
 		}
 	} --[[@as MazzleDocsDocumentation]]
@@ -2211,7 +2200,31 @@ function ListDesignerBaseClass:generateChangelog()
 		["1.7.0"] = {
 			type = "Bullet",
 			text = {
-				"Fix execution variable so it doesn't always try to calculate the prime 3 if they're already set"
+				"Refactors all Lists configs and approach to progression linking so it's flexible and robust in all situations (automatically migrates old configs to the new structure)",
+				"Fixes all List types not correctly exporting loose Spells/Passives/Statuses when it's a Larian-sourced entry",
+				"Safeguard button removal logic in List Designer",
+				"Fixes Multi-select when crossing progression lines",
+				"Adds a setting to control auto-collapse of the folder sidebar",
+				"Adds a 'Default Pool' dropdown",
+				"Indexes SelectPassive entries in PassiveList progressions",
+				"Adds a new Stat Browser setting to show all spell upcasts in addition to the base spell",
+				"Minor visual bug fixes",
+			}
+		} --[[@as MazzleDocsContentItem]],
+		["1.6.0"] = {
+			type = "Bullet",
+			text = {
+				"Fix Icon view",
+				"Add Level 0 to Spell Lists for cantrips",
+				"Changes the Tooltip Modifier for showing detailed window of the stat (spell/passive/status) to only show when holding Alt (was previously Shift and would pop up on hover without the modifier)",
+				"Upgrades selection in lists/browsers - Ctrl click still multiselect, but Shift clicking will either select or deselect (depending on the state of the clicked button) all entries between the last entry selected (chronologically) and the button that was shift-clicked. Can be done for all buttons under a single level",
+				"Adds logic to tint spells that have AIFlag = 'CanNotUse', excluding them from CopyAll operations, auto-blacklisting them in Linked Progressions (can't be changed), and excludes them from Shift-clicking multiselect. Can still be manually selected if manually added or still in the browser",
+				"Breaks up spell buttons by Cantrip / Class Action / Regular spell in main list (only icon view) and the Progression browser (with an associated setting for the main list)",
+				"Adds Separator headers for linked Progressions, showing what progression those entries came from",
+				"Adds a new Cast On Death group for Spell Lists (will allow setting a randomized pool for them + castOnCombatStart/castOnLevelLoad in the future)",
+				"Adds ability to convert lists to use Game Level instead of Character Level (or vice-versa, swapping this option will clear your list, CAHOOT! (there is a tooltip for this))",
+				"Restructures the ui a bit, allows collapsing the folder sidebar (happens automatically on selecting a list)",
+				"Adds ability to hide/show each level in a list",
 			}
 		} --[[@as MazzleDocsContentItem]]
 	}
