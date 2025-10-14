@@ -818,9 +818,9 @@ function PassiveListMutator:generateDocs()
 					prefix = "",
 					prefix_color = "Yellow",
 					text = [[
-Dependency On: None
+Dependency On: Spell Lists
 Transient: No
-Composable: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is always applied first]]
+Composable: All groups will be combined into one large pool, which will be pulled from randomly post-filter]]
 				} --[[@as MazzleDocsCallOut]],
 				{
 					type = "Separator"
@@ -831,7 +831,7 @@ Composable: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is alwa
 				},
 				{
 					type = "Content",
-					text = [[TODO]]
+					text = [[Basically Spell Lists, just with Passives!]]
 				},
 				{
 					type = "Separator"
@@ -843,9 +843,11 @@ Composable: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is alwa
 				{
 					type = "Content",
 					text = [[
-The mutator is laid out as follows:
+The mutator is designed very similarily to Spell Lists, so only the differences are notated:
 
-TODO
+- There are no level pools - instead, the mutator checks the combined levels of the linked Spell Lists that were assigned and uses that to determine what level to use for the given list
+- If there are no Linked Spell lists, the entity level will be used instead
+- There are no criteria due to the Spell List dependency
 
 The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
 				},
@@ -858,7 +860,13 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				},
 				{
 					type = "Content",
-					text = [[ TODO ]]
+					text = [[ Since this mutator only has Random and Guaranteed pools, all passives are added via Osi: Osi.AddPassive(entity.Uuid.EntityUuid, passiveToApply)
+Building the random pool follows the same general logic as Spell List Mutator:
+When determining what passives end up in the Random pool to be added to the entity, checks are done to ensure:
+1. The passive isn't already on the entity
+2. The passive isn't already slated to be added by another progression
+
+Once the final list of passives is determined, the Replace logic is run, removing any passives from the final list and the entity's PassiveContainer (via Osi.RemovePassive) if they're marked to be replaced by another passive.]]
 				},
 				{
 					type = "Separator"
@@ -874,34 +882,23 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				{
 					type = "Bullet",
 					text = {
-						"TODO"
+						"Should receive a distribution of passives that complement the Spell Lists they were assigned",
+						"Should receive a set list of passives based on which Game Level they're in"
 					}
 				} --[[@as MazzleDoctsBullet]],
-				{
-					type = "Separator"
-				},
-				{
-					type = "SubHeading",
-					text = "Changelog"
-				},
-				{
-					type = "SubHeading",
-					text = "1.7.0 (N/A)"
-				},
-				{
-					type = "SubHeading",
-					text = "1.6.0"
-				},
-				{
-					type = "Bullet",
-					text = { "?"
-					}
-				}
 			}
 		}
 	} --[[@as MazzleDocsDocumentation]]
 end
 
+---@return {[string]: MazzleDocsContentItem}
 function PassiveListMutator:generateChangelog()
-	
+	return {
+		["1.7.0"] = {
+			type = "Bullet",
+			text = {
+				"Fix lists not applying entries from linked progressions"
+			}
+		} --[[@as MazzleDocsContentItem]]
+	}
 end
