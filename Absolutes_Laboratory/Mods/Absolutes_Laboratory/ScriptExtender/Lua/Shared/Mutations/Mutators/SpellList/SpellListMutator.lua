@@ -1695,9 +1695,9 @@ function SpellListMutator:generateDocs()
 					prefix = "",
 					prefix_color = "Yellow",
 					text = [[
-Dependency On: None
+Dependency On: Level
 Transient: No
-Composable: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is always applied first]]
+Composable: All groups will be combined into one large pool, which will be pulled from randomly post-filter]]
 				} --[[@as MazzleDocsCallOut]],
 				{
 					type = "Separator"
@@ -1708,7 +1708,8 @@ Composable: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is alwa
 				},
 				{
 					type = "Content",
-					text = [[TODO]]
+					text =
+					[[This mutator allows you to use your Spell Lists to distribute spells to entities based on their Character or Game Level to accomplish both single- and multi-class setups, or just add loose spells to them in general]]
 				},
 				{
 					type = "Separator"
@@ -1722,7 +1723,28 @@ Composable: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is alwa
 					text = [[
 The mutator is laid out as follows:
 
-TODO
+You can create multiple Spell List Groups, which are groups of Leveled Pools - If you specify multiple Spell List Groups that an entity is eligible for (see criteria below), one will be randomly chosen. When one Spell List mutator is composed with others, every Group from all involved mutators will be placed into one list, as if they had come from a single mutator.
+
+In each pool you'll define an Anchor level, which is the minimum level an entity must be to be eligible for that pool - that pool will apply to that entity up to level 30 or until the next anchor level in the group, whichever comes first.
+For example, you can configure two level pools so any entity that is level 1-4 will be eligible for the first pool, and any that are level 5 or above are eligible for the second pool.
+
+This approach allows you to simulate (optional) multiclassing - in the same example as above, you could define both Death and Life Cleric spell lists to the first level pool - this does NOT mean the entity will receive both - rather, they will randomly recieve one of them.
+
+The same assignment will happen at level 5 if the same lists are added to the second pool, but with a bit of a twist - if the entity receives the same list they received at Level 1, they will continue with that spell list as normal; however, if they receive a different list, they'll start from that list at level 1.
+
+For example, if the entity was assigned Death Cleric at level 1, they'd receive the spells from that list for levels 1-4.
+
+If they're assigned Death Cleric again, they'll receive level 5 spells, and continue in that order.
+
+If they're assigned Life Cleric for levels 5+, they'll only receive Life Clerics's level 1 spells at level 5, level 2 spells at level 6, and so on.
+
+This means you could also set up a pool that dips into a multiclass and comes back out to continue the main progression by setting a third spell pool at level 7 for Death/Life cleric again - at that point, they'll continue with the last level they were at for that list, which in this case was level 5.
+
+You can also assign loose Spells defined outside of a spell list; these spells do not have randomized pools, and instead can only be one of Guaranteed, Cast On Combat Start, and Cast on Level Load. They're intended for two main use-cases:
+- You don't want to assign entire lists to an NPC, maybe a boss, but want to supplement them with specific ones
+- You want to assign an NPC a list, but want to ensure they have specific spells for their kit regardless of their list, i.e. giving an Underdark smuggler the Light spell
+
+Any number of spells can be added here, but keep in mind that the game's AI can't handle large amounts of spells well - they tend to crash when reaching the 7-8+ range, depending on the AI archetype. Spells that are set as Cast on Combat Start/Level Load aren't added to the spellbook though, so you can safely add as many as you'd like
 
 The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
 				},
@@ -1735,7 +1757,28 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				},
 				{
 					type = "Content",
-					text = [[ TODO ]]
+					text =
+					[[For Spells that are cast on level load and combat start, Osi.UseSpell(entity.Uuid.EntityUuid, spellName, entity.Uuid.EntityUuid) is used; for combat start when the entity isn't already in combat when the profile executes, this call is wrapped in a CombatStarted Osi Event Listener, otherwise it's done immediately (expected use-case is for entities that spawn mid-combat, like summons/familiars).
+
+For Spells that are cast on death, the Died Osi Event listener is used to execute Osi.UseSpell(entity.Uuid.EntityUuid, spellName, entity.Uuid.EntityUuid) - this _may_ cause some animation issues, will look into a better alternative soon.
+
+When determining what spells end up in the Random pool to be added to the SpellBook, checks are done to ensure:
+1. The spell isn't already known by the entity
+2. The spell isn't already slated to be added by another progression
+
+Once the final list of spells is determined, the Replace logic is run, removing any spells from the final list and the entity's spellbook if they're marked to be replaced by another spell.
+
+When adding spells to an entity, the AddSpells operation under the SpellSystem is used to add them to the spellbook - this system allows more granular control over the spell's properties, which are assigned as below:
+{
+	PrepareType = "AlwaysPrepared",
+	SpellId = {
+		OriginatorPrototype = spellName,
+		SourceType = "SpellSet2"
+	},
+	PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
+	SpellCastingAbility = entity.Stats.SpellCastingAbility
+}
+The Preferred Casting Resource is set to just SpellSlots - this will currently prove problematic if you assign Warlock SpellSlots to entities, but I'll solve for this in the near future.]]
 				},
 				{
 					type = "Separator"
@@ -1751,34 +1794,29 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				{
 					type = "Bullet",
 					text = {
-						"TODO"
+						"Should be a multiclass of Death Cleric and Shadow Sorceror, prioritizing Death Cleric for levels 1-5 before allocating equal levels in both",
+						"Should receive a guaranteed set of spells depending on which Game Level they're in",
 					}
 				} --[[@as MazzleDoctsBullet]],
-				{
-					type = "Separator"
-				},
-				{
-					type = "SubHeading",
-					text = "Changelog"
-				},
-				{
-					type = "SubHeading",
-					text = "1.7.0 (N/A)"
-				},
-				{
-					type = "SubHeading",
-					text = "1.6.0"
-				},
-				{
-					type = "Bullet",
-					text = { "?"
-					}
-				}
 			}
 		}
 	} --[[@as MazzleDocsDocumentation]]
 end
 
+---@return {[string]: MazzleDocsContentItem}
 function SpellListMutator:generateChangelog()
-	
+	return {
+		["1.7.0"] = {
+			type = "Bullet",
+			text = {
+				"Fix lists not applying entries from linked progressions"
+			}
+		}--[[@as MazzleDocsContentItem]],
+		["1.6.0"] = {
+			type = "Bullet",
+			text = {
+				"Excludes SpellList groups from the apply logic that don't have a leveledSpellPool"
+			}
+		}--[[@as MazzleDocsContentItem]]
+	}
 end

@@ -2117,7 +2117,7 @@ function ListDesignerBaseClass:generateDocs()
 			content = {
 				{
 					type = "Heading",
-					text = "List Designer",
+					text = "Base List Designer",
 				},
 				{
 					type = "Separator"
@@ -2129,7 +2129,7 @@ function ListDesignerBaseClass:generateDocs()
 				{
 					type = "Content",
 					text =
-					[[The List Designer is a component shared by the Spell, Passive, and Status List Mutators - it serves as a straightforward GUI to construct progression-like distributions of spells/passives/statuses, with some interesting additions.]]
+					[[The List Designer is a component shared by the Spell, Passive, and Status List Mutators - on the Client-side, it serves as a straightforward GUI to construct progression-like distributions of spells/passives/statuses, with some interesting additions; on the Server-Side, it provides some common functionality for all the List Mutators.]]
 				},
 				{
 					type = "Separator"
