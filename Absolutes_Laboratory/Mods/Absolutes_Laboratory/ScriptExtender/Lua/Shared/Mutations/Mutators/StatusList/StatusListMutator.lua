@@ -740,9 +740,9 @@ function StatusListMutator:generateDocs()
 					prefix = "",
 					prefix_color = "Yellow",
 					text = [[
-Dependency On: None
+Dependency On: Spell Lists
 Transient: No
-Composable: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is always applied first]]
+Composable: All groups will be combined into one large pool, which will be pulled from randomly post-filter]]
 				} --[[@as MazzleDocsCallOut]],
 				{
 					type = "Separator"
@@ -753,7 +753,7 @@ Composable: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is alwa
 				},
 				{
 					type = "Content",
-					text = [[TODO]]
+					text = [[Basically Spell Lists, just with Statuses!]]
 				},
 				{
 					type = "Separator"
@@ -765,9 +765,12 @@ Composable: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is alwa
 				{
 					type = "Content",
 					text = [[
-The mutator is laid out as follows:
+The mutator is designed very similarily to Spell Lists again, so only the differences are notated:
 
-TODO
+- There are no level pools - instead, the mutator checks the combiend levels of the linked Spell Lists that were assigned and uses that to determine what level to use for the given list
+- If there are no Linked Spell lists, the entity level will be used instead
+- There are no criteria due to the Spell List dependency
+- There is no Progression Browser in the Status List Designer, as Progressions don't assign statuses.
 
 The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
 				},
@@ -780,50 +783,22 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				},
 				{
 					type = "Content",
-					text = [[ TODO ]]
+					text = [[Since this mutator only has Random and Guaranteed pools, all statuses are added via Osi: Osi.ApplyStatus(entity.Uuid.EntityUuid, statusToApply, -1, 1)
+This forces the status to apply for an infinite duration - reasoning being that any temporary statuses should be given via a Spell cast configured through a given Spell List. Another mutator will be coming down that road that allows conditional, duration-locked status applications.
+
+Building the random pool follows the same general logic as Spell List Mutator:
+When determining what statuses end up in the Random pool to be added to the entity, checks are done to ensure:
+1. The status isn't already on the entity
+
+Once the final list of statuses are determined, the Replace logic is run, removing any statuses from the final list and the entity's StatusContainer (via Osi.RemoveStatus) if they're marked to be replaced by another status. ]]
 				},
-				{
-					type = "Separator"
-				},
-				{
-					type = "SubHeading",
-					text = "Example Use Cases"
-				},
-				{
-					type = "Section",
-					text = "Selected entities:"
-				},
-				{
-					type = "Bullet",
-					text = {
-						"TODO"
-					}
-				} --[[@as MazzleDoctsBullet]],
-				{
-					type = "Separator"
-				},
-				{
-					type = "SubHeading",
-					text = "Changelog"
-				},
-				{
-					type = "SubHeading",
-					text = "1.7.0 (N/A)"
-				},
-				{
-					type = "SubHeading",
-					text = "1.6.0"
-				},
-				{
-					type = "Bullet",
-					text = { "?"
-					}
-				}
 			}
 		}
 	} --[[@as MazzleDocsDocumentation]]
 end
 
+---@return {[string]: MazzleDocsContentItem}
 function StatusListMutator:generateChangelog()
-	
+	return {
+	} --[[@as {[string]: MazzleDocsContentItem}]]
 end

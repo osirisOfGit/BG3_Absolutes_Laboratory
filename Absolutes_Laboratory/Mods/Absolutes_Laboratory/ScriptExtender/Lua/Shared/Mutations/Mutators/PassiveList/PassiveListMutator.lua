@@ -860,7 +860,7 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				},
 				{
 					type = "Content",
-					text = [[ Since this mutator only has Random and Guaranteed pools, all passives are added via Osi: Osi.AddPassive(entity.Uuid.EntityUuid, passiveToApply)
+					text = [[Since this mutator only has Random and Guaranteed pools, all passives are added via Osi: Osi.AddPassive(entity.Uuid.EntityUuid, passiveToApply)
 Building the random pool follows the same general logic as Spell List Mutator:
 When determining what passives end up in the Random pool to be added to the entity, checks are done to ensure:
 1. The passive isn't already on the entity
