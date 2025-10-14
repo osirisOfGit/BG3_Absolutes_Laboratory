@@ -1680,5 +1680,42 @@ Lab pre-packages a number of Markers that can be used by anyone - these can't be
 	}
 }
 
+---@return {[string]: MazzleDocsContentItem}
+function MutationProfileManager:generateChangelog()
+	return {
+		["1.7.0"] = {
+			type = "Bullet",
+			text = {
+				"Rename 'Additive' to 'Composable' in the Docs to avoid the obvious, but unfortunately incorrect, assumption",
+				"Increased static width of the profile rule manager column",
+				"Fixes columns expanding to a smaller width than they should",
+				"Fix profile section not scrolling like Folder view",
+				"Doesn't execute the Mutation Profile against enemies that aren't on the same Game Level as the host character",
+				"Creates a 5 rotating backup config.json whenever the real one gets written to (with a buffer of 60 seconds between each backup update)",
+				"Adds a visual Profile Execution Status report while profile is executing - modes are configured in the General MCM tab",
+				"Changes up the Profile Rules buttons to swap with each other or shunt existing buttons down when dragged and dropped, depending on where the button was dragged from",
+				"Adds a new popup menu for Mutations to remove the mutation from the active Profile, if it's not a mod-added profile",
+				"Maintains the currently selected Mutator in the Sidebar view mode when changing Mutation or Mutator view mode",
+				"Adds new server-only console command !Lab_ClearEntityClasses to reset all entities (run this, disable your profile, save, reload, enable profile, save, reload)",
+				"Adds the !Lab_GenerateMutationDiagram <entityId> server-only console command and a button in the Mutation tab of the Inspector to generate a Mermaid Diagram representing the mutation state flow of the specified entity against the currently active (or default) profile",
+				"Adds client only console command Lab_MetaBlock <UUID LIST> to allow creating dependency nodes from any loaded mod(s)",
+			}
+		} --[[@as MazzleDocsContentItem]],
+		["1.6.0"] = {
+			type = "Bullet",
+			text = {
+				"Make Folders + Mutations sort alphabetically",
+				"Introduces a 50ms delay on mutator application to allow the game enough time to finish processing the undo mutators",
+				"Adds ability to save/load presets for selectors and mutators (needs dependency checks)",
+				"Introduces PrepPhase Mutators + Selectors, greatly simplifying complex mutations in a two-phase approach",
+				"Add Status and Passive lists to export/import functionality and adds mod integration to their mutators",
+				"Adds show/hide to prep phase and main phase mutation sections",
+				"Documents the Mod that a folder is sourced from in the json export for validation purposes",
+				"Allows saving selectors and mutators into loadable presets",
+			}
+		}
+	}
+end
+
 SelectorInterface:generateDocs(Profiles_Docs)
 MutatorInterface:generateDocs(Profiles_Docs)

@@ -439,9 +439,9 @@ function ProgressionsMutator:generateDocs()
 					prefix = "",
 					prefix_color = "Yellow",
 					text = [[
-Dependency On: None
+Dependency On: Spell Lists
 Transient: No
-Composable: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is always applied first]]
+Composable: Yes - Progression groups will be grouped into one pool and randomly chosen from (post filtering)]]
 				} --[[@as MazzleDocsCallOut]],
 				{
 					type = "Separator"
@@ -452,7 +452,7 @@ Composable: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is alwa
 				},
 				{
 					type = "Content",
-					text = [[TODO]]
+					text = [[This is mutator allows you to change the Progressions associated to NPCs to enable, or avoid interfering with, your other mutators.]]
 				},
 				{
 					type = "Separator"
@@ -464,9 +464,13 @@ Composable: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is alwa
 				{
 					type = "Content",
 					text = [[
-The mutator is laid out as follows:
+As mentioned in the Spell Lists page, Spell Lists are intended to be for NPCs what Progressions are for Players - as such, I don't really recommend setting real Progressions for NPCs.
+This mutator is primarily intended to wipe progressions from NPCs by replacing them with useless ones, letting Lab take care of everything a progression would normally handle. Still, you can do what you want, it's your game.
 
-TODO
+You add progressions by looking up the Name associated with a TableUUID - as TableUUIDs are arbitrary values with no backed resource, this is programmatically derived by Lab, using the first Name node asssociated to a progression with a given table id (so it may not be exactly what you think it is, especially with poorly modded/wackily designed progressions).
+
+Progressions can be set to a % of the character's level - these values do not have to add up to 100%, they are completely independent of each other, representing class/subclass/race/whatever progressions.
+They aren't directly tied to Spell Lists either, per the initial reasoning above, but you can conditionally apply a Progression group to an entity based on whether or not they've been assigned a certain number of specific lists, if you want to ensure your progressions adhere to the entity's assigned Archetype.
 
 The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
 				},
@@ -479,45 +483,10 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				},
 				{
 					type = "Content",
-					text = [[ TODO ]]
+					text =
+					[[Progressions are one of the weirder components in the game - they aren't simple properties on an entity, they're actually entities in of themselves, associated to an entity via the Owner component, requiring Lab to create new entities that represent what's specified in the mutator.
+To prevent compounding bloat, Lab will destroy any progression entities it removes from a character entity, recreating them as necessary. I haven't seen any adverse impacts from doing this, but let me know.]]
 				},
-				{
-					type = "Separator"
-				},
-				{
-					type = "SubHeading",
-					text = "Example Use Cases"
-				},
-				{
-					type = "Section",
-					text = "Selected entities:"
-				},
-				{
-					type = "Bullet",
-					text = {
-						"TODO"
-					}
-				} --[[@as MazzleDoctsBullet]],
-				{
-					type = "Separator"
-				},
-				{
-					type = "SubHeading",
-					text = "Changelog"
-				},
-				{
-					type = "SubHeading",
-					text = "1.7.0 (N/A)"
-				},
-				{
-					type = "SubHeading",
-					text = "1.6.0"
-				},
-				{
-					type = "Bullet",
-					text = { "?"
-					}
-				}
 			}
 		}
 	} --[[@as MazzleDocsDocumentation]]
@@ -526,12 +495,5 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function ProgressionsMutator:generateChangelog()
 	return {
-		["1.7.0"] = {
-			type = "Bullet",
-			text = {
-				"Changes the on level up behavior to trigger when the EocLevel component changes instead of the AvailableLevel component, preventing it from firing mid-combat",
-				"Use EocLevel for all player-centric calculations"
-			}
-		} --[[@as MazzleDocsContentItem]],
 	}
 end

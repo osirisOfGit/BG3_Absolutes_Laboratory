@@ -164,10 +164,6 @@ Ext.Require("Shared/Mutations/Selectors/TagSelector.lua")
 Ext.Require("Shared/Mutations/Selectors/TemplateSelector.lua")
 Ext.Require("Shared/Mutations/Selectors/XPRewardSelector.lua")
 
-
----@type MazzleDocsDocumentation
-local changelogs = {}
-
 ---@param existingSlides MazzleDocsSlide[]?
 ---@return MazzleDocsSlide[]?
 function SelectorInterface:generateDocs(existingSlides)

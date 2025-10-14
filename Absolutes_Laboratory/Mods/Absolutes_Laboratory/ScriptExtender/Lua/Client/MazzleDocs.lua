@@ -28,72 +28,55 @@ function MazzleDocs:addDocButton(parent, document, configConsumer)
 			end
 		end
 
-		local mutatorChangelog = {
-			Topic = "Master Changelog",
-			SubTopic = "Mutations",
-			content = {
-				{
-					type = "Heading",
-					text = "Mutators"
+		---@param componentName string
+		---@param changelogs ({ [string]: MazzleDocsContentItem }|{ [string]: { [string]: MazzleDocsContentItem } })
+		local function buildChangelogForMaster(componentName, changelogs)
+			local masterChangelogEntry = {
+				Topic = "Master Changelog",
+				SubTopic = "Mutations",
+				content = {
+					{
+						type = "Heading",
+						text = componentName
+					}
 				}
-			}
-		} --[[@as MazzleDocsSlide]]
+			} --[[@as MazzleDocsSlide]]
 
-		for version, mutatorChangelogs in TableUtils:OrderedPairs(MutatorInterface:generateChangelog(), function(key)
-			-- To Sort Descending Order
-			local M, m, p = key:match("^(%d+)%.(%d+)%.(%d+)$")
-			M, m, p = tonumber(M), tonumber(m), tonumber(p)
-			return -1 * (M + m + p)
-		end) do
-			if version == currentVer then
-				version = version .. " (Current)"
-			end
+			for version, changelog in TableUtils:OrderedPairs(changelogs, function(key)
+				-- To Sort Descending Order
+				local M, m, p = key:match("^(%d+)%.(%d+)%.(%d+)$")
+				M, m, p = tonumber(M), tonumber(m), tonumber(p)
+				return -1 * (M + m + p)
+			end) do
+				if version == currentVer then
+					version = version .. " (Current)"
+				end
 
-			table.insert(mutatorChangelog.content, {
-				type = "Heading",
-				text = version
-			} --[[@as MazzleDocsContentItem]])
-
-			for mutatorName, changelog in TableUtils:OrderedPairs(mutatorChangelogs) do
-				table.insert(mutatorChangelog.content, {
-					type = "SubHeading",
-					text = mutatorName
+				table.insert(masterChangelogEntry.content, {
+					type = "Heading",
+					text = version
 				} --[[@as MazzleDocsContentItem]])
 
-				table.insert(mutatorChangelog.content, changelog)
-			end
-		end
-		table.insert(document, mutatorChangelog)
+				if componentName == "Mutators" then
+					for subcomponentName, changelogEntry in TableUtils:OrderedPairs(changelog) do
+						table.insert(masterChangelogEntry.content, {
+							type = "SubHeading",
+							text = subcomponentName
+						} --[[@as MazzleDocsContentItem]])
 
-		local masterSelectorChangelogs = {
-			Topic = "Master Changelog",
-			SubTopic = "Mutations",
-			content = {
-				{
-					type = "Heading",
-					text = "Selectors"
-				}
-			}
-		} --[[@as MazzleDocsSlide]]
-
-		for version, selectorChangelog in TableUtils:OrderedPairs(SelectorInterface:generateChangelog(), function(key)
-			-- To Sort Descending Order
-			local M, m, p = key:match("^(%d+)%.(%d+)%.(%d+)$")
-			M, m, p = tonumber(M), tonumber(m), tonumber(p)
-			return -1 * (M + m + p)
-		end) do
-			if version == currentVer then
-				version = version .. " (Current)"
+						table.insert(masterChangelogEntry.content, changelogEntry)
+					end
+				else
+					table.insert(masterChangelogEntry.content, changelog)
+				end
 			end
 
-			table.insert(masterSelectorChangelogs.content, {
-				type = "Heading",
-				text = version
-			} --[[@as MazzleDocsContentItem]])
-
-			table.insert(masterSelectorChangelogs.content, selectorChangelog)
+			table.insert(document, masterChangelogEntry)
 		end
-		table.insert(document, masterSelectorChangelogs)
+
+		buildChangelogForMaster("General", MutationProfileManager:generateChangelog())
+		buildChangelogForMaster("Mutators", MutatorInterface:generateChangelog())
+		buildChangelogForMaster("Selectors", SelectorInterface:generateChangelog())
 
 		self.Create_Mazzle_Docs(document, config)
 	end

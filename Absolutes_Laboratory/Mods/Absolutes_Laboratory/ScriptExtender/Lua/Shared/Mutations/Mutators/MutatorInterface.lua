@@ -264,7 +264,7 @@ function MutatorInterface:generateDocs(existingSlides)
 			{
 				type = "Content",
 				text = [[
-Some mutators are also designed to be dependent on other mutators - these dependencies are listed in their respectives slides, but users don't have to concern themselves with this much, as each mutator is assigned an internal priority that ensures correct application order (and that order is reflected in the Mutators section of the sidebar).
+Some mutators are also designed to be dependent on other mutators - these dependencies are listed in their respectives slides, but users don't have to concern themselves with this much, as each mutator is assigned an internal priority that ensures correct application order.
 Just know that the UI will render the mutators in this assigned order (if multiple mutators share the same priority, order is not guaranteed between sessions), and this priority is documented in the DEBUG logs:]]
 			},
 			{
