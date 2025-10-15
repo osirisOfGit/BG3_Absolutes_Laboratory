@@ -742,23 +742,6 @@ This only matters when a player saves mid-combat and restarts the game, so it sh
 				},
 				{
 					type = "SubHeading",
-					text = "Example Use Cases"
-				},
-				{
-					type = "Section",
-					text = "Selected entities:"
-				},
-				{
-					type = "Bullet",
-					text = {
-						"TODO"
-					}
-				} --[[@as MazzleDoctsBullet]],
-				{
-					type = "Separator"
-				},
-				{
-					type = "SubHeading",
 					text = "Short List of Possible Boosts for use in the Custom Boosts section"
 				},
 				{

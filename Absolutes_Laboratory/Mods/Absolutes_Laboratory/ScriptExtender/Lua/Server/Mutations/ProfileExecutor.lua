@@ -81,11 +81,13 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 				if Logger:IsLogLevelEnabled(Logger.PrintTypes.DEBUG) then
 					Logger:BasicDebug("%s entities left to process, %s currently eligible", TableUtils:CountElements(entitiesToProcess), TableUtils:CountElements(eligible))
 				end
+
 				if not next(entitiesToProcess) then
 					Logger:BasicInfo("======= Mutated %s Entities in %dms under Profile %s =======",
 						entityCounter,
 						(Ext.Timer:MonotonicTime() - time),
 						activeProfile.name .. (activeProfile.modId and string.format(" (from mod %s)", Ext.Mod.GetMod(activeProfile.modId).Info.Name) or ""))
+
 					ListConfigurationManager.progressionIndex()
 
 					profileExecutorStatus.stage = "Complete"
@@ -246,18 +248,6 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 				checkCompletion()
 				ListConfigurationManager:buildProgressionIndex()
 			end)
-
-			if not next(entitiesToProcess) then
-				profileExecutorStatus.stage = "Complete"
-				profileExecutorStatus.timeElapsed = (Ext.Timer:MonotonicTime() - time)
-				broadcastStatus()
-
-				Logger:BasicInfo("======= Mutated %s Entities in %dms under Profile %s =======",
-					entityCounter,
-					(Ext.Timer:MonotonicTime() - time),
-					activeProfile.name .. (activeProfile.modId and string.format(" (from mod %s)", Ext.Mod.GetMod(activeProfile.modId).Info.Name) or ""))
-				ListConfigurationManager.progressionIndex()
-			end
 		else
 			local time = Ext.Timer:MonotonicTime()
 			local counter = 0

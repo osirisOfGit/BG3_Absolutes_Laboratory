@@ -146,18 +146,21 @@ function MutationProfileManager:init(parent)
 		self.profileRulesParent = Styler:TwoColumnTable(rightPanel)
 		self.profileRulesParent.Borders = false
 		self.profileRulesParent.Resizable = false
-		self.profileRulesParent.ColumnDefs[1].Width = 400 * Styler:ScaleFactor()
+		self.profileRulesParent.ColumnDefs[1].Width = Styler:ScaleFactor() * 300
+		self.profileRulesParent.NoSavedSettings = true
 
 		local profileRulesRow = self.profileRulesParent:AddRow()
 
-		self.rulesOrderGroup = profileRulesRow:AddCell():AddChildWindow("rulesOrderGroup")
+		self.rulesOrderGroup = profileRulesRow:AddCell()
 		self.rulesOrderGroup.UserData = "keep"
-		local profilerManagerWindow = self.rulesOrderGroup:AddChildWindow("RulesOrder")
-		profilerManagerWindow.Size = Styler:ScaleFactor({ 0, 120 })
+
+		local profilerManagerWindow = self.rulesOrderGroup:AddGroup("RulesOrder")
 		profilerManagerWindow.UserData = "keep"
 		Styler:MiddleAlignedColumnLayout(profilerManagerWindow, function(ele)
 			self.profileManagerParent = ele
 		end).UserData = "keep"
+
+		self.rulesOrderGroup = self.rulesOrderGroup:AddChildWindow("rulesOrderGroup")
 
 		self.mutationDesigner = profileRulesRow:AddCell():AddChildWindow("MutationDesigner")
 		local collapseExpandRulesOrderButton = self.mutationDesigner:AddButton("<<")
@@ -166,9 +169,10 @@ function MutationProfileManager:init(parent)
 		collapseExpandRulesOrderButton.OnClick = function()
 			Helpers:CollapseExpand(
 				collapseExpandRulesOrderButton.Label == "<<",
-				600 * Styler:ScaleFactor(),
+				self.profileRulesParent.UserData or (Styler:ScaleFactor() * 300),
 				function(width)
 					if width then
+						self.profileManagerParent.Visible = true
 						self.profileRulesParent.ColumnDefs[1].Width = width
 					end
 					return self.profileRulesParent.ColumnDefs[1].Width
@@ -177,6 +181,7 @@ function MutationProfileManager:init(parent)
 				function()
 					if collapseExpandRulesOrderButton.Label == "<<" then
 						collapseExpandRulesOrderButton.Label = ">>"
+						self.profileManagerParent.Visible = false
 					else
 						collapseExpandRulesOrderButton.Label = "<<"
 					end
@@ -1391,7 +1396,8 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 	buildSlots(numOfPrepMutations, true)
 	buildSlots(numOfMutations)
 
-	-- self.profileRulesParent.ColumnDefs[1].Width = longestTextWidth
+	self.profileRulesParent.ColumnDefs[1].Width = math.max(300 * Styler:ScaleFactor(), longestTextWidth)
+	self.profileRulesParent.UserData = math.max(300 * Styler:ScaleFactor(), longestTextWidth)
 end
 
 Profiles_Docs = {
@@ -1683,6 +1689,13 @@ Lab pre-packages a number of Markers that can be used by anyone - these can't be
 ---@return {[string]: MazzleDocsContentItem}
 function MutationProfileManager:generateChangelog()
 	return {
+		["1.7.1"] = {
+			type = "Bullet",
+			text = {
+				"Server: Fix ProfileExecutor duplicating it's completion checks",
+				"Restructures the Profile Manager column to be more user-friendly and properly adjust to mutation widths"
+			}
+		},
 		["1.7.0"] = {
 			type = "Bullet",
 			text = {
@@ -1700,7 +1713,7 @@ function MutationProfileManager:generateChangelog()
 				"Adds the !Lab_GenerateMutationDiagram <entityId> server-only console command and a button in the Mutation tab of the Inspector to generate a Mermaid Diagram representing the mutation state flow of the specified entity against the currently active (or default) profile",
 				"Adds client only console command Lab_MetaBlock <UUID LIST> to allow creating dependency nodes from any loaded mod(s)",
 			}
-		} --[[@as MazzleDocsContentItem]],
+		},
 		["1.6.0"] = {
 			type = "Bullet",
 			text = {
@@ -1714,7 +1727,7 @@ function MutationProfileManager:generateChangelog()
 				"Allows saving selectors and mutators into loadable presets",
 			}
 		}
-	}
+	} --[[@as {[string]: MazzleDocsContentItem}]]
 end
 
 SelectorInterface:generateDocs(Profiles_Docs)

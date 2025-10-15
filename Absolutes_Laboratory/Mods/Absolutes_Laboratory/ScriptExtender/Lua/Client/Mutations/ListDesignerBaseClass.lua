@@ -323,7 +323,7 @@ function ListDesignerBaseClass:buildLists(activeListId)
 	self:buildModLists(activeListId)
 end
 
-function ListDesignerBaseClass:buildModLists(activeListID)
+function ListDesignerBaseClass:buildModLists(activeListId)
 	if MutationModProxy.ModProxy.lists[self.configKey]() then
 		---@type {[Guid]: Guid[]}
 		local modLists = {}
@@ -361,6 +361,29 @@ function ListDesignerBaseClass:buildModLists(activeListID)
 						spellListSelect:Tooltip():AddText("\t " .. list.description)
 					end
 
+					spellListSelect.OnRightClick = function()
+						Helpers:KillChildren(self.popup)
+						self.popup:Open()
+
+						self.popup:AddSelectable("Copy To Local Config").OnClick = function()
+							---@type CustomList
+							local listCopy = TableUtils:DeeplyCopyTable(list)
+							listCopy.modId = nil
+
+							if TableUtils:IndexOf(ConfigurationStructure.config.mutations.lists[self.configKey],
+									---@param value CustomList
+									function(value)
+										return value.name == listCopy.name
+									end)
+							then
+								listCopy.name = listCopy.name .. " (Copy)"
+							end
+
+							ConfigurationStructure.config.mutations.lists[self.configKey][FormBuilder:generateGUID()] = listCopy
+							self:launch(activeListId)
+						end
+					end
+
 					spellListSelect.OnClick = function()
 						if self.activeListHandle then
 							self.activeListHandle.Selected = false
@@ -375,7 +398,7 @@ function ListDesignerBaseClass:buildModLists(activeListID)
 						self:buildDesigner()
 					end
 
-					if guid == activeListID then
+					if guid == activeListId then
 						spellListSelect.Selected = true
 						spellListSelect:OnClick()
 					end
@@ -561,7 +584,7 @@ This logic will be run recursively, applying the lists linked to the linked list
 			if #userLists.Children == 1 then
 				userLists:Destroy()
 			else
-				userLists.Size = { 0, math.min(500, 80 * (#userLists.Children - 1)) }
+				userLists.Size = { 0, math.min(500, 40 * (#userLists.Children - 1)) }
 			end
 
 			if MutationModProxy.ModProxy.lists[self.configKey]() then
@@ -576,8 +599,8 @@ This logic will be run recursively, applying the lists linked to the linked list
 
 					if modCache.lists and modCache.lists[self.configKey] and next(modCache.lists[self.configKey]) then
 						modLists[modId] = {}
-						table.insert(modLists[modId], spellListId)
-						for spellListId in pairs(modCache.lists[self.configKey]) do
+						for listId in pairs(modCache.lists[self.configKey]) do
+							table.insert(modLists[modId], listId)
 						end
 					end
 				end
@@ -2197,6 +2220,13 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function ListDesignerBaseClass:generateChangelog()
 	return {
+		["1.8.0"] = {
+			type = "Bullet",
+			text = {
+				"Adds ability to copy mod-sourced Lists to your local config",
+				"Fix ModLists not appearing in the Link list popup"
+			}
+		},
 		["1.7.0"] = {
 			type = "Bullet",
 			text = {
@@ -2210,7 +2240,7 @@ function ListDesignerBaseClass:generateChangelog()
 				"Adds a new Stat Browser setting to show all spell upcasts in addition to the base spell",
 				"Minor visual bug fixes",
 			}
-		} --[[@as MazzleDocsContentItem]],
+		},
 		["1.6.0"] = {
 			type = "Bullet",
 			text = {
@@ -2226,6 +2256,6 @@ function ListDesignerBaseClass:generateChangelog()
 				"Restructures the ui a bit, allows collapsing the folder sidebar (happens automatically on selecting a list)",
 				"Adds ability to hide/show each level in a list",
 			}
-		} --[[@as MazzleDocsContentItem]]
-	}
+		}
+	} --[[@as {[string]: MazzleDocsContentItem}]]
 end
