@@ -22,18 +22,21 @@ end
 
 ---@param faction ResourceFaction
 function FactionsProxy:RenderDisplayWindow(faction, parent)
-	if faction then
-		local display = Styler:TwoColumnTable(parent, faction.ResourceUUID)
+	if not faction then
+		parent:AddText("N/A")
+		return
+	end
 
-		for key, value in TableUtils:OrderedPairs(Ext.Types.Serialize(faction)) do
-			if value ~= "00000000-0000-0000-0000-000000000000" then
-				local row = display:AddRow()
-				row:AddCell():AddText(key)
-				if key == "ParentGuid" and value ~= "00000000-0000-0000-0000-000000000000" then
-					self:RenderDisplayWindow(Ext.StaticData.Get(value, "Faction"), row:AddCell())
-				else
-					Styler:SelectableText(row:AddCell(), key, tostring(value))
-				end
+	local display = Styler:TwoColumnTable(parent, faction.ResourceUUID)
+
+	for key, value in TableUtils:OrderedPairs(Ext.Types.Serialize(faction)) do
+		if value ~= "00000000-0000-0000-0000-000000000000" then
+			local row = display:AddRow()
+			row:AddCell():AddText(key)
+			if key == "ParentGuid" and value ~= "00000000-0000-0000-0000-000000000000" then
+				self:RenderDisplayWindow(Ext.StaticData.Get(value, "Faction"), row:AddCell())
+			else
+				Styler:SelectableText(row:AddCell(), key, tostring(value))
 			end
 		end
 	end

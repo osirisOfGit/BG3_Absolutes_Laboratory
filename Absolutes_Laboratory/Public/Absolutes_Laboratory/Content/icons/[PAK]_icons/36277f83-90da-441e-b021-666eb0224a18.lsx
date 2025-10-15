@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="8" revision="0" build="10" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="TextureBank">
+		<node id="TextureBank">
+			<children>
+				<node id="Resource">
+					<attribute id="ID" type="FixedString" value="36277f83-90da-441e-b021-666eb0224a18" />
+					<attribute id="Name" type="LSString" value="Lab_Docs" />
+					<attribute id="SourceFile" type="LSString" value="Public/Absolutes_Laboratory/Assets/Textures/Docs/Lab_Docs.dds" />
+					<attribute id="Template" type="FixedString" value="Lab_Docs" />
+					<attribute id="Streaming" type="bool" value="True" />
+					<attribute id="Type" type="int32" value="0" />
+					<attribute id="SRGB" type="bool" value="True" />
+					<attribute id="Width" type="int32" value="3440" />
+					<attribute id="Height" type="int32" value="1452" />
+				</node>
+			</children>
+		</node>
+	</region>
+</save>

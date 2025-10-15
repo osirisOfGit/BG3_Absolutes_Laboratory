@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<save>
+	<version major="4" minor="0" revision="9" build="322"/>
+	<region id="TextureAtlasInfo">
+		<node id="root">
+			<children>
+				<node id="TextureAtlasIconSize">
+					<attribute id="Height" value="484" type="int32"/>
+					<attribute id="Width" value="860" type="int32"/>
+				</node>
+				<node id="TextureAtlasPath">
+					<attribute id="Path" value="Assets/Textures/Docs/Lab_Docs.dds" type="string"/>
+					<attribute id="UUID" value="36277f83-90da-441e-b021-666eb0224a18" type="FixedString"/>
+				</node>
+				<node id="TextureAtlasTextureSize">
+					<attribute id="Height" value="1452" type="int32"/>
+					<attribute id="Width" value="3440" type="int32"/>
+				</node>
+			</children>
+		</node>
+	</region>
+	<region id="IconUVList">
+		<node id="root">
+			<children>
+				<node id="IconUV">
+					<attribute id="MapKey" value="Lab_Docs" type="FixedString"/>
+					<attribute id="U1" value="0" type="float"/>
+					<attribute id="V1" value="0" type="float"/>
+					<attribute id="U2" value="0.2" type="float"/>
+					<attribute id="V2" value="0.2" type="float"/>
+				</node>
+			</children>
+		</node>
+	</region>
+</save>

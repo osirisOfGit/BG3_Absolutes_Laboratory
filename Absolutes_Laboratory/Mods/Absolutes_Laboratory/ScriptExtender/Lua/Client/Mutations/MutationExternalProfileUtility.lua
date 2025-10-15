@@ -43,6 +43,28 @@ function MutationExternalProfileUtility:ValidateMutations(importedMutations)
 		end
 	end
 
+	for profileId, profile in pairs(importedMutations.profiles) do
+		for _, profileRule in pairs(profile.mutationRules) do
+			if profileRule.sourceMod then
+				local modId = profileRule.sourceMod.modId
+				local modDependency = profileRule.sourceMod
+				modCache[modId] = modDependency
+				if modDependency.modName then
+					if not Ext.Mod.GetMod(modId) then
+						failedDependencies[modId] = failedDependencies[modId] or {}
+						table.insert(failedDependencies[modId], {
+							type = "Folder",
+							packagedItems = modDependency.packagedItems
+						} --[[@as DependencyFailure]]
+						)
+
+						modCache[modId] = modDependency
+					end
+				end
+			end
+		end
+	end
+
 	for _, folder in pairs(importedMutations.folders) do
 		if not folder.modId then
 			for _, mutation in pairs(folder.mutations) do
@@ -86,35 +108,38 @@ function MutationExternalProfileUtility:ValidateMutations(importedMutations)
 		end
 	end
 
-	if importedMutations.spellLists then
-		for _, spellList in pairs(importedMutations.spellLists) do
-			if not spellList.modId then
-				if spellList.modDependencies then
-					for modId, modDependency in pairs(spellList.modDependencies) do
-						modCache[modId] = modDependency
-						if modDependency.modName then
-							if not Ext.Mod.GetMod(modId) then
-								failedDependencies[modId] = failedDependencies[modId] or {}
-								table.insert(failedDependencies[modId], {
-									type = "SpellList",
-									target = spellList.name,
-									packagedItems = modDependency.packagedItems
-								} --[[@as DependencyFailure]]
-								)
+	for _, listType in pairs(MutationModProxy.listTypes) do
+		if importedMutations.lists[listType] then
+			for _, list in pairs(importedMutations.lists[listType]) do
+				---@cast list CustomList
+				if not list.modId then
+					if list.modDependencies then
+						for modId, modDependency in pairs(list.modDependencies) do
+							modCache[modId] = modDependency
+							if modDependency.modName then
+								if not Ext.Mod.GetMod(modId) then
+									failedDependencies[modId] = failedDependencies[modId] or {}
+									table.insert(failedDependencies[modId], {
+										type = listType:upper(),
+										target = list.name,
+										packagedItems = modDependency.packagedItems
+									} --[[@as DependencyFailure]]
+									)
+								end
 							end
 						end
+						list.modDependencies = nil
 					end
-					spellList.modDependencies = nil
+				else
+					local name, author, version = Helpers:BuildModFields(list.modId)
+					modCache[list.modId] = {
+						modAuthor = author,
+						modName = name,
+						modVersion = version,
+						modId = list.modId,
+						packagedItems = nil
+					} --[[@as ModDependency]]
 				end
-			else
-				local name, author, version = Helpers:BuildModFields(spellList.modId)
-				modCache[spellList.modId] = {
-					modAuthor = author,
-					modName = name,
-					modVersion = version,
-					modId = spellList.modId,
-					packagedItems = nil
-				} --[[@as ModDependency]]
 			end
 		end
 	end
@@ -132,24 +157,11 @@ local dependencyBlock = [[
 </node>
 ]]
 
----@param mutationConfig MutationsConfig
----@param extraDependencies ModDependency[]
----@return string?
-function MutationExternalProfileUtility:BuildMetaDependencyBlock(mutationConfig, extraDependencies)
-	local mods = self:ValidateMutations(TableUtils:DeeplyCopyTable(mutationConfig))
-
-	local lab = Ext.Mod.GetMod(ModuleUUID).Info
-	mods[ModuleUUID] = {
-		modId = ModuleUUID,
-		modName = lab.Name,
-		modAuthor = lab.Author,
-		modVersion = lab.ModVersion,
-		packagedItems = nil
-	}
-
-	if next(mods) then
+---@param modList string[]
+local function buildMetaBlock(modList)
+	if next(modList) then
 		local output = ""
-		for modId in TableUtils:CombinedPairs(mods, extraDependencies) do
+		for _, modId in TableUtils:CombinedPairs(modList) do
 			local modInfo = Ext.Mod.GetMod(modId)
 			if modInfo then
 				local modInfo = modInfo.Info
@@ -177,6 +189,33 @@ function MutationExternalProfileUtility:BuildMetaDependencyBlock(mutationConfig,
 	end
 end
 
+Ext.RegisterConsoleCommand("Lab_MetaBlock", function(cmd, ...)
+	print(buildMetaBlock({ ... }))
+end)
+
+---@param mutationConfig MutationsConfig
+---@param extraDependencies ModDependency[]
+---@return string?
+function MutationExternalProfileUtility:BuildMetaDependencyBlock(mutationConfig, extraDependencies)
+	local mods = self:ValidateMutations(TableUtils:DeeplyCopyTable(mutationConfig))
+
+	local lab = Ext.Mod.GetMod(ModuleUUID).Info
+	mods[ModuleUUID] = {
+		modId = ModuleUUID,
+		modName = lab.Name,
+		modAuthor = lab.Author,
+		modVersion = lab.ModVersion,
+		packagedItems = nil
+	}
+
+	local extraDependencies = TableUtils:DeeplyCopyTable(extraDependencies)
+	for modId in pairs(mods) do
+		table.insert(extraDependencies, modId)
+	end
+
+	return buildMetaBlock(extraDependencies)
+end
+
 ---@param forMod boolean
 ---@param ... Guid
 function MutationExternalProfileUtility:exportProfile(forMod, ...)
@@ -185,8 +224,18 @@ function MutationExternalProfileUtility:exportProfile(forMod, ...)
 	local export = {
 		profiles = {},
 		folders = {},
-		spellLists = {}
+		prepPhaseMarkers = {},
+		lists = {
+			spellLists = {},
+			statusLists = {},
+			passiveLists = {},
+			entryReplacerDictionary = {}
+		}
 	}
+
+	for _, listType in pairs(MutationModProxy.listTypes) do
+		export[listType] = {}
+	end
 
 	local names = ""
 
@@ -205,11 +254,11 @@ function MutationExternalProfileUtility:exportProfile(forMod, ...)
 
 		export.profiles[profileID .. "Exported"] = profile
 
-		for _, mutationRule in ipairs(profile.mutationRules) do
+		---@param mutationRule MutationProfileRule
+		local function validateRules(mutationRule)
 			local folder = MutationConfigurationProxy.folders[mutationRule.mutationFolderId]
 
 			if not folder.modId then
-				mutationRule.mutationFolderId = mutationRule.mutationFolderId .. "Exported"
 				if not export.folders[mutationRule.mutationFolderId] then
 					export.folders[mutationRule.mutationFolderId] = {
 						name = folder.name,
@@ -242,7 +291,16 @@ function MutationExternalProfileUtility:exportProfile(forMod, ...)
 					modId = folder.modId,
 					packagedItems = nil
 				} --[[@as ModDependency]]
+
+				mutationRule.sourceMod = mutationDependencies[folder.modId]
 			end
+		end
+
+		for _, mutationRule in ipairs(profile.mutationRules) do
+			validateRules(mutationRule)
+		end
+		for _, mutationRule in ipairs(profile.prepPhaseMutations or {}) do
+			validateRules(mutationRule)
 		end
 	end
 
@@ -260,7 +318,7 @@ end
 local window
 
 ---@class DependencyFailure
----@field type "Selector"|"Mutator"|"SpellList"
+---@field type "Selector"|"Mutator"|"SpellList"|"Folder"
 ---@field target string?
 ---@field folderName string?
 ---@field mutationName string?
@@ -272,7 +330,7 @@ local window
 ---@return { [string]: DependencyFailure[] }? failedDependencies
 ---@return fun()? dependencyWindow
 function MutationExternalProfileUtility:importProfile(export)
-	local importedMutations = export["mutations"]
+	local importedMutations = TableUtils:DeeplyCopyTable(export["mutations"])
 	local mutationConfig = ConfigurationStructure.config.mutations
 
 	local modCache, failedDependencies = self:ValidateMutations(mutationConfig)
@@ -319,20 +377,57 @@ function MutationExternalProfileUtility:importProfile(export)
 			mutationConfig.folders[folderId] = folder
 		end
 
-		if importedMutations.spellLists then
-			for spellListId, spellList in pairs(importedMutations.spellLists) do
-				if mutationConfig.spellLists[spellListId] then
-					mutationConfig.spellLists[spellListId].delete = true
+		if importedMutations.prepPhaseMarkers then
+			for categoryId, markerCategory in pairs(importedMutations.prepPhaseMarkers) do
+				if mutationConfig.prepPhaseMarkers[categoryId] then
+					mutationConfig.prepPhaseMarkers[categoryId].delete = true
 				end
 
-				if TableUtils:IndexOf(mutationConfig.spellLists, function(value)
-						return value.name == spellList.name
+				if TableUtils:IndexOf(mutationConfig.prepPhaseMarkers, function(value)
+						return value.name == markerCategory.name
 					end)
 				then
-					spellList.name = string.format("%s - %s", spellList.name, "Imported")
+					markerCategory.name = markerCategory.name .. " - Imported"
 				end
 
-				mutationConfig.spellLists[spellListId] = spellList
+				mutationConfig.prepPhaseMarkers[categoryId] = markerCategory
+			end
+		end
+
+		if importedMutations.lists.entryReplacerDictionary then
+			for _, listType in pairs(MutationModProxy.listTypes) do
+				if importedMutations.lists.entryReplacerDictionary[listType] and next(importedMutations.lists.entryReplacerDictionary[listType]) then
+					mutationConfig.lists.entryReplacerDictionary = mutationConfig.lists.entryReplacerDictionary or {}
+					mutationConfig.lists.entryReplacerDictionary[listType] = mutationConfig.lists.entryReplacerDictionary[listType] or {}
+
+					for entryName, replacementMap in pairs(importedMutations.lists.entryReplacerDictionary[listType]) do
+						mutationConfig.lists.entryReplacerDictionary[listType][entryName] = mutationConfig.lists.entryReplacerDictionary[listType][entryName] or {}
+						for _, replacement in ipairs(replacementMap) do
+							if not TableUtils:IndexOf(mutationConfig.lists.entryReplacerDictionary[listType][entryName], replacement) then
+								table.insert(mutationConfig.lists.entryReplacerDictionary[listType][entryName], replacement)
+							end
+						end
+					end
+				end
+			end
+		end
+
+		for _, listType in pairs(MutationModProxy.listTypes) do
+			if importedMutations.lists[listType] then
+				for listId, list in pairs(importedMutations.lists[listType]) do
+					if mutationConfig.lists[listType][listId] then
+						mutationConfig.lists[listType][listId].delete = true
+					end
+
+					if TableUtils:IndexOf(mutationConfig.lists[listType], function(value)
+							return value.name == list.name
+						end)
+					then
+						list.name = string.format("%s - %s", list.name, "Imported")
+					end
+
+					mutationConfig.lists[listType][listId] = list
+				end
 			end
 		end
 	end

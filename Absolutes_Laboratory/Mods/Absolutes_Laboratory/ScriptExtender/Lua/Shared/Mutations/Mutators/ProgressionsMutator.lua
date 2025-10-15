@@ -1,4 +1,8 @@
 ProgressionsMutator = MutatorInterface:new("Progressions")
+ProgressionsMutator.affectedComponents = {
+	"ProgressionContainer",
+	"ProgressionMeta"
+}
 
 function ProgressionsMutator:priority()
 	return self:recordPriority(SpellListMutator:priority() + 1)
@@ -207,9 +211,9 @@ Progressions are evaluated independently from one another to allow for progressi
 
 		if progressionConditionalGroup.spellListDependencies then
 			for i, spellListId in TableUtils:OrderedPairs(progressionConditionalGroup.spellListDependencies, function(key, value)
-				return MutationConfigurationProxy.spellLists[value] and MutationConfigurationProxy.spellLists[value].name or value
+				return MutationConfigurationProxy.lists.spellLists[value] and MutationConfigurationProxy.lists.spellLists[value].name or value
 			end) do
-				local spellList = MutationConfigurationProxy.spellLists[spellListId]
+				local spellList = MutationConfigurationProxy.lists.spellLists[spellListId]
 				if spellList then
 					local delete = Styler:ImageButton(conditionalCell:AddImageButton("delete" .. spellListId, "ico_red_x", { 16, 16 }))
 					delete.OnClick = function()
@@ -239,7 +243,7 @@ Progressions are evaluated independently from one another to allow for progressi
 			Helpers:KillChildren(popup)
 			popup:Open()
 
-			for spellListId, spellList in TableUtils:OrderedPairs(MutationConfigurationProxy.spellLists, function(key, value)
+			for spellListId, spellList in TableUtils:OrderedPairs(MutationConfigurationProxy.lists.spellLists, function(key, value)
 				return value.name .. (value.modId and string.format(" (%s)", Ext.Mod.GetMod(value.modId).Info.Name) or "")
 			end) do
 				---@type ExtuiSelectable
@@ -414,4 +418,82 @@ if Ext.IsServer() then
 		-- Recomputes the boosts (i.e. action resources) specified in the progressions
 		Ext.System.ServerBoost.ProgressionUpdates[entity] = true
 	end
+end
+
+---@return MazzleDocsDocumentation
+function ProgressionsMutator:generateDocs()
+	return {
+		{
+			Topic = self.Topic,
+			SubTopic = self.SubTopic,
+			content = {
+				{
+					type = "Heading",
+					text = "Progressions",
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "CallOut",
+					prefix = "",
+					prefix_color = "Yellow",
+					text = [[
+Dependency On: Spell Lists
+Transient: No
+Composable: Yes - Progression groups will be grouped into one pool and randomly chosen from (post filtering)]]
+				} --[[@as MazzleDocsCallOut]],
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Summary"
+				},
+				{
+					type = "Content",
+					text = [[This is mutator allows you to change the Progressions associated to NPCs to enable, or avoid interfering with, your other mutators.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Client-Side Content"
+				},
+				{
+					type = "Content",
+					text = [[
+As mentioned in the Spell Lists page, Spell Lists are intended to be for NPCs what Progressions are for Players - as such, I don't really recommend setting real Progressions for NPCs.
+This mutator is primarily intended to wipe progressions from NPCs by replacing them with useless ones, letting Lab take care of everything a progression would normally handle. Still, you can do what you want, it's your game.
+
+You add progressions by looking up the Name associated with a TableUUID - as TableUUIDs are arbitrary values with no backed resource, this is programmatically derived by Lab, using the first Name node asssociated to a progression with a given table id (so it may not be exactly what you think it is, especially with poorly modded/wackily designed progressions).
+
+Progressions can be set to a % of the character's level - these values do not have to add up to 100%, they are completely independent of each other, representing class/subclass/race/whatever progressions.
+They aren't directly tied to Spell Lists either, per the initial reasoning above, but you can conditionally apply a Progression group to an entity based on whether or not they've been assigned a certain number of specific lists, if you want to ensure your progressions adhere to the entity's assigned Archetype.
+
+The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Server-Side Implementation"
+				},
+				{
+					type = "Content",
+					text =
+					[[Progressions are one of the weirder components in the game - they aren't simple properties on an entity, they're actually entities in of themselves, associated to an entity via the Owner component, requiring Lab to create new entities that represent what's specified in the mutator.
+To prevent compounding bloat, Lab will destroy any progression entities it removes from a character entity, recreating them as necessary. I haven't seen any adverse impacts from doing this, but let me know.]]
+				},
+			}
+		}
+	} --[[@as MazzleDocsDocumentation]]
+end
+
+---@return {[string]: MazzleDocsContentItem}
+function ProgressionsMutator:generateChangelog()
+	return {
+	}
 end

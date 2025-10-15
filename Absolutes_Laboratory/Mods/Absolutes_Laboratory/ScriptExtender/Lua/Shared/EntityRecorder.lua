@@ -10,6 +10,7 @@ EntityRecorder.trackerFilename = "recorderTracker.json"
 
 -- Thanks Aahz
 ---@enum GameLevel
+---@enum GameLevel
 EntityRecorder.Levels = {
 	[1] = "TUT_Avernus_C", -- nautiloid
 	[2] = "WLD_Main_A", -- beach, grove, goblin camp, underdark
@@ -32,20 +33,30 @@ EntityRecorder.Levels = {
 }
 
 ---@class EntityRecord
----@field Name string
----@field LevelName string
----@field Id Guid
----@field Template GUIDSTRING
----@field Race RaceUUID
----@field Faction Faction
----@field Progressions ProgressionTableId[]
----@field Tags TAG[]
----@field Stat string
 ---@field Abilities {[string]: number}
+---@field Faction Faction
 ---@field Icon string
+---@field Id Guid
+---@field LevelName string
+---@field Name string
+---@field Size number
+---@field Passives string[]
+---@field Progressions ProgressionTableId[]
+---@field Race RaceUUID
+---@field Stat string
+---@field Tags TAG[]
+---@field Template GUIDSTRING
 ---@field XPReward Guid
 ---@field CombatGroupId Guid?
----@field Passives string[]
+
+---@param entity EntityHandle
+---@return string
+function EntityRecorder:GetEntityName(entity)
+	local char = entity.ServerCharacter or entity.ClientCharacter
+	return (entity.DisplayName and entity.DisplayName.Name:Get())
+		or (char.Template and char.Template.DisplayName:Get())
+		or entity.Uuid.EntityUuid
+end
 
 if Ext.IsClient() then
 	---@type {[GUIDSTRING]: EntityRecord}
@@ -100,7 +111,7 @@ if Ext.IsClient() then
 	---@param parent ExtuiTreeParent
 	function EntityRecorder:BuildButton(parent)
 		if Ext.ClientNet.IsHost() then
-			local indexAllEntities = parent:AddButton("Index All Alive Character Entities")
+			local indexAllEntities = parent:AddButton("Scan All Living Entities Across All Levels")
 			indexAllEntities:Tooltip():AddText([[
 	 This will teleport you to each level in the game and record all the entities loaded onto the server for that level
 You only need to do this once or after you install mods that would add new entities - a local file will be written containing the results.
@@ -279,13 +290,14 @@ else
 									recordedEntities[entity.Uuid.EntityUuid] = {}
 									local entityRecord = recordedEntities[entity.Uuid.EntityUuid]
 
-									entityRecord.Name = (entity.DisplayName and entity.DisplayName.Name:Get())
+									entityRecord.Name = (entity.DisplayName and EntityRecorder:GetEntityName(entity))
 										or (entity.ServerCharacter.Template and entity.ServerCharacter.Template.DisplayName:Get())
 										or entity.Uuid.EntityUuid
 
 									entityRecord.LevelName = charLevel
 									entityRecord.Id = entity.Uuid.EntityUuid
 									entityRecord.Icon = entity.Icon.Icon
+									entityRecord.Size = entity.ObjectSize and entity.ObjectSize.Size
 									entityRecord.Race = entity.Race.Race
 									entityRecord.Faction = entity.Faction.field_8
 									entityRecord.Stat = entity.Data.StatsId
@@ -348,9 +360,7 @@ else
 				indexedEntities[next(indexedEntities)][entity.Uuid.EntityUuid] = {}
 				local entityRecord = indexedEntities[next(indexedEntities)][entity.Uuid.EntityUuid]
 
-				entityRecord.Name = (entity.DisplayName and entity.DisplayName.Name:Get())
-					or (entity.ServerCharacter.Template and entity.ServerCharacter.Template.DisplayName:Get())
-					or entity.Uuid.EntityUuid
+				entityRecord.Name = EntityRecorder:GetEntityName(entity)
 
 				entityRecord.Icon = entity.Icon.Icon
 				entityRecord.Race = entity.Race.Race

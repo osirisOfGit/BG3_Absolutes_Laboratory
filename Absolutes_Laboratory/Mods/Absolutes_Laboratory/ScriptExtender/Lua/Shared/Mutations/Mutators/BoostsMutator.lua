@@ -1,5 +1,8 @@
 ---@class BoostsMutatorClass : MutatorInterface
 BoostsMutator = MutatorInterface:new("Boosts")
+BoostsMutator.affectedComponents = {
+	"BoostsContainer"
+}
 
 function BoostsMutator:priority()
 	return 99
@@ -49,16 +52,40 @@ function BoostsMutator:renderMutator(parent, mutator)
 	headers:AddCell():AddText("Param 2")
 	headers:AddCell():AddText("Param 3")
 
-	for i, boostTable in TableUtils:OrderedPairs(mutator.values, function(key, value)
-		return value.name or ""
-	end) do
+	for i, boostTable in TableUtils:OrderedPairs(mutator.values) do
 		local boostDisplayRow = boostDisplayTable:AddRow()
 
-		local deleteButton = Styler:ImageButton(boostDisplayRow:AddCell():AddImageButton("delete" .. i, "ico_red_x", { 16, 16 }))
+		local actionCell = boostDisplayRow:AddCell()
+		local deleteButton = Styler:ImageButton(actionCell:AddImageButton("delete" .. i, "ico_red_x", { 16, 16 }))
 		deleteButton.OnClick = function()
 			mutator.values[i].delete = true
 			TableUtils:ReindexNumericTable(mutator.values)
 			self:renderMutator(parent, mutator)
+		end
+
+		if i > 1 then
+			local upArrow = Styler:ImageButton(actionCell:AddImageButton("moveup", "scroll_up_d", Styler:ScaleFactor({ 16, 16 })))
+			upArrow.SameLine = true
+			upArrow.OnClick = function()
+				local boost = TableUtils:DeeplyCopyTable(boostTable._real)
+				mutator.values[i].delete = true
+				mutator.values[i] = TableUtils:DeeplyCopyTable(mutator.values[i - 1]._real)
+				mutator.values[i - 1].delete = true
+				mutator.values[i - 1] = boost
+				self:renderMutator(parent, mutator)
+			end
+		end
+		if i < #(mutator.values._real or mutator.values) then
+			local downArrow = Styler:ImageButton(actionCell:AddImageButton("movedown", "scroll_down_d", Styler:ScaleFactor({ 16, 16 })))
+			downArrow.SameLine = true
+			downArrow.OnClick = function()
+				local boost = TableUtils:DeeplyCopyTable(boostTable._real)
+				mutator.values[i].delete = true
+				mutator.values[i] = TableUtils:DeeplyCopyTable(mutator.values[i + 1]._real)
+				mutator.values[i + 1].delete = true
+				mutator.values[i + 1] = boost
+				self:renderMutator(parent, mutator)
+			end
 		end
 
 		local nameCombo = boostDisplayRow:AddCell():AddCombo("")
@@ -285,7 +312,7 @@ function BoostsMutator:buildBoost(mutator)
 
 		for boost in cleanedBoosts:gmatch("([^;]+)") do
 			if boost ~= "" then
-				table.insert(boostsEntries, boost)
+				table.insert(boostsEntries, boost .. ";")
 			end
 		end
 	end
@@ -501,7 +528,7 @@ BoostsMutator.BoostDefinitions = {
 		"number"
 	},
 	StatusImmunity = {
-		"status"
+		"StatsStatusGroup"
 	},
 	Tag = {
 		"Tag"
@@ -642,3 +669,141 @@ UnlockSpellVariant "UnlockSpellVariant(MindSanctuaryCheck(),ModifyTooltipDescrip
 VoicebarkBlock N/A
 ====
 ]]
+
+---@return MazzleDocsDocumentation
+function BoostsMutator:generateDocs()
+	return {
+		{
+			Topic = self.Topic,
+			SubTopic = self.SubTopic,
+			content = {
+				{
+					type = "Heading",
+					text = "Boosts",
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "CallOut",
+					prefix = "",
+					prefix_color = "Yellow",
+					text = [[
+Dependency On: None, but priority is set to run last
+Transient: No, unless the game is restarted
+Composable: Yes - Boosts will be merged together into one pool, allowing duplicate boosts of the same type to persist]]
+				} --[[@as MazzleDocsCallOut]],
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Summary"
+				},
+				{
+					type = "Content",
+					text = [[This mutator allows you the most amount of freedom to mutate the selected entities; anything you can do in a boost, you can do here.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Client-Side Content"
+				},
+				{
+					type = "Content",
+					text = [[
+There are three main components to this mutator:
+At the top are the Boost Builders, which provide a convenient WYSIWIG builder for the simpler but cumbersome Boosts. Boosts that were considered but ultimately excluded are listed at the bottom of the page.
+
+Next is the Custom Boosts section - this is a freeform text box that allows you to specify as many boosts as you want, in any format - Lab will automatically handle spacing, newlines, and semi-colons for you where required.
+
+Last up is purely a display section - it gives you a sample of the Raw Boost status that will be applied so you can validate your work in the NorbDev validator; it'll also render your boosts using Lab's Functor Parser, providing the same behavior available in the Inspector.
+
+The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Server-Side Implementation"
+				},
+				{
+					type = "Content",
+					text =
+					[[Much like the Action Resource Mutator, this mutator constructs a unique status for each entity it applies to, in the form of `ABSOLUTES_LAB_BOOSTS_BOOST_{last 12 characters of the entity's UUID}`
+This allows all boosts to persist through reloads, preventing any refreshing of values affected - this behavior will _not_ be prevented if the game is restarted however, as the created status isn't backed by a file and can't be created until a save is loaded into.
+This only matters when a player saves mid-combat and restarts the game, so it should very rarely impact their experience.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Example Use Cases"
+				},
+				{
+					type = "Section",
+					text = "Selected entities:"
+				},
+				{
+					type = "Bullet",
+					text = {
+						"TODO"
+					}
+				} --[[@as MazzleDoctsBullet]],
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Short List of Possible Boosts for use in the Custom Boosts section"
+				},
+				{
+					type = "Code",
+					text =
+					[[See the master list of boosts and their parameters at https://github.com/Norbyte/lslib/blob/master/LSLibDefinitions.xml#L653
+====================================
+AbilityOverrideMinimum AbilityOverrideMinimum(Strength,23);
+ActionResource ActionResource(SpellSlot,4,1);
+ActiveCharacterLight ActiveCharacterLight(c46e7ba8-e746-7020-5146-287474d7b9f7)
+AiArchetypeOverride AiArchetypeOverride(mage,1);
+AttackSpellOverride AttackSpellOverride(Target_MainHandAttack_Sahuagin, Target_MainHandAttack);
+Attribute Attribute(ObscurityWithoutSneaking)
+CannotHarmCauseEntity CannotHarmCauseEntity(CannotHarmSanctuary)
+CriticalHit CriticalHit(AttackRoll,Success,Always,18);
+Detach N/A
+DownedStatus DownedStatus(DOWNED); DownedStatus(STEEL_WATCHER_INVULNERABILITY,-1)
+GameplayLight GameplayLight(6,false,0.1)
+Immunity - N/A
+IncreaseMaxHP - IncreaseMaxHP(10%);
+Lootable N/A
+MinimumRollResult MinimumRollResult(Damage,20)
+MonkWeaponDamageDiceOverride MonkWeaponDamageDiceOverride(LevelMapValue(SpiritualWeapon_2d8))
+Skill Skill(Intimidation, 2)
+ProficiencyBonus ProficiencyBonus(Skill,Arcana)
+ProficiencyBonusOverride ProficiencyBonusOverride(Owner.LevelMapValue(StandardProficiencyBonusScale))
+UnlockInterrupt UnlockInterrupt(Interrupt_LegendaryResistance)
+UnlockSpell UnlockSpell(Projectile_ChromaticOrb,,d136c5d9-0ff0-43da-acce-a74a07f8d6bf,,);
+UnlockSpellVariant "UnlockSpellVariant(MindSanctuaryCheck(),ModifyTooltipDescription());
+VoicebarkBlock N/A]]
+				}
+			}
+		}
+	} --[[@as MazzleDocsDocumentation]]
+end
+
+---@return {[string]: MazzleDocsContentItem}
+function BoostsMutator:generateChangelog()
+	return {
+		["1.6.0"] = {
+			type = "Bullet",
+			text = {
+				"Adds up/down arrows to allow sorting the Boosts in the Builder section",
+				"Cleans up logic around semicolons for the pretty output"
+			}
+		} --[[@as MazzleDocsContentItem]]
+	}
+end

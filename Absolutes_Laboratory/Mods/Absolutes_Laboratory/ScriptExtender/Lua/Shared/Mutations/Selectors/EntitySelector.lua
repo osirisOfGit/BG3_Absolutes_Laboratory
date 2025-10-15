@@ -26,9 +26,11 @@ function EntitySelector:renderSelector(parent, existingSelector)
 
 	local entitySelect = entitySelectCell:AddChildWindow("Entities")
 	entitySelect.NoSavedSettings = true
+	entitySelect.Size = Styler:ScaleFactor({ 0, 400 })
 
 	local entityDisplay = row:AddCell():AddChildWindow("EntityDisplay")
 	entityDisplay.NoSavedSettings = true
+	entityDisplay.Size = Styler:ScaleFactor({ 0, 400 })
 
 	local function displaySelectedEntities()
 		Helpers:KillChildren(entityDisplay)
@@ -49,9 +51,11 @@ function EntitySelector:renderSelector(parent, existingSelector)
 			end
 
 			if entity then
-				Styler:HyperlinkText(entityDisplay, entity.Name, function(parent)
+				local link = Styler:HyperlinkText(entityDisplay, entity.Name, function(parent)
 					CharacterWindow:BuildWindow(parent, entityId)
-				end, true).SameLine = true
+				end, true)
+				link.IDContext = entityId
+				link.SameLine = true
 			else
 				entityDisplay:AddText(entityId)
 			end
@@ -65,8 +69,8 @@ function EntitySelector:renderSelector(parent, existingSelector)
 
 	---@param filter string?
 	local function buildSelects(filter)
+		Helpers:KillChildren(entityGroup)
 		if filter and #filter >= 2 then
-			Helpers:KillChildren(entityGroup)
 			for level, entities in pairs(EntityRecorder:GetEntities()) do
 				for _, entity in TableUtils:OrderedPairs(entities, function(key, value)
 						return value.Name
@@ -74,15 +78,15 @@ function EntitySelector:renderSelector(parent, existingSelector)
 					function(key, value)
 						return not (filter and #filter > 0)
 							or (string.upper(value.Name):find(filter) ~= nil)
-							or (string.upper(value.Id):find(filter) ~= nil)
+							or (#filter == 36 and (string.upper(value.Id):find(filter) ~= nil))
 					end) do
 					---@type ExtuiSelectable
 					local select = entityGroup:AddSelectable(("%s (%s)"):format(entity.Name, string.sub(entity.Id, -6)))
-					select.IDContext = entity.Id
-					select.UserData = entity.Id
+					-- Header is also the main color property of the group, which is set to hide it, which gets inherited by its kids, so have to reset it
+					select:SetColor("Header", { 0.36, 0.30, 0.27, 0.76 })
 					select.Selected = TableUtils:IndexOf(existingSelector.criteriaValue, entity.Id) ~= nil
 
-					Styler:HyperlinkRenderable(select, entity.Id, "Shift", true, false, function(parent)
+					Styler:HyperlinkRenderable(select, entity.Id, "Shift", true, nil, function(parent)
 						CharacterWindow:BuildWindow(parent, entity.Id)
 					end)
 
@@ -127,4 +131,7 @@ function EntitySelector:predicate(selector)
 			return TableUtils:IndexOf(selector.criteriaValue, entity.Id) ~= nil
 		end
 	end
+end
+
+function EntitySelector:generateDocs()
 end

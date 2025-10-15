@@ -4,6 +4,8 @@ CharacterWindow = {}
 ---@param id string
 function CharacterWindow:BuildWindow(parent, id)
 	local group = parent:AddGroup("CharacterWindow")
+	local popup = Styler:Popup(group)
+
 	local displayTable = group:AddTable("characterDisplayWindow", 3)
 	displayTable:AddColumn("", "WidthStretch")
 	displayTable:AddColumn("", "WidthFixed", 300)
@@ -30,8 +32,7 @@ function CharacterWindow:BuildWindow(parent, id)
 			end)
 		end)
 
-		Styler:CheapTextAlign((entity.DisplayName and entity.DisplayName.Name:Get()) or entity.ClientCharacter.Template.DisplayName:Get() or entity.ClientCharacter.Template.Name,
-			displayCell, "Big")
+		Styler:CheapTextAlign(EntityRecorder:GetEntityName(entity), displayCell, "Big")
 
 		Styler:MiddleAlignedColumnLayout(displayCell, function(ele)
 			ele:AddButton("Go To").OnClick = function()
@@ -80,6 +81,21 @@ function CharacterWindow:BuildWindow(parent, id)
 			local mutationTab = tabBar:AddTabItem("Mutations")
 			mutationTab.OnActivate = function()
 				Helpers:KillChildren(mutationTab, templateTab, statTab, entityTab)
+				local button = mutationTab:AddButton("Generate a Mermaid Mutation State Diagram For This Entity")
+				button:Tooltip():AddText([[
+	This will generate the state diagram based on your current active profile (or default, if none are active and not specifically disabled) - not the profile that originally mutated this entity.
+	Game may freeze for a few moments when copying the resulting text - wait until it unfreezes, the text will be in your clipboard.
+	If successful, the result will also be in %localappdata%\Larian Studios\Baldur's Gate 3\Script Extender\Absolutes_Laboratory\DiagramOutputs\[entityName]-[last chars of entityId].txt]])
+				button.OnClick = function()
+					popup:Open()
+					Helpers:KillChildren(popup)
+					Channels.GenerateMutationDiagram:RequestToServer(entity.Uuid.EntityUuid, function(data)
+						local text = Styler:SelectableText(popup, "diagram", data.error or data.result)
+						if data.error then
+							Styler:Color(text, "ErrorText")
+						end
+					end)
+				end
 
 				---@type MutatorEntityVar
 				local entityVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME]

@@ -73,18 +73,18 @@ function Helpers:CollapseExpand(collapse, targetWidth, widthFunc, groupVisibilit
 			stepCollapse()
 		else
 			local widthStep = 1
-			local max = math.min(350, targetWidth)
+			local max = math.max(350, targetWidth)
 			local function stepExpand()
 				cWidth = cWidth == 0 and 1 or cWidth
 
 				groupVisibility.Visible = true
 				if cWidth < max then
-					widthStep = math.max(0.01, widthStep - (widthStep * .125))
+					widthStep = math.max(0.01, widthStep - (widthStep * .115))
 
 					cWidth = math.min(max, cWidth + (cWidth * widthStep))
 					widthFunc(cWidth)
 
-					stepDelay = math.min(50, stepDelay)
+					stepDelay = 1
 					toggleTimer = Ext.Timer.WaitFor(stepDelay, stepExpand)
 				else
 					toggleTimer = nil

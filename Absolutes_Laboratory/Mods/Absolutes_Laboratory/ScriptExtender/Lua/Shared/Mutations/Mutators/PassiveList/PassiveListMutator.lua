@@ -3,6 +3,11 @@ Ext.Require("Shared/Mutations/Mutators/PassiveList/PassiveListDesigner.lua")
 ---@class PassiveListMutatorClass : MutatorInterface
 PassiveListMutator = MutatorInterface:new("PassiveList")
 
+---@type ExtComponentType[]
+PassiveListMutator.affectedComponents = {
+	"PassiveContainer",
+}
+
 function PassiveListMutator:priority()
 	return self:recordPriority(SpellListMutator:priority() + 1)
 end
@@ -18,19 +23,35 @@ end
 
 ---@class PassiveListMutator : Mutator
 ---@field values PassivePool
+---@field useGameLevel boolean
 
 ---@param mutator PassiveListMutator
 function PassiveListMutator:renderMutator(parent, mutator)
 	mutator.values = mutator.values or {}
+	mutator.useGameLevel = mutator.useGameLevel or false
 	Helpers:KillChildren(parent)
 
-	local popup = parent:AddPopup("")
+	local popup = Styler:Popup(parent)
 
 	local passiveListDesignerButton = parent:AddButton("Open Passive List Designer")
 	passiveListDesignerButton.UserData = "EnableForMods"
 	passiveListDesignerButton.OnClick = function()
 		PassiveListDesigner:launch()
 	end
+
+	parent:AddText("(?) Distribute By: "):Tooltip():AddText([[
+	Changing this option will clear all level groups and only allow selecting lists that have the same option set, as the two options are not compatible with each other.
+Using game level will distribute all entries in the same level that the entity is in and all the ones that come before (i.e. TUT, WLD, CRE, SCL if they're in SCL).
+Using entity level will use the entity's character level, post Character Level Mutators if applicable.]])
+	Styler:DualToggleButton(parent, "Entity Level", "Game Level", true, function(swap)
+		if swap then
+			mutator.useGameLevel = not mutator.useGameLevel
+			mutator.values.delete = true
+			mutator.values = {}
+			self:renderMutator(parent, mutator)
+		end
+		return not mutator.useGameLevel
+	end)
 
 	local sectionTable = parent:AddTable("Sections", 2)
 	sectionTable.BordersOuter = true
@@ -45,10 +66,10 @@ function PassiveListMutator:renderMutator(parent, mutator)
 
 	if mutator.values.passiveLists then
 		for l, passiveListId in TableUtils:OrderedPairs(mutator.values.passiveLists, function(key, value)
-			local list = MutationConfigurationProxy.passiveLists[value]
+			local list = MutationConfigurationProxy.lists.passiveLists[value]
 			return (list.modId or "_") .. list.name
 		end) do
-			local list = MutationConfigurationProxy.passiveLists[passiveListId]
+			local list = MutationConfigurationProxy.lists.passiveLists[passiveListId]
 
 			local delete = Styler:ImageButton(mutatorSection:AddImageButton("delete" .. list.name, "ico_red_x", { 16, 16 }))
 			delete.OnClick = function()
@@ -65,15 +86,16 @@ function PassiveListMutator:renderMutator(parent, mutator)
 				PassiveListDesigner:launch(passiveListId)
 			end
 
-			if list.spellListDependencies and list.spellListDependencies() then
+			if list.spellListDependencies and next(list.spellListDependencies._real or list.spellListDependencies) then
 				local sep = mutatorSection:AddCollapsingHeader("Spell List Dependencies ( ? )")
+				sep.IDContext = passiveListId
 				sep.Font = "Small"
 				sep:Tooltip():AddText([[
 	These lists are automatically added from the defined dependencies in the Passive List Designer - an entity must have been assigned at least one of these to be assigned this list,
 and this list will use the sum of the assigned spell list levels to determine what levels from this passive list should be used.]])
 
 				for s, spellListId in ipairs(list.spellListDependencies) do
-					local spellList = MutationConfigurationProxy.spellLists[spellListId]
+					local spellList = MutationConfigurationProxy.lists.spellLists[spellListId]
 					if spellList then
 						sep:AddTextLink(spellList.name .. (spellList.modId and string.format(" (from %s)", Ext.Mod.GetMod(spellList.modId).Info.Name) or "")).OnClick = function()
 							SpellListDesigner:launch(spellListId)
@@ -92,20 +114,94 @@ and this list will use the sum of the assigned spell list levels to determine wh
 		Helpers:KillChildren(popup)
 		popup:Open()
 
-		for passiveListId, passiveList in pairs(MutationConfigurationProxy.passiveLists) do
-			---@type ExtuiSelectable
-			local select = popup:AddSelectable(passiveList.name .. (passiveList.modId and string.format(" (from %s)", Ext.Mod.GetMod(passiveList.modId).Info.Name) or ""),
-				"DontClosePopups")
-			select.Selected = TableUtils:IndexOf(mutator.values.passiveLists, passiveListId) ~= nil
-			select.OnClick = function()
-				if not select.Selected then
-					mutator.values.passiveLists[TableUtils:IndexOf(mutator.values.passiveLists, passiveListId)] = nil
-					TableUtils:ReindexNumericTable(mutator.values.passiveLists)
-				else
-					mutator.values.passiveLists = mutator.values.passiveLists or {}
-					mutator.values.passiveLists[#mutator.values.passiveLists + 1] = passiveListId
+		local userSep = popup:AddSeparatorText("Your Lists")
+		userSep:SetStyle("SeparatorTextAlign", 0.5)
+
+		local userLists = popup:AddChildWindow("userLists")
+		userLists.Size = { 500, 500 }
+
+		for id, passiveList in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.lists.passiveLists, function(key, value)
+			return value.name
+		end) do
+			if mutator.useGameLevel == passiveList.useGameLevel then
+				---@type ExtuiSelectable
+				local select = userLists:AddSelectable(passiveList.name, "DontClosePopups")
+				select.IDContext = id
+				select.Selected = TableUtils:IndexOf(mutator.values.passiveLists, id) ~= nil
+				select.OnClick = function()
+					local index = TableUtils:IndexOf(mutator.values.passiveLists, id)
+					if index then
+						mutator.values.passiveLists[index] = nil
+						select.Selected = false
+					else
+						select.Selected = true
+						table.insert(mutator.values.passiveLists, id)
+					end
+					self:renderMutator(parent, mutator)
 				end
-				self:renderMutator(parent, mutator)
+			end
+		end
+
+		if #userLists.Children == 0 then
+			userLists:Destroy()
+			userSep:Destroy()
+		else
+			userLists.Size = { 0, math.min(500, 35 * (#userLists.Children)) }
+		end
+
+		if MutationModProxy.ModProxy.lists.passiveLists() then
+			---@type {[Guid]: Guid[]}
+			local modPassiveLists = {}
+
+			for modId, modCache in pairs(MutationModProxy.ModProxy.lists.passiveLists) do
+				---@cast modCache +LocalModCache
+
+				if modCache.lists and modCache.lists.passiveLists and next(modCache.lists.passiveLists) then
+					modPassiveLists[modId] = {}
+					for spellListId in pairs(modCache.lists.passiveLists) do
+						table.insert(modPassiveLists[modId], spellListId)
+					end
+				end
+			end
+
+			if next(modPassiveLists) then
+				for modId, spellLists in TableUtils:OrderedPairs(modPassiveLists, function(key, value)
+					return Ext.Mod.GetMod(key).Info.Name
+				end) do
+					local modSep = popup:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name)
+					modSep.Font = "Small"
+
+					local modGroup = popup:AddChildWindow("Mods" .. modId)
+					modGroup.Size = { 500, 500 }
+
+					for _, guid in TableUtils:OrderedPairs(spellLists, function(key, value)
+						return MutationModProxy.ModProxy.lists.passiveLists[value].name
+					end) do
+						local passiveList = MutationModProxy.ModProxy.lists.passiveLists[guid]
+						if mutator.useGameLevel == passiveList.useGameLevel then
+							---@type ExtuiSelectable
+							local select = modGroup:AddSelectable(passiveList.name, "DontClosePopups")
+							select.Selected = TableUtils:IndexOf(mutator.values.passiveLists, guid) ~= nil
+							select.OnClick = function()
+								local index = TableUtils:IndexOf(mutator.values.passiveLists, guid)
+								if index then
+									mutator.values.passiveLists[index] = nil
+									select.Selected = false
+								else
+									select.Selected = true
+									table.insert(mutator.values.passiveLists, guid)
+								end
+								self:renderMutator(parent, mutator)
+							end
+						end
+					end
+					if #modGroup.Children == 0 then
+						modGroup:Destroy()
+						modSep:Destroy()
+					else
+						modGroup.Size = { 0, math.min(500, 35 * (#modGroup.Children)) }
+					end
+				end
 			end
 		end
 	end
@@ -117,7 +213,7 @@ and this list will use the sum of the assigned spell list levels to determine wh
 	local passiveGroup = mutatorSection:AddGroup("passives")
 	local function buildPassives()
 		Helpers:KillChildren(passiveGroup)
-		if mutator.values.passives and mutator.values.passives() then
+		if mutator.values.passives and next(mutator.values.passives._real or mutator.values.passives) then
 			for i, passiveId in ipairs(mutator.values.passives) do
 				local delete = Styler:ImageButton(passiveGroup:AddImageButton("delete" .. passiveId, "ico_red_x", { 16, 16 }))
 				delete.OnClick = function()
@@ -178,6 +274,8 @@ end
 function PassiveListMutator:renderRandomizedAmountSettings(parent, passivePool)
 	Helpers:KillChildren(parent)
 
+	local savedPresetSpreads = ConfigurationStructure.config.mutations.settings.customLists.savedSpellListSpreads.passiveLists
+
 	local popup = parent:AddPopup("Randomized")
 
 	--#region Randomized Spell Pool Size
@@ -186,7 +284,9 @@ function PassiveListMutator:renderRandomizedAmountSettings(parent, passivePool)
 	passivePool.randomizedPassivePoolSize = passivePool.randomizedPassivePoolSize or {}
 	local randomizedPassivePoolSize = passivePool.randomizedPassivePoolSize
 	if getmetatable(randomizedPassivePoolSize) and getmetatable(randomizedPassivePoolSize).__call and not randomizedPassivePoolSize() then
-		randomizedPassivePoolSize[1] = 1
+		passivePool.randomizedPassivePoolSize.delete = true
+		passivePool.randomizedPassivePoolSize = TableUtils:DeeplyCopyTable(savedPresetSpreads["Default"]._real)
+		randomizedPassivePoolSize = passivePool.randomizedPassivePoolSize
 	end
 
 	local randoSpellsTable = parent:AddTable("RandomSpellNumbers", 3)
@@ -254,6 +354,60 @@ This will cause Lab to give the entity 3 random passives from the selected Passi
 			end
 		end
 	end
+
+	local loadButton = parent:AddButton("L")
+	loadButton:Tooltip():AddText("\t Load a saved preset")
+	loadButton.SameLine = true
+	loadButton.OnClick = function()
+		Helpers:KillChildren(popup)
+		popup:Open()
+
+		for presetName, spread in TableUtils:OrderedPairs(savedPresetSpreads) do
+			if presetName ~= "Default" then
+				local delete = Styler:ImageButton(popup:AddImageButton("delete" .. presetName, "ico_red_x", { 16, 16 }))
+				delete.OnClick = function()
+					savedPresetSpreads[presetName].delete = true
+					loadButton:OnClick()
+				end
+			end
+			local loadPreset = popup:AddSelectable(presetName)
+			loadPreset.SameLine = presetName ~= "Default"
+			loadPreset.OnClick = function()
+				passivePool.randomizedPassivePoolSize.delete = true
+				passivePool.randomizedPassivePoolSize = TableUtils:DeeplyCopyTable(spread._real)
+				self:renderRandomizedAmountSettings(parent, passivePool)
+			end
+		end
+	end
+
+	local saveButton = parent:AddButton("S")
+	saveButton:Tooltip():AddText("\t Save the current table to a new or existing preset")
+	saveButton.SameLine = true
+	saveButton.OnClick = function()
+		Helpers:KillChildren(popup)
+		popup:Open()
+
+		local nameInput = popup:AddInputText("")
+		nameInput.Hint = "New or Existing Preset Name"
+
+		local overrideConfirmation = popup:AddText("Are you sure you want to override %s?")
+		overrideConfirmation.Visible = false
+		overrideConfirmation:SetColor("Text", { 1, 0.2, 0, 1 })
+
+		local submitButton = popup:AddButton("Save")
+		submitButton.OnClick = function()
+			if overrideConfirmation.Visible or not savedPresetSpreads[nameInput.Text] then
+				if savedPresetSpreads[nameInput.Text] then
+					savedPresetSpreads[nameInput.Text].delete = true
+				end
+				savedPresetSpreads[nameInput.Text] = TableUtils:DeeplyCopyTable(randomizedPassivePoolSize._real)
+				self:renderRandomizedAmountSettings(parent, passivePool)
+			else
+				overrideConfirmation.Label = string.format("Are you sure you want to override %s?", nameInput.Text)
+				overrideConfirmation.Visible = true
+			end
+		end
+	end
 end
 
 ---@param mutator PassiveListMutator
@@ -271,7 +425,7 @@ function PassiveListMutator:handleDependencies(export, mutator, removeMissingDep
 				if not container.modDependencies[passive.OriginalModId] then
 					local name, author, version = Helpers:BuildModFields(passive.OriginalModId)
 					if author == "Larian" then
-						return
+						return true
 					end
 
 					container.modDependencies[passive.OriginalModId] = {
@@ -300,7 +454,7 @@ function PassiveListMutator:handleDependencies(export, mutator, removeMissingDep
 	end
 
 	if mutator.values.passiveLists then
-		PassiveListDesigner:HandleDependences(export, mutator, mutator.values.passiveLists, removeMissingDependencies)
+		ListConfigurationManager:HandleDependences(export, mutator, mutator.values.passiveLists, removeMissingDependencies, PassiveListDesigner.configKey)
 	end
 end
 
@@ -318,108 +472,181 @@ end
 ---@param passiveList CustomList
 ---@param numRandomPassivesPerLevel number[]
 ---@param appliedPassives string[]
-local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassivesPerLevel, appliedPassives)
-	Logger:BasicDebug("Applying levels 1 to %s of list %s", levelToUse,
+---@param appliedLists Guid[]
+local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassivesPerLevel, appliedPassives, appliedLists)
+	passiveList = TableUtils:DeeplyCopyTable(passiveList)
+
+	Logger:BasicDebug("Applying levels %s to %s of list %s",
+		passiveList.useGameLevel and EntityRecorder.Levels[1] or 1,
+		passiveList.useGameLevel and EntityRecorder.Levels[levelToUse] or levelToUse,
 		passiveList.name .. (passiveList.modId and (" from mod " .. Ext.Mod.GetMod(passiveList.modId).Info.Name) or ""))
 
-	for level = 1, levelToUse do
-		local leveledLists = passiveList.levels[level]
-		---@type EntryName[]
-		local randomPool = {}
-		if leveledLists then
-			if leveledLists.linkedProgressions then
-				for progressionId, subLists in pairs(leveledLists.linkedProgressions) do
-					if subLists.guaranteed and next(subLists.guaranteed) then
-						for _, passiveId in pairs(subLists.guaranteed) do
-							if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
-								Logger:BasicDebug("Adding guaranteed passive %s from progression %s", passiveId, progressionId)
-								Osi.AddPassive(entity.Uuid.EntityUuid, passiveId)
-								table.insert(appliedPassives, passiveId)
-							else
-								Logger:BasicDebug("Guaranteed passive %s from progression %s is already present", passiveId, progressionId)
-							end
-						end
-					end
+	if passiveList.levels then
+		for level = 1, levelToUse do
+			local leveledLists = passiveList.levels[level]
+			---@type EntryName[]
+			local randomPool = {}
 
-					if PassiveListDesigner.progressionTranslations[progressionId] then
-						local progressionTable = PassiveListDesigner.progressions[PassiveListDesigner.progressionTranslations[progressionId]]
-						if progressionTable and progressionTable[level] and progressionTable[level][PassiveListDesigner.name] then
-							for _, passiveId in pairs(progressionTable[level][PassiveListDesigner.name]) do
-								if not TableUtils:IndexOf(subLists.blackListed, passiveId) then
-									table.insert(randomPool, passiveId)
+			if passiveList.linkedProgressionTableIds and next(passiveList.linkedProgressionTableIds._real or passiveList.linkedProgressionTableIds) then
+				for _, progressionTableId in pairs(passiveList.linkedProgressionTableIds) do
+					local progressionTable = ListConfigurationManager.progressionIndex[progressionTableId]
+					if progressionTable then
+						for _, progressionLevel in pairs(progressionTable.progressionLevels) do
+							if progressionLevel.level == level and progressionLevel.passiveLists then
+								for _, passives in pairs(progressionLevel.passiveLists) do
+									for _, passiveName in pairs(passives) do
+										local leveledLists = passiveList.levels and passiveList.levels[level]
+										if not leveledLists
+											or not leveledLists.linkedProgressions
+											or not TableUtils:IndexOf(leveledLists.linkedProgressions[progressionTableId],
+												function(value)
+													return TableUtils:IndexOf(value, passiveName) ~= nil
+												end)
+										then
+											passiveList.levels = passiveList.levels or {}
+											passiveList.levels[level] = passiveList.levels[level] or {}
+											passiveList.levels[level].linkedProgressions = passiveList.levels[level].linkedProgressions or {}
+											passiveList.levels[level].linkedProgressions[progressionTableId] = passiveList.levels[level].linkedProgressions[progressionTableId] or {}
+
+											local defaultPool = passiveList.defaultPool or
+												ConfigurationStructure.config.mutations.settings.customLists.defaultPool.passiveLists
+
+											passiveList.levels[level].linkedProgressions[progressionTableId][defaultPool] = passiveList.levels[level].linkedProgressions
+												[progressionTableId][defaultPool] or {}
+
+											Logger:BasicDebug("Added %s to the default pool %s for later processing", passiveName, defaultPool)
+											table.insert(passiveList.levels[level].linkedProgressions[progressionTableId][defaultPool], passiveName)
+										end
+									end
 								end
 							end
 						end
 					end
 				end
 			end
+			if leveledLists then
+				if leveledLists.linkedProgressions then
+					for progressionTableId, subLists in pairs(leveledLists.linkedProgressions) do
+						local progressionTable = ListConfigurationManager.progressionIndex[progressionTableId]
+						if progressionTable then
+							if subLists.guaranteed and next(subLists.guaranteed) then
+								for _, passiveId in pairs(subLists.guaranteed) do
+									if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
+										Logger:BasicDebug("Adding guaranteed passive %s from progression %s (%s - level %s)", passiveId, progressionTableId,
+											progressionTable.name, level)
 
-			if leveledLists.manuallySelectedEntries then
-				if leveledLists.manuallySelectedEntries.randomized then
-					for _, passiveId in pairs(leveledLists.manuallySelectedEntries.randomized) do
-						if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
-							table.insert(randomPool, passiveId)
-						else
-							Logger:BasicDebug("%s is already present, not adding to the random pool", passiveId)
+										table.insert(appliedPassives, passiveId)
+									else
+										Logger:BasicDebug("Guaranteed passive %s from progression %s (%s - level %s) is already known", passiveId, progressionTableId,
+											progressionTable.name, level)
+									end
+								end
+							end
+
+							if subLists.randomized and next(subLists.randomized) then
+								for _, passiveId in pairs(subLists.randomized) do
+									if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
+										if not TableUtils:IndexOf(randomPool, passiveId) then
+											table.insert(randomPool, passiveId)
+										end
+									else
+										Logger:BasicDebug("Randomized passive %s from progression %s (%s - level %s) is already known", passiveId, progressionTableId,
+											progressionTable.name, level)
+									end
+								end
+							end
 						end
 					end
 				end
-				if leveledLists.manuallySelectedEntries.guaranteed and next(leveledLists.manuallySelectedEntries.guaranteed) then
-					for _, passiveId in pairs(leveledLists.manuallySelectedEntries.guaranteed) do
-						if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
-							Logger:BasicDebug("Adding guaranteed passive %s", passiveId)
-							Osi.AddPassive(entity.Uuid.EntityUuid, passiveId)
-							table.insert(appliedPassives, passiveId)
-						else
-							Logger:BasicDebug("Guaranteed passive %s is already present", passiveId)
+
+				if leveledLists.manuallySelectedEntries then
+					if leveledLists.manuallySelectedEntries.randomized then
+						for _, passiveId in pairs(leveledLists.manuallySelectedEntries.randomized) do
+							if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
+								if not TableUtils:IndexOf(randomPool, passiveId) then
+									table.insert(randomPool, passiveId)
+								end
+							else
+								Logger:BasicDebug("%s is already present, not adding to the random pool", passiveId)
+							end
+						end
+					end
+					if leveledLists.manuallySelectedEntries.guaranteed and next(leveledLists.manuallySelectedEntries.guaranteed) then
+						for _, passiveId in pairs(leveledLists.manuallySelectedEntries.guaranteed) do
+							if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
+								Logger:BasicDebug("Adding guaranteed passive %s", passiveId)
+								table.insert(appliedPassives, passiveId)
+							else
+								Logger:BasicDebug("Guaranteed passive %s is already present", passiveId)
+							end
 						end
 					end
 				end
 			end
-		end
 
-		local numRandomPassivesToPick = 0
-		if numRandomPassivesPerLevel[level] then
-			numRandomPassivesToPick = numRandomPassivesPerLevel[level]
-		else
-			local maxLevel = nil
-			for definedLevel, _ in pairs(numRandomPassivesPerLevel) do
-				if definedLevel < level and (not maxLevel or definedLevel > maxLevel) then
-					maxLevel = definedLevel
-				end
-			end
-			if maxLevel then
-				numRandomPassivesToPick = numRandomPassivesPerLevel[maxLevel]
-			end
-		end
-
-		if numRandomPassivesToPick > 0 then
-			Logger:BasicDebug("Giving %s random passives out of %s from level %s", numRandomPassivesToPick, #randomPool, level)
-			local passivesToGive = {}
-			if #randomPool <= numRandomPassivesToPick then
-				passivesToGive = randomPool
+			local numRandomPassivesToPick = 0
+			if numRandomPassivesPerLevel[level] then
+				numRandomPassivesToPick = numRandomPassivesPerLevel[level]
 			else
-				for _ = 1, numRandomPassivesToPick do
-					local num = math.random(#randomPool)
-					table.insert(passivesToGive, randomPool[num])
-					table.remove(randomPool, num)
+				local maxLevel = nil
+				for definedLevel, _ in pairs(numRandomPassivesPerLevel) do
+					if definedLevel < level and (not maxLevel or definedLevel > maxLevel) then
+						maxLevel = definedLevel
+					end
+				end
+				if maxLevel then
+					numRandomPassivesToPick = numRandomPassivesPerLevel[maxLevel]
 				end
 			end
 
-			for _, passiveId in pairs(passivesToGive) do
-				Osi.AddPassive(entity.Uuid.EntityUuid, passiveId)
-				table.insert(appliedPassives, passiveId)
-				Logger:BasicDebug("Added passive %s", passiveId)
+			if numRandomPassivesToPick > 0 then
+				Logger:BasicDebug("Giving %s random passives out of %s from level %s",
+					numRandomPassivesToPick,
+					#randomPool,
+					passiveList.useGameLevel and EntityRecorder.Levels[level] or level)
+
+				local passivesToGive = {}
+				if #randomPool <= numRandomPassivesToPick then
+					passivesToGive = randomPool
+				else
+					for _ = 1, numRandomPassivesToPick do
+						local num = math.random(#randomPool)
+						table.insert(passivesToGive, randomPool[num])
+						table.remove(randomPool, num)
+					end
+				end
+
+				for _, passiveId in pairs(passivesToGive) do
+					table.insert(appliedPassives, passiveId)
+				end
+			else
+				Logger:BasicDebug("Skipping level %s for random passive assignment due to configured size being 0",
+					passiveList.useGameLevel and EntityRecorder.Levels[level] or level)
 			end
-		else
-			Logger:BasicDebug("Skipping level %s for random passive assignment due to configured size being 0", level)
 		end
 	end
+
+	---@param listToProcess CustomList
+	local function recursivelyApplyLists(listToProcess)
+		if listToProcess.linkedLists and next(listToProcess.linkedLists._real or listToProcess.linkedLists) then
+			for _, linkedListId in pairs(listToProcess.linkedLists) do
+				if not TableUtils:IndexOf(appliedLists, linkedListId) then
+					table.insert(appliedLists, linkedListId)
+
+					local linkedList = MutationConfigurationProxy.lists.passiveLists[linkedListId]
+					Logger:BasicDebug("### STARTING List %s, linked from %s ###", linkedList.name, listToProcess.name)
+					applyPassiveLists(entity, levelToUse, linkedList, numRandomPassivesPerLevel, appliedPassives, appliedLists)
+					Logger:BasicDebug("### FINISHED List %s, linked from %s ###", linkedList.name, listToProcess.name)
+
+					recursivelyApplyLists(linkedList)
+				end
+			end
+		end
+	end
+	recursivelyApplyLists(passiveList)
 end
 
 function PassiveListMutator:applyMutator(entity, entityVar)
-	PassiveListDesigner:buildProgressionIndex()
-
 	local passiveListMutators = entityVar.appliedMutators[self.name]
 	if not passiveListMutators[1] then
 		passiveListMutators = { passiveListMutators }
@@ -444,9 +671,9 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 
 		if passiveListMutator.values.passiveLists then
 			for _, passiveListId in pairs(passiveListMutator.values.passiveLists) do
-				local passiveList = MutationConfigurationProxy.passiveLists[passiveListId]
-				passiveList = passiveList.__real or passiveList
+				local passiveList = MutationConfigurationProxy.lists.passiveLists[passiveListId]
 				if passiveList then
+					passiveList = passiveList.__real or passiveList
 					if passiveList.spellListDependencies and next(passiveList.spellListDependencies) then
 						for _, spellListDependency in ipairs(passiveList.spellListDependencies) do
 							if entityVar.appliedMutators[SpellListMutator.name] and entityVar.appliedMutators[SpellListMutator.name].appliedLists[spellListDependency] then
@@ -476,13 +703,18 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 		for _, passiveId in pairs(loosePassivesToApply) do
 			if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
 				Logger:BasicDebug("Adding loose passive %s", passiveId)
-				Osi.AddPassive(entity.Uuid.EntityUuid, passiveId)
 				table.insert(appliedPassives, passiveId)
 			else
 				Logger:BasicDebug("Loose passive %s is already present", passiveId)
 			end
 		end
 	end
+
+	---@type EntryReplacerDictionary
+	local replaceMap = TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.lists.entryReplacerDictionary)
+	replaceMap.passiveLists = replaceMap.passiveLists or {}
+
+	local appliedLists = {}
 
 	if next(passiveListsPool) then
 		if not usingListsWithSpellListDeps then
@@ -491,21 +723,21 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 			for passiveListId, numRandomPassivesPerLevel in pairs(passiveListsPool) do
 				count = count + 1
 				if count == chosenIndex then
-					local passiveList = MutationConfigurationProxy.passiveLists[passiveListId]
+					local passiveList = MutationConfigurationProxy.lists.passiveLists[passiveListId]
 					passiveList = passiveList.__real or passiveList
 
 					Logger:BasicDebug("%s passive lists without dependencies are in the pool - randomly chose %s",
 						TableUtils:CountElements(passiveListsPool),
 						passiveList.name .. (passiveList.modId and (" from mod " .. Ext.Mod.GetMod(passiveList.modId).Info.Name) or ""))
 
-					local levelToUse = entity.EocLevel.Level
-					applyPassiveLists(entity, levelToUse, passiveList, numRandomPassivesPerLevel, appliedPassives)
+					local levelToUse = passiveList.useGameLevel and entity.Level.LevelName or entity.EocLevel.Level
+					applyPassiveLists(entity, levelToUse, passiveList, numRandomPassivesPerLevel, appliedPassives, appliedLists)
 					break
 				end
 			end
 		else
 			for passiveListId, numRandomPassivesPerLevel in pairs(passiveListsPool) do
-				local passiveList = MutationConfigurationProxy.passiveLists[passiveListId]
+				local passiveList = MutationConfigurationProxy.lists.passiveLists[passiveListId]
 				passiveList = passiveList.__real or passiveList
 
 				local levelToUse = 0
@@ -516,12 +748,157 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 					end
 				end
 
-				applyPassiveLists(entity, levelToUse, passiveList, numRandomPassivesPerLevel, appliedPassives)
+				if levelToUse > 0 and passiveList.modId then
+					local modReplaceMap = MutationConfigurationProxy.lists.entryReplacerDictionary.passiveLists[passiveList.modId]
+					if modReplaceMap then
+						for statReplacement, statsToReplace in pairs(modReplaceMap) do
+							if not replaceMap.passiveLists[statReplacement] then
+								replaceMap.passiveLists[statReplacement] = statsToReplace
+							else
+								for _, toReplace in ipairs(statsToReplace) do
+									if not TableUtils:IndexOf(replaceMap.passiveLists[statReplacement], toReplace) then
+										table.insert(replaceMap.passiveLists[statReplacement])
+									end
+								end
+							end
+						end
+						Logger:BasicDebug("Added Mod %'s replacement map to the overall replacement map, as one of it's lists was used", Ext.Mod.GetMod(passiveList.modId).Info.Name)
+					end
+				end
+
+				applyPassiveLists(entity, levelToUse, passiveList, numRandomPassivesPerLevel, appliedPassives, appliedLists)
 			end
 		end
 	end
 
 	if next(appliedPassives) then
+		for i = #appliedPassives, 1, -1 do
+			local passiveToApply = appliedPassives[i]
+			if passiveToApply and replaceMap.passiveLists[passiveToApply] then
+				for _, passiveToRemove in pairs(replaceMap.passiveLists[passiveToApply]) do
+					if Osi.HasPassive(entity.Uuid.EntityUuid, passiveToRemove) == 1 then
+						Osi.RemovePassive(entity.Uuid.EntityUuid, passiveToRemove)
+						Logger:BasicDebug("Removed %s from the entity as it's marked to be removed by %s", passiveToRemove, passiveToApply)
+					end
+					local index = TableUtils:IndexOf(appliedPassives, passiveToRemove)
+					if index then
+						appliedPassives[index] = nil
+						Logger:BasicDebug("Removed %s from list of passives to apply as it's marked to be removed by %s", passiveToRemove, passiveToApply)
+					end
+				end
+			end
+		end
+
+		TableUtils:ReindexNumericTable(appliedPassives)
+
+		Logger:BasicDebug("Applying the following passives: %s", appliedPassives)
+		for _, passiveToApply in ipairs(appliedPassives) do
+			Osi.AddPassive(entity.Uuid.EntityUuid, passiveToApply)
+		end
 		entityVar.originalValues[self.name] = appliedPassives
 	end
+end
+
+---@return MazzleDocsDocumentation
+function PassiveListMutator:generateDocs()
+	return {
+		{
+			Topic = self.Topic,
+			SubTopic = self.SubTopic,
+			content = {
+				{
+					type = "Heading",
+					text = "Passive Lists",
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "CallOut",
+					prefix = "",
+					prefix_color = "Yellow",
+					text = [[
+Dependency On: Spell Lists
+Transient: No
+Composable: All groups will be combined into one large pool, which will be pulled from randomly post-filter]]
+				} --[[@as MazzleDocsCallOut]],
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Summary"
+				},
+				{
+					type = "Content",
+					text = [[Basically Spell Lists, just with Passives!]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Client-Side Content"
+				},
+				{
+					type = "Content",
+					text = [[
+The mutator is designed very similarily to Spell Lists, so only the differences are notated:
+
+- There are no level pools - instead, the mutator checks the combined levels of the linked Spell Lists that were assigned and uses that to determine what level to use for the given list
+- If there are no Linked Spell lists, the entity level will be used instead
+- There are no criteria due to the Spell List dependency
+
+The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Server-Side Implementation"
+				},
+				{
+					type = "Content",
+					text = [[Since this mutator only has Random and Guaranteed pools, all passives are added via Osi: Osi.AddPassive(entity.Uuid.EntityUuid, passiveToApply)
+Building the random pool follows the same general logic as Spell List Mutator:
+When determining what passives end up in the Random pool to be added to the entity, checks are done to ensure:
+1. The passive isn't already on the entity
+2. The passive isn't already slated to be added by another progression
+
+Once the final list of passives is determined, the Replace logic is run, removing any passives from the final list and the entity's PassiveContainer (via Osi.RemovePassive) if they're marked to be replaced by another passive.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Example Use Cases"
+				},
+				{
+					type = "Section",
+					text = "Selected entities:"
+				},
+				{
+					type = "Bullet",
+					text = {
+						"Should receive a distribution of passives that complement the Spell Lists they were assigned",
+						"Should receive a set list of passives based on which Game Level they're in"
+					}
+				} --[[@as MazzleDoctsBullet]],
+			}
+		}
+	} --[[@as MazzleDocsDocumentation]]
+end
+
+---@return {[string]: MazzleDocsContentItem}
+function PassiveListMutator:generateChangelog()
+	return {
+		["1.7.0"] = {
+			type = "Bullet",
+			text = {
+				"Fix lists not applying entries from linked progressions"
+			}
+		} --[[@as MazzleDocsContentItem]]
+	}
 end

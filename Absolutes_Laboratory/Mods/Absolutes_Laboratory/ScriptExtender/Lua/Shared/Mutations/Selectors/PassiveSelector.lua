@@ -27,9 +27,11 @@ function PassiveSelector:renderSelector(parent, existingSelector)
 
 	local passiveSelect = passiveSelectCell:AddChildWindow("Passives")
 	passiveSelect.NoSavedSettings = true
+	passiveSelect.Size = Styler:ScaleFactor({ 0, 400 })
 
 	local passiveDisplay = row:AddCell():AddChildWindow("PassiveDisplay")
 	passiveDisplay.NoSavedSettings = true
+	passiveDisplay.Size = Styler:ScaleFactor({ 0, 400 })
 
 	local function displaySelectedPassives()
 		Helpers:KillChildren(passiveDisplay)
@@ -37,28 +39,29 @@ function PassiveSelector:renderSelector(parent, existingSelector)
 		for i, passiveId in TableUtils:OrderedPairs(existingSelector.criteriaValue, function(key, passiveId)
 			return Ext.Loca.GetTranslatedString(Ext.Stats.Get(passiveId).DisplayName, passiveId)
 		end) do
-			local delete = Styler:ImageButton(passiveDisplay:AddImageButton("delete" .. passiveId, "ico_red_x", { 16, 16 }))
-			delete.OnClick = function()
-				existingSelector.criteriaValue[i] = nil
-				TableUtils:ReindexNumericTable(existingSelector.criteriaValue)
-
-				updateFunc(#existingSelector.criteriaValue)
-				displaySelectedPassives()
-			end
-
 			---@type PassiveData
 			local passive = Ext.Stats.Get(passiveId)
+			if passive then
+				local delete = Styler:ImageButton(passiveDisplay:AddImageButton("delete" .. passiveId, "ico_red_x", { 16, 16 }))
+				delete.OnClick = function()
+					existingSelector.criteriaValue[i] = nil
+					TableUtils:ReindexNumericTable(existingSelector.criteriaValue)
 
-			local icon = passiveDisplay:AddImage((passive.Icon ~= "" and passive.Icon ~= "unknown") and passive.Icon or "Item_Unknown", { 32, 32 })
-			if icon.ImageData.Icon == "" then
-				icon:Destroy()
-				icon = passiveDisplay:AddImage("Item_Unknown", { 32, 32 })
+					updateFunc(#existingSelector.criteriaValue)
+					displaySelectedPassives()
+				end
+
+				local icon = passiveDisplay:AddImage((passive.Icon ~= "" and passive.Icon ~= "unknown") and passive.Icon or "Item_Unknown", { 32, 32 })
+				if icon.ImageData.Icon == "" then
+					icon:Destroy()
+					icon = passiveDisplay:AddImage("Item_Unknown", { 32, 32 })
+				end
+				icon.SameLine = true
+
+				Styler:HyperlinkText(passiveDisplay, Ext.Loca.GetTranslatedString(passive.DisplayName, passiveId), function(parent)
+					ResourceManager:RenderDisplayWindow(passive, parent)
+				end, true).SameLine = true
 			end
-			icon.SameLine = true
-
-			Styler:HyperlinkText(passiveDisplay, Ext.Loca.GetTranslatedString(passive.DisplayName, passiveId), function(parent)
-				ResourceManager:RenderDisplayWindow(passive, parent)
-			end, true).SameLine = true
 		end
 	end
 
@@ -70,61 +73,65 @@ function PassiveSelector:renderSelector(parent, existingSelector)
 	---@param filter string?
 	local function buildSelects(filter)
 		Helpers:KillChildren(passiveGroup)
-		for _, passiveId in TableUtils:OrderedPairs(Ext.Stats.GetStats("PassiveData"), function(key, passiveId)
-			local dn = Ext.Loca.GetTranslatedString(Ext.Stats.Get(passiveId).DisplayName, passiveId)
-			return dn == "%%% EMPTY" and passiveId or dn
-		end) do
-			---@type PassiveData
-			local passive = Ext.Stats.Get(passiveId)
-			local displayName = Ext.Loca.GetTranslatedString(passive.DisplayName, passiveId)
-			displayName = displayName == "%%% EMPTY" and passiveId or displayName
+		if filter and #filter >= 3 then
+			for _, passiveId in TableUtils:OrderedPairs(Ext.Stats.GetStats("PassiveData"), function(key, passiveId)
+				local dn = Ext.Loca.GetTranslatedString(Ext.Stats.Get(passiveId).DisplayName, passiveId)
+				return dn == "%%% EMPTY" and passiveId or dn
+			end) do
+				---@type PassiveData
+				local passive = Ext.Stats.Get(passiveId)
+				local displayName = Ext.Loca.GetTranslatedString(passive.DisplayName, passiveId)
+				displayName = displayName == "%%% EMPTY" and passiveId or displayName
 
-			if not (filter and #filter > 0)
-				or string.upper(displayName):find(filter)
-				or string.upper(passiveId):find(filter)
-			then
-				local icon = passiveGroup:AddImage((passive.Icon ~= "" and passive.Icon ~= "unknown") and passive.Icon or "Item_Unknown", { 32, 32 })
-				if icon.ImageData.Icon == "" then
-					icon:Destroy()
-					icon = passiveGroup:AddImage("Item_Unknown", { 32, 32 })
-				end
-				---@type ExtuiSelectable
-				local select = passiveGroup:AddSelectable(string.format("%s (%s)%s", displayName, passiveId, "##select"))
-				select.SameLine = true
-				select.UserData = passive
-				select.Selected = TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
-					return value == passiveId
-				end) ~= nil
-
-				local tooltip = select:Tooltip()
-				tooltip.Visible = false
-				select.OnHoverEnter = function()
-					if Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
-						tooltip.Visible = true
-						ResourceManager:RenderDisplayWindow(passive, tooltip)
+				if not (filter and #filter > 0)
+					or string.upper(displayName):find(filter)
+					or string.upper(passiveId):find(filter)
+				then
+					local icon = passiveGroup:AddImage((passive.Icon ~= "" and passive.Icon ~= "unknown") and passive.Icon or "Item_Unknown", { 32, 32 })
+					if icon.ImageData.Icon == "" then
+						icon:Destroy()
+						icon = passiveGroup:AddImage("Item_Unknown", { 32, 32 })
 					end
-				end
+					---@type ExtuiSelectable
+					local select = passiveGroup:AddSelectable(string.format("%s (%s)%s", displayName, passiveId, "##select"))
+					select.SameLine = true
+					select.UserData = passive
+					select.Selected = TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
+						return value == passiveId
+					end) ~= nil
+					-- Header is also the main color property of the group, which is set to hide it, which gets inherited by its kids, so have to reset it
+					select:SetColor("Header", { 0.36, 0.30, 0.27, 0.76 })
 
-				select.OnHoverLeave = function()
+					local tooltip = select:Tooltip()
 					tooltip.Visible = false
-					Helpers:KillChildren(tooltip)
-				end
-
-				select.OnClick = function()
-					if select.Selected then
-						table.insert(existingSelector.criteriaValue, passiveId)
-					else
-						local i = TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
-							return value == passiveId
-						end)
-
-						if i then
-							existingSelector.criteriaValue[i] = nil
-							TableUtils:ReindexNumericTable(existingSelector.criteriaValue)
+					select.OnHoverEnter = function()
+						if Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
+							tooltip.Visible = true
+							ResourceManager:RenderDisplayWindow(passive, tooltip)
 						end
 					end
-					displaySelectedPassives()
-					updateFunc(#existingSelector.criteriaValue)
+
+					select.OnHoverLeave = function()
+						tooltip.Visible = false
+						Helpers:KillChildren(tooltip)
+					end
+
+					select.OnClick = function()
+						if select.Selected then
+							table.insert(existingSelector.criteriaValue, passiveId)
+						else
+							local i = TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
+								return value == passiveId
+							end)
+
+							if i then
+								existingSelector.criteriaValue[i] = nil
+								TableUtils:ReindexNumericTable(existingSelector.criteriaValue)
+							end
+						end
+						displaySelectedPassives()
+						updateFunc(#existingSelector.criteriaValue)
+					end
 				end
 			end
 		end
@@ -196,4 +203,7 @@ function PassiveSelector:predicate(selector)
 		end
 		return false
 	end
+end
+
+function PassiveSelector:generateDocs()
 end

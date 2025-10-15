@@ -1,4 +1,7 @@
 HealthMutator = MutatorInterface:new("Health")
+HealthMutator.affectedComponents = {
+	"Health",
+}
 
 function HealthMutator:priority()
 	return self:recordPriority(LevelMutator:priority() + 1)
@@ -6,6 +9,18 @@ end
 
 function HealthMutator:Transient()
 	return false
+end
+
+---@param mutator HealthMutator
+---@param existingMutator HealthMutator
+function HealthMutator:canBeAdditive(mutator, existingMutator)
+	if existingMutator then
+		if (mutator.staticHealth and existingMutator.staticHealth)
+			or (not mutator.staticHealth and not existingMutator.staticHealth) then
+			return false
+		end
+	end
+	return true
 end
 
 ---@alias HealthModifierKeys "CharacterLevel"|"GameLevel"|"XPReward"
@@ -399,40 +414,61 @@ function HealthMutator:previewResult(mutator)
 end
 
 function HealthMutator:applyMutator(entity, entityVar)
-	---@type HealthMutator
-	local mutator = entityVar.appliedMutators[self.name]
-
-	entityVar.originalValues[self.name] = entity.Health.MaxHp
-	local currentHealth = entity.Health.Hp
-	local currentHealthPercentage = 1 - (entity.Health.Hp / entity.Health.MaxHp)
-
-	if mutator.values then
-		---@type Character
-		local charStat = Ext.Stats.Get(entity.Data.StatsId)
-
-		---@type number?
-		local xPRewardMod
-		if charStat.XPReward then
-			xPRewardMod = calculateXPRewardLevelModifier(mutator.modifiers["XPReward"], charStat.XPReward)
-		end
-
-		local gameLevelMod = entity.Level and calculateGameLevelModifier(mutator.modifiers["GameLevel"], entity.Level.LevelName) or 0
-		local characterMod = calculateCharacterLevelModifier(mutator.modifiers["CharacterLevel"], entity.AvailableLevel.Level)
-		local percentageToAdd = (mutator.values + (characterMod + gameLevelMod + xPRewardMod)) / 100
-
-		entity.Health.MaxHp = math.floor(entity.Health.MaxHp + (entity.Health.MaxHp * percentageToAdd))
-		entity.Health.Hp = entity.Health.MaxHp - (entity.Health.MaxHp * currentHealthPercentage)
-	else
-		entity.Health.MaxHp = mutator.staticHealth
-		entity.Health.Hp = entity.Health.MaxHp - (entity.Health.MaxHp * currentHealthPercentage)
+	---@type HealthMutator[]
+	local mutators = entityVar.appliedMutators[self.name]
+	if not mutators[1] then
+		mutators = { mutators }
 	end
 
-	Logger:BasicDebug("Changed max from %s -> %s, current from %s -> %s",
-		entityVar.originalValues[self.name],
-		entity.Health.MaxHp,
-		currentHealth,
-		entity.Health.Hp
-	)
+	entityVar.originalValues[self.name] = entity.Health.MaxHp
+
+	for _, mutator in TableUtils:OrderedPairs(mutators, function(key, value)
+		return value.staticHealth and 1 or 2
+	end) do
+		local currentHealth = entity.Health.Hp
+		local currentHealthPercentage = 1 - (entity.Health.Hp / entity.Health.MaxHp)
+
+		if mutator.values then
+			---@type Character
+			local charStat = Ext.Stats.Get(entity.Data.StatsId)
+
+			---@type number?
+			local xPRewardMod = 0
+			if charStat.XPReward then
+				xPRewardMod = calculateXPRewardLevelModifier(mutator.modifiers["XPReward"], charStat.XPReward)
+			end
+
+			local gameLevelMod = entity.Level and calculateGameLevelModifier(mutator.modifiers["GameLevel"], entity.Level.LevelName) or 0
+			local characterMod = calculateCharacterLevelModifier(mutator.modifiers["CharacterLevel"], entity.AvailableLevel.Level)
+			local percentageToAdd = (mutator.values + (characterMod + gameLevelMod + xPRewardMod)) / 100
+
+			local currentMaxHealth = entity.Health.MaxHp
+			entity.Health.MaxHp = math.floor(entity.Health.MaxHp + (entity.Health.MaxHp * percentageToAdd))
+			entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * currentHealthPercentage)))
+
+			Logger:BasicDebug(
+				"Dynamically changed max from %s -> %s, current from %s -> %s, due to set percentage being %s%% (base: %s%%, character: %s%%, gameLevel: %s%%, xpReward: %s%%)",
+				currentMaxHealth,
+				entity.Health.MaxHp,
+				currentHealth,
+				entity.Health.Hp,
+				percentageToAdd * 100,
+				mutator.values,
+				characterMod,
+				gameLevelMod,
+				xPRewardMod
+			)
+		else
+			entity.Health.MaxHp = mutator.staticHealth
+			entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor(entity.Health.MaxHp * currentHealthPercentage))
+			Logger:BasicDebug("Statically changed max from %s -> %s, current from %s -> %s",
+				entityVar.originalValues[self.name],
+				entity.Health.MaxHp,
+				currentHealth,
+				entity.Health.Hp
+			)
+		end
+	end
 
 	entity:Replicate("Health")
 end
@@ -443,7 +479,7 @@ function HealthMutator:undoMutator(entity, entityVar)
 	local originalMaxHp = entity.Health.MaxHp
 
 	entity.Health.MaxHp = entityVar.originalValues[self.name]
-	entity.Health.Hp = entity.Health.MaxHp - (entity.Health.MaxHp * healthPercentage)
+	entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * healthPercentage)))
 
 	entity:Replicate("Health")
 
@@ -453,4 +489,110 @@ function HealthMutator:undoMutator(entity, entityVar)
 		entity.Health.MaxHp,
 		entity.Health.Hp
 	)
+end
+
+---@return MazzleDocsDocumentation
+function HealthMutator:generateDocs()
+	return {
+		{
+			Topic = self.Topic,
+			SubTopic = self.SubTopic,
+			content = {
+				{
+					type = "Heading",
+					text = "Health",
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "CallOut",
+					prefix = "",
+					prefix_color = "Yellow",
+					text = [[
+Dependency On: Level Mutator
+Transient: No
+Composable: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is always applied first]]
+				} --[[@as MazzleDocsCallOut]],
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Summary"
+				},
+				{
+					type = "Content",
+					text =
+					[[This is a conceptually simple mutator that allows for some unique complexity - namely, it allows you to define Health curves for different mob types of different character levels in different game levels, which can be previewed using the button showed above.
+
+The Modifiers are additive to the base amount, but also allow setting negative and decimal values, allowing you to define the curve exactly as you wish.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Client-Side Content"
+				},
+				{
+					type = "Content",
+					text = [[
+The mutator is laid out as follows:
+
+Static vs Dynamic Toggle - if set to Static, you'll set the Entity Health to exactly that value, no modifiers included.
+Dynamic takes the entity's current max health and changes it according the % defined (positive or negative), modifiers included.
+The Preview button shows you exactly what the result will be for the combinations you select.
+
+The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Server-Side Implementation"
+				},
+				{
+					type = "Content",
+					text = [[
+This Mutator directly changes the entity.Health MaxHp and HP components so the current HP will change relative to the MaxHp, preventing any full-heal shenanigans - meaning, if the entity's health is 7/10, and the max health is set to 20, the current health will be updated to 14 (70% of 20).
+
+If a Static and a Dyanmic Health Mutator in different Mutations make it to the final pool (due to the one lower in the profile order being set to Additive), Lab will apply the Static version first, then the Dynamic version on top of that.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Example Use Cases"
+				},
+				{
+					type = "Section",
+					text = "Selected entities:"
+				},
+				{
+					type = "Bullet",
+					text = {
+						"that aren't bosses should have 50% more health, otherwise they should have 100% more",
+						"should have a 10% increase every Game Level until IRN_Main_A, at which point they start losing 5% every Game level",
+						"gain 5% every Game Level, subtracting 1% for every rung up on the XPReward ladder (so Bosses will be (5% - 5% = 0%) on the TUT ship)"
+					}
+				} --[[@as MazzleDoctsBullet]],
+			}
+		}
+	} --[[@as MazzleDocsDocumentation]]
+end
+
+---@return {[string]: MazzleDocsContentItem}
+function HealthMutator:generateChangelog()
+	return {
+		["1.6.0"] = {
+			type = "Bullet",
+			text = {
+				"Fix execution when the math ain't whole numbers",
+				"Changes Additive behavior for Health Mutators - Dynamic overwrites Dynamic, Static Overwrites Static, but Static and Dynamic can be run together (Static will always run first)"
+			}
+		} --[[@as MazzleDocsContentItem]]
+	}
 end

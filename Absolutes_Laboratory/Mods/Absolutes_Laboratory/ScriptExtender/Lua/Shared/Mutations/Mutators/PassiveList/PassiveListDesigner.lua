@@ -3,27 +3,7 @@ Ext.Require("Client/Mutations/ListDesignerBaseClass.lua")
 ---@class PassiveListDesigner : ListDesignerBaseClass
 PassiveListDesigner = ListDesignerBaseClass:new("Passive List",
 	"passiveLists",
-	{ "startOfCombatOnly", "onLoadOnly" },
-	{ "PassivePrototypesAdded", "PassivePrototypesRemoved", "PassivesAdded", "PassivesRemoved" },
-	---@param passiveMeta ResourceProgressionPassive|StatsPassivePrototype
-	function(passiveMeta, addToListFunc)
-		if type(passiveMeta) == "string" then
-			addToListFunc(passiveMeta)
-		elseif Ext.Types.GetObjectType(passiveMeta) == "resource::ProgressionPassive" then
-			---@type ResourcePassiveList
-			local progSpellList = Ext.StaticData.Get(passiveMeta.UUID, "PassiveList")
-
-			if progSpellList then
-				for _, spellName in pairs(progSpellList.Passives) do
-					addToListFunc(spellName)
-				end
-			else
-				error(string.format"UUID %s is not a valid PassiveList", passiveMeta.UUID)
-			end
-		else
-			addToListFunc(passiveMeta.Name)
-		end
-	end)
+	{ "startOfCombatOnly", "onLoadOnly", "onDeathOnly" })
 
 function PassiveListDesigner:buildBrowser()
 	if not self.browserTabs["PassiveData"] then
@@ -31,23 +11,22 @@ function PassiveListDesigner:buildBrowser()
 		self.browserTabs["PassiveData"].NoSavedSettings = true
 	end
 
-	self:buildProgressionBrowser()
+	self:buildLiteProgressionBrowser()
 	self:buildStatBrowser("PassiveData")
 end
 
-function PassiveListDesigner:customizeDesigner()
-	self.designerSection:AddSeparator()
-	Styler:MiddleAlignedColumnLayout(self.designerSection, function(ele)
-		Styler:CheapTextAlign("Linked Spell Lists ( ? )", ele):Tooltip():AddText("\t Spell Lists linked here will be automatically used as dependencies for Passive List Mutators")
-		local linkedSpellListsTable = ele:AddTable("LinkedSpellLists", 1)
-		linkedSpellListsTable.BordersOuter = true
-		linkedSpellListsTable.SizingFixedFit = true
+function PassiveListDesigner:customizeDesigner(parent)
+	Styler:CheapTextAlign("Linked Spell Lists ( ? )", parent):Tooltip():AddText("\t Spell Lists linked here will be automatically used as dependencies for Passive List Mutators")
+	local linkedSpellListsTable = parent:AddTable("LinkedSpellLists", 1)
+	linkedSpellListsTable.BordersOuter = true
+	linkedSpellListsTable.SizingFixedFit = true
 
-		local function buildTable()
-			Helpers:KillChildren(linkedSpellListsTable)
+	local function buildTable()
+		Helpers:KillChildren(linkedSpellListsTable)
 
-			for s, spellListId in ipairs(self.activeList.spellListDependencies or {}) do
-				local spellList = MutationConfigurationProxy.spellLists[spellListId]
+		for s, spellListId in ipairs(self.activeList.spellListDependencies or {}) do
+			local spellList = MutationConfigurationProxy.lists.spellLists[spellListId]
+			if spellList then
 				local cell = linkedSpellListsTable:AddRow():AddCell()
 
 				local delete = Styler:ImageButton(cell:AddImageButton("delete" .. spellList.name, "ico_red_x", { 16, 16 }))
@@ -68,16 +47,18 @@ function PassiveListDesigner:customizeDesigner()
 				end
 			end
 		end
-		buildTable()
+	end
+	buildTable()
 
-		local addDependencyButton = ele:AddButton("Add Spell List Dependency")
-		addDependencyButton.Font = "Small"
-		addDependencyButton.Disabled = self.activeList.modId ~= nil
-		addDependencyButton.OnClick = function()
-			Helpers:KillChildren(self.popup)
-			self.popup:Open()
+	local addDependencyButton = parent:AddButton("Add Spell List Dependency")
+	addDependencyButton.Font = "Small"
+	addDependencyButton.Disabled = self.activeList.modId ~= nil
+	addDependencyButton.OnClick = function()
+		Helpers:KillChildren(self.popup)
+		self.popup:Open()
 
-			for spellListId, spellList in pairs(MutationConfigurationProxy.spellLists) do
+		for spellListId, spellList in pairs(MutationConfigurationProxy.lists.spellLists) do
+			if spellList.useGameLevel == self.activeList.useGameLevel then
 				---@type ExtuiSelectable
 				local select = self.popup:AddSelectable(spellList.name .. (spellList.modId and string.format(" (from %s)", Ext.Mod.GetMod(spellList.modId).Info.Name) or ""),
 					"DontClosePopups")
@@ -96,6 +77,5 @@ function PassiveListDesigner:customizeDesigner()
 				end
 			end
 		end
-	end)
-	self.designerSection:AddSeparator()
+	end
 end

@@ -29,13 +29,12 @@ end
 ---@param content any will be stringified using Ext.Json.Stringify
 ---@treturn boolean true if the operation succeeded, false otherwise
 function FileUtils:SaveTableToFile(filepath, content)
-	local jsonSuccess, response = pcall(function()
+	local jsonSuccess, response = xpcall(function()
 		return Ext.Json.Stringify(content, {
-			Beautify = false,
-			IterateUserdata = true,
+			Beautify = true,
 			StringifyInternalTypes = true
 		})
-	end)
+	end, debug.traceback)
 
 	if not jsonSuccess then
 		Logger:BasicError("Failed to convert content %s for file %s to JSON due to error \n\t%s",
@@ -54,9 +53,9 @@ end
 ---@tparam any content will be stringified using Ext.Json.Stringify
 ---@treturn boolean true if the operation succeeded, false otherwise
 function FileUtils:SaveStringContentToFile(filepath, content)
-	local success, error = pcall(function()
+	local success, error = xpcall(function()
 		return Ext.IO.SaveFile(FileUtils:BuildAbsoluteFileTargetPath(filepath), content)
-	end)
+	end, debug.traceback)
 
 	if not success then
 		Logger:BasicError("Failed to save file %s due to error \n\t%s", FileUtils:BuildAbsoluteFileTargetPath(filepath), error)
@@ -68,12 +67,12 @@ function FileUtils:SaveStringContentToFile(filepath, content)
 end
 
 function FileUtils:LoadTableFile(filepath, addlArg)
-	local success, result = pcall(function()
+	local success, result = xpcall(function()
 		local fileContent = FileUtils:LoadFile(filepath, addlArg)
 		if fileContent then
 			return Ext.Json.Parse(fileContent)
 		end
-	end)
+	end, debug.traceback)
 
 	if not success then
 		if result then
@@ -90,9 +89,9 @@ end
 ---@param filepath string relative to the mod directory
 ---@return string|nil
 function FileUtils:LoadFile(filepath, addlArg)
-	local success, result = pcall(function()
+	local success, result = xpcall(function()
 		return Ext.IO.LoadFile(addlArg and filepath or FileUtils:BuildAbsoluteFileTargetPath(filepath), addlArg)
-	end)
+	end, debug.traceback)
 
 	if not success then
 		if result then

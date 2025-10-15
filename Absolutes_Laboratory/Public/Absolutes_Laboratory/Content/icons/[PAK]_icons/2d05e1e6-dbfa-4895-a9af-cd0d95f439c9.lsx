@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<save>
+	<version major="4" minor="8" revision="0" build="10" lslib_meta="v1,bswap_guids,lsf_keys_adjacency" />
+	<region id="TextureBank">
+		<node id="TextureBank">
+			<children>
+				<node id="Resource">
+					<attribute id="ID" type="FixedString" value="2d05e1e6-dbfa-4895-a9af-cd0d95f439c9" />
+					<attribute id="Name" type="LSString" value="Background_Image" />
+					<attribute id="SourceFile" type="LSString" value="Public/Absolutes_Laboratory/Assets/Textures/Icons/Background_Image_Atlas.dds" />
+					<attribute id="Template" type="FixedString" value="Background_Image" />
+					<attribute id="Streaming" type="bool" value="True" />
+					<attribute id="Type" type="int32" value="1" />
+					<attribute id="SRGB" type="bool" value="False" />
+					<attribute id="Width" type="int32" value="860" />
+					<attribute id="Height" type="int32" value="484" />
+					<attribute id="Depth" type="int32" value="1" />
+				</node>
+			</children>
+		</node>
+	</region>
+</save>

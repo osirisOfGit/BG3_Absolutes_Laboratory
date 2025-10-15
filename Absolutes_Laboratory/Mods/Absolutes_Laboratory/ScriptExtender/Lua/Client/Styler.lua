@@ -33,7 +33,7 @@ function Styler:CheapTextAlign(text, parent, font)
 		---@type ExtuiSelectable
 		local selectable = parent:AddSelectable(text)
 		if font then
-			selectable.Font = font
+			Styler:ScaledFont(selectable, font)
 		end
 		selectable:SetStyle("SelectableTextAlign", 0.5)
 		selectable.Disabled = true
@@ -65,7 +65,6 @@ function Styler:MiddleAlignedColumnLayout(parent, ...)
 
 		row:AddCell()
 	end
-
 	return table
 end
 
@@ -158,7 +157,7 @@ function Styler:SelectableText(parent, id, text)
 	local inputText = parent:AddInputText("##" .. (id or text), tostring(text))
 	inputText.AutoSelectAll = true
 	inputText.ItemReadOnly = true
-	inputText.SizeHint = { #text * 15, 0 }
+	inputText.SizeHint = Styler:ScaleFactor({ self:calculateTextDimensions(text) })
 	inputText:SetColor("FrameBg", { 1, 1, 1, 0 })
 	return inputText
 end
@@ -174,6 +173,17 @@ function Styler:ScaleFactor(dimensionalArray)
 	end
 	-- testing monitor for development is 1440p
 	return Ext.IMGUI.GetViewportSize()[2] / 1440
+end
+
+---@param parent ExtuiTreeParent
+---@return ExtuiPopup
+function Styler:Popup(parent)
+	local popup = parent:AddPopup("")
+	popup.NoSavedSettings = true
+	popup:SetColor("PopupBg", { 0, 0, 0, 1 })
+	popup:SetColor("Border", { 1, 0, 0, 0.5 })
+	popup:SetColor("ChildBg", { 0, 0, 0, 1 })
+	return popup
 end
 
 ---@param parent ExtuiTreeParent
@@ -250,10 +260,16 @@ function Styler:HyperlinkRenderable(renderable, item, modifier, modifierOnHover,
 	return function()
 		if not modifier or Ext.ClientInput.GetInputManager().PressedModifiers == modifier then
 			window = Ext.IMGUI.NewWindow(item)
+			window.Scaling = "Scaled"
+			window.NoSavedSettings = true
 			window.HorizontalScrollbar = true
 			window:SetStyle("WindowMinSize", 100 * self:ScaleFactor(), 100 * self:ScaleFactor())
 			window:SetSize({ 0, 0 }, "FirstUseEver")
 			window.Closeable = true
+
+			if MCM then
+				window.Font = MCM.Get("font_size", "755a8a72-407f-4f0d-9a33-274ac0f0b53d")
+			end
 
 			window.OnClose = function()
 				window:Destroy()
@@ -283,6 +299,7 @@ function Styler:DualToggleButton(parent, opt1, opt2, startSameLine, callback)
 	toggle.SameLine = true
 	toggle.AllowDuplicateId = true
 	toggle.ItemWidth = 80 * Styler:ScaleFactor()
+	toggle.UserData = "EnableForMods"
 
 	local option2 = parent:AddButton(opt2)
 	option2.AllowDuplicateId = true
@@ -326,13 +343,20 @@ end
 ---@param parent ExtuiTreeParent
 ---@param buttonText string
 ---@param startSameLine boolean
+---@param tooltip string?
 ---@param callback fun(swap: boolean?): boolean
-function Styler:EnableToggleButton(parent, buttonText, startSameLine, callback)
+function Styler:EnableToggleButton(parent, buttonText, startSameLine, tooltip, callback)
+	if tooltip then
+		buttonText = "(?) " .. buttonText
+	end
 	local option1 = parent:AddButton(buttonText)
 	option1.AllowDuplicateId = true
 	option1.Disabled = true
 	self:Color(option1, "ActiveButton")
 	option1.SameLine = startSameLine or false
+	if tooltip then
+		option1:Tooltip():AddText("\t " .. tooltip)
+	end
 
 	local toggle = parent:AddSliderInt("", callback() and 0 or 1, 0, 1)
 	toggle:SetColor("Text", { 1, 1, 1, 0 })
@@ -340,6 +364,9 @@ function Styler:EnableToggleButton(parent, buttonText, startSameLine, callback)
 	toggle.SameLine = true
 	toggle.AllowDuplicateId = true
 	toggle.ItemWidth = 80 * Styler:ScaleFactor()
+	if tooltip then
+		toggle:Tooltip():AddText("\t " .. tooltip)
+	end
 
 	if callback() then
 		self:Color(option1, "ActiveButton")
@@ -412,4 +439,98 @@ function Styler:Color(element, property, color)
 		element:SetColor(property, self:ConvertRGBAToIMGUI(color))
 	end
 	return element
+end
+
+---@enum FontSize
+Styler.FontSize = {
+	["Tiny"] = 1,
+	["Small"] = 2,
+	["Medium"] = 3,
+	["Default"] = 4,
+	["Big"] = 5,
+	["Large"] = 6,
+	"Tiny",
+	"Small",
+	"Medium",
+	"Default",
+	"Big",
+	"Large"
+}
+
+---@generic E : ExtuiStyledRenderable
+---@param element E
+---@param elefontSize FontSize
+---@return E
+function Styler:ScaledFont(element, elefontSize)
+	local mcmFontSize = Styler.FontSize[MCM.Get("font_size", "755a8a72-407f-4f0d-9a33-274ac0f0b53d")]
+	local targetFontDiff = Styler.FontSize[elefontSize] - Styler.FontSize["Default"]
+
+	element.Font = self.FontSize[math.max(1, math.min(#Styler.FontSize, mcmFontSize + targetFontDiff))]
+	return element
+end
+
+--- Credit to Mazzle (RangeFinder, EzDocs) for this
+---@param text string
+---@param min_width number?
+---@return number optimal width
+---@return integer height
+function Styler:calculateTextDimensions(text, min_width)
+	local base_line_height = 21 -- Base line height
+	local base_padding = 0   -- Base padding for InputText widget
+	local line_padding = 0.0 -- Additional padding per line for multiline InputText
+	local min_height = 30    -- Minimum height for single line
+	local max_height = 1600  -- Maximum height to prevent huge blocks
+	local char_width = 11
+	local width_padding = 20
+	min_width = min_width or 400
+
+	-- Initialize variables for both calculations
+	local line_count = 0
+	local max_line_length = 0
+
+	-- Normalize line endings and split into lines
+	local normalized_text = (text or ""):gsub("\r\n", "\n"):gsub("\r", "\n")
+
+	-- Function to calculate visual width of a line (accounting for tabs)
+	local function calculate_visual_width(line)
+		local visual_width = 0
+		local tab_size = 4 -- Standard tab size (4 spaces)
+
+		for i = 1, #line do
+			local char = line:sub(i, i)
+			if char == '\t' then
+				-- Tab expands to next multiple of tab_size
+				local spaces_to_next_tab = tab_size - (visual_width % tab_size)
+				visual_width = visual_width + spaces_to_next_tab
+			else
+				visual_width = visual_width + 1
+			end
+		end
+
+		return visual_width
+	end
+
+	-- Handle empty text case
+	if normalized_text == "" then
+		line_count = 1
+		max_line_length = 0
+	else
+		-- Split text into lines and process in single pass
+		for line in (normalized_text .. "\n"):gmatch("([^\n]*)\n") do
+			line_count = line_count + 1
+			local visual_width = calculate_visual_width(line)
+			max_line_length = math.max(max_line_length, visual_width)
+		end
+	end
+
+	-- Calculate optimal width based on content
+	local estimated_content_width = max_line_length * char_width
+	local optimal_width = math.max(min_width, estimated_content_width + width_padding)
+
+	-- Calculate height with scaling padding for multiline content
+	local scaling_padding = base_padding + (line_count * line_padding)
+	local calculated_height = (line_count * base_line_height) + scaling_padding
+	calculated_height = math.max(min_height, math.min(calculated_height, max_height))
+
+	return self:ScaleFactor() * optimal_width, self:ScaleFactor() * calculated_height
 end

@@ -1,13 +1,21 @@
 MutationModProxy = {}
 
+MutationModProxy.listTypes = { "spellLists", "statusLists", "passiveLists" }
+
 MutationModProxy.Filename = "AbsolutesLaboratory_ProfilesAndMutations"
+
+
+---@class LocalModCacheLists
+---@field spellLists {[Guid] : string}
+---@field passiveLists {[Guid] : string}
+---@field statusLists {[Guid] : string}
+---@field entryReplacerDictionary EntryReplacerDictionary
 
 ---@class LocalModCache
 ---@field profiles {[Guid] : string}
 ---@field folders {[Guid] : string}
----@field spellLists {[Guid] : string}
----@field passiveLists {[Guid] : string}
----@field statusLists {[Guid] : string}
+---@field lists LocalModCacheLists
+---@field prepPhaseMarkers {[Guid] : PrepMarkerCategory}
 
 ---@type {[Guid] : LocalModCache}
 local modList = {}
@@ -20,6 +28,7 @@ local function setModProxyFields(tbl, key, target)
 	end)
 
 	if modId then
+		---@type MutationsConfig
 		local mutationConfig = MutationModProxy:ImportMutation(modId)
 		TableUtils:ConvertStringifiedNumberIndexes(mutationConfig)
 
@@ -41,24 +50,25 @@ local function setModProxyFields(tbl, key, target)
 			end
 		end
 
-		if mutationConfig.spellLists then
-			for spellListId, spellList in pairs(mutationConfig.spellLists) do
-				spellList.modId = modId
-				rawset(MutationModProxy.ModProxy.spellLists, spellListId, spellList)
+		if mutationConfig.prepPhaseMarkers then
+			for markerId, prepPhaseMarker in pairs(mutationConfig.prepPhaseMarkers) do
+				prepPhaseMarker.modId = modId
+				rawset(MutationModProxy.ModProxy.prepPhaseMarkers, markerId, prepPhaseMarker)
 			end
 		end
 
-		if mutationConfig.passiveLists then
-			for passiveListId, passiveList in pairs(mutationConfig.passiveLists) do
-				passiveList.modId = modId
-				rawset(MutationModProxy.ModProxy.passiveLists, passiveListId, passiveList)
+		for _, listType in pairs(MutationModProxy.listTypes) do
+			if mutationConfig.lists and mutationConfig.lists[listType] then
+				for listId, list in pairs(mutationConfig.lists[listType]) do
+					list.modId = modId
+					rawset(MutationModProxy.ModProxy.lists[listType], listId, list)
+				end
 			end
 		end
 
-		if mutationConfig.statusLists then
-			for statusListId, statusList in pairs(mutationConfig.statusLists) do
-				statusList.modId = modId
-				rawset(MutationModProxy.ModProxy.statusLists, statusListId, statusList)
+		if mutationConfig.lists and mutationConfig.lists.entryReplacerDictionary then
+			for entry, entriesBeingReplaced in pairs(mutationConfig.lists.entryReplacerDictionary) do
+				rawset(MutationModProxy.ModProxy.lists.entryReplacerDictionary, entry, entriesBeingReplaced)
 			end
 		end
 
@@ -91,10 +101,10 @@ MutationModProxy.ModProxy = {
 			return pairs(modList)
 		end
 	}),
-	spellLists = setmetatable({}, {
+	prepPhaseMarkers = setmetatable({}, {
 		__mode = "k",
 		__index = function(t, k)
-			return setModProxyFields(t, k, "spellLists")
+			return setModProxyFields(t, k, "prepPhaseMarkers")
 		end,
 		__call = function(t)
 			MutationModProxy:ImportMutationsFromMods()
@@ -104,33 +114,62 @@ MutationModProxy.ModProxy = {
 			return pairs(modList)
 		end
 	}),
-	passiveLists = setmetatable({}, {
+	lists = {
+		entryReplacerDictionary = {},
+		spellLists = setmetatable({}, {
+			__mode = "k",
+			__index = function(t, k)
+				return setModProxyFields(t, k, "spellLists")
+			end,
+			__call = function(t)
+				MutationModProxy:ImportMutationsFromMods()
+				return TableUtils:CountElements(modList)
+			end,
+			__pairs = function(t)
+				return pairs(modList)
+			end
+		}),
+		passiveLists = setmetatable({}, {
+			__mode = "k",
+			__index = function(t, k)
+				return setModProxyFields(t, k, "passiveLists")
+			end,
+			__call = function(t)
+				MutationModProxy:ImportMutationsFromMods()
+				return TableUtils:CountElements(modList)
+			end,
+			__pairs = function(t)
+				return pairs(modList)
+			end
+		}),
+		statusLists = setmetatable({}, {
+			__mode = "k",
+			__index = function(t, k)
+				return setModProxyFields(t, k, "statusLists")
+			end,
+			__call = function(t)
+				MutationModProxy:ImportMutationsFromMods()
+				return TableUtils:CountElements(modList)
+			end,
+			__pairs = function(t)
+				return pairs(modList)
+			end
+		})
+	}
+}
+
+for _, listType in pairs(MutationModProxy.listTypes) do
+	MutationModProxy.ModProxy.lists.entryReplacerDictionary[listType] = setmetatable({}, {
 		__mode = "k",
 		__index = function(t, k)
-			return setModProxyFields(t, k, "passiveLists")
+			setModProxyFields(t, k, "entryReplacerDictionary")
+			return modList[k] and modList[k].lists and modList[k].lists.entryReplacerDictionary and modList[k].lists.entryReplacerDictionary[listType]
 		end,
 		__call = function(t)
-			MutationModProxy:ImportMutationsFromMods()
 			return TableUtils:CountElements(modList)
-		end,
-		__pairs = function(t)
-			return pairs(modList)
-		end
-	}),
-	statusLists = setmetatable({}, {
-		__mode = "k",
-		__index = function(t, k)
-			return setModProxyFields(t, k, "statusLists")
-		end,
-		__call = function(t)
-			MutationModProxy:ImportMutationsFromMods()
-			return TableUtils:CountElements(modList)
-		end,
-		__pairs = function(t)
-			return pairs(modList)
 		end
 	})
-}
+end
 
 ---@param modId Guid
 ---@return MutationsConfig?
@@ -138,7 +177,7 @@ MutationModProxy.ModProxy = {
 function MutationModProxy:ImportMutation(modId)
 	local mod = Ext.Mod.GetMod(modId)
 	if mod then
-		---@type MutationsConfig?
+		---@type {["mutations"]: MutationsConfig?}
 		local mutations = FileUtils:LoadTableFile(string.format("Mods/%s/%s", mod.Info.Directory, self.Filename .. ".json"), "data")
 		if mutations then
 			return mutations.mutations, modId
@@ -171,24 +210,47 @@ function MutationModProxy:ImportMutationsFromMods()
 					end
 				end
 
-				if mutations.spellLists and next(mutations.spellLists) then
-					modEntry.spellLists = {}
-					for spellListId, spellList in pairs(mutations.spellLists) do
-						modEntry.spellLists[spellListId] = spellList.name
+				if mutations.prepPhaseMarkers and next(mutations.prepPhaseMarkers) then
+					modEntry.prepPhaseMarkers = {}
+					for markerId, markerObject in pairs(mutations.prepPhaseMarkers) do
+						modEntry.prepPhaseMarkers[markerId] = markerObject
 					end
 				end
 
-				if mutations.statusLists and next(mutations.statusLists) then
-					modEntry.statusLists = {}
-					for statusListId, statusList in pairs(mutations.statusLists) do
-						modEntry.statusLists[statusListId] = statusList.name
+				if mutations.lists then
+					modEntry.lists = {}
+					ListConfigurationManager:maintainLists(mutations)
+					if mutations.lists.spellLists and next(mutations.lists.spellLists) then
+						modEntry.lists.spellLists = {}
+						for spellListId, spellList in pairs(mutations.lists.spellLists) do
+							modEntry.lists.spellLists[spellListId] = spellList.name
+						end
 					end
-				end
 
-				if mutations.passiveLists and next(mutations.passiveLists) then
-					modEntry.passiveLists = {}
-					for passiveListId, passiveList in pairs(mutations.passiveLists) do
-						modEntry.passiveLists[passiveListId] = passiveList.name
+					if mutations.lists.statusLists and next(mutations.lists.statusLists) then
+						modEntry.lists.statusLists = {}
+						for statusListId, statusList in pairs(mutations.lists.statusLists) do
+							modEntry.lists.statusLists[statusListId] = statusList.name
+						end
+					end
+
+					if mutations.lists.passiveLists and next(mutations.lists.passiveLists) then
+						modEntry.lists.passiveLists = {}
+						for passiveListId, passiveList in pairs(mutations.lists.passiveLists) do
+							modEntry.lists.passiveLists[passiveListId] = passiveList.name
+						end
+					end
+
+					if mutations.lists.entryReplacerDictionary and next(mutations.lists.entryReplacerDictionary) then
+						modEntry.lists.entryReplacerDictionary = {}
+						for listName, replacerDict in pairs(mutations.lists.entryReplacerDictionary) do
+							if listName ~= "modDependencies" then
+								modEntry.lists.entryReplacerDictionary[listName] = {}
+								for entryName, toReplace in pairs(replacerDict) do
+									modEntry.lists.entryReplacerDictionary[listName][entryName] = toReplace
+								end
+							end
+						end
 					end
 				end
 			end

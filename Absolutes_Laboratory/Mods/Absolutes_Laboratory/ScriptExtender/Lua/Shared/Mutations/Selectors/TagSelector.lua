@@ -51,9 +51,11 @@ function TagSelector:renderSelector(parent, existingSelector)
 
 	local tagSelect = tagSelectCell:AddChildWindow("Tags")
 	tagSelect.NoSavedSettings = true
+	tagSelect.Size = Styler:ScaleFactor({ 0, 400 })
 
 	local tagDisplay = row:AddCell():AddChildWindow("TagDisplay")
 	tagDisplay.NoSavedSettings = true
+	tagDisplay.Size = Styler:ScaleFactor({ 0, 400 })
 
 	local function displaySelectedTags()
 		Helpers:KillChildren(tagDisplay)
@@ -79,6 +81,7 @@ function TagSelector:renderSelector(parent, existingSelector)
 	---@param filter string?
 	local function buildSelects(filter)
 		Helpers:KillChildren(tagGroup)
+		-- if filter and #filter >= 3 then
 		for _, tag in ipairs(tags) do
 			if not (filter and #filter > 0)
 				or string.upper(translationMap[tag]):find(filter)
@@ -88,10 +91,9 @@ function TagSelector:renderSelector(parent, existingSelector)
 				local select = tagGroup:AddSelectable(translationMap[tag])
 				select.UserData = tag
 				ResourceManager:RenderDisplayWindow(Ext.StaticData.Get(tag, "Tag"), select:Tooltip())
-
-				if TableUtils:IndexOf(existingSelector.criteriaValue, tag) then
-					select.Selected = true
-				end
+				-- Header is also the main color property of the group, which is set to hide it, which gets inherited by its kids, so have to reset it
+				select:SetColor("Header", { 0.36, 0.30, 0.27, 0.76 })
+				select.Selected = TableUtils:IndexOf(existingSelector.criteriaValue, tag) ~= nil
 
 				select.OnClick = function()
 					if select.Selected then
@@ -107,6 +109,7 @@ function TagSelector:renderSelector(parent, existingSelector)
 				end
 			end
 		end
+		-- end
 	end
 	buildSelects()
 
@@ -177,4 +180,7 @@ function TagSelector:predicate(selector)
 		end
 		return false
 	end
+end
+
+function TagSelector:generateDocs()
 end

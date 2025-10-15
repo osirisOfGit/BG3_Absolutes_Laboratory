@@ -7,6 +7,22 @@ local updateTimer
 
 local informedUserOfHostRestriction = false
 
+local lastBackupTime
+local createRevolvingBackups = coroutine.wrap(function(...)
+	local i = 0
+	while true do
+		if not lastBackupTime or (lastBackupTime - Ext.Timer.MonotonicTime()) >= 60000 then
+			i = i + 1
+			FileUtils:SaveTableToFile(("config-BACKUP-%s.json"):format(i), real_config_table)
+			lastBackupTime = Ext.Timer.MonotonicTime()
+			if i == 5 then
+				i = 0
+			end
+		end
+		coroutine.yield()
+	end
+end)
+
 -- This allows us to react to any changes made to fields at any level in the structure and send a NetMessage
 -- just by defining the base table, ConfigurationStructure.config. Client/* implementations can now
 -- reference any slice of this table and allow their IMGUI elements to modify the table without
@@ -40,6 +56,12 @@ function ConfigurationStructure:generate_recursive_metatable(proxy_table, real_t
 						key = tonumber(key)
 					end
 
+					if real_table[key] and type(value) ~= "table" and real_table[key] == value then
+						return
+					end
+
+					Logger:BasicTrace("Updating config key %s to be %s", key, value)
+
 					real_table[key] = value
 					if type(value) == "table" then
 						rawset(proxy_table, key, self:generate_recursive_metatable(
@@ -72,10 +94,11 @@ function ConfigurationStructure:generate_recursive_metatable(proxy_table, real_t
 					-- so instead of serializing and sending it via NetMessages we'll just have the client handle
 					-- the file updates and let the server know when to read from it
 					FileUtils:SaveTableToFile("config.json", real_config_table)
+					createRevolvingBackups()
 					Logger:BasicDebug("Configuration updates made - sending updated table to server")
 
 					if Ext.ClientNet.IsHost() then
-						Ext.ClientNet.PostMessageToServer(ModuleUUID .. "_UpdateConfiguration", "")
+						Channels.UpdateConfiguration:SendToServer()
 					elseif not informedUserOfHostRestriction then
 						informedUserOfHostRestriction = true
 						Logger:BasicWarning(
@@ -90,13 +113,17 @@ end
 ConfigurationStructure.DynamicClassDefinitions = {}
 
 --- @class Configuration
-ConfigurationStructure.config = ConfigurationStructure:generate_recursive_metatable({}, real_config_table)
+ConfigurationStructure.config = Ext.IsClient() and ConfigurationStructure:generate_recursive_metatable({}, real_config_table) or {}
 
 Ext.Require("Shared/Configurations/MutationsConfig.lua")
 Ext.Require("Shared/Configurations/MonsterLabConfig.lua")
 
 local function CopyConfigsIntoReal(table_from_file, proxy_table)
 	for key, value in pairs(table_from_file) do
+		if key == "delete" then
+			table_from_file[key] = nil
+			goto continue
+		end
 		if type(key) == "string" and tonumber(key) then
 			key = tonumber(key)
 		end
@@ -129,12 +156,25 @@ local function CopyConfigsIntoReal(table_from_file, proxy_table)
 		-- 		key,
 		-- 		type(value) == "table" and Ext.Json.Stringify(value) or value)
 		-- end
+		::continue::
 	end
 end
 
 ---@return Configuration
 function ConfigurationStructure:GetRealConfigCopy()
 	return TableUtils:DeeplyCopyTable(real_config_table)
+end
+
+local function convertStringKeysToNumeric(tbl)
+	for key, value in pairs(tbl) do
+		if type(key) == "string" and tonumber(key) then
+			tbl[tonumber(key)] = value
+			tbl[key] = nil
+		end
+		if type(value) == "table" then
+			convertStringKeysToNumeric(value)
+		end
+	end
 end
 
 function ConfigurationStructure:InitializeConfig()
@@ -150,10 +190,10 @@ function ConfigurationStructure:InitializeConfig()
 			CopyConfigsIntoReal(config, ConfigurationStructure.config)
 			FileUtils:SaveTableToFile("config.json", real_config_table)
 		else
+			convertStringKeysToNumeric(config)
 			-- All config management is done on the client side - just want server to always use the full config file (instead of attempting to merge with defaults)
-			real_config_table = {}
-			ConfigurationStructure.config = self:generate_recursive_metatable({}, real_config_table)
-			CopyConfigsIntoReal(config, ConfigurationStructure.config)
+			real_config_table = config
+			ConfigurationStructure.config = config
 		end
 	end
 
@@ -167,10 +207,6 @@ end
 
 if Ext.IsClient() then
 	Ext.Events.SessionLoaded:Subscribe(function()
-		Ext.ClientNet.PostMessageToServer(ModuleUUID .. "_UpdateConfiguration", "")
+		Channels.UpdateConfiguration:SendToServer()
 	end)
 end
-
-Ext.RegisterNetListener(ModuleUUID .. "_UpdateConfiguration", function(channel, payload, user)
-	ConfigurationStructure:InitializeConfig()
-end)

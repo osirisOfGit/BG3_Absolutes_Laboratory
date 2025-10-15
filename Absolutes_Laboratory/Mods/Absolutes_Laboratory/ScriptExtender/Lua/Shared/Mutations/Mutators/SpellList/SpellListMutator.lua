@@ -3,6 +3,15 @@ Ext.Require("Shared/Mutations/Mutators/SpellList/SpellListDesigner.lua")
 ---@class SpellListMutatorClass : MutatorInterface
 SpellListMutator = MutatorInterface:new("SpellList")
 
+---@type ExtComponentType[]
+SpellListMutator.affectedComponents = {
+	"SpellBook",
+	"SpellBookPrepares",
+	"SpellContainer",
+	"BoostsContainer",
+	"StatusContainer"
+}
+
 function SpellListMutator:priority()
 	return self:recordPriority(LevelMutator:priority() + 1)
 end
@@ -28,12 +37,15 @@ end
 
 ---@class SpellListMutator : Mutator
 ---@field values SpellMutatorGroup[]
+---@field useGameLevel boolean
 
 ---@param mutator SpellListMutator
 function SpellListMutator:renderMutator(parent, mutator)
 	mutator.values = mutator.values or {}
+	mutator.useGameLevel = mutator.useGameLevel or false
+
 	Helpers:KillChildren(parent)
-	local configuredSpellLists = MutationConfigurationProxy.spellLists
+	local configuredSpellLists = MutationConfigurationProxy.lists.spellLists
 
 	local spellListDesignerButton = parent:AddButton("Open SpellList Designer")
 	spellListDesignerButton.UserData = "EnableForMods"
@@ -41,11 +53,25 @@ function SpellListMutator:renderMutator(parent, mutator)
 		SpellListDesigner:launch()
 	end
 
+	parent:AddText("(?) Distribute By: "):Tooltip():AddText([[
+	Changing this option will clear all level groups and only allow selecting lists that have the same option set, as the two options are not compatible with each other.
+Using game level will distribute all entries in the same level that the entity is in and all the ones that come before (i.e. TUT, WLD, CRE, SCL if they're in SCL).
+Using entity level will use the entity's character level, post Character Level Mutators if applicable.]])
+	Styler:DualToggleButton(parent, "Entity Level", "Game Level", true, function(swap)
+		if swap then
+			mutator.useGameLevel = not mutator.useGameLevel
+			mutator.values.delete = true
+			mutator.values = {}
+			self:renderMutator(parent, mutator)
+		end
+		return not mutator.useGameLevel
+	end)
+
 	local displayTable = parent:AddTable("SpellList", 2)
 	displayTable.Resizable = true
 	displayTable.Borders = true
 
-	local popup = parent:AddPopup("spellListMutatorPopup")
+	local popup = Styler:Popup(parent)
 
 	for sMG, spellMutatorGroup in TableUtils:OrderedPairs(mutator.values) do
 		local parentRow = displayTable:AddRow()
@@ -74,132 +100,169 @@ function SpellListMutator:renderMutator(parent, mutator)
 				for i, leveledSpellPool in TableUtils:OrderedPairs(spellMutatorGroup.leveledSpellPool, function(_, value)
 					return value.anchorLevel
 				end) do
-					local cell = leveledTable:AddRow():AddCell()
+					if next(leveledSpellPool._real or leveledSpellPool) then
+						local cell = leveledTable:AddRow():AddCell()
 
-					local delete = Styler:ImageButton(cell:AddImageButton("delete" .. mutator.targetProperty, "ico_red_x", Styler:ScaleFactor({ 16, 16 })))
-					delete.OnClick = function()
-						for x = i, TableUtils:CountElements(spellMutatorGroup.leveledSpellPool) do
-							spellMutatorGroup.leveledSpellPool[x].delete = true
-							spellMutatorGroup.leveledSpellPool[x] = TableUtils:DeeplyCopyTable(spellMutatorGroup.leveledSpellPool._real[x + 1])
-						end
-
-						renderPools()
-					end
-
-					cell:AddText("Level is equal to or greater than: ").SameLine = true
-
-					local levelInput = cell:AddSliderInt("", leveledSpellPool.anchorLevel, 1, 30)
-					levelInput.OnChange = function()
-						---@param anchor number
-						---@return number[]
-						local function nextAnchor(anchor)
-							local index = TableUtils:IndexOf(spellMutatorGroup.leveledSpellPool, function(value)
-								return value.anchorLevel == anchor
-							end)
-							if index and index ~= i and anchor < 30 then
-								return nextAnchor(anchor + 1)
-							else
-								return { anchor, anchor, anchor, anchor }
-							end
-						end
-						levelInput.Value = nextAnchor(levelInput.Value[1])
-						leveledSpellPool.anchorLevel = levelInput.Value[1]
-					end
-
-					local spellListSep = cell:AddSeparatorText("Spell Lists ( ? )")
-					spellListSep:SetStyle("SeparatorTextAlign", 0.1)
-					spellListSep:Tooltip():AddText("\t Specifying multiple spell lists means one will be randomly chosen to be assigned to an entity - it will not add all of them")
-
-					for sL, spellListId in TableUtils:OrderedPairs(leveledSpellPool.spellLists, function(_, value)
-						return configuredSpellLists[value] and configuredSpellLists[value].name
-					end) do
-						local spellList = configuredSpellLists[spellListId]
-						if spellList then
-							local text = cell:AddTextLink(spellList.name .. (spellList.modId and string.format(" (%s)", Ext.Mod.GetMod(spellList.modId).Info.Name) or ""))
-							text.OnClick = function()
-								SpellListDesigner:launch(spellListId)
+						local delete = Styler:ImageButton(cell:AddImageButton("delete" .. mutator.targetProperty, "ico_red_x", Styler:ScaleFactor({ 16, 16 })))
+						delete.OnClick = function()
+							for x = i, TableUtils:CountElements(spellMutatorGroup.leveledSpellPool) do
+								spellMutatorGroup.leveledSpellPool[x].delete = true
+								spellMutatorGroup.leveledSpellPool[x] = TableUtils:DeeplyCopyTable(spellMutatorGroup.leveledSpellPool._real[x + 1])
 							end
 
-							if spellList.description ~= "" then
-								text:Tooltip():AddText(spellList.description)
-							end
-						else
-							leveledSpellPool.spellLists[sL] = nil
+							renderPools()
 						end
-					end
 
-					local addButton = cell:AddButton("Add Spell List")
-					addButton.Font = "Small"
-					addButton.OnClick = function()
-						Helpers:KillChildren(popup)
-						popup:Open()
+						cell:AddText("Level is equal to or greater than: ").SameLine = true
 
-						for id, spellList in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.spellLists, function(key)
-							return configuredSpellLists[key].name
-						end) do
-							---@type ExtuiSelectable
-							local select = popup:AddSelectable(spellList.name, "DontClosePopups")
-							select.IDContext = id
-							select.Selected = TableUtils:IndexOf(leveledSpellPool.spellLists, id) ~= nil
-							select.OnClick = function()
-								local index = TableUtils:IndexOf(leveledSpellPool.spellLists, id)
-								if index then
-									leveledSpellPool.spellLists[index] = nil
-									select.Selected = false
+						local levelInput = cell:AddSliderInt("###levelInput", leveledSpellPool.anchorLevel, 1, mutator.useGameLevel and #EntityRecorder.Levels or 30)
+						if mutator.useGameLevel then
+							levelInput.Label = EntityRecorder.Levels[leveledSpellPool.anchorLevel] .. "###levelInput"
+						end
+						levelInput.OnChange = function()
+							---@param anchor number
+							---@return number[]
+							local function nextAnchor(anchor)
+								local index = TableUtils:IndexOf(spellMutatorGroup.leveledSpellPool, function(value)
+									return value.anchorLevel == anchor
+								end)
+								if index and index ~= i and anchor < (mutator.useGameLevel and #EntityRecorder.Levels or 30) then
+									return nextAnchor(anchor + 1)
 								else
-									select.Selected = true
-									table.insert(leveledSpellPool.spellLists, id)
+									return { anchor, anchor, anchor, anchor }
 								end
-								renderPools()
+							end
+							levelInput.Value = nextAnchor(levelInput.Value[1])
+							leveledSpellPool.anchorLevel = levelInput.Value[1]
+							if mutator.useGameLevel then
+								levelInput.Label = EntityRecorder.Levels[leveledSpellPool.anchorLevel] .. "###levelInput"
 							end
 						end
 
-						if MutationModProxy.ModProxy.spellLists() then
-							---@type {[Guid]: Guid[]}
-							local modSpellLists = {}
+						local spellListSep = cell:AddSeparatorText("Spell Lists ( ? )")
+						spellListSep:SetStyle("SeparatorTextAlign", 0.1)
+						spellListSep:Tooltip():AddText(
+							"\t Specifying multiple spell lists means one will be randomly chosen to be assigned to an entity - it will not add all of them")
 
-							for modId, modCache in pairs(MutationModProxy.ModProxy.spellLists) do
-								---@cast modCache LocalModCache
+						for sL, spellListId in TableUtils:OrderedPairs(leveledSpellPool.spellLists, function(_, value)
+							return configuredSpellLists[value] and configuredSpellLists[value].name
+						end) do
+							local spellList = configuredSpellLists[spellListId]
+							if spellList then
+								local text = cell:AddTextLink(spellList.name .. (spellList.modId and string.format(" (%s)", Ext.Mod.GetMod(spellList.modId).Info.Name) or ""))
+								text.OnClick = function()
+									SpellListDesigner:launch(spellListId)
+								end
 
-								if modCache.spellLists and next(modCache.spellLists) then
-									modSpellLists[modId] = {}
-									for spellListId in pairs(modCache.spellLists) do
-										table.insert(modSpellLists[modId], spellListId)
+								if spellList.description ~= "" then
+									text:Tooltip():AddText(spellList.description)
+								end
+							else
+								leveledSpellPool.spellLists[sL] = nil
+							end
+						end
+
+						local addButton = cell:AddButton("Add Spell List")
+						addButton.Font = "Small"
+						addButton.OnClick = function()
+							Helpers:KillChildren(popup)
+							popup:Open()
+
+							local userSep = popup:AddSeparatorText("Your Lists")
+							userSep:SetStyle("SeparatorTextAlign", 0.5)
+
+							local userLists = popup:AddChildWindow("userLists")
+							userLists.Size = { 500, 500 }
+
+							for id, spellList in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.lists.spellLists, function(key)
+								return configuredSpellLists[key].name
+							end) do
+								if mutator.useGameLevel == spellList.useGameLevel then
+									---@type ExtuiSelectable
+									local select = userLists:AddSelectable(spellList.name, "DontClosePopups")
+									select.IDContext = id
+									select.Selected = TableUtils:IndexOf(leveledSpellPool.spellLists, id) ~= nil
+									select.OnClick = function()
+										local index = TableUtils:IndexOf(leveledSpellPool.spellLists, id)
+										if index then
+											leveledSpellPool.spellLists[index] = nil
+											select.Selected = false
+										else
+											select.Selected = true
+											table.insert(leveledSpellPool.spellLists, id)
+										end
+										renderPools()
 									end
 								end
 							end
 
-							if next(modSpellLists) then
-								for modId, spellLists in TableUtils:OrderedPairs(modSpellLists, function(key, value)
-									return Ext.Mod.GetMod(key).Info.Name
-								end) do
-									popup:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name).Font = "Small"
+							if #userLists.Children == 0 then
+								userLists:Destroy()
+								userSep:Destroy()
+							else
+								userLists.Size = { 0, math.min(500, 40 * (#userLists.Children)) }
+							end
 
-									for _, guid in TableUtils:OrderedPairs(spellLists, function(key, value)
-										return MutationModProxy.ModProxy.spellLists[value].name
+							if MutationModProxy.ModProxy.lists.spellLists() then
+								---@type {[Guid]: Guid[]}
+								local modSpellLists = {}
+
+								for modId, modCache in pairs(MutationModProxy.ModProxy.lists.spellLists) do
+									---@cast modCache +LocalModCache
+
+									if modCache.lists and modCache.lists.spellLists and next(modCache.lists.spellLists) then
+										modSpellLists[modId] = {}
+										for spellListId in pairs(modCache.lists.spellLists) do
+											table.insert(modSpellLists[modId], spellListId)
+										end
+									end
+								end
+
+
+								if next(modSpellLists) then
+									for modId, spellLists in TableUtils:OrderedPairs(modSpellLists, function(key, value)
+										return Ext.Mod.GetMod(key).Info.Name
 									end) do
-										local spellList = MutationModProxy.ModProxy.spellLists[guid]
-										---@type ExtuiSelectable
-										local select = popup:AddSelectable(spellList.name, "DontClosePopups")
-										select.Selected = TableUtils:IndexOf(leveledSpellPool.spellLists, guid) ~= nil
-										select.OnClick = function()
-											local index = TableUtils:IndexOf(leveledSpellPool.spellLists, guid)
-											if index then
-												leveledSpellPool.spellLists[index] = nil
-												select.Selected = false
-											else
-												select.Selected = true
-												table.insert(leveledSpellPool.spellLists, guid)
+										local modSep = popup:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name)
+										modSep.Font = "Small"
+
+										local modGroup = popup:AddChildWindow("Mods" .. modId)
+										modGroup.Size = { 500, 500 }
+
+										for _, guid in TableUtils:OrderedPairs(spellLists, function(key, value)
+											return MutationModProxy.ModProxy.lists.spellLists[value].name
+										end) do
+											local spellList = MutationModProxy.ModProxy.lists.spellLists[guid]
+											if mutator.useGameLevel == spellList.useGameLevel then
+												---@type ExtuiSelectable
+												local select = modGroup:AddSelectable(spellList.name, "DontClosePopups")
+												select.Selected = TableUtils:IndexOf(leveledSpellPool.spellLists, guid) ~= nil
+												select.OnClick = function()
+													local index = TableUtils:IndexOf(leveledSpellPool.spellLists, guid)
+													if index then
+														leveledSpellPool.spellLists[index] = nil
+														select.Selected = false
+													else
+														select.Selected = true
+														table.insert(leveledSpellPool.spellLists, guid)
+													end
+													renderPools()
+												end
 											end
-											renderPools()
+										end
+										if #modGroup.Children == 0 then
+											modGroup:Destroy()
+											modSep:Destroy()
+										else
+											modGroup.Size = { 0, math.min(500, 80 * (#modGroup.Children)) }
 										end
 									end
 								end
 							end
 						end
-					end
 
-					self:buildSpellSelectorSection(cell, spellMutatorGroup, i)
+						self:buildSpellSelectorSection(cell, spellMutatorGroup, i)
+					end
 				end
 			end
 		end
@@ -400,6 +463,8 @@ end
 function SpellListMutator:renderRandomizedAmountSettings(parent, spellMutatorGroup)
 	Helpers:KillChildren(parent)
 
+	local savedPresetSpreads = ConfigurationStructure.config.mutations.settings.customLists.savedSpellListSpreads.spellLists
+
 	local popup = parent:AddPopup("Randomized")
 
 	--#region Randomized Spell Pool Size
@@ -408,11 +473,9 @@ function SpellListMutator:renderRandomizedAmountSettings(parent, spellMutatorGro
 	spellMutatorGroup.randomizedSpellPoolSize = spellMutatorGroup.randomizedSpellPoolSize or {}
 	local randomizedSpellPoolSize = spellMutatorGroup.randomizedSpellPoolSize
 	if getmetatable(randomizedSpellPoolSize) and getmetatable(randomizedSpellPoolSize).__call and not randomizedSpellPoolSize() then
-		randomizedSpellPoolSize[1] = 2
-		randomizedSpellPoolSize[3] = 0
-		randomizedSpellPoolSize[5] = 1
-		randomizedSpellPoolSize[7] = 0
-		randomizedSpellPoolSize[10] = 1
+		spellMutatorGroup.randomizedSpellPoolSize.delete = true
+		spellMutatorGroup.randomizedSpellPoolSize = TableUtils:DeeplyCopyTable(savedPresetSpreads["Default"]._real)
+		randomizedSpellPoolSize = spellMutatorGroup.randomizedSpellPoolSize
 	end
 
 	local randoSpellsTable = randoAmountHeader:AddTable("RandomSpellNumbers", 3)
@@ -477,6 +540,60 @@ This will cause Lab to give the entity 3 random spells from the selected Spell L
 			else
 				randomizedSpellPoolSize[input.Value[1]] = 2
 				self:renderRandomizedAmountSettings(parent, spellMutatorGroup)
+			end
+		end
+	end
+
+	local loadButton = randoAmountHeader:AddButton("L")
+	loadButton:Tooltip():AddText("\t Load a saved preset")
+	loadButton.SameLine = true
+	loadButton.OnClick = function()
+		Helpers:KillChildren(popup)
+		popup:Open()
+
+		for presetName, spread in TableUtils:OrderedPairs(savedPresetSpreads) do
+			if presetName ~= "Default" then
+				local delete = Styler:ImageButton(popup:AddImageButton("delete" .. presetName, "ico_red_x", { 16, 16 }))
+				delete.OnClick = function()
+					savedPresetSpreads[presetName].delete = true
+					loadButton:OnClick()
+				end
+			end
+			local loadPreset = popup:AddSelectable(presetName)
+			loadPreset.SameLine = presetName ~= "Default"
+			loadPreset.OnClick = function()
+				spellMutatorGroup.randomizedSpellPoolSize.delete = true
+				spellMutatorGroup.randomizedSpellPoolSize = TableUtils:DeeplyCopyTable(spread._real)
+				self:renderRandomizedAmountSettings(parent, spellMutatorGroup)
+			end
+		end
+	end
+
+	local saveButton = randoAmountHeader:AddButton("S")
+	saveButton:Tooltip():AddText("\t Save the current table to a new or existing preset")
+	saveButton.SameLine = true
+	saveButton.OnClick = function()
+		Helpers:KillChildren(popup)
+		popup:Open()
+
+		local nameInput = popup:AddInputText("")
+		nameInput.Hint = "New or Existing Preset Name"
+
+		local overrideConfirmation = popup:AddText("Are you sure you want to override %s?")
+		overrideConfirmation.Visible = false
+		overrideConfirmation:SetColor("Text", { 1, 0.2, 0, 1 })
+
+		local submitButton = popup:AddButton("Save")
+		submitButton.OnClick = function()
+			if overrideConfirmation.Visible or not savedPresetSpreads[nameInput.Text] then
+				if savedPresetSpreads[nameInput.Text] then
+					savedPresetSpreads[nameInput.Text].delete = true
+				end
+				savedPresetSpreads[nameInput.Text] = TableUtils:DeeplyCopyTable(randomizedSpellPoolSize._real)
+				self:renderRandomizedAmountSettings(parent, spellMutatorGroup)
+			else
+				overrideConfirmation.Label = string.format("Are you sure you want to override %s?", nameInput.Text)
+				overrideConfirmation.Visible = true
 			end
 		end
 	end
@@ -795,8 +912,6 @@ end
 
 ---@param mutator SpellListMutator
 function SpellListMutator:handleDependencies(export, mutator, removeMissingDependencies)
-	SpellListDesigner:buildProgressionIndex()
-
 	---@param spellName string
 	---@param container table?
 	---@return boolean?
@@ -810,7 +925,7 @@ function SpellListMutator:handleDependencies(export, mutator, removeMissingDepen
 				if not container.modDependencies[spell.OriginalModId] then
 					local name, author, version = Helpers:BuildModFields(spell.OriginalModId)
 					if author == "Larian" then
-						return
+						return true
 					end
 
 					container.modDependencies[spell.OriginalModId] = {
@@ -853,7 +968,7 @@ function SpellListMutator:handleDependencies(export, mutator, removeMissingDepen
 				end
 
 				if leveledSpellPool.spellLists then
-					SpellListDesigner:HandleDependences(export, mutator, leveledSpellPool.spellLists, removeMissingDependencies)
+					ListConfigurationManager:HandleDependences(export, mutator, leveledSpellPool.spellLists, removeMissingDependencies, SpellListDesigner.configKey)
 				end
 			end
 		end
@@ -904,7 +1019,14 @@ function SpellListMutator:canBeAdditive()
 end
 
 local SPELL_MUTATOR_ON_COMBAT_START = ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME .. "SpellsOnCombatStart"
-Ext.Vars.RegisterUserVariable(ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME .. "SpellsOnCombatStart", {
+Ext.Vars.RegisterUserVariable(SPELL_MUTATOR_ON_COMBAT_START, {
+	Server = true,
+	Client = true,
+	SyncToClient = true
+})
+
+local SPELL_MUTATOR_ON_DEATH = ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME .. "SpellsOnDeath"
+Ext.Vars.RegisterUserVariable(SPELL_MUTATOR_ON_DEATH, {
 	Server = true,
 	Client = true,
 	SyncToClient = true
@@ -937,6 +1059,32 @@ if Ext.IsServer() then
 				entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = entityVar
 				entity.Vars[SPELL_MUTATOR_ON_COMBAT_START] = nil
 			end
+		end
+	end)
+
+	Ext.Osiris.RegisterListener("Died", 1, "after", function(character)
+		---@type EntityHandle
+		local entity = Ext.Entity.Get(character)
+		if entity.Vars[SPELL_MUTATOR_ON_DEATH] then
+			---@type MutatorEntityVar
+			local entityVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] or {}
+			entityVar.originalValues = entityVar.originalValues or {}
+			entityVar.originalValues[SpellListMutator.name] = entityVar.originalValues[SpellListMutator.name] or {}
+			entityVar.originalValues[SpellListMutator.name].castedSpells = entityVar.originalValues[SpellListMutator.name].castedSpells or {}
+
+			local castedSpells = entityVar.originalValues[SpellListMutator.name].castedSpells
+
+			for _, spellName in pairs(entity.Vars[SPELL_MUTATOR_ON_DEATH]) do
+				Osi.UseSpell(entity.Uuid.EntityUuid, spellName, entity.Uuid.EntityUuid)
+				table.insert(castedSpells, spellName)
+
+				Logger:BasicDebug("%s cast On Death Spell %s",
+					entity.DisplayName and entity.DisplayName.Name:Get() or entity.ServerCharacter.Template.Name,
+					spellName)
+			end
+
+			entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = entityVar
+			entity.Vars[SPELL_MUTATOR_ON_DEATH] = nil
 		end
 	end)
 
@@ -1057,11 +1205,18 @@ if Ext.IsServer() then
 						table.insert(origValues.addedSpells, spellName)
 						Logger:BasicDebug("Added guaranteed spell %s", spellName)
 					end
+				elseif subListName == "onDeathOnly" then
+					entity.Vars[SPELL_MUTATOR_ON_DEATH] = entity.Vars[SPELL_MUTATOR_ON_DEATH] or {}
+
+					table.insert(entity.Vars[SPELL_MUTATOR_ON_DEATH], spellName)
 				elseif subListName == "startOfCombatOnly" then
 					if Osi.IsInCombat(entity.Uuid.EntityUuid) == 1 then
 						Osi.UseSpell(entity.Uuid.EntityUuid, spellName, entity.Uuid.EntityUuid)
+
 						origValues.castedSpells = origValues.castedSpells or {}
+
 						table.insert(origValues.castedSpells, spellName)
+
 						Logger:BasicDebug("Used on combat spell %s", spellName)
 					else
 						entity.Vars[SPELL_MUTATOR_ON_COMBAT_START] = entity.Vars[SPELL_MUTATOR_ON_COMBAT_START] or {}
@@ -1090,15 +1245,17 @@ if Ext.IsServer() then
 	end
 
 	function SpellListMutator:applyMutator(entity, entityVar)
+		ListConfigurationManager:buildProgressionIndex()
 		---@type EsvSpellSpellSystem
 		local spellSystem = Ext.System.ServerSpell
-
-		SpellListDesigner:buildProgressionIndex()
 
 		local spellListMutators = entityVar.appliedMutators[self.name]
 		if not spellListMutators[1] then
 			spellListMutators = { spellListMutators }
 		end
+
+		local replaceMap = TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.lists.entryReplacerDictionary)
+		replaceMap.spellLists = replaceMap.spellLists or {}
 
 		---@cast spellListMutators SpellListMutator[]
 
@@ -1107,11 +1264,17 @@ if Ext.IsServer() then
 
 		---@type SpellMutatorGroup[]
 		local groupsToApply = {}
+		---@type number[]
+		local groupToListMap = {}
 
 		for m, mutator in ipairs(spellListMutators) do
 			--#region Criteria
 			local keep = false
 			for g, spellMutatorGroup in ipairs(mutator.values) do
+				if not spellMutatorGroup.leveledSpellPool then
+					Logger:BasicDebug("Skipped group %s due to not having a leveledSpellPool available", g)
+					goto next_group
+				end
 				if spellMutatorGroup.criteria then
 					---@type SpellListCriteriaEntry
 					local criteria = spellMutatorGroup.criteria
@@ -1152,6 +1315,7 @@ if Ext.IsServer() then
 				end
 				keep = true
 				table.insert(groupsToApply, spellMutatorGroup)
+				groupToListMap[#groupsToApply] = m
 
 				::next_group::
 			end
@@ -1161,11 +1325,15 @@ if Ext.IsServer() then
 		end
 		--#endregion
 
+		local useGameLevel = false
 		local spellMutatorGroup
 		if #groupsToApply == 1 then
 			spellMutatorGroup = groupsToApply[1]
+			useGameLevel = spellListMutators[groupToListMap[1]].useGameLevel
 		elseif #groupsToApply > 1 then
-			spellMutatorGroup = groupsToApply[math.random(#groupsToApply)]
+			local chosenGroup = math.random(#groupsToApply)
+			spellMutatorGroup = groupsToApply[chosenGroup]
+			useGameLevel = spellListMutators[groupToListMap[chosenGroup]].useGameLevel
 		end
 
 		if spellMutatorGroup then
@@ -1217,10 +1385,12 @@ if Ext.IsServer() then
 			---@type AppliedSpellLists
 			local appliedLists = {}
 
-			local trueAppliedLists = {}
+			local appliedSpellListsForEntityVar = {}
 
 			for lSP, leveledSpellPool in ipairs(spellMutatorGroup.leveledSpellPool) do
-				if entity.AvailableLevel and entity.AvailableLevel.Level >= leveledSpellPool.anchorLevel then
+				if (useGameLevel and EntityRecorder.Levels[entity.Level.LevelName] >= leveledSpellPool.anchorLevel)
+					or (not useGameLevel and entity.AvailableLevel and entity.AvailableLevel.Level >= leveledSpellPool.anchorLevel)
+				then
 					-- Osi.CreateAt("01fa8d64-f63e-4bb8-9ee4-cba84dad3781", 202, 25, 418, 0, 0, "")
 					-- Osi.SetRelationTemporaryHostile("5ebcd998-e4ae-1a42-202c-3619bced3eea", _C().Uuid.EntityUuid)
 					if leveledSpellPool.spells then
@@ -1237,9 +1407,10 @@ if Ext.IsServer() then
 							spellListId = leveledSpellPool.spellLists[1]
 						end
 
-						if spellListId and MutationConfigurationProxy.spellLists[spellListId] then
-							local nextAnchor = math.min((spellMutatorGroup.leveledSpellPool[lSP + 1] and spellMutatorGroup.leveledSpellPool[lSP + 1].anchorLevel - 1) or 30,
-								entity.EocLevel.Level)
+						if spellListId and MutationConfigurationProxy.lists.spellLists[spellListId] then
+							local nextAnchor = math.min((spellMutatorGroup.leveledSpellPool[lSP + 1]
+									and spellMutatorGroup.leveledSpellPool[lSP + 1].anchorLevel - 1) or (useGameLevel and #EntityRecorder.Levels or 30),
+								useGameLevel and EntityRecorder.Levels[entity.Level.LevelName] or entity.EocLevel.Level)
 
 							local maxAppliedLevel = 0
 							for level in pairs(appliedLists) do
@@ -1247,41 +1418,137 @@ if Ext.IsServer() then
 									maxAppliedLevel = level
 								end
 							end
-							local startingSpellListLevel = (TableUtils:IndexOf(appliedLists, spellListId) or 1)
+							local startingSpellListLevel = TableUtils:IndexOf(appliedLists, spellListId) or 0
 
 							if TableUtils:IndexOf(appliedLists, spellListId) then
 								appliedLists[startingSpellListLevel] = nil
 								startingSpellListLevel = startingSpellListLevel + 1
 								maxAppliedLevel = 0
 							end
-							appliedLists[nextAnchor] = spellListId
-
 							local cLevel = nextAnchor - maxAppliedLevel
-							trueAppliedLists[spellListId] = (trueAppliedLists[spellListId] or 0) + math.max(1, (cLevel - startingSpellListLevel))
 
-							local spellList = MutationConfigurationProxy.spellLists[spellListId]
-							Logger:BasicDebug("Selected spellList %s (%s) for anchor level %s, using levels %s-%s",
-								spellList.name .. (spellList.modId and (" from mod " .. Ext.Mod.GetMod(spellList.modId).Info.Name) or ""),
-								spellListId,
-								leveledSpellPool.anchorLevel,
-								startingSpellListLevel,
-								cLevel)
+							local mainSpellList = MutationConfigurationProxy.lists.spellLists[spellListId]
 
-							for i = startingSpellListLevel, cLevel do
-								local leveledLists = spellList.levels[i]
-								---@type EntryName[]
-								local randomPool = {}
-								if leveledLists then
-									if leveledLists.linkedProgressions then
-										for progressionId, subLists in pairs(leveledLists.linkedProgressions) do
-											self:processSubLists(subLists, entity, addSpells, origValues)
+							local function applySpellList(spellListId)
+								if not appliedLists[nextAnchor] then
+									appliedLists[nextAnchor] = spellListId
+								end
 
-											if SpellListDesigner.progressionTranslations[progressionId] then
-												local progressionTable = SpellListDesigner.progressions[SpellListDesigner.progressionTranslations[progressionId]]
-												if progressionTable and progressionTable[i] and progressionTable[i][SpellListDesigner.name] then
-													for _, spellName in pairs(progressionTable[i][SpellListDesigner.name]) do
-														if not TableUtils:IndexOf(subLists.blackListed, spellName) then
-															table.insert(randomPool, spellName)
+								appliedSpellListsForEntityVar[spellListId] = (appliedSpellListsForEntityVar[spellListId] or 0) + math.max(1, (cLevel - startingSpellListLevel))
+
+								local spellList = TableUtils:DeeplyCopyTable(MutationConfigurationProxy.lists.spellLists[spellListId]._real or
+									MutationConfigurationProxy.lists.spellLists[spellListId])
+
+								Logger:BasicDebug("Selected spellList %s (%s) for anchor level %s, using levels %s-%s",
+									spellList.name .. (spellList.modId and (" from mod " .. Ext.Mod.GetMod(spellList.modId).Info.Name) or ""),
+									spellListId,
+									useGameLevel and EntityRecorder.Levels[leveledSpellPool.anchorLevel] or leveledSpellPool.anchorLevel,
+									useGameLevel and EntityRecorder.Levels[startingSpellListLevel == 0 and 1 or startingSpellListLevel] or startingSpellListLevel,
+									useGameLevel and EntityRecorder.Levels[cLevel] or cLevel)
+
+								if spellList.modId then
+									local modMap = MutationConfigurationProxy.lists.entryReplacerDictionary.spellLists[spellList.modId]
+									if modMap then
+										for replacer, toReplaceList in pairs(modMap) do
+											if not replaceMap.spellLists[replaceMap.spellLists] then
+												replaceMap.spellLists[replacer] = TableUtils:DeeplyCopyTable(toReplaceList)
+											else
+												for _, toReplace in ipairs(toReplaceList) do
+													if not TableUtils:IndexOf(replaceMap.spellLists[replacer]) then
+														table.insert(replaceMap.spellLists[replacer], toReplace)
+													end
+												end
+											end
+										end
+										Logger:BasicDebug("Added replacer map entries from Mod %s's replaceMap as it was chosen to be applied",
+											Ext.Mod.GetMod(spellList.modId).Info.Name)
+									end
+								end
+
+								for i = startingSpellListLevel, cLevel do
+									---@type EntryName[]
+									local randomPool = {}
+									if spellList.linkedProgressionTableIds and next(spellList.linkedProgressionTableIds._real or spellList.linkedProgressionTableIds) then
+										for _, progressionTableId in pairs(spellList.linkedProgressionTableIds) do
+											local progressionTable = ListConfigurationManager.progressionIndex[progressionTableId]
+											if progressionTable then
+												for _, progressionLevel in pairs(progressionTable.progressionLevels) do
+													if progressionLevel.level == i and progressionLevel.spellLists then
+														for _, spells in pairs(progressionLevel.spellLists) do
+															for _, spellName in pairs(spells) do
+																local leveledLists = spellList.levels and spellList.levels[i]
+																if (not leveledLists
+																		or not leveledLists.linkedProgressions
+																		or not TableUtils:IndexOf(leveledLists.linkedProgressions[progressionTableId],
+																			function(value)
+																				return TableUtils:IndexOf(value, spellName) ~= nil
+																			end))
+																	and (not spellList.blacklistSameEntriesInHigherProgressionLevels or not ListConfigurationManager:hasSameEntryInLowerLevel(progressionTableId, i, spellName, "spellLists"))
+																then
+																	spellList.levels = spellList.levels or {}
+																	spellList.levels[i] = spellList.levels[i] or {}
+																	spellList.levels[i].linkedProgressions = spellList.levels[i].linkedProgressions or {}
+																	spellList.levels[i].linkedProgressions[progressionTableId] = spellList.levels[i].linkedProgressions
+																		[progressionTableId] or {}
+
+																	local defaultPool = spellList.defaultPool or
+																		ConfigurationStructure.config.mutations.settings.customLists.defaultPool.spellLists
+
+																	spellList.levels[i].linkedProgressions[progressionTableId][defaultPool] = spellList.levels[i].linkedProgressions
+																		[progressionTableId][defaultPool] or {}
+
+																	Logger:BasicDebug("Added %s to the default pool %s for later processing", spellName, defaultPool)
+																	table.insert(spellList.levels[i].linkedProgressions[progressionTableId][defaultPool], spellName)
+																end
+															end
+														end
+													end
+												end
+											end
+										end
+									end
+									if spellList.levels then
+										local leveledLists = spellList.levels[i]
+										if leveledLists then
+											if leveledLists.linkedProgressions then
+												for progressionTableId, subLists in pairs(leveledLists.linkedProgressions) do
+													local progressionTable = ListConfigurationManager.progressionIndex[progressionTableId]
+													if progressionTable then
+														self:processSubLists(subLists, entity, addSpells, origValues)
+														if subLists.randomized then
+															for _, spellName in pairs(subLists.randomized) do
+																if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
+																		return value.Id.OriginatorPrototype == spellName
+																	end)
+																then
+																	if not TableUtils:IndexOf(randomPool, spellName) then
+																		table.insert(randomPool, spellName)
+																	end
+																else
+																	Logger:BasicDebug(
+																		"Randomized spell %s from progression %s (%s - level %s) is already known, not adding to the random pool",
+																		spellName,
+																		progressionTableId, progressionTable.name, i)
+																end
+															end
+														end
+													end
+												end
+											end
+											if leveledLists.manuallySelectedEntries then
+												self:processSubLists(leveledLists.manuallySelectedEntries, entity, addSpells, origValues)
+
+												if leveledLists.manuallySelectedEntries.randomized then
+													for _, spellName in pairs(leveledLists.manuallySelectedEntries.randomized) do
+														if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
+																return value.Id.OriginatorPrototype == spellName
+															end)
+														then
+															if not TableUtils:IndexOf(randomPool, spellName) then
+																table.insert(randomPool, spellName)
+															end
+														else
+															Logger:BasicDebug("%s is already known, not adding to the random pool", spellName)
 														end
 													end
 												end
@@ -1289,81 +1556,267 @@ if Ext.IsServer() then
 										end
 									end
 
-									if leveledLists.manuallySelectedEntries then
-										self:processSubLists(leveledLists.manuallySelectedEntries, entity, addSpells, origValues)
-
-										if leveledLists.manuallySelectedEntries.randomized then
-											for _, spellName in pairs(leveledLists.manuallySelectedEntries.randomized) do
-												if not TableUtils:IndexOf(entity.SpellBook.Spells, function(value)
-														return value.Id.OriginatorPrototype == spellName
-													end)
-												then
-													table.insert(randomPool, spellName)
-												else
-													Logger:BasicDebug("%s is already known, not adding to the random pool", spellName)
-												end
+									local numRandomSpellsToPick = 0
+									if spellMutatorGroup.randomizedSpellPoolSize[maxAppliedLevel + i] then
+										numRandomSpellsToPick = spellMutatorGroup.randomizedSpellPoolSize[maxAppliedLevel + i]
+									else
+										local maxLevel = nil
+										for level, _ in pairs(spellMutatorGroup.randomizedSpellPoolSize) do
+											if level < (maxAppliedLevel + i) and (not maxLevel or level > maxLevel) then
+												maxLevel = level
 											end
 										end
-									end
-								end
-
-								local numRandomSpellsToPick = 0
-								if spellMutatorGroup.randomizedSpellPoolSize[maxAppliedLevel + i] then
-									numRandomSpellsToPick = spellMutatorGroup.randomizedSpellPoolSize[maxAppliedLevel + i]
-								else
-									local maxLevel = nil
-									for level, _ in pairs(spellMutatorGroup.randomizedSpellPoolSize) do
-										if level < (maxAppliedLevel + i) and (not maxLevel or level > maxLevel) then
-											maxLevel = level
+										if maxLevel then
+											numRandomSpellsToPick = spellMutatorGroup.randomizedSpellPoolSize[maxLevel]
 										end
 									end
-									if maxLevel then
-										numRandomSpellsToPick = spellMutatorGroup.randomizedSpellPoolSize[maxLevel]
-									end
-								end
 
-								if numRandomSpellsToPick > 0 then
-									Logger:BasicDebug("Giving %s random spells out of %s from level %s", numRandomSpellsToPick, #randomPool, i)
-									local spellsToGive = {}
-									if #randomPool <= numRandomSpellsToPick then
-										spellsToGive = randomPool
+									if numRandomSpellsToPick > 0 then
+										Logger:BasicDebug("Giving %s random spells out of %s from level %s", numRandomSpellsToPick, #randomPool,
+											useGameLevel and EntityRecorder.Levels[i] or i)
+										local spellsToGive = {}
+										if #randomPool <= numRandomSpellsToPick then
+											spellsToGive = randomPool
+										else
+											for _ = 1, numRandomSpellsToPick do
+												local num = math.random(#randomPool)
+												table.insert(spellsToGive, randomPool[num])
+												table.remove(randomPool, num)
+											end
+										end
+
+										for _, spellName in pairs(spellsToGive) do
+											addSpells[#addSpells + 1] = {
+												PrepareType = "AlwaysPrepared",
+												SpellId = {
+													OriginatorPrototype = spellName,
+													SourceType = "SpellSet2"
+												},
+												PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
+												SpellCastingAbility = entity.Stats.SpellCastingAbility
+											}
+
+											origValues.addedSpells = origValues.addedSpells or {}
+											table.insert(origValues.addedSpells, spellName)
+											Logger:BasicDebug("Added spell %s", spellName)
+										end
 									else
-										for _ = 1, numRandomSpellsToPick do
-											local num = math.random(#randomPool)
-											table.insert(spellsToGive, randomPool[num])
-											table.remove(randomPool, num)
+										Logger:BasicDebug("Skipping level %s for random spell assignment due to configured size being 0",
+											useGameLevel and EntityRecorder.Levels[maxAppliedLevel + i] or maxAppliedLevel + i)
+									end
+								end
+							end
+							applySpellList(spellListId)
+
+							local appliedLinkedLists = { spellListId }
+							---@param list SpellList
+							local function recursivelyApplyLinkedLists(list)
+								if list.linkedLists and next(list.linkedLists._real or list.linkedLists) then
+									for _, linkedSpellListId in pairs(list.linkedLists) do
+										if not TableUtils:IndexOf(appliedLinkedLists, linkedSpellListId) then
+											table.insert(appliedLinkedLists, linkedSpellListId)
+
+											local linkedList = MutationConfigurationProxy.lists.spellLists[linkedSpellListId]
+											Logger:BasicDebug("### STARTING List %s, linked from %s ###", linkedList.name, list.name)
+											applySpellList(linkedSpellListId, list.name)
+											Logger:BasicDebug("### FINISHED List %s, linked from %s ###", linkedList.name, list.name)
+
+											recursivelyApplyLinkedLists(linkedList)
 										end
 									end
-
-									for _, spellName in pairs(spellsToGive) do
-										addSpells[#addSpells + 1] = {
-											PrepareType = "AlwaysPrepared",
-											SpellId = {
-												OriginatorPrototype = spellName,
-												SourceType = "SpellSet2"
-											},
-											PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
-											SpellCastingAbility = entity.Stats.SpellCastingAbility
-										}
-
-										origValues.addedSpells = origValues.addedSpells or {}
-										table.insert(origValues.addedSpells, spellName)
-										Logger:BasicDebug("Added spell %s", spellName)
-									end
-								else
-									Logger:BasicDebug("Skipping level %s for random spell assignment due to configured size being 0", maxAppliedLevel + i)
 								end
+							end
+							recursivelyApplyLinkedLists(mainSpellList)
+						end
+					end
+				end
+			end
+
+			for i = #origValues.addedSpells, 1, -1 do
+				local appliedSpell = origValues.addedSpells[i]
+
+				if replaceMap.spellLists[appliedSpell] then
+					for _, toReplace in ipairs(entity.SpellBook.Spells) do
+						if TableUtils:IndexOf(replaceMap.spellLists[appliedSpell], function(value)
+								return value == toReplace.Id.OriginatorPrototype
+							end)
+						then
+							if TableUtils:IndexOf(origValues.addedSpells, toReplace.Id.OriginatorPrototype) then
+								origValues.addedSpells[TableUtils:IndexOf(origValues.addedSpells, toReplace.Id.OriginatorPrototype)] = nil
+								TableUtils:ReindexNumericTable(origValues.addedSpells)
+							end
+							spellSystem.RemoveSpell[entity] = spellSystem.RemoveSpell[entity] or {}
+							spellSystem.RemoveSpell[entity][#spellSystem.RemoveSpell[entity] + 1] = toReplace.Id
+							Logger:BasicDebug("Removed %s from the spell book as it was set to be replaced by %s", toReplace.Id.OriginatorPrototype, appliedSpell)
+						end
+					end
+
+					if spellSystem.AddSpells[entity] then
+						for s, spellMeta in pairs(spellSystem.AddSpells[entity]) do
+							if TableUtils:IndexOf(replaceMap.spellLists[appliedSpell], spellMeta.SpellId.OriginatorPrototype) then
+								if TableUtils:IndexOf(origValues.addedSpells, spellMeta.SpellId.OriginatorPrototype) then
+									origValues.addedSpells[TableUtils:IndexOf(origValues.addedSpells, spellMeta.SpellId.OriginatorPrototype)] = nil
+									TableUtils:ReindexNumericTable(origValues.addedSpells)
+								end
+
+								spellSystem.AddSpells[entity][s] = nil
+								Logger:BasicDebug("Cancelled adding %s to the spell book as it was set to be replaced by %s", spellMeta.SpellId.OriginatorPrototype, appliedSpell)
 							end
 						end
 					end
 				end
 			end
 
-			entityVar.appliedMutators[self.name].appliedLists = trueAppliedLists
+			entityVar.appliedMutators[self.name].appliedLists = appliedSpellListsForEntityVar
 		else
 			entityVar.appliedMutators[self.name] = nil
 			entityVar.originalValues[self.name] = nil
 			entityVar.appliedMutatorsPath[self.name] = nil
 		end
 	end
+end
+
+---@return MazzleDocsDocumentation
+function SpellListMutator:generateDocs()
+	return {
+		{
+			Topic = self.Topic,
+			SubTopic = self.SubTopic,
+			content = {
+				{
+					type = "Heading",
+					text = "Spell Lists",
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "CallOut",
+					prefix = "",
+					prefix_color = "Yellow",
+					text = [[
+Dependency On: Level
+Transient: No
+Composable: All groups will be combined into one large pool, which will be pulled from randomly post-filter]]
+				} --[[@as MazzleDocsCallOut]],
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Summary"
+				},
+				{
+					type = "Content",
+					text =
+					[[This mutator allows you to use your Spell Lists to distribute spells to entities based on their Character or Game Level to accomplish both single- and multi-class setups, or just add loose spells to them in general]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Client-Side Content"
+				},
+				{
+					type = "Content",
+					text = [[
+The mutator is laid out as follows:
+
+You can create multiple Spell List Groups, which are groups of Leveled Pools - If you specify multiple Spell List Groups that an entity is eligible for (see criteria below), one will be randomly chosen. When one Spell List mutator is composed with others, every Group from all involved mutators will be placed into one list, as if they had come from a single mutator.
+
+In each pool you'll define an Anchor level, which is the minimum level an entity must be to be eligible for that pool - that pool will apply to that entity up to level 30 or until the next anchor level in the group, whichever comes first.
+For example, you can configure two level pools so any entity that is level 1-4 will be eligible for the first pool, and any that are level 5 or above are eligible for the second pool.
+
+This approach allows you to simulate (optional) multiclassing - in the same example as above, you could define both Death and Life Cleric spell lists to the first level pool - this does NOT mean the entity will receive both - rather, they will randomly recieve one of them.
+
+The same assignment will happen at level 5 if the same lists are added to the second pool, but with a bit of a twist - if the entity receives the same list they received at Level 1, they will continue with that spell list as normal; however, if they receive a different list, they'll start from that list at level 1.
+
+For example, if the entity was assigned Death Cleric at level 1, they'd receive the spells from that list for levels 1-4.
+
+If they're assigned Death Cleric again, they'll receive level 5 spells, and continue in that order.
+
+If they're assigned Life Cleric for levels 5+, they'll only receive Life Clerics's level 1 spells at level 5, level 2 spells at level 6, and so on.
+
+This means you could also set up a pool that dips into a multiclass and comes back out to continue the main progression by setting a third spell pool at level 7 for Death/Life cleric again - at that point, they'll continue with the last level they were at for that list, which in this case was level 5.
+
+You can also assign loose Spells defined outside of a spell list; these spells do not have randomized pools, and instead can only be one of Guaranteed, Cast On Combat Start, and Cast on Level Load. They're intended for two main use-cases:
+- You don't want to assign entire lists to an NPC, maybe a boss, but want to supplement them with specific ones
+- You want to assign an NPC a list, but want to ensure they have specific spells for their kit regardless of their list, i.e. giving an Underdark smuggler the Light spell
+
+Any number of spells can be added here, but keep in mind that the game's AI can't handle large amounts of spells well - they tend to crash when reaching the 7-8+ range, depending on the AI archetype. Spells that are set as Cast on Combat Start/Level Load aren't added to the spellbook though, so you can safely add as many as you'd like
+
+The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Server-Side Implementation"
+				},
+				{
+					type = "Content",
+					text =
+					[[For Spells that are cast on level load and combat start, Osi.UseSpell(entity.Uuid.EntityUuid, spellName, entity.Uuid.EntityUuid) is used; for combat start when the entity isn't already in combat when the profile executes, this call is wrapped in a CombatStarted Osi Event Listener, otherwise it's done immediately (expected use-case is for entities that spawn mid-combat, like summons/familiars).
+
+For Spells that are cast on death, the Died Osi Event listener is used to execute Osi.UseSpell(entity.Uuid.EntityUuid, spellName, entity.Uuid.EntityUuid) - this _may_ cause some animation issues, will look into a better alternative soon.
+
+When determining what spells end up in the Random pool to be added to the SpellBook, checks are done to ensure:
+1. The spell isn't already known by the entity
+2. The spell isn't already slated to be added by another progression
+
+Once the final list of spells is determined, the Replace logic is run, removing any spells from the final list and the entity's spellbook if they're marked to be replaced by another spell.
+
+When adding spells to an entity, the AddSpells operation under the SpellSystem is used to add them to the spellbook - this system allows more granular control over the spell's properties, which are assigned as below:
+{
+	PrepareType = "AlwaysPrepared",
+	SpellId = {
+		OriginatorPrototype = spellName,
+		SourceType = "SpellSet2"
+	},
+	PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
+	SpellCastingAbility = entity.Stats.SpellCastingAbility
+}
+The Preferred Casting Resource is set to just SpellSlots - this will currently prove problematic if you assign Warlock SpellSlots to entities, but I'll solve for this in the near future.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Example Use Cases"
+				},
+				{
+					type = "Section",
+					text = "Selected entities:"
+				},
+				{
+					type = "Bullet",
+					text = {
+						"Should be a multiclass of Death Cleric and Shadow Sorceror, prioritizing Death Cleric for levels 1-5 before allocating equal levels in both",
+						"Should receive a guaranteed set of spells depending on which Game Level they're in",
+					}
+				} --[[@as MazzleDoctsBullet]],
+			}
+		}
+	} --[[@as MazzleDocsDocumentation]]
+end
+
+---@return {[string]: MazzleDocsContentItem}
+function SpellListMutator:generateChangelog()
+	return {
+		["1.7.0"] = {
+			type = "Bullet",
+			text = {
+				"Fix lists not applying entries from linked progressions"
+			}
+		}--[[@as MazzleDocsContentItem]],
+		["1.6.0"] = {
+			type = "Bullet",
+			text = {
+				"Excludes SpellList groups from the apply logic that don't have a leveledSpellPool"
+			}
+		}--[[@as MazzleDocsContentItem]]
+	}
 end

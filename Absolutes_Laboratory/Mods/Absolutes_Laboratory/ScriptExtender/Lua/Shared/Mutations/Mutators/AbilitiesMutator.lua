@@ -1,4 +1,7 @@
 AbilitiesMutator = MutatorInterface:new("Abilities")
+AbilitiesMutator.affectedComponents = {
+	"BoostsContainer"
+}
 
 function AbilitiesMutator:priority()
 	return self:recordPriority(SpellListMutator:priority() + 1)
@@ -43,6 +46,8 @@ function AbilitiesMutator:renderMutator(parent, mutator)
 		numberOfLowestToRemove = 1
 	} --[[@as DieSettings]]
 
+	local dieSettings = mutator.values.dieSettings
+
 	local layoutTable = parent:AddTable("Layout", 2):AddRow()
 
 	local dieSettingSide = layoutTable:AddCell()
@@ -59,43 +64,51 @@ Priority order of the abilities is determined in the following sequence:
 
 	local numDiceRow = dieTable:AddRow()
 	numDiceRow:AddCell():AddText("# Of Dice To Roll Per Ability")
-	local numDiceInput = numDiceRow:AddCell():AddInputInt("", mutator.values.dieSettings.numberOfDice)
+	local numDiceInput = numDiceRow:AddCell():AddInputInt("", dieSettings.numberOfDice)
 	numDiceInput.ItemWidth = 80
 	numDiceInput.OnChange = function()
 		if numDiceInput.Value[1] <= 0 then
-			local currValue = mutator.values.dieSettings.numberOfDice
+			local currValue = dieSettings.numberOfDice
 			numDiceInput.Value = { currValue, currValue, currValue, currValue }
 		else
-			mutator.values.dieSettings.numberOfDice = numDiceInput.Value[1]
+			dieSettings.numberOfDice = numDiceInput.Value[1]
 		end
 	end
 
 	local diceSidesRow = dieTable:AddRow()
 	diceSidesRow:AddCell():AddText("Die Type To Roll (i.e. d6)")
 	local diceSideCell = diceSidesRow:AddCell()
-	local diceSideInput = diceSideCell:AddInputInt("", mutator.values.dieSettings.diceSides)
+	local diceSideInput = diceSideCell:AddInputInt("", dieSettings.diceSides)
 	diceSideInput.ItemWidth = 80
 	diceSideInput.OnChange = function()
 		if diceSideInput.Value[1] <= 0 then
-			local currValue = mutator.values.dieSettings.diceSides
+			local currValue = dieSettings.diceSides
 			diceSideInput.Value = { currValue, currValue, currValue, currValue }
 		else
-			mutator.values.dieSettings.diceSides = diceSideInput.Value[1]
+			dieSettings.diceSides = diceSideInput.Value[1]
 		end
 	end
 
 	local numToDropRow = dieTable:AddRow()
 	numToDropRow:AddCell():AddText("# of Lowest Rolls To Drop")
-	local numToDropInput = numToDropRow:AddCell():AddInputInt("", mutator.values.dieSettings.numberOfLowestToRemove)
+	local numToDropInput = numToDropRow:AddCell():AddInputInt("", dieSettings.numberOfLowestToRemove)
 	numToDropInput.ItemWidth = 80
 	numToDropInput.OnChange = function()
 		if numToDropInput.Value[1] <= 0 then
-			local currValue = mutator.values.dieSettings.numberOfLowestToRemove
+			local currValue = dieSettings.numberOfLowestToRemove
 			numToDropInput.Value = { currValue, currValue, currValue, currValue }
 		else
-			mutator.values.dieSettings.numberOfLowestToRemove = numToDropInput.Value[1]
+			dieSettings.numberOfLowestToRemove = numToDropInput.Value[1]
 		end
 	end
+
+	local min = dieSettings.numberOfDice - dieSettings.numberOfLowestToRemove
+	local max = dieSettings.diceSides * (dieSettings.numberOfDice - dieSettings.numberOfLowestToRemove)
+
+	local averageWithAllDice = (((dieSettings.diceSides + 1) / 2) * dieSettings.numberOfDice)
+	local avg = math.floor(averageWithAllDice)
+
+	dieSettingSide:AddText(("Min: %d | Avg: %d | Max: %d"):format(min, avg, max))
 
 	local abilityPrioritySide = layoutTable:AddCell()
 	abilityPrioritySide:AddSeparatorText("Primary Abilities Override ( ? )"):Tooltip():AddText([[
@@ -249,7 +262,7 @@ function AbilitiesMutator:applyMutator(entity, entityVar)
 		Logger:BasicDebug("Overridden Ability Priorities are: %s", override)
 	end
 
-	if not primary or not secondary or not tertiary then
+	if not abilities.primaryStat or not abilities.secondaryStat or not abilities.tertiaryStat then
 		if entityVar.appliedMutators[SpellListMutator.name] and entityVar.appliedMutators[SpellListMutator.name].appliedLists then
 			---@type {[Guid]: number}
 			local appliedSpellLists = entityVar.appliedMutators[SpellListMutator.name].appliedLists
@@ -260,7 +273,7 @@ function AbilitiesMutator:applyMutator(entity, entityVar)
 				-- Sorting descending?
 				return levelsAssigned * -1
 			end) do
-				local spellList = MutationConfigurationProxy.spellLists[spellListId]
+				local spellList = MutationConfigurationProxy.lists.spellLists[spellListId]
 				spellList = spellList.__real or spellList
 
 				if spellList.abilityPriorities then
@@ -288,7 +301,7 @@ function AbilitiesMutator:applyMutator(entity, entityVar)
 							Logger:BasicDebug("Spell list %s is %s%% of list %s's level - averaging out score priority",
 								spellList.name,
 								(appliedSpellLists[spellListId] / appliedSpellLists[lastAssignedListId]) * 100,
-								MutationConfigurationProxy.spellLists[lastAssignedListId].name)
+								MutationConfigurationProxy.lists.spellLists[lastAssignedListId].name)
 
 							if not TableUtils:IndexOf(abilities, spellList.abilityPriorities.primaryStat) then
 								abilities.tertiaryStat = spellList.abilityPriorities.primaryStat
@@ -357,4 +370,110 @@ function AbilitiesMutator:applyMutator(entity, entityVar)
 	Logger:BasicDebug("Entity Abilities updated using Boosts: %s\nFrom Base: %s",
 		boostString,
 		entity.BaseStats.BaseAbilities)
+end
+
+---@return MazzleDocsDocumentation
+function AbilitiesMutator:generateDocs()
+	return {
+		{
+			Topic = self.Topic,
+			SubTopic = self.SubTopic,
+			content = {
+				{
+					type = "Heading",
+					text = "Abilities",
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "CallOut",
+					prefix = "",
+					prefix_color = "Yellow",
+					text = [[
+Dependency On: Spell Lists
+Transient: Yes
+Composable: No]]
+				} --[[@as MazzleDocsCallOut]],
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Summary"
+				},
+				{
+					type = "Content",
+					text = [[This mutator allows you to reroll an entity's Abilities, the same way a player would, creating variety in enemy abilities while still ensuring proper difficulty curves.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Client-Side Content"
+				},
+				{
+					type = "Content",
+					text = [[See Tooltips in the Mutator for explanations of the content]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Server-Side Implementation"
+				},
+				{
+					type = "Content",
+					text = [[When determining which Abilities get the highest scores, the following is done in order:
+
+1. Check the Overrides section - anything set here will override the following
+2. Check the spell list that had the most levels assigned - if that has Primary Abilities set, use those
+	i. If more than one list was assigned, check the next with the second-highest amount of levels assigned
+	ii. Use the assigned ability priority if currently unset (i.e. the first spell list didn't set Primary)
+	iii. If the second spell list's Secondary Ability is the same as the first List's Tertiary Ability, swap the secondary and the tertiary
+		a. If the second list's Second Ability is not the same as the first's tertiary, make it the tertiary ability
+3. Inspect the entity's current ability scores and use that to determine any missing Ability priorites, including 4/5/6
+
+Priorities 4/5/6 currently can't be set by the user, as that seemed superfluous to me, but open to changing it if necessary.
+
+These values are set via the `Osi.AddBoosts` function, constructing an `Ability(%s,%d)` expression for each ability.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Example Use Cases"
+				},
+				{
+					type = "Section",
+					text = "Selected entities:"
+				},
+				{
+					type = "Bullet",
+					text = {
+						"should have a random spread mimicking the player's assignments, using their current ability scores as the priorities for rolls",
+						"should have a tight, high-value spread that are assigned per their assigned spell list, then their current ability scores"
+					}
+				} --[[@as MazzleDoctsBullet]],
+				{
+					type = "Separator"
+				}
+			}
+		}
+	} --[[@as MazzleDocsDocumentation]]
+end
+
+---@return {[string]: MazzleDocsContentItem}
+function AbilitiesMutator:generateChangelog()
+	return {
+		["1.7.0"] = {
+			type = "Bullet",
+			text = {
+				"Fix execution variable so it doesn't always try to calculate the prime 3 if they're already set"
+			}
+		} --[[@as MazzleDocsContentItem]]
+	}
 end

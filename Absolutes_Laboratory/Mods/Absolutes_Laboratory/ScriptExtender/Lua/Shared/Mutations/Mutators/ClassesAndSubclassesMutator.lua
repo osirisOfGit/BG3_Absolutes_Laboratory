@@ -1,5 +1,9 @@
 ---@class ClassesAndSubclassesMutatorClass : MutatorInterface
 ClassesAndSubclassesMutator = MutatorInterface:new("Classes And Subclasses")
+ClassesAndSubclassesMutator.affectedComponents = {
+	"Classes",
+	"Stats"
+}
 
 function ClassesAndSubclassesMutator:priority()
 	return self:recordPriority(SpellListMutator:priority() + 1)
@@ -10,7 +14,7 @@ function ClassesAndSubclassesMutator:canBeAdditive()
 end
 
 function ClassesAndSubclassesMutator:Transient()
-	return true
+	return false
 end
 
 ---@class ClassAbilityOverrides
@@ -145,7 +149,7 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 				local levelPercentageInput = groupRow:AddCell():AddInputInt("%", levelPercentage)
 				levelPercentageInput.IDContext = classId
 				levelPercentageInput.UserData = classId
-				levelPercentageInput.ItemWidth = 40
+				levelPercentageInput.ItemWidth = Styler:ScaleFactor() * 80
 				levelPercentageInput.SameLine = true
 
 				if TableUtils:CountElements(classConditionalGroup.classIds) == 1 then
@@ -216,7 +220,7 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 					---@type ExtuiMenu
 					local menu = popup:AddMenu(self.translationMap[classId])
 					menu.Disabled = (classConditionalGroup.classIds and classConditionalGroup.classIds[classId]) ~= nil
- 
+
 					menu:AddSelectable(self.translationMap[classId]).OnClick = function()
 						classConditionalGroup.classIds = classConditionalGroup.classIds or {}
 						classConditionalGroup.classIds[classId] = TableUtils:CountElements(classConditionalGroup.classIds) == 0 and 100 or 0
@@ -254,7 +258,7 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 
 		conditionalCell:AddText("Must have been assigned ").SameLine = true
 		local spellListNumberInput = conditionalCell:AddInputInt("", classConditionalGroup.numberOfSpellLists or 0)
-		spellListNumberInput.ItemWidth = 40
+		spellListNumberInput.ItemWidth = Styler:ScaleFactor() * 40
 		spellListNumberInput.SameLine = true
 		spellListNumberInput.OnDeactivate = function()
 			if spellListNumberInput.Value[1] < 0 then
@@ -267,8 +271,12 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 
 		if classConditionalGroup.spellListDependencies then
 			for i, spellListId in TableUtils:OrderedPairs(classConditionalGroup.spellListDependencies, function(key, value)
-				return MutationConfigurationProxy.spellLists[value].name
-			end) do
+					return MutationConfigurationProxy.lists.spellLists[value].name
+				end,
+				function(key, value)
+					return MutationConfigurationProxy.lists.spellLists[value] ~= nil
+				end)
+			do
 				local delete = Styler:ImageButton(conditionalCell:AddImageButton("delete" .. spellListId, "ico_red_x", { 16, 16 }))
 				delete.OnClick = function()
 					for x = i, TableUtils:CountElements(classConditionalGroup.spellListDependencies) do
@@ -278,7 +286,7 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 					self:renderMutator(parent, mutator)
 				end
 
-				local spellList = MutationConfigurationProxy.spellLists[spellListId]
+				local spellList = MutationConfigurationProxy.lists.spellLists[spellListId]
 				local spellListLink = conditionalCell:AddTextLink(spellList.name .. (spellList.modId and string.format(" (%s)", Ext.Mod.GetMod(spellList.modId).Info.Name) or ""))
 				spellListLink.IDContext = spellListId
 				spellListLink.SameLine = true
@@ -292,7 +300,7 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 			Helpers:KillChildren(popup)
 			popup:Open()
 
-			for spellListId, spellList in TableUtils:OrderedPairs(MutationConfigurationProxy.spellLists, function(key, value)
+			for spellListId, spellList in TableUtils:OrderedPairs(MutationConfigurationProxy.lists.spellLists, function(key, value)
 				return value.name .. (value.modId and string.format(" (%s)", Ext.Mod.GetMod(value.modId).Info.Name) or "")
 			end) do
 				---@type ExtuiSelectable
@@ -368,8 +376,9 @@ function ClassesAndSubclassesMutator:handleDependencies(_, mutator, removeMissin
 			local class = Ext.StaticData.Get(classId, "ClassDescription")
 			if not class then
 				classGroup.classIds[classId] = nil
-				if not classGroup.classIds() then
+				if not next(classGroup.classIds._real or classGroup.classIds) then
 					mutator.values[c].delete = true
+					mutator.values[c] = nil
 				end
 			elseif not removeMissingDependencies then
 				local classSource = TableUtils:IndexOf(classesIndex, function(value)
@@ -402,22 +411,24 @@ end
 
 function ClassesAndSubclassesMutator:undoMutator(entity, entityVar)
 	entity.Classes.Classes = {}
-	for _, classDef in pairs(entityVar.originalValues[self.name].classes) do
-		---@cast classDef ClassInfo
-		entity.Classes.Classes[#entity.Classes.Classes + 1] = {
-			ClassUUID = classDef.ClassUUID,
-			SubClassUUID = classDef.SubClassUUID,
-			Level = classDef.Level
-		}
-	end
+	if entityVar.originalValues[self.name] then
+		for _, classDef in pairs(entityVar.originalValues[self.name].classes) do
+			---@cast classDef ClassInfo
+			entity.Classes.Classes[#entity.Classes.Classes + 1] = {
+				ClassUUID = classDef.ClassUUID,
+				SubClassUUID = classDef.SubClassUUID,
+				Level = classDef.Level
+			}
+		end
 
-	Logger:BasicDebug("Reverted classes to %s", entityVar.originalValues[self.name].classes)
+		Logger:BasicDebug("Reverted classes to %s", entityVar.originalValues[self.name].classes)
+	end
 
 	if entityVar.originalValues[self.name].spellCastingAbility then
 		Logger:BasicDebug("Reverted spellCastingAbility to %s", entityVar.originalValues[self.name].spellCastingAbility)
 		entity.Stats.SpellCastingAbility = entityVar.originalValues[self.name].spellCastingAbility
 	end
-	
+
 	if entityVar.originalValues[self.name].rangedAttackAbility then
 		Logger:BasicDebug("Reverted rangedAttackAbility to %s", entityVar.originalValues[self.name].rangedAttackAbility)
 		entity.Stats.RangedAttackAbility = entityVar.originalValues[self.name].rangedAttackAbility
@@ -439,8 +450,8 @@ function ClassesAndSubclassesMutator:applyMutator(entity, entityVar)
 	---@type ClassesConditionalGroup[]
 	local chosenClassGroups = {}
 
-	for _, classesMutator in ipairs(classesMutators) do
-		for _, classConditonal in ipairs(classesMutator.values) do
+	for _, classesMutator in TableUtils:OrderedPairs(classesMutators) do
+		for _, classConditonal in TableUtils:OrderedPairs(classesMutator.values) do
 			if classConditonal.numberOfSpellLists and classConditonal.numberOfSpellLists > 0 then
 				if classConditonal.spellListDependencies and next(classConditonal.spellListDependencies) then
 					local numberMatched = 0
@@ -475,7 +486,7 @@ function ClassesAndSubclassesMutator:applyMutator(entity, entityVar)
 		local classGroup = chosenClassGroups[math.random(#chosenClassGroups)]
 		if classGroup.classIds then
 			entityVar.originalValues[self.name] = {
-				classes = Ext.Types.Serialize(entity.Classes.Classes)
+				classes = TableUtils:DeeplyCopyTable(Ext.Types.Serialize(entity.Classes.Classes))
 			}
 
 			entity.Classes.Classes = {}
@@ -485,32 +496,34 @@ function ClassesAndSubclassesMutator:applyMutator(entity, entityVar)
 			for classId, levelPercentage in pairs(classGroup.classIds) do
 				---@type ResourceClassDescription
 				local class = Ext.StaticData.Get(classId, "ClassDescription")
-				local hasParentClass = Ext.StaticData.Get(class.ParentGuid, "ClassDescription") ~= nil
+				if class then
+					local hasParentClass = Ext.StaticData.Get(class.ParentGuid, "ClassDescription") ~= nil
 
-				if classesLeft == 1 then
-					entity.Classes.Classes[#entity.Classes.Classes + 1] = {
-						ClassUUID = hasParentClass and class.ParentGuid or classId,
-						Level = classLevelsLeft,
-						SubClassUUID = hasParentClass and classId or nil
-					}
-					Logger:BasicDebug("Added class %s at level %s", class.DisplayName:Get() or class.Name, classLevelsLeft)
-				else
-					local desiredClassLevel = math.ceil(entity.AvailableLevel.Level * (levelPercentage / 100))
-					if desiredClassLevel > 0 then
+					if classesLeft == 1 then
 						entity.Classes.Classes[#entity.Classes.Classes + 1] = {
 							ClassUUID = hasParentClass and class.ParentGuid or classId,
-							Level = desiredClassLevel,
+							Level = classLevelsLeft,
 							SubClassUUID = hasParentClass and classId or nil
 						}
+						Logger:BasicDebug("Added class %s at level %s", class.DisplayName:Get() or class.Name, classLevelsLeft)
+					else
+						local desiredClassLevel = math.ceil(entity.AvailableLevel.Level * (levelPercentage / 100))
+						if desiredClassLevel > 0 then
+							entity.Classes.Classes[#entity.Classes.Classes + 1] = {
+								ClassUUID = hasParentClass and class.ParentGuid or classId,
+								Level = desiredClassLevel,
+								SubClassUUID = hasParentClass and classId or nil
+							}
 
-						Logger:BasicDebug("Added class %s at level %s", class.DisplayName:Get() or class.Name, desiredClassLevel)
-						classLevelsLeft = classLevelsLeft - desiredClassLevel
+							Logger:BasicDebug("Added class %s at level %s", class.DisplayName:Get() or class.Name, desiredClassLevel)
+							classLevelsLeft = classLevelsLeft - desiredClassLevel
+						end
 					end
-				end
 
-				classesLeft = classesLeft - 1
-				if classLevelsLeft == 0 then
-					break
+					classesLeft = classesLeft - 1
+					if classLevelsLeft == 0 then
+						break
+					end
 				end
 			end
 
@@ -539,4 +552,111 @@ end
 function ClassesAndSubclassesMutator:FinalizeMutator(entity)
 	entity:Replicate("Classes")
 	entity:Replicate("Stats")
+end
+
+---@return MazzleDocsDocumentation
+function ClassesAndSubclassesMutator:generateDocs()
+	return {
+		{
+			Topic = self.Topic,
+			SubTopic = self.SubTopic,
+			content = {
+				{
+					type = "Heading",
+					text = "Classes And Subclasses",
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "CallOut",
+					prefix = "",
+					prefix_color = "Yellow",
+					text = [[
+Dependency On: Spell Lists
+Transient: Yes
+Composable: Yes - Class Groups will be combined into one pool and one will be randomly chosen (post filtering)]]
+				} --[[@as MazzleDocsCallOut]],
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Summary"
+				},
+				{
+					type = "Content",
+					text =
+					[[Functionally speaking, Classes have very little impact on gameplay functionality - as far as I'm aware, it only matters for specific spells that check Class level instead of entity level.
+Still, it's good flavour, useful in those cases, and a valuable dependency for the Action Resources Mutator, so here we are.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Client-Side Content"
+				},
+				{
+					type = "Content",
+					text = [[
+The mutator is laid out as follows:
+
+Class Groups: Configured on the left hand side, this section contains a list of classes that should _all_ be assigned to the entity, adding up to 100% of the entity's Level (per the EocLevel component).
+You can add multiple subclasses from one main class, but if you add the Main class you won't be allowed to add any subclasses from it.
+
+Modifiers: On the right hand side you'll find two modifiers:
+
+	Spell List Dependencies - this is a simple dependency that stats the entity must have been assigned at least 1 level of the specific amount of lists from the dependency pool - for example, you can specify that the group should only apply if the entity had the Bard AND Wizard spell lists applied, _or_ the Bard OR the Wizard lists, allowing for precise multi-class control.
+	
+	Ability Overrides: Allows specifying what ability the entity should use for the applicable rolls, otherwise whatever is currently on the entity will be used (can be found under the Stats component on the Entity in the Inspector).
+		
+
+The rest of the Mutator UI is explained via tooltips to avoid duplicated info and inevitable deprecation of information.]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Server-Side Implementation"
+				},
+				{
+					type = "Content",
+					text =
+					[[When setting the classes, the `Classes.Classes` component is overwritten entirely; any specific Abilities overwrite their respective Stat component property: SpellCastingAbility, RangedAttackAbility, UnarmedAttackAbility. ]]
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Example Use Cases"
+				},
+				{
+					type = "Section",
+					text = "Selected entities:"
+				},
+				{
+					type = "Bullet",
+					text = {
+						"TODO"
+					}
+				} --[[@as MazzleDoctsBullet]],
+			}
+		}
+	} --[[@as MazzleDocsDocumentation]]
+end
+
+---@return {[string]: MazzleDocsContentItem}
+function ClassesAndSubclassesMutator:generateChangelog()
+	return {
+		["1.7.0"] = {
+			type = "Bullet",
+			text = {
+				"Sligtly widens inputs and makes sure UI elements scale appropriately",
+				"Changes from Transient to _not_ transient, allowing Lab to undo the changes itself"
+			}
+		} --[[@as MazzleDocsContentItem]]
+	}
 end

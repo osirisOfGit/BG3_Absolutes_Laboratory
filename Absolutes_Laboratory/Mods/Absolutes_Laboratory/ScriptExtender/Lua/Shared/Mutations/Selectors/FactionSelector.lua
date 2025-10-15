@@ -101,9 +101,11 @@ function FactionSelector:renderSelector(parent, existingSelector)
 
 	local factionSelect = factionSelectCell:AddChildWindow("Factions")
 	factionSelect.NoSavedSettings = true
+	factionSelect.Size = Styler:ScaleFactor({ 0, 400 })
 
 	local factionDisplay = row:AddCell():AddChildWindow("FactionDisplay")
 	factionDisplay.NoSavedSettings = true
+	factionDisplay.Size = Styler:ScaleFactor({ 0, 400 })
 
 	local function displaySelectedFactions()
 		Helpers:KillChildren(factionDisplay)
@@ -164,6 +166,7 @@ function FactionSelector:renderSelector(parent, existingSelector)
 	---@param filter string?
 	local function buildSelects(filter)
 		Helpers:KillChildren(factionGroup)
+		-- if filter and #filter >= 2 then
 		for _, faction in ipairs(factions) do
 			if not (filter and #filter > 0)
 				or string.upper(translationMap[faction]):find(filter)
@@ -175,6 +178,8 @@ function FactionSelector:renderSelector(parent, existingSelector)
 				select.Selected = TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
 					return value.id == faction
 				end) ~= nil
+				-- Header is also the main color property of the group, which is set to hide it, which gets inherited by its kids, so have to reset it
+				select:SetColor("Header", { 0.36, 0.30, 0.27, 0.76 })
 
 				local tooltip = select:Tooltip()
 				tooltip.Visible = false
@@ -211,6 +216,7 @@ function FactionSelector:renderSelector(parent, existingSelector)
 					updateFunc(#existingSelector.criteriaValue)
 				end
 			end
+			-- end
 		end
 	end
 	buildSelects()
@@ -328,4 +334,7 @@ function FactionSelector:predicate(selector)
 
 		return false
 	end
+end
+
+function FactionSelector:generateDocs()
 end

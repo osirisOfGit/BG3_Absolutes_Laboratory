@@ -91,8 +91,10 @@ function StatSelector:renderSelector(parent, existingSelector)
 
 	local statSelect = statSelectCell:AddChildWindow("Stats")
 	statSelect.NoSavedSettings = true
+	statSelect.Size = Styler:ScaleFactor({ 0, 400 })
 
 	local statDisplay = row:AddCell():AddChildWindow("StatDisplay")
+	statDisplay.Size = Styler:ScaleFactor({ 0, 400 })
 	statDisplay.NoSavedSettings = true
 
 	local function displaySelectedStats()
@@ -154,51 +156,55 @@ function StatSelector:renderSelector(parent, existingSelector)
 	---@param filter string?
 	local function buildSelects(filter)
 		Helpers:KillChildren(statGroup)
-		for _, statName in ipairs(stats) do
-			if not (filter and #filter > 0)
-				or string.upper(statName):find(filter)
-			then
-				---@type ExtuiSelectable
-				local select = statGroup:AddSelectable(statName .. "##select")
-				select.UserData = statName
-				select.Selected = TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
-					return value.id == statName
-				end) ~= nil
+		if filter and #filter >= 3 then
+			for _, statName in ipairs(stats) do
+				if not (filter and #filter > 0)
+					or string.upper(statName):find(filter)
+				then
+					---@type ExtuiSelectable
+					local select = statGroup:AddSelectable(statName .. "##select")
+					select.UserData = statName
+					select.Selected = TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
+						return value.id == statName
+					end) ~= nil
+					-- Header is also the main color property of the group, which is set to hide it, which gets inherited by its kids, so have to reset it
+					select:SetColor("Header", { 0.36, 0.30, 0.27, 0.76 })
 
-				local tooltip = select:Tooltip()
-				tooltip.Visible = false
-				select.OnHoverEnter = function()
-					if Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
-						tooltip.Visible = true
-						ResourceManager:RenderDisplayWindow(Ext.Stats.Get(statName), tooltip)
-					end
-				end
-
-				select.OnHoverLeave = function()
+					local tooltip = select:Tooltip()
 					tooltip.Visible = false
-					Helpers:KillChildren(tooltip)
-				end
-
-				select.OnClick = function()
-					if select.Selected then
-						table.insert(existingSelector.criteriaValue, {
-							id = statName,
-							includeChildren = false
-						} --[[@as StatCriteria]])
-					else
-						local i = TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
-							return value.id == statName
-						end)
-
-						if i then
-							for x = i, TableUtils:CountElements(existingSelector.criteriaValue) do
-								existingSelector.criteriaValue[x].delete = true
-								existingSelector.criteriaValue[x] = TableUtils:DeeplyCopyTable(existingSelector.criteriaValue._real[x + 1])
-							end
+					select.OnHoverEnter = function()
+						if Ext.ClientInput.GetInputManager().PressedModifiers == "Shift" then
+							tooltip.Visible = true
+							ResourceManager:RenderDisplayWindow(Ext.Stats.Get(statName), tooltip)
 						end
 					end
-					displaySelectedStats()
-					updateFunc(#existingSelector.criteriaValue)
+
+					select.OnHoverLeave = function()
+						tooltip.Visible = false
+						Helpers:KillChildren(tooltip)
+					end
+
+					select.OnClick = function()
+						if select.Selected then
+							table.insert(existingSelector.criteriaValue, {
+								id = statName,
+								includeChildren = false
+							} --[[@as StatCriteria]])
+						else
+							local i = TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
+								return value.id == statName
+							end)
+
+							if i then
+								for x = i, TableUtils:CountElements(existingSelector.criteriaValue) do
+									existingSelector.criteriaValue[x].delete = true
+									existingSelector.criteriaValue[x] = TableUtils:DeeplyCopyTable(existingSelector.criteriaValue._real[x + 1])
+								end
+							end
+						end
+						displaySelectedStats()
+						updateFunc(#existingSelector.criteriaValue)
+					end
 				end
 			end
 		end
@@ -312,4 +318,7 @@ function StatSelector:predicate(selector)
 
 		return false
 	end
+end
+
+function StatSelector:generateDocs()
 end

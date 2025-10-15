@@ -9,10 +9,14 @@ local disabledButtonColor = { 0, 0, 0, 0 }
 ---@type ExtuiPopup
 local popup
 
+local lastViewedMutator
+
 ---@param parent ExtuiTreeParent
 ---@param existingMutation Mutation
 function MutationDesigner:RenderMutationManager(parent, existingMutation)
-	popup = parent:AddPopup("Popup")
+	lastViewedMutator = nil
+	Helpers:KillChildren(parent)
+	popup = Styler:Popup(parent)
 
 	if existingMutation.modId then
 		Styler:CheapTextAlign("Mod-Added Mutation - You can browse, but not edit", parent, "Large"):SetColor("Text", { 1, 0, 0, 0.45 })
@@ -24,10 +28,10 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 	local buildDesignerFunc
 
 	---@type ExtuiButton[]
-	local buttons
+	local focusButtons
 
 	Styler:MiddleAlignedColumnLayout(parent, function(ele)
-		ele.Font = "Small"
+		Styler:ScaledFont(ele, "Small")
 		Styler:CheapTextAlign("Focus:", ele)
 
 		local focusSelectors = ele:AddButton("Selectors")
@@ -42,10 +46,10 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 		focusMutators:SetColor("Button", disabledButtonColor)
 		focusMutators.SameLine = true
 
-		buttons = { focusSelectors, focusBoth, focusMutators }
+		focusButtons = { focusSelectors, focusBoth, focusMutators }
 		---@param button ExtuiButton
 		local function changeFocus(button)
-			for _, focusButton in pairs(buttons) do
+			for _, focusButton in pairs(focusButtons) do
 				if focusButton.Handle == button.Handle then
 					focusButton:SetColor("Button", activeButtonColor)
 					focusButton.UserData = true
@@ -67,18 +71,30 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 		if managerTable then
 			managerTable:Destroy()
 		end
-		managerTable = parent:AddTable("ManagerTable", buttons[2].UserData and 2 or 1)
+		managerTable = parent:AddTable("ManagerTable", focusButtons[2].UserData and 2 or 1)
 		managerTable.Borders = true
 
 		local row = managerTable:AddRow()
 
-		if buttons[2].UserData or buttons[1].UserData then
+		if focusButtons[2].UserData or focusButtons[1].UserData then
 			local selectorColumn = row:AddCell()
-			Styler:CheapTextAlign("Selectors", selectorColumn, "Big").UserData = "keep"
+
+			local title = Styler:CheapTextAlign("Selectors", selectorColumn, "Big")
+			title.UserData = "keep"
+			title.AllowOverlap = true
+
+			local docs = MazzleDocs:addDocButton(selectorColumn, SelectorInterface:generateDocs({}), function(config)
+				config.window_title = "Lab: Selectors"
+			end)
+			docs.AllowItemOverlap = true
+			docs.UserData = "keep"
+			docs.PositionOffset = Styler:ScaleFactor({ 0, -50 })
+
 			Styler:MiddleAlignedColumnLayout(selectorColumn, function(ele)
+				-- ele:AddText("Selectors").Font = "Big"
 				local dryRunButton = ele:AddButton("Dry Run")
 				dryRunButton.Disabled = false
-				dryRunButton.UserData = "keep"
+				dryRunButton.UserData = "EnableForMods"
 
 				---@type ExtuiWindow
 				local resultsWindow
@@ -94,14 +110,14 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 						Helpers:KillChildren(resultsWindow)
 					end
 
-					local predicate = SelectorInterface:createComposedPredicate(existingMutation.selectors._real)
+					local predicate = SelectorInterface:createComposedPredicate(existingMutation.selectors._real or existingMutation.selectors)
 
 					local maxCols = 10
 					local resultCounter = 0
 					for level, entities in pairs(EntityRecorder:GetEntities()) do
 						local header = resultsWindow:AddCollapsingHeader(level)
 						header:SetColor("Header", { 1, 1, 1, 0 })
-						header.Font = "Large"
+						Styler:ScaledFont(header, "Large")
 						header.DefaultOpen = true
 
 						local columnCounter = 0
@@ -116,11 +132,11 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 								local group = header:AddChildWindow(level .. entity)
 								group.Font = "Medium"
 								group.NoSavedSettings = true
-								group.Size = { 100, 100 }
+								group.Size = Styler:ScaleFactor({ 100, 100 })
 								group.SameLine = columnCounter > 1 and columnCounter % maxCols ~= 1
 
 								Styler:MiddleAlignedColumnLayout(group, function(ele)
-									local image = ele:AddImage(record.Icon, { 64, 64 })
+									local image = ele:AddImage(record.Icon, Styler:ScaleFactor({ 64, 64 }))
 									if image.ImageData.Icon == "" then
 										ele:AddImage("Item_Unknown", { 64, 64 })
 									end
@@ -130,7 +146,7 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 									local hyperlink = Styler:HyperlinkText(ele, record.Name, function(parent)
 										CharacterWindow:BuildWindow(parent, entity)
 									end)
-									hyperlink.Font = "Small"
+									Styler:ScaledFont(hyperlink, "Small")
 								end)
 							end
 						end
@@ -142,47 +158,54 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 					end
 
 					if resultCounter == 0 then
-						resultsWindow:AddText("No Entities Selected").Font = "Large"
+						Styler:ScaledFont(resultsWindow:AddText("No Entities Selected"), "Large")
 					end
 
 					resultsWindow.Label = string.format("%s - %s Results###resultswindow", "Dry Run", resultCounter)
 				end
 			end).UserData = "keep"
 
-			self:RenderSelectors(selectorColumn, existingMutation.selectors)
+			self:RenderSelectors(selectorColumn, existingMutation.selectors, existingMutation.prepPhase)
 		end
-		if buttons[2].UserData or buttons[3].UserData then
+		if focusButtons[2].UserData or focusButtons[3].UserData then
 			local setting = ConfigurationStructure.config.mutations.settings.mutationDesigner
 
 			local mutatorColumn = row:AddCell()
 
-			Styler:CheapTextAlign("Mutators", mutatorColumn, "Big").UserData = "keep"
+			local title = Styler:CheapTextAlign(("%s"):format(existingMutation.prepPhase and "Prep Mutator" or "Mutators"), mutatorColumn, "Big")
+			title.UserData = "keep"
+			title.AllowOverlap = true
+
+			local docs = MazzleDocs:addDocButton(mutatorColumn, MutatorInterface:generateDocs({}), function(config)
+				config.window_title = "Lab: Mutators"
+			end)
+			docs.PositionOffset = Styler:ScaleFactor({ 0, -50 })
+			docs.AllowItemOverlap = true
+			docs.UserData = "keep"
+
 			Styler:MiddleAlignedColumnLayout(mutatorColumn, function(ele)
-				ele.Font = "Small"
+				Styler:ScaledFont(ele, "Small")
+				-- ele:AddText(("%s"):format(existingMutation.prepPhase and "Prep Mutator" or "Mutators")).Font = "Big"
 
-				local sideBarButton = ele:AddButton("Sidebar")
-				sideBarButton:SetColor("Button", setting.mutatorStyle == "Sidebar" and activeButtonColor or disabledButtonColor)
-				sideBarButton.UserData = "EnableForMods"
-
-				local infiniteScrollButton = ele:AddButton("Infinite Scroll")
-				infiniteScrollButton:SetColor("Button", setting.mutatorStyle == "Infinite" and activeButtonColor or disabledButtonColor)
-				infiniteScrollButton.SameLine = true
-				infiniteScrollButton.UserData = "EnableForMods"
-
-				---@param button ExtuiButton
-				sideBarButton.OnClick = function(button)
-					setting.mutatorStyle = button.Label == "Sidebar" and "Sidebar" or "Infinite"
-					sideBarButton:SetColor("Button", setting.mutatorStyle == "Sidebar" and activeButtonColor or disabledButtonColor)
-					infiniteScrollButton:SetColor("Button", setting.mutatorStyle == "Infinite" and activeButtonColor or disabledButtonColor)
-
-					buildDesignerFunc()
+				if not existingMutation.prepPhase then
+					-- Styler:MiddleAlignedColumnLayout(ele, function(ele)
+					Styler:DualToggleButton(ele, "Sidebar", "Infinite Scroll", false, function(swap)
+						if swap then
+							setting.mutatorStyle = setting.mutatorStyle ~= "Sidebar" and "Sidebar" or "Infinite"
+							buildDesignerFunc()
+						end
+						return setting.mutatorStyle == "Sidebar"
+						-- end)
+					end)
+				else
+					ele:AddNewLine()
 				end
-				infiniteScrollButton.OnClick = sideBarButton.OnClick
 			end).UserData = "keep"
-			if ConfigurationStructure.config.mutations.settings.mutationDesigner.mutatorStyle == "Infinite" then
-				self:RenderMutatorsInfiniteScroll(mutatorColumn, existingMutation.mutators)
+
+			if setting.mutatorStyle == "Infinite" or existingMutation.prepPhase then
+				self:RenderMutatorsInfiniteScroll(mutatorColumn, existingMutation.mutators, existingMutation.prepPhase)
 			else
-				self:RenderMutatorsSidebarStyle(mutatorColumn, existingMutation.mutators)
+				self:RenderMutatorsSidebarStyle(mutatorColumn, existingMutation.mutators, existingMutation.prepPhase)
 			end
 		end
 
@@ -212,7 +235,10 @@ end
 
 ---@param parent ExtuiTreeParent
 ---@param existingSelector SelectorQuery
-function MutationDesigner:RenderSelectors(parent, existingSelector)
+---@param prepPhase boolean?
+function MutationDesigner:RenderSelectors(parent, existingSelector, prepPhase)
+	Helpers:KillChildren(parent)
+
 	local selectorQueryTable = Styler:TwoColumnTable(parent, "selectorQuery")
 	selectorQueryTable.Resizable = false
 	selectorQueryTable.Borders = false
@@ -230,28 +256,65 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 		local row = selectorQueryTable:AddRow()
 		local sideCell = row:AddCell()
 
-		local delete = Styler:ImageButton(sideCell:AddImageButton("delete", "ico_red_x", { 16, 16 }))
+		local delete = Styler:ImageButton(sideCell:AddImageButton("delete", "ico_red_x", Styler:ScaleFactor({ 16, 16 })))
+		delete.UserData = i
 		delete.OnClick = function()
-			for x = i, TableUtils:CountElements(existingSelector), 2 do
-				if x > 0 then
-					existingSelector[x] = nil
-					existingSelector[x] = existingSelector[x + 2]
-				end
-
-				existingSelector[x + 1].delete = true
-				existingSelector[x + 1] = TableUtils:DeeplyCopyTable(existingSelector._real[x + 3])
+			selectorEntry.delete = true
+			if andOrEntry == nil then
+				existingSelector[i + 2] = nil
+			else
+				existingSelector[i] = nil
 			end
 
-			Helpers:KillChildren(parent)
-			self:RenderSelectors(parent, existingSelector)
+			TableUtils:ReindexNumericTable(existingSelector)
+
+			self:RenderSelectors(parent, existingSelector, prepPhase)
+		end
+
+		if i > 0 then
+			local upArrow = Styler:ImageButton(sideCell:AddImageButton("moveup", "scroll_up_d", Styler:ScaleFactor({ 16, 16 })))
+			upArrow.OnClick = function()
+				local currentSelector = TableUtils:DeeplyCopyTable(selectorEntry._real)
+				selectorEntry.delete = true
+
+				if i ~= 2 then
+					existingSelector[i] = existingSelector[i - 2]
+					existingSelector[i - 2] = andOrEntry
+				end
+				existingSelector[i + 1] = TableUtils:DeeplyCopyTable(existingSelector[i - 1]._real)
+				existingSelector[i - 1].delete = true
+				existingSelector[i - 1] = currentSelector
+
+				self:RenderSelectors(parent, existingSelector, prepPhase)
+			end
+		end
+
+		if i + 1 < #existingSelector then
+			local downArrow = Styler:ImageButton(sideCell:AddImageButton("movedown", "scroll_down_d", Styler:ScaleFactor({ 16, 16 })))
+			downArrow.OnClick = function()
+				local currentSelector = TableUtils:DeeplyCopyTable(selectorEntry._real)
+				selectorEntry.delete = true
+
+				if i ~= 0 then
+					existingSelector[i] = existingSelector[i + 2]
+					existingSelector[i + 2] = andOrEntry
+				end
+
+				existingSelector[i + 1] = TableUtils:DeeplyCopyTable(existingSelector[i + 3]._real)
+				existingSelector[i + 3].delete = true
+				existingSelector[i + 3] = currentSelector
+
+				self:RenderSelectors(parent, existingSelector, prepPhase)
+			end
 		end
 
 		local entryCell = row:AddCell()
 
 		if andOrEntry then
-			Styler:DualToggleButton(entryCell, "AND", "OR", true, function(swap)
+			Styler:DualToggleButton(entryCell, "AND", "OR", false, function(swap)
 				if swap then
 					existingSelector[i] = existingSelector[i] == "AND" and "OR" or "AND"
+					andOrEntry = existingSelector[i]
 				end
 				return existingSelector[i] == "AND"
 			end)
@@ -270,7 +333,9 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 		selectorCombo.WidthFitPreview = true
 		local opts = {}
 		for selectorName in TableUtils:OrderedPairs(SelectorInterface.registeredSelectors) do
-			table.insert(opts, selectorName)
+			if not prepPhase or selectorName ~= PrepMarkerSelector.name then
+				table.insert(opts, selectorName)
+			end
 		end
 		selectorCombo.Options = opts
 		selectorCombo.SelectedIndex = selectorEntry.criteriaCategory and (TableUtils:IndexOf(opts, selectorEntry.criteriaCategory) - 1) or -1
@@ -281,7 +346,6 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 			Helpers:KillChildren(selectorGroup)
 			if selectorEntry.criteriaValue then
 				selectorEntry.criteriaValue.delete = true
-				selectorEntry.criteriaValue = nil
 			end
 
 			selectorEntry.criteriaCategory = selectorCombo.Options[selectorCombo.SelectedIndex + 1]
@@ -297,22 +361,177 @@ function MutationDesigner:RenderSelectors(parent, existingSelector)
 
 	local addNewEntryButton = parent:AddButton("Add New Entry")
 	addNewEntryButton.OnClick = function()
-		if #existingSelector >= 1 then
-			table.insert(existingSelector, "AND")
-		end
 		Helpers:KillChildren(popup)
 		popup:Open()
 
 		for selectorName in TableUtils:OrderedPairs(SelectorInterface.registeredSelectors) do
-			popup:AddSelectable(selectorName).OnClick = function()
-				table.insert(existingSelector, {
-					criteriaCategory = selectorName,
-					inclusive = true,
-					subSelectors = {},
-				} --[[@as Selector]])
+			if not existingSelector._parent_proxy.prepPhase or selectorName ~= PrepMarkerSelector.name then
+				popup:AddSelectable(selectorName).OnClick = function()
+					if #existingSelector >= 1 then
+						table.insert(existingSelector, "AND")
+					end
+					table.insert(existingSelector, {
+						criteriaCategory = selectorName,
+						inclusive = true,
+						subSelectors = {},
+					} --[[@as Selector]])
 
-				Helpers:KillChildren(parent)
-				self:RenderSelectors(parent, existingSelector)
+					self:RenderSelectors(parent, existingSelector, prepPhase)
+				end
+			end
+		end
+	end
+
+	local managePresetsButton = parent:AddButton("Manage Presets")
+	managePresetsButton.SameLine = true
+	managePresetsButton.OnClick = function()
+		local presets = ConfigurationStructure.config.mutations.settings.mutationPresets.selectors
+
+		Helpers:KillChildren(popup)
+		popup:Open()
+
+		for presetName, preset in TableUtils:OrderedPairs(presets) do
+			---@type ExtuiMenu
+			local presetMenu = popup:AddMenu(presetName)
+			---@type ExtuiMenu
+			local loadMenu = presetMenu:AddMenu("Load")
+
+			loadMenu:AddSelectable("Add To Active Selectors").OnClick = function()
+				existingSelector[#existingSelector + 1] = "AND"
+				table.move(TableUtils:DeeplyCopyTable(preset), 1, #preset, #existingSelector + 1, existingSelector)
+				if type(existingSelector[1]) == "string" then
+					existingSelector[1] = nil
+					TableUtils:ReindexNumericTable(existingSelector)
+				end
+				self:RenderSelectors(parent, existingSelector, prepPhase)
+			end
+
+			loadMenu:AddSelectable("Replace Active Selectors").OnClick = function()
+				for i, entry in ipairs(existingSelector) do
+					if type(entry) == "string" then
+						existingSelector[i] = nil
+					else
+						entry.delete = true
+					end
+				end
+				for i, entry in ipairs(preset) do
+					existingSelector[i] = entry._real and TableUtils:DeeplyCopyTable(entry._real) or entry
+				end
+
+				if type(existingSelector[1]) == "string" then
+					existingSelector[1] = nil
+					TableUtils:ReindexNumericTable(existingSelector)
+				end
+				self:RenderSelectors(parent, existingSelector, prepPhase)
+			end
+
+			---@param selectable ExtuiSelectable
+			presetMenu:AddSelectable("Overwrite Preset with Current Selectors", "DontClosePopups").OnClick = function(selectable)
+				if selectable.Label ~= "Overwrite Preset with Current Selectors" then
+					preset.delete = true
+					presets[presetName] = TableUtils:DeeplyCopyTable(existingSelector._real)
+					popup:SetCollapsed(true)
+				else
+					selectable.Label = "Are you sure?"
+					selectable:SetColor("Text", { 1, 0.2, 0, 1 })
+				end
+			end
+		end
+
+		---@type ExtuiMenu
+		local saveMenu = popup:AddMenu("Save Current Selectors")
+		local nameInput = saveMenu:AddInputText("")
+		---@param saveButton ExtuiButton
+		saveMenu:AddButton("Save").OnClick = function(saveButton)
+			if not presets[nameInput.Text] or saveButton.Label ~= "Save" then
+				presets[nameInput.Text] = TableUtils:DeeplyCopyTable(existingSelector._real)
+				managePresetsButton:OnClick()
+			else
+				saveButton.Label = "Overwrite Existing Preset?"
+				saveButton:SetColor("Text", { 1, 0.2, 0, 1 })
+			end
+		end
+	end
+end
+
+---@param managePresetsButton ExtuiButton
+---@param mutators Mutator[]
+---@param callback fun()
+local function buildManageMutationPreset(managePresetsButton, mutators, callback)
+	managePresetsButton.OnClick = function()
+		local presets = ConfigurationStructure.config.mutations.settings.mutationPresets.mutators
+
+		Helpers:KillChildren(popup)
+		popup:Open()
+
+		for presetName, preset in TableUtils:OrderedPairs(presets) do
+			---@type ExtuiMenu
+			local presetMenu = popup:AddMenu(presetName)
+			---@type ExtuiMenu
+			local loadMenu = presetMenu:AddMenu("Load")
+
+			loadMenu:AddSelectable("Add Missing Mutators").OnClick = function()
+				for _, mutator in ipairs(preset) do
+					if not TableUtils:IndexOf(mutators, function(value)
+							return value.targetProperty == mutator.targetProperty
+						end) then
+						table.insert(mutators, TableUtils:DeeplyCopyTable(mutator._real))
+					end
+				end
+				callback()
+			end
+
+			loadMenu:AddSelectable("Replace Mutators With Same Property").OnClick = function()
+				for _, mutator in ipairs(preset) do
+					local existingIndex = TableUtils:IndexOf(mutators, function(value)
+						return value.targetProperty == mutator.targetProperty
+					end)
+
+					if existingIndex then
+						mutators[existingIndex].delete = true
+						mutators[existingIndex] = TableUtils:DeeplyCopyTable(mutator._real)
+					else
+						table.insert(mutators, TableUtils:DeeplyCopyTable(mutator._real))
+					end
+				end
+				callback()
+			end
+
+			loadMenu:AddSelectable("Replace All Mutators").OnClick = function()
+				for i, existingMutator in ipairs(mutators) do
+					existingMutator.delete = true
+				end
+
+				for _, mutator in ipairs(preset) do
+					table.insert(mutators, TableUtils:DeeplyCopyTable(mutator._real))
+				end
+				callback()
+			end
+
+			---@param selectable ExtuiSelectable
+			presetMenu:AddSelectable("Overwrite Preset with Current Mutators", "DontClosePopups").OnClick = function(selectable)
+				if selectable.Label ~= "Overwrite Preset with Current Mutators" then
+					preset.delete = true
+					presets[presetName] = TableUtils:DeeplyCopyTable(mutators._real)
+				else
+					selectable.Label = "Are you sure?"
+					selectable:SetColor("Text", { 1, 0.2, 0, 1 })
+					selectable.DontClosePopups = false
+				end
+			end
+		end
+
+		---@type ExtuiMenu
+		local saveMenu = popup:AddMenu("Save Current Mutators")
+		local nameInput = saveMenu:AddInputText("")
+		---@param saveButton ExtuiButton
+		saveMenu:AddButton("Save").OnClick = function(saveButton)
+			if not presets[nameInput.Text] or saveButton.Label ~= "Save" then
+				presets[nameInput.Text] = TableUtils:DeeplyCopyTable(mutators._real)
+				managePresetsButton:OnClick()
+			else
+				saveButton.Label = "Overwrite Existing Preset?"
+				saveButton:SetColor("Text", { 1, 0.2, 0, 1 })
 			end
 		end
 	end
@@ -320,7 +539,8 @@ end
 
 ---@param parent ExtuiTreeParent
 ---@param mutators Mutator[]
-function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators)
+---@param prepPhase boolean?
+function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators, prepPhase)
 	Helpers:KillChildren(parent)
 
 	local mutatorTable = Styler:TwoColumnTable(parent, "Mutators")
@@ -343,13 +563,15 @@ function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators)
 				mutators[x] = TableUtils:DeeplyCopyTable(mutators._real[x + 1])
 			end
 
-			self:RenderMutatorsInfiniteScroll(parent, mutators)
+			self:RenderMutatorsInfiniteScroll(parent, mutators, prepPhase)
 		end
 
 		local mutatorCell = row:AddCell()
 
+
 		local mutatorCombo = mutatorCell:AddCombo("")
-		mutatorCombo.Font = "Large"
+		mutatorCombo.Visible = not prepPhase
+		Styler:ScaledFont(mutatorCombo, "Large")
 		mutatorCombo.WidthFitPreview = true
 		local opts = {}
 		local selectedIndex = -1
@@ -374,7 +596,7 @@ function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators)
 			mutator.values = nil
 			MutatorInterface.registeredMutators[mutator.targetProperty]:renderMutator(mutatorGroup, mutator)
 
-			self:RenderMutatorsInfiniteScroll(parent, mutators)
+			self:RenderMutatorsInfiniteScroll(parent, mutators, prepPhase)
 		end
 
 		if mutator.targetProperty and mutator.targetProperty ~= "" then
@@ -383,39 +605,44 @@ function MutationDesigner:RenderMutatorsInfiniteScroll(parent, mutators)
 
 		mutatorCell:AddNewLine()
 	end
+	if not prepPhase then
+		Styler:MiddleAlignedColumnLayout(parent, function(ele)
+			local addNewEntryButton = ele:AddButton("+")
+			addNewEntryButton.OnClick = function()
+				Helpers:KillChildren(popup)
+				popup:Open()
 
-	Styler:MiddleAlignedColumnLayout(parent, function(ele)
-		local addNewEntryButton = ele:AddButton("+")
-		addNewEntryButton.OnClick = function()
-			Helpers:KillChildren(popup)
-			popup:Open()
+				for mutatorName in TableUtils:OrderedPairs(MutatorInterface.registeredMutators) do
+					if not TableUtils:IndexOf(mutators, function(value)
+							return value.targetProperty == mutatorName
+						end)
+						and mutatorName ~= PrepPhaseMarkerMutator.name
+					then
+						popup:AddSelectable(mutatorName).OnClick = function()
+							table.insert(mutators, {
+								targetProperty = mutatorName
+							} --[[@as Mutator]])
 
-			for mutatorName in TableUtils:OrderedPairs(MutatorInterface.registeredMutators) do
-				if not TableUtils:IndexOf(mutators, function(value)
-						return value.targetProperty == mutatorName
-					end)
-				then
-					popup:AddSelectable(mutatorName).OnClick = function()
-						table.insert(mutators, {
-							targetProperty = mutatorName
-						} --[[@as Mutator]])
-
-						self:RenderMutatorsInfiniteScroll(parent, mutators)
+							self:RenderMutatorsInfiniteScroll(parent, mutators, prepPhase)
+						end
 					end
 				end
 			end
-		end
-	end)
+
+			local managePresetsButton = ele:AddButton("Manage Presets")
+			managePresetsButton.SameLine = true
+			buildManageMutationPreset(managePresetsButton, mutators, function()
+				self:RenderMutatorsInfiniteScroll(parent, mutators, prepPhase)
+			end)
+		end)
+	end
 end
 
 ---@param parent ExtuiTreeParent
 ---@param mutators Mutator[]
-function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMutator)
-	-- Don't ask questions, i hate it too
-	if not popup or not pcall(function() return popup.Handle end) then
-		popup = parent.ParentElement:AddPopup("Popup")
-	end
-
+---@param activeMutator string?
+---@param prepPhase boolean?
+function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMutator, prepPhase)
 	Helpers:KillChildren(parent)
 
 	local mutatorTable = Styler:TwoColumnTable(parent, "mutators")
@@ -430,19 +657,20 @@ function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMut
 	for i, mutator in TableUtils:OrderedPairs(mutators, function(key, value)
 		return MutatorInterface.registeredMutators[value.targetProperty]:priority()
 	end) do
-		local delete = Styler:ImageButton(sideBar:AddImageButton("delete" .. mutator.targetProperty, "ico_red_x", { 16, 16 }))
+		local delete = Styler:ImageButton(sideBar:AddImageButton("delete" .. mutator.targetProperty, "ico_red_x", Styler:ScaleFactor({ 16, 16 })))
 		delete.OnClick = function()
 			for x = i, TableUtils:CountElements(mutators) do
 				mutators[x].delete = true
 				mutators[x] = TableUtils:DeeplyCopyTable(mutators._real[x + 1])
 			end
 
-			self:RenderMutatorsSidebarStyle(parent, mutators, activeMutatorHandle and activeMutatorHandle.Label)
+			self:RenderMutatorsSidebarStyle(parent, mutators, activeMutatorHandle and activeMutatorHandle.Label, prepPhase)
 		end
 
 		---@type ExtuiSelectable
 		local select = sideBar:AddSelectable(mutator.targetProperty)
 		select.SameLine = true
+		select.UserData = "EnableForMods"
 		select.OnClick = function()
 			if activeMutatorHandle then
 				activeMutatorHandle.Selected = false
@@ -451,33 +679,45 @@ function MutationDesigner:RenderMutatorsSidebarStyle(parent, mutators, activeMut
 
 			activeMutatorHandle = select
 
+			lastViewedMutator = mutator.targetProperty
+
 			MutatorInterface.registeredMutators[mutator.targetProperty]:renderMutator(designer, mutator)
 		end
 
-		if mutator.targetProperty == activeMutator or (not activeMutator and not activeMutatorHandle) then
+		if mutator.targetProperty == activeMutator or mutator.targetProperty == lastViewedMutator or (not activeMutator and not activeMutatorHandle and not lastViewedMutator) then
 			select.Selected = true
 			select.OnClick()
 		end
 	end
 
-	local addNewEntryButton = sideBar:AddButton("+")
-	addNewEntryButton.OnClick = function()
-		Helpers:KillChildren(popup)
-		popup:Open()
+	if not prepPhase then
+		local addNewEntryButton = sideBar:AddButton("+")
+		addNewEntryButton.OnClick = function()
+			Helpers:KillChildren(popup)
+			popup:Open()
 
-		for mutatorName in TableUtils:OrderedPairs(MutatorInterface.registeredMutators) do
-			if not TableUtils:IndexOf(mutators, function(value)
-					return value.targetProperty == mutatorName
-				end)
-			then
-				popup:AddSelectable(mutatorName).OnClick = function()
-					table.insert(mutators, {
-						targetProperty = mutatorName
-					} --[[@as Mutator]])
+			for mutatorName in TableUtils:OrderedPairs(MutatorInterface.registeredMutators) do
+				if not TableUtils:IndexOf(mutators, function(value)
+						return value.targetProperty == mutatorName
+					end)
+					and mutatorName ~= PrepPhaseMarkerMutator.name
+				then
+					popup:AddSelectable(mutatorName).OnClick = function()
+						table.insert(mutators, {
+							targetProperty = mutatorName
+						} --[[@as Mutator]])
 
-					self:RenderMutatorsSidebarStyle(parent, mutators, activeMutatorHandle and activeMutatorHandle.Label)
+						self:RenderMutatorsSidebarStyle(parent, mutators, activeMutatorHandle and activeMutatorHandle.Label, prepPhase)
+					end
 				end
 			end
 		end
+
+		local managePresetsButton = sideBar:AddButton("MP")
+		managePresetsButton:Tooltip():AddText("\t Manage Mutator Presets")
+		managePresetsButton.SameLine = true
+		buildManageMutationPreset(managePresetsButton, mutators, function()
+			self:RenderMutatorsSidebarStyle(parent, mutators, activeMutatorHandle and activeMutatorHandle.Label, prepPhase)
+		end)
 	end
 end
