@@ -440,28 +440,345 @@ function ListDesignerBaseClass:buildDesigner()
 		return
 	end
 
-	self:customizeDesigner()
+	local extraOptions = self.designerSection:AddTable("extraOptions", 3)
+	extraOptions.BordersInnerV = true
+	extraOptions.BordersOuterH = true
+	extraOptions:SetColor("TableBorderStrong", { 0.56, 0.46, 0.26, 0.78 })
+	self.designerSection:AddNewLine()
 
-	local deleteAllButton = self.designerSection:AddButton("Delete All Non-Linked Entries")
-	deleteAllButton.Disabled = self.activeList.modId ~= nil
-	deleteAllButton.OnClick = function()
-		for _, leveledSubList in TableUtils:OrderedPairs(self.activeList.levels) do
-			if leveledSubList.manuallySelectedEntries then
-				leveledSubList.manuallySelectedEntries.delete = true
+	local extraOptionsRow = extraOptions:AddRow()
+
+	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function(ele)
+		Styler:DualToggleButton(ele, "Icon", "Text", false, function(swap)
+			if swap then
+				self.settings.iconOrText = self.settings.iconOrText == "Icon" and "Text" or "Icon"
+				self:buildDesigner()
+			end
+
+			return self.settings.iconOrText == "Icon"
+		end)
+
+		if self.settings.iconOrText == "Icon" and self:renderEntriesBySubcategories({}, ele) then
+			ele:AddSeparator()
+			Styler:EnableToggleButton(ele, "Show SubCategories Under Levels", false, nil, function(swap)
+				if swap then
+					self.settings.showSeperatorsInMain = not self.settings.showSeperatorsInMain
+					self:buildDesigner()
+				end
+				return self.settings.showSeperatorsInMain
+			end)
+		end
+
+		ele:AddSeparator()
+		Styler:EnableToggleButton(ele, "Auto-Collapse Folder View", false, nil, function(swap)
+			if swap then
+				self.settings.autoCollapseFoldersSection = not self.settings.autoCollapseFoldersSection
+			end
+			return self.settings.autoCollapseFoldersSection
+		end)
+	end)
+
+	local extraOptionsCell = extraOptionsRow:AddCell()
+
+	Styler:MiddleAlignedColumnLayout(extraOptionsCell, function(ele)
+		self:customizeDesigner(ele)
+	end)
+
+	local sep = extraOptionsCell:AddSeparatorText(("Linked %s (?)"):format(self.name))
+	sep:SetStyle("SeparatorTextAlign", 0.5)
+	sep:Tooltip():AddText([[
+	Any lists linked to this one will be applied whenever this list is, allowing you to create a 'Base' list that all specializations can be linked to,
+eliminating the need for duplication between lists.
+This logic will be run recursively, applying the lists linked to the linked lists (with protections against applying the same list multiple times).]])
+
+	local linkedTable = extraOptionsCell:AddTable("LinkedLists", 1)
+	linkedTable.BordersOuter = true
+	linkedTable.NoSavedSettings = true
+
+	local linkedCell = linkedTable:AddRow():AddCell()
+	self.activeList.linkedLists = self.activeList.linkedLists or {}
+	local function buildTable()
+		Helpers:KillChildren(linkedCell)
+		TableUtils:ReindexNumericTable(self.activeList.linkedLists)
+
+		for s, listId in ipairs(self.activeList.linkedLists) do
+			local spellList = MutationConfigurationProxy.lists[self.configKey][listId]
+
+			local delete = Styler:ImageButton(linkedCell:AddImageButton("delete" .. spellList.name, "ico_red_x", { 16, 16 }))
+			delete.Disabled = self.activeList.modId ~= nil
+			delete.OnClick = function()
+				self.activeList.linkedLists[s].delete = true
+				TableUtils:ReindexNumericTable(self.activeList.linkedLists)
+				buildTable()
+			end
+
+			local link = linkedCell:AddTextLink(spellList.name .. (spellList.modId and string.format(" (from %s)", Ext.Mod.GetMod(spellList.modId).Info.Name) or ""))
+			link.Font = "Small"
+			link.SameLine = true
+			link.OnClick = function()
+				self:launch(listId)
 			end
 		end
-		self:buildDesigner()
 	end
+	buildTable()
 
-	Styler:ToggleButton(self.designerSection, "Icon", "Text", true, function(swap)
-		local setting = ConfigurationStructure.config.mutations.settings.customLists
-		if swap then
-			setting.iconOrText = setting.iconOrText == "Icon" and "Text" or "Icon"
-			self:buildDesigner()
+	Styler:MiddleAlignedColumnLayout(extraOptionsCell, function(ele)
+		local addDependencyButton = ele:AddButton(("Link A %s"):format(self.name))
+		Styler:ScaledFont(addDependencyButton, "Small")
+		addDependencyButton.Disabled = self.activeList.modId ~= nil
+		addDependencyButton.OnClick = function()
+			Helpers:KillChildren(self.popup)
+			self.popup:Open()
+
+			local userLists = self.popup:AddChildWindow("UserLists")
+			userLists:SetColor("ChildBg", { 0, 0, 0, 1 })
+
+			local userListSep = userLists:AddSeparatorText("Local Lists")
+			userListSep:SetStyle("SeparatorTextAlign", 0.5)
+
+			for id, list in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.lists[self.configKey], function(key, list)
+				return list.name
+			end) do
+				if self.activeList.useGameLevel == list.useGameLevel and self.activeListHandle.IDContext ~= id then
+					---@type ExtuiSelectable
+					local select = userLists:AddSelectable(list.name, "DontClosePopups")
+					select.IDContext = id
+					select.Selected = TableUtils:IndexOf(self.activeList.linkedLists, id) ~= nil
+					select.OnClick = function()
+						local index = TableUtils:IndexOf(self.activeList.linkedLists, id)
+						if index then
+							self.activeList.linkedLists[index] = nil
+							select.Selected = false
+						else
+							select.Selected = true
+							table.insert(self.activeList.linkedLists, id)
+						end
+						buildTable()
+					end
+				end
+			end
+
+			if #userLists.Children == 1 then
+				userLists:Destroy()
+			else
+				userLists.Size = { 0, math.min(500, 80 * (#userLists.Children - 1)) }
+			end
+
+			if MutationModProxy.ModProxy.lists[self.configKey]() then
+				local modListsSep = self.popup:AddSeparatorText("Mod Lists")
+				modListsSep:SetStyle("SeparatorTextAlign", 0.5)
+
+				---@type {[Guid]: Guid[]}
+				local modLists = {}
+
+				for modId, modCache in pairs(MutationModProxy.ModProxy.lists[self.configKey]) do
+					---@cast modCache +LocalModCache
+
+					if modCache.lists and modCache.lists[self.configKey] and next(modCache.lists[self.configKey]) then
+						modLists[modId] = {}
+						table.insert(modLists[modId], spellListId)
+						for spellListId in pairs(modCache.lists[self.configKey]) do
+						end
+					end
+				end
+
+				if next(modLists) then
+					for modId, lists in TableUtils:OrderedPairs(modLists, function(key, value)
+						return Ext.Mod.GetMod(key).Info.Name
+					end) do
+						self.popup:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name).Font = "Small"
+
+						local modGroup = self.popup:AddChildWindow("Mods" .. modId)
+						modGroup:SetColor("ChildBg", { 0, 0, 0, 1 })
+						modGroup.Size = { 0, 500 }
+
+						for _, guid in TableUtils:OrderedPairs(lists, function(key, value)
+							return MutationModProxy.ModProxy.lists[self.configKey][value].name
+						end) do
+							local spellList = MutationModProxy.ModProxy.lists[self.configKey][guid]
+							if self.activeList.useGameLevel == spellList.useGameLevel and self.activeListHandle.IDContext ~= guid then
+								---@type ExtuiSelectable
+								local select = modGroup:AddSelectable(spellList.name, "DontClosePopups")
+								select.Selected = TableUtils:IndexOf(self.activeList.linkedLists, guid) ~= nil
+								select.OnClick = function()
+									local index = TableUtils:IndexOf(self.activeList.linkedLists, guid)
+									if index then
+										self.activeList.linkedLists[index] = nil
+										select.Selected = false
+									else
+										select.Selected = true
+										table.insert(self.activeList.linkedLists, guid)
+									end
+									buildTable()
+								end
+							end
+						end
+						if #modGroup.Children == 1 then
+							modGroup:Destroy()
+						else
+							modGroup.Size = { 0, math.min(500, 40 * (#modGroup.Children - 1)) }
+						end
+					end
+				else
+					modListsSep:Destroy()
+				end
+			end
+		end
+	end)
+
+	Styler:MiddleAlignedColumnLayout(extraOptionsRow:AddCell(), function(ele)
+		if self.configKey ~= "statusLists" then
+			if self.activeList.blacklistSameEntriesInHigherProgressionLevels == nil then
+				self.activeList.blacklistSameEntriesInHigherProgressionLevels = true
+			end
+
+			Styler:EnableToggleButton(ele, "Dedupe Spells Within A Progression", false,
+				"If a progression offers the same spell at multiple levels, only the lowest level will be considered to have the spell (both in this UI and during mutator application). The Progression Browser will show all spells regardless of this setting.",
+				function(swap)
+					if swap then
+						self.activeList.blacklistSameEntriesInHigherProgressionLevels = not self.activeList.blacklistSameEntriesInHigherProgressionLevels
+						self:buildDesigner()
+					end
+					return self.activeList.blacklistSameEntriesInHigherProgressionLevels
+				end)
+			ele:AddSeparator()
 		end
 
-		return setting.iconOrText == "Icon"
-	end)
+		ele:AddText("(?) Distribute By: "):Tooltip():AddText([[
+	Changing this option will clear your list as the two options are not compatible with each other.
+Using game level will distribute all entries in the same level that the entity is in and all the ones that come before (i.e. TUT, WLD, CRE, SCL if they're in SCL).
+You can't link progressions when using Game Level, as progressions are distributed by character level.
+Using entity level will use the entity's character level, post Character Level Mutators if applicable.]])
+		Styler:DualToggleButton(ele, "Entity Level", "Game Level", true, function(swap)
+			if swap then
+				self.activeList.useGameLevel = not self.activeList.useGameLevel
+				if self.activeList.levels then
+					self.activeList.levels.delete = true
+				end
+				self.activeList.levels = {}
+				if self.activeList.useGameLevel then
+					for level in ipairs(EntityRecorder.Levels) do
+						self.activeList.levels[level] = {
+							manuallySelectedEntries = {}
+						}
+					end
+				end
+
+				if self.activeList.linkedProgressionTableIds then
+					self.activeList.linkedProgressionTableIds.delete = true
+					self.activeList.linkedProgressionTableIds = {}
+				end
+
+				self:buildDesigner()
+			end
+			return not self.activeList.useGameLevel
+		end)
+
+		ele:AddSeparator()
+		ele:AddText("Default Pool is: ")
+		local defaultCombo = ele:AddCombo("")
+		defaultCombo.SameLine = true
+		defaultCombo.WidthFitPreview = true
+
+		local opts = {}
+		local index
+		for group in TableUtils:OrderedPairs(self.subListIndex) do
+			if group ~= "blackListed" then
+				table.insert(opts, self.subListIndex[group].name)
+				if group == (self.activeList.defaultPool or self.settings.defaultPool[self.configKey]) then
+					index = #opts
+				end
+			end
+		end
+		defaultCombo.Options = opts
+		defaultCombo.SelectedIndex = index - 1
+		defaultCombo.OnChange = function()
+			local previous = self.activeList.defaultPool or self.settings.defaultPool[self.configKey]
+			local chosen = TableUtils:IndexOf(self.subListIndex, function(value)
+				return value.name == defaultCombo.Options[defaultCombo.SelectedIndex + 1]
+			end)
+
+			if chosen ~= previous then
+				self.settings.defaultPool[self.configKey] = chosen
+				Helpers:KillChildren(self.popup)
+				self.popup:Open()
+
+				Styler:CheapTextAlign(("Change all entries of the previous type to the new type in all %ss?"):format(self.name), self.popup)
+				Styler:MiddleAlignedColumnLayout(self.popup, function(ele)
+					local yesButton = ele:AddButton("Do it")
+					yesButton.OnClick = function()
+						if yesButton.Label ~= "Do it" then
+							self.mainWindow:SetFocus()
+							self.popup:SetCollapsed(true, "Always")
+							for _, lists in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.lists[self.configKey]) do
+								---@cast lists CustomList
+								if lists.levels then
+									for level, levelSubList in TableUtils:OrderedPairs(lists.levels) do
+										if levelSubList.manuallySelectedEntries and levelSubList.manuallySelectedEntries[previous] then
+											levelSubList.manuallySelectedEntries[chosen] = levelSubList.manuallySelectedEntries[chosen] or {}
+											for _, entry in TableUtils:OrderedPairs(levelSubList.manuallySelectedEntries[previous]) do
+												---@cast entry string[]
+												table.insert(levelSubList.manuallySelectedEntries[chosen], entry)
+											end
+											levelSubList.manuallySelectedEntries[previous].delete = true
+										end
+
+										if levelSubList.linkedProgressions then
+											for progressionTableId, list in TableUtils:OrderedPairs(levelSubList.linkedProgressions) do
+												if list[previous] then
+													list[previous].delete = true
+												end
+												if list[chosen] then
+													list[chosen].delete = true
+												end
+												if not list() then
+													list.delete = true
+													if not levelSubList.linkedProgressions() then
+														levelSubList.linkedProgressions.delete = true
+													end
+												end
+											end
+										end
+									end
+								end
+							end
+							self:buildDesigner()
+						else
+							yesButton.Label = "Are You Sure?"
+							yesButton.AutoClosePopups = true
+							Styler:Color(yesButton, "ErrorText")
+						end
+					end
+				end)
+			end
+		end
+
+		ele:AddSeparator()
+
+		local deleteAllButton = ele:AddButton("Delete All Non-Linked Entries")
+		deleteAllButton:SetColor("Button", { 1, 0, 0, 0.5 })
+		deleteAllButton.Disabled = self.activeList.modId ~= nil
+		local timer
+		deleteAllButton.OnClick = function()
+			if deleteAllButton.Label ~= "Delete All Non-Linked Entries" then
+				Ext.Timer.Cancel(timer)
+				timer = nil
+				for _, leveledSubList in TableUtils:OrderedPairs(self.activeList.levels) do
+					if leveledSubList.manuallySelectedEntries then
+						leveledSubList.manuallySelectedEntries.delete = true
+					end
+				end
+
+				self:buildDesigner()
+			else
+				deleteAllButton.Label = "Are You Sure?"
+				timer = Ext.Timer.WaitFor(5000, function()
+					deleteAllButton.Label = "Delete All Non-Linked Entries"
+					timer = nil
+				end)
+			end
+		end
+	end).Disabled = self.activeList.modId ~= nil
 
 	local leveledListGroup = self.designerSection:AddGroup("leveledLists")
 
