@@ -168,19 +168,18 @@ Using entity level will use the entity's character level, post Character Level M
 							Helpers:KillChildren(popup)
 							popup:Open()
 
-							local userSep = popup:AddSeparatorText("Your Lists")
-							userSep:SetStyle("SeparatorTextAlign", 0.5)
-
-							local userLists = popup:AddChildWindow("userLists")
-							userLists.Size = { 500, 500 }
-
-							for id, spellList in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.lists.spellLists, function(key)
-								return configuredSpellLists[key].name
-							end) do
-								if mutator.useGameLevel == spellList.useGameLevel then
-									---@type ExtuiSelectable
-									local select = userLists:AddSelectable(spellList.name, "DontClosePopups")
-									select.IDContext = id
+							Styler:BuildCompleteUserAndModLists(popup,
+								function(config)
+									return config.lists and config.lists.spellLists and next(config.lists.spellLists) and config.lists.spellLists
+								end,
+								function(key, value)
+									return value.name
+								end,
+								function(_, listItem)
+									return mutator.useGameLevel == listItem.useGameLevel
+								end,
+								function(select, id, item)
+									select.Label = item.name
 									select.Selected = TableUtils:IndexOf(leveledSpellPool.spellLists, id) ~= nil
 									select.OnClick = function()
 										local index = TableUtils:IndexOf(leveledSpellPool.spellLists, id)
@@ -189,76 +188,13 @@ Using entity level will use the entity's character level, post Character Level M
 											select.Selected = false
 										else
 											select.Selected = true
+											leveledSpellPool.spellLists = leveledSpellPool.spellLists or {}
 											table.insert(leveledSpellPool.spellLists, id)
 										end
 										renderPools()
 									end
 								end
-							end
-
-							if #userLists.Children == 0 then
-								userLists:Destroy()
-								userSep:Destroy()
-							else
-								userLists.Size = { 0, math.min(500, 40 * (#userLists.Children)) }
-							end
-
-							if MutationModProxy.ModProxy.lists.spellLists() then
-								---@type {[Guid]: Guid[]}
-								local modSpellLists = {}
-
-								for modId, modCache in pairs(MutationModProxy.ModProxy.lists.spellLists) do
-									---@cast modCache +LocalModCache
-
-									if modCache.lists and modCache.lists.spellLists and next(modCache.lists.spellLists) then
-										modSpellLists[modId] = {}
-										for spellListId in pairs(modCache.lists.spellLists) do
-											table.insert(modSpellLists[modId], spellListId)
-										end
-									end
-								end
-
-
-								if next(modSpellLists) then
-									for modId, spellLists in TableUtils:OrderedPairs(modSpellLists, function(key, value)
-										return Ext.Mod.GetMod(key).Info.Name
-									end) do
-										local modSep = popup:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name)
-										modSep.Font = "Small"
-
-										local modGroup = popup:AddChildWindow("Mods" .. modId)
-										modGroup.Size = { 500, 500 }
-
-										for _, guid in TableUtils:OrderedPairs(spellLists, function(key, value)
-											return MutationModProxy.ModProxy.lists.spellLists[value].name
-										end) do
-											local spellList = MutationModProxy.ModProxy.lists.spellLists[guid]
-											if mutator.useGameLevel == spellList.useGameLevel then
-												---@type ExtuiSelectable
-												local select = modGroup:AddSelectable(spellList.name, "DontClosePopups")
-												select.Selected = TableUtils:IndexOf(leveledSpellPool.spellLists, guid) ~= nil
-												select.OnClick = function()
-													local index = TableUtils:IndexOf(leveledSpellPool.spellLists, guid)
-													if index then
-														leveledSpellPool.spellLists[index] = nil
-														select.Selected = false
-													else
-														select.Selected = true
-														table.insert(leveledSpellPool.spellLists, guid)
-													end
-													renderPools()
-												end
-											end
-										end
-										if #modGroup.Children == 0 then
-											modGroup:Destroy()
-											modSep:Destroy()
-										else
-											modGroup.Size = { 0, math.min(500, 80 * (#modGroup.Children)) }
-										end
-									end
-								end
-							end
+							)
 						end
 
 						self:buildSpellSelectorSection(cell, spellMutatorGroup, i)
@@ -1811,12 +1747,12 @@ function SpellListMutator:generateChangelog()
 			text = {
 				"Fix lists not applying entries from linked progressions"
 			}
-		}--[[@as MazzleDocsContentItem]],
+		} --[[@as MazzleDocsContentItem]],
 		["1.6.0"] = {
 			type = "Bullet",
 			text = {
 				"Excludes SpellList groups from the apply logic that don't have a leveledSpellPool"
 			}
-		}--[[@as MazzleDocsContentItem]]
+		} --[[@as MazzleDocsContentItem]]
 	}
 end

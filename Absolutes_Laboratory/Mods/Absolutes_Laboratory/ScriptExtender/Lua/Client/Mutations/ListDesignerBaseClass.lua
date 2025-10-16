@@ -161,9 +161,7 @@ function ListDesignerBaseClass:launch(activeListId)
 			self.browserTabs["Progressions"].NoSavedSettings = true
 		end
 
-		self.popup = self.mainWindow:AddPopup(self.name .. "popup")
-		self.popup:SetColor("PopupBg", { 0, 0, 0, 1 })
-		self.popup:SetColor("Border", { 1, 0, 0, 0.5 })
+		self.popup = Styler:Popup(self.mainWindow)
 
 		local docsButton = MazzleDocs:addDocButton(self.designerSection, MutatorInterface:generateDocs({}))
 		docsButton.SameLine = true
@@ -553,19 +551,18 @@ This logic will be run recursively, applying the lists linked to the linked list
 			Helpers:KillChildren(self.popup)
 			self.popup:Open()
 
-			local userLists = self.popup:AddChildWindow("UserLists")
-			userLists:SetColor("ChildBg", { 0, 0, 0, 1 })
-
-			local userListSep = userLists:AddSeparatorText("Local Lists")
-			userListSep:SetStyle("SeparatorTextAlign", 0.5)
-
-			for id, list in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.lists[self.configKey], function(key, list)
-				return list.name
-			end) do
-				if self.activeList.useGameLevel == list.useGameLevel and self.activeListHandle.IDContext ~= id then
-					---@type ExtuiSelectable
-					local select = userLists:AddSelectable(list.name, "DontClosePopups")
-					select.IDContext = id
+			Styler:BuildCompleteUserAndModLists(self.popup,
+				function(config)
+					return config.lists and config.lists[self.configKey] and next(config.lists[self.configKey]) and config.lists[self.configKey]
+				end,
+				function(key, value)
+					return value.name
+				end,
+				function(key, listItem)
+					return self.activeList.useGameLevel == listItem.useGameLevel and self.activeListHandle.IDContext ~= key
+				end,
+				function(select, id, item)
+					select.Label = item.name
 					select.Selected = TableUtils:IndexOf(self.activeList.linkedLists, id) ~= nil
 					select.OnClick = function()
 						local index = TableUtils:IndexOf(self.activeList.linkedLists, id)
@@ -578,74 +575,7 @@ This logic will be run recursively, applying the lists linked to the linked list
 						end
 						buildTable()
 					end
-				end
-			end
-
-			if #userLists.Children == 1 then
-				userLists:Destroy()
-			else
-				userLists.Size = { 0, math.min(500, 40 * (#userLists.Children - 1)) }
-			end
-
-			if MutationModProxy.ModProxy.lists[self.configKey]() then
-				local modListsSep = self.popup:AddSeparatorText("Mod Lists")
-				modListsSep:SetStyle("SeparatorTextAlign", 0.5)
-
-				---@type {[Guid]: Guid[]}
-				local modLists = {}
-
-				for modId, modCache in pairs(MutationModProxy.ModProxy.lists[self.configKey]) do
-					---@cast modCache +LocalModCache
-
-					if modCache.lists and modCache.lists[self.configKey] and next(modCache.lists[self.configKey]) then
-						modLists[modId] = {}
-						for listId in pairs(modCache.lists[self.configKey]) do
-							table.insert(modLists[modId], listId)
-						end
-					end
-				end
-
-				if next(modLists) then
-					for modId, lists in TableUtils:OrderedPairs(modLists, function(key, value)
-						return Ext.Mod.GetMod(key).Info.Name
-					end) do
-						self.popup:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name).Font = "Small"
-
-						local modGroup = self.popup:AddChildWindow("Mods" .. modId)
-						modGroup:SetColor("ChildBg", { 0, 0, 0, 1 })
-						modGroup.Size = { 0, 500 }
-
-						for _, guid in TableUtils:OrderedPairs(lists, function(key, value)
-							return MutationModProxy.ModProxy.lists[self.configKey][value].name
-						end) do
-							local spellList = MutationModProxy.ModProxy.lists[self.configKey][guid]
-							if self.activeList.useGameLevel == spellList.useGameLevel and self.activeListHandle.IDContext ~= guid then
-								---@type ExtuiSelectable
-								local select = modGroup:AddSelectable(spellList.name, "DontClosePopups")
-								select.Selected = TableUtils:IndexOf(self.activeList.linkedLists, guid) ~= nil
-								select.OnClick = function()
-									local index = TableUtils:IndexOf(self.activeList.linkedLists, guid)
-									if index then
-										self.activeList.linkedLists[index] = nil
-										select.Selected = false
-									else
-										select.Selected = true
-										table.insert(self.activeList.linkedLists, guid)
-									end
-									buildTable()
-								end
-							end
-						end
-						if #modGroup.Children == 1 then
-							modGroup:Destroy()
-						else
-							modGroup.Size = { 0, math.min(500, 40 * (#modGroup.Children - 1)) }
-						end
-					end
-				else
-					modListsSep:Destroy()
-				end
-			end
+				end)
 		end
 	end)
 

@@ -113,75 +113,32 @@ and this list will use the sum of the assigned spell list levels to determine wh
 		Helpers:KillChildren(popup)
 		popup:Open()
 
-		for statusListId, statusList in pairs(MutationConfigurationProxy.lists.statusLists) do
-			if statusList.useGameLevel == mutator.useGameLevel then
-				---@type ExtuiSelectable
-				local select = popup:AddSelectable(statusList.name .. (statusList.modId and string.format(" (from %s)", Ext.Mod.GetMod(statusList.modId).Info.Name) or ""),
-					"DontClosePopups")
-				select.Selected = TableUtils:IndexOf(mutator.values.statusLists, statusListId) ~= nil
+		Styler:BuildCompleteUserAndModLists(popup,
+			function(config)
+				return config.lists and config.lists.statusLists and next(config.lists.statusLists) and config.lists.statusLists
+			end,
+			function(key, value)
+				return value.name
+			end,
+			function(key, listItem)
+				return mutator.useGameLevel == listItem.useGameLevel
+			end,
+			function(select, id, item)
+				select.Label = item.name
+				select.Selected = TableUtils:IndexOf(mutator.values.statusLists, id) ~= nil
 				select.OnClick = function()
-					if not select.Selected then
-						mutator.values.statusLists[TableUtils:IndexOf(mutator.values.statusLists, statusListId)] = nil
-						TableUtils:ReindexNumericTable(mutator.values.statusLists)
+					local index = TableUtils:IndexOf(mutator.values.statusLists, id)
+					if index then
+						mutator.values.statusLists[index] = nil
+						select.Selected = false
 					else
+						select.Selected = true
 						mutator.values.statusLists = mutator.values.statusLists or {}
-						mutator.values.statusLists[#mutator.values.statusLists + 1] = statusListId
+						table.insert(mutator.values.statusLists, id)
 					end
 					self:renderMutator(parent, mutator)
 				end
-			end
-		end
-
-		if MutationModProxy.ModProxy.lists.statusLists() then
-			---@type {[Guid]: Guid[]}
-			local modStatusLists = {}
-
-			for modId, modCache in pairs(MutationModProxy.ModProxy.lists.statusLists) do
-				---@cast modCache +LocalModCache
-
-				if modCache.lists and modCache.lists.statusLists and next(modCache.lists.statusLists) then
-					modStatusLists[modId] = {}
-					for statusListId in pairs(modCache.lists.statusLists) do
-						table.insert(modStatusLists[modId], statusListId)
-					end
-				end
-			end
-
-			if next(modStatusLists) then
-				for modId, statusLists in TableUtils:OrderedPairs(modStatusLists, function(key, value)
-					return Ext.Mod.GetMod(key).Info.Name
-				end) do
-					local modGroup = popup:AddGroup("Mods" .. modId)
-
-					Styler:ScaledFont(modGroup:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name), "Small")
-
-					for _, statusListId in TableUtils:OrderedPairs(statusLists, function(key, value)
-						return MutationModProxy.ModProxy.lists.statusLists[value].name
-					end) do
-						local statusList = MutationModProxy.ModProxy.lists.statusLists[statusListId]
-						if mutator.useGameLevel == statusList.useGameLevel then
-							---@type ExtuiSelectable
-							local select = modGroup:AddSelectable(statusList.name, "DontClosePopups")
-							select.Selected = TableUtils:IndexOf(mutator.values.statusLists, statusListId) ~= nil
-							select.OnClick = function()
-								local index = TableUtils:IndexOf(mutator.values.statusLists, statusListId)
-								if index then
-									mutator.values.statusLists[index] = nil
-									select.Selected = false
-								else
-									select.Selected = true
-									table.insert(mutator.values.statusLists, statusListId)
-								end
-								self:renderMutator(parent, mutator)
-							end
-						end
-					end
-					if #modGroup.Children == 1 then
-						modGroup:Destroy()
-					end
-				end
-			end
-		end
+			end)
 	end
 
 	local looseSep = mutatorSection:AddSeparatorText("Loose Statuses ( ? )")
