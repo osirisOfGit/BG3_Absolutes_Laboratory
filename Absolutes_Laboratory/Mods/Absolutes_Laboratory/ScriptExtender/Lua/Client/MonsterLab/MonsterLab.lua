@@ -37,7 +37,7 @@ function MonsterLab:init(parent)
 end
 
 function MonsterLab:buildProfileView(parent, designerSection)
-	
+
 end
 
 ---@param parent ExtuiTreeParent
@@ -73,7 +73,7 @@ function MonsterLab:buildFolderView(parent, designerSection)
 			Helpers:KillChildren(self.popup)
 			self.popup:Open()
 			FormBuilder:CreateForm(self.popup, function(formResults)
-				local encounterId = FormBuilder:generateGUID()
+					local encounterId = FormBuilder:generateGUID()
 					folder.encounters[encounterId] = {
 						name = formResults.Name,
 						description = formResults.Description,
@@ -240,7 +240,7 @@ function MonsterLab:buildEncounterView(parent, encounter)
 
 					local mutatorGroup
 
-					Styler:EnableToggleButton(designerSection, "Spawn", false, function(swap)
+					Styler:EnableToggleButton(designerSection, "Spawn", false, nil, function(swap)
 						if swap then
 							activeRuleset.shouldSpawn = not activeRuleset.shouldSpawn
 							if not activeRuleset.shouldSpawn then
@@ -248,7 +248,7 @@ function MonsterLab:buildEncounterView(parent, encounter)
 							else
 								activeRuleset.mutators = activeRuleset.mutators or {}
 
-								MutationDesigner:RenderMutatorsSidebarStyle(mutatorGroup, activeRuleset.mutators)
+								MutationDesigner:RenderMutatorsSidebarStyle(mutatorGroup, activeRuleset.mutators, nil, nil, self.popup)
 							end
 						end
 						return activeRuleset.shouldSpawn
@@ -259,7 +259,7 @@ function MonsterLab:buildEncounterView(parent, encounter)
 					if activeRuleset.shouldSpawn then
 						activeRuleset.mutators = activeRuleset.mutators or {}
 
-						MutationDesigner:RenderMutatorsSidebarStyle(mutatorGroup, activeRuleset.mutators)
+						MutationDesigner:RenderMutatorsSidebarStyle(mutatorGroup, activeRuleset.mutators, nil, nil, self.popup)
 					end
 				end
 			end
@@ -360,7 +360,8 @@ function MonsterLab:buildCreateEntityForm(parent, encounter, completedCallback, 
 				end
 
 				---@type ExtuiSelectable
-				local templateSelect = cell:AddSelectable(characterTemplate.Name)
+				local templateSelect = cell:AddSelectable(characterTemplate.Name == "" and (characterTemplate.DisplayName:Get() or source)
+					or characterTemplate.Name)
 				templateSelect.SameLine = true
 
 				local openWindow = Styler:HyperlinkRenderable(templateSelect,

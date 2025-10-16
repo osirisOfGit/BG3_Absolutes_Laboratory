@@ -50,7 +50,7 @@ function EncounterDesigner:buildDesigner(encounter)
 			local manageDesignerModeRequest = { playersCanDialogue = false, playersCanFight = false }
 
 			Styler:CheapTextAlign("Players:", ele)
-			Styler:EnableToggleButton(ele, "Can Enter Combat", false, function(swap)
+			Styler:EnableToggleButton(ele, "Can Enter Combat", false, nil, function(swap)
 				if swap then
 					manageDesignerModeRequest.playersCanFight = not manageDesignerModeRequest.playersCanFight
 					Channels.ManageDesignerMode:SendToServer(manageDesignerModeRequest)
@@ -60,7 +60,7 @@ function EncounterDesigner:buildDesigner(encounter)
 
 			ele:AddText(" | ").SameLine = true
 
-			Styler:EnableToggleButton(ele, "Can Enter/Trigger Dialogue", true, function(swap)
+			Styler:EnableToggleButton(ele, "Can Enter/Trigger Dialogue", true, nil, function(swap)
 				if swap then
 					manageDesignerModeRequest.playersCanDialogue = not manageDesignerModeRequest.playersCanDialogue
 					Channels.ManageDesignerMode:SendToServer(manageDesignerModeRequest)
@@ -303,7 +303,7 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 		if not entities or not entities() then
 			return
 		end
-		
+
 		if cardsWindow.LastSize[1] == 0.0 then
 			Ext.Timer.WaitFor(50, function()
 				renderGroupCards()
