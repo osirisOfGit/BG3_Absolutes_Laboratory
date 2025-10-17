@@ -1396,8 +1396,8 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 	buildSlots(numOfPrepMutations, true)
 	buildSlots(numOfMutations)
 
-	self.profileRulesParent.ColumnDefs[1].Width = math.max(300 * Styler:ScaleFactor(), longestTextWidth)
-	self.profileRulesParent.UserData = math.max(300 * Styler:ScaleFactor(), longestTextWidth)
+	-- self.profileRulesParent.ColumnDefs[1].Width = math.max(300 * Styler:ScaleFactor(), longestTextWidth)
+	-- self.profileRulesParent.UserData = math.max(300 * Styler:ScaleFactor(), longestTextWidth)
 end
 
 Profiles_Docs = {
