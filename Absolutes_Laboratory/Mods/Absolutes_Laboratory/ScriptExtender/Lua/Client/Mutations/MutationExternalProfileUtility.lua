@@ -296,10 +296,10 @@ function MutationExternalProfileUtility:exportProfile(forMod, ...)
 			end
 		end
 
-		for _, mutationRule in ipairs(profile.mutationRules) do
+		for _, mutationRule in TableUtils:OrderedPairs(profile.mutationRules) do
 			validateRules(mutationRule)
 		end
-		for _, mutationRule in ipairs(profile.prepPhaseMutations or {}) do
+		for _, mutationRule in TableUtils:OrderedPairs(profile.prepPhaseMutations or {}) do
 			validateRules(mutationRule)
 		end
 	end

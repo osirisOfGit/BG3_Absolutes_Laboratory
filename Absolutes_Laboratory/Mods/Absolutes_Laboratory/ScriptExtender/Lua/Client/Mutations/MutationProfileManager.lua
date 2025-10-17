@@ -1396,8 +1396,8 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 	buildSlots(numOfPrepMutations, true)
 	buildSlots(numOfMutations)
 
-	-- self.profileRulesParent.ColumnDefs[1].Width = math.max(300 * Styler:ScaleFactor(), longestTextWidth)
-	-- self.profileRulesParent.UserData = math.max(300 * Styler:ScaleFactor(), longestTextWidth)
+	self.profileRulesParent.ColumnDefs[1].Width = math.max(300 * Styler:ScaleFactor(), longestTextWidth)
+	self.profileRulesParent.UserData = math.max(300 * Styler:ScaleFactor(), longestTextWidth)
 end
 
 Profiles_Docs = {
@@ -1693,7 +1693,8 @@ function MutationProfileManager:generateChangelog()
 			type = "Bullet",
 			text = {
 				"Server: Fix ProfileExecutor duplicating it's completion checks",
-				"Restructures the Profile Manager column to be more user-friendly and properly adjust to mutation widths"
+				"Restructures the Profile Manager column to be more user-friendly and properly adjust to mutation widths",
+				"Fixed export utility not accounting for skipped indexes"
 			}
 		},
 		["1.7.0"] = {
