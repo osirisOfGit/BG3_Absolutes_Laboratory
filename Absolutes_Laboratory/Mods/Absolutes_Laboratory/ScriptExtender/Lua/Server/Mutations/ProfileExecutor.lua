@@ -167,6 +167,11 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 					}
 					Ext.Utils.ProfileBegin("Lab Profiles - Selecting and Building Pool On " .. EntityRecorder:GetEntityName(entity))
 					for i, mProfileRule in TableUtils:OrderedPairs(activeProfile.mutationRules) do
+						if not MutationConfigurationProxy.folders[mProfileRule.mutationFolderId] and MutationConfigurationProxy.folders[mProfileRule.mutationFolderId].mutations[mProfileRule.mutationId] then
+							Logger:BasicError("Couldn't find Mutation at index %d - folderId: %s | mutationId: %s", i, mProfileRule.mutationFolderId, mProfileRule.mutationId)
+							goto continue
+						end
+
 						local mutation = MutationConfigurationProxy.folders[mProfileRule.mutationFolderId].mutations[mProfileRule.mutationId]
 
 						if not cachedSelectors[mProfileRule.mutationFolderId] then
@@ -203,6 +208,7 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 
 							profileExecutorStatus.numberOfEntitiesProcessed = profileExecutorStatus.numberOfEntitiesProcessed + 1
 						end
+						::continue::
 					end
 					Ext.Utils.ProfileEnd("Lab Profiles - Selecting and Building Pool On " .. EntityRecorder:GetEntityName(entity))
 
