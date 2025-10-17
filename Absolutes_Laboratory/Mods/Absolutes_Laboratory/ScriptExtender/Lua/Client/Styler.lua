@@ -162,19 +162,6 @@ function Styler:SelectableText(parent, id, text)
 	return inputText
 end
 
----@param dimensionalArray number[]?
----@return (number[]|number) dimensionalArray scaled up if present, otherwise it's the scale factor
-function Styler:ScaleFactor(dimensionalArray)
-	if dimensionalArray then
-		for i, v in ipairs(dimensionalArray) do
-			dimensionalArray[i] = v * Ext.IMGUI.GetViewportSize()[2] / 1440
-		end
-		return dimensionalArray
-	end
-	-- testing monitor for development is 1440p
-	return Ext.IMGUI.GetViewportSize()[2] / 1440
-end
-
 ---@param parent ExtuiTreeParent
 ---@return ExtuiPopup
 function Styler:Popup(parent)
@@ -517,6 +504,47 @@ function Styler:BuildCompleteUserAndModLists(parent, retrieveConfigFunc, transfo
 	end
 end
 
+---@param dimensionalArray number[]?
+---@return (number[]|number) dimensionalArray scaled up if present, otherwise it's the scale factor
+function Styler:ScaleFactor(dimensionalArray)
+	if dimensionalArray then
+		for i, v in ipairs(dimensionalArray) do
+			dimensionalArray[i] = v * (Ext.IMGUI.GetViewportSize()[2] / 1440)
+		end
+		return dimensionalArray
+	end
+	-- testing monitor for development is 1440p
+	return Ext.IMGUI.GetViewportSize()[2] / 1440
+end
+
+---@enum FontSize
+Styler.FontSize = {
+	["Tiny"] = 1,
+	["Small"] = 2,
+	["Medium"] = 3,
+	["Default"] = 4,
+	["Big"] = 5,
+	["Large"] = 6,
+	"Tiny",
+	"Small",
+	"Medium",
+	"Default",
+	"Big",
+	"Large"
+}
+
+---@generic E : ExtuiStyledRenderable
+---@param element E
+---@param elefontSize FontSize
+---@return E
+function Styler:ScaledFont(element, elefontSize)
+	local mcmFontSize = Styler.FontSize[MCM.Get("font_size", "755a8a72-407f-4f0d-9a33-274ac0f0b53d")]
+	local targetFontDiff = Styler.FontSize[elefontSize] - Styler.FontSize["Default"]
+
+	element.Font = self.FontSize[math.max(1, math.min(#Styler.FontSize, mcmFontSize + targetFontDiff))]
+	return element
+end
+
 ---@param colour number[]
 function Styler:ConvertRGBAToIMGUI(colour)
 	for i, col in ipairs(colour) do
@@ -554,34 +582,6 @@ function Styler:Color(element, property, color)
 	else
 		element:SetColor(property, self:ConvertRGBAToIMGUI(color))
 	end
-	return element
-end
-
----@enum FontSize
-Styler.FontSize = {
-	["Tiny"] = 1,
-	["Small"] = 2,
-	["Medium"] = 3,
-	["Default"] = 4,
-	["Big"] = 5,
-	["Large"] = 6,
-	"Tiny",
-	"Small",
-	"Medium",
-	"Default",
-	"Big",
-	"Large"
-}
-
----@generic E : ExtuiStyledRenderable
----@param element E
----@param elefontSize FontSize
----@return E
-function Styler:ScaledFont(element, elefontSize)
-	local mcmFontSize = Styler.FontSize[MCM.Get("font_size", "755a8a72-407f-4f0d-9a33-274ac0f0b53d")]
-	local targetFontDiff = Styler.FontSize[elefontSize] - Styler.FontSize["Default"]
-
-	element.Font = self.FontSize[math.max(1, math.min(#Styler.FontSize, mcmFontSize + targetFontDiff))]
 	return element
 end
 
@@ -648,5 +648,5 @@ function Styler:calculateTextDimensions(text, min_width)
 	local calculated_height = (line_count * base_line_height) + scaling_padding
 	calculated_height = math.max(min_height, math.min(calculated_height, max_height))
 
-	return self:ScaleFactor() * optimal_width, self:ScaleFactor() * calculated_height
+	return optimal_width, calculated_height
 end

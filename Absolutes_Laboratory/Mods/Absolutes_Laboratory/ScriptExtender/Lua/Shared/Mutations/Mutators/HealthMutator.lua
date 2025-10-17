@@ -1,3 +1,4 @@
+---@class HealthMutatorClass : MutatorInterface
 HealthMutator = MutatorInterface:new("Health")
 HealthMutator.affectedComponents = {
 	"Health",
@@ -471,6 +472,26 @@ function HealthMutator:applyMutator(entity, entityVar)
 	end
 
 	entity:Replicate("Health")
+	local maxHealth = entity.Health.MaxHp
+	local currentHealthPercentage = 1 - (entity.Health.Hp / entity.Health.MaxHp)
+
+	Ext.Entity.OnChange("Health",
+		---@param entity EntityHandle
+		---@diagnostic disable-next-line: param-type-mismatch
+		function(entity)
+			if entity.Health.MaxHp ~= maxHealth then
+				Logger:BasicDebug("Entity %s had their maxHp set to %s by something other than Lab - resetting it to the Lab value of %s",
+					entity.Uuid.EntityUuid,
+					entity.Health.MaxHp,
+					maxHealth)
+
+				entity.Health.MaxHp = maxHealth
+				if ((entity.Health.Hp / entity.Health.MaxHp) * 100) ~= currentHealthPercentage then
+					entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * currentHealthPercentage)))
+				end
+				entity:Replicate("Health")
+			end
+		end, entity)
 end
 
 function HealthMutator:undoMutator(entity, entityVar)
@@ -587,12 +608,18 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function HealthMutator:generateChangelog()
 	return {
+		["1.7.1"] = {
+			type = "Bullet",
+			text = {
+				"Added a Health Component Subscription to entities to reset their MaxHP to the Lab-set value whenever it's reset by the game"
+			}
+		},
 		["1.6.0"] = {
 			type = "Bullet",
 			text = {
 				"Fix execution when the math ain't whole numbers",
 				"Changes Additive behavior for Health Mutators - Dynamic overwrites Dynamic, Static Overwrites Static, but Static and Dynamic can be run together (Static will always run first)"
 			}
-		} --[[@as MazzleDocsContentItem]]
-	}
+		}
+	} --[[@as {[string]: MazzleDocsContentItem}]]
 end

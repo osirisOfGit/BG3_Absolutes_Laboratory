@@ -151,6 +151,8 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 
 			local currentLevel = Ext.Entity.Get(Osi.GetHostCharacter()).ServerCharacter.Level
 
+			local loggedIndexes = {}
+
 			for _, entity in pairs(... and { ... } or Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
 				---@cast entity EntityHandle
 
@@ -167,9 +169,12 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 					}
 					Ext.Utils.ProfileBegin("Lab Profiles - Selecting and Building Pool On " .. EntityRecorder:GetEntityName(entity))
 					for i, mProfileRule in TableUtils:OrderedPairs(activeProfile.mutationRules) do
-						if not MutationConfigurationProxy.folders[mProfileRule.mutationFolderId] and MutationConfigurationProxy.folders[mProfileRule.mutationFolderId].mutations[mProfileRule.mutationId] then
-							Logger:BasicError("Couldn't find Mutation at index %d - folderId: %s | mutationId: %s", i, mProfileRule.mutationFolderId, mProfileRule.mutationId)
-							goto continue
+						if not MutationConfigurationProxy.folders[mProfileRule.mutationFolderId] or not MutationConfigurationProxy.folders[mProfileRule.mutationFolderId].mutations[mProfileRule.mutationId] then
+							if not TableUtils:IndexOf(loggedIndexes, i) then
+								Logger:BasicError("Couldn't find Mutation at index %d - folderId: %s | mutationId: %s", i, mProfileRule.mutationFolderId, mProfileRule.mutationId)
+								loggedIndexes[#loggedIndexes + 1] = i
+								goto continue
+							end
 						end
 
 						local mutation = MutationConfigurationProxy.folders[mProfileRule.mutationFolderId].mutations[mProfileRule.mutationId]
@@ -186,7 +191,6 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 							profileExecutorStatus.numberOfEntitiesBeingProcessed = profileExecutorStatus.numberOfEntitiesBeingProcessed + 1
 							profileExecutorStatus.currentEntity = EntityRecorder:GetEntityName(entity) .. (" (%s)"):format(entity.Uuid.EntityUuid:sub(#entity.Uuid.EntityUuid - 5))
 							broadcastStatus()
-
 
 							for _, mutator in pairs(mutation.mutators) do
 								if entityVar.appliedMutators[mutator.targetProperty]

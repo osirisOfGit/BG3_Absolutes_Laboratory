@@ -1430,7 +1430,7 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 	buildSlots(numOfMutations)
 
 	self.profileRulesParent.ColumnDefs[1].Width = math.max(300 * Styler:ScaleFactor(), longestTextWidth)
-	self.profileRulesParent.UserData = math.max(300 * Styler:ScaleFactor(), longestTextWidth)
+	self.profileRulesParent.UserData = self.profileRulesParent.ColumnDefs[1].Width
 end
 
 Profiles_Docs = {
@@ -1728,7 +1728,8 @@ function MutationProfileManager:generateChangelog()
 				"Server: Fix ProfileExecutor duplicating it's completion checks",
 				"Restructures the Profile Manager column to be more user-friendly and properly adjust to mutation widths",
 				"Fixed export utility not accounting for skipped indexes",
-				"Add robust fallbacks in case a mutation that once existed and is present in a profile was removed outside of Lab (i.e. relying on a mod-sourced mutation)"
+				"Add robust fallbacks in case a mutation that once existed and is present in a profile was removed outside of Lab (i.e. relying on a mod-sourced mutation)",
+				"Adjust scaling logic for Profile column to work better on huge monitors"
 			}
 		},
 		["1.7.0"] = {
