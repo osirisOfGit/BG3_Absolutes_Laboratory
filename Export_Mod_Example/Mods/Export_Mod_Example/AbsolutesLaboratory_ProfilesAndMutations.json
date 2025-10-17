@@ -11317,6 +11317,71 @@
                             }
                         ]
                     },
+                    "098f1310-d490-4655-9954-efd4633b0d09": {
+                        "description": "",
+                        "mutators": [
+                            {
+                                "modDependencies": [],
+                                "targetProperty": "PassiveList",
+                                "useGameLevel": false,
+                                "values": {
+                                    "passives": [
+                                        "Tiefling_HellishResistance",
+                                        "Darkvision"
+                                    ],
+                                    "randomizedPassivePoolSize": [
+                                        1
+                                    ]
+                                }
+                            }
+                        ],
+                        "name": "Tiefling",
+                        "selectors": [
+                            {
+                                "criteriaCategory": "Race",
+                                "criteriaValue": {
+                                    "RaceId": "b6dccbed-30f3-424b-a181-c4540cf38197",
+                                    "SubRaceIds": []
+                                },
+                                "inclusive": true,
+                                "modDependencies": [],
+                                "subSelectors": []
+                            }
+                        ]
+                    },
+                    "17598d6e-a094-45a2-b7d0-b1f2fe81ec1b": {
+                        "description": "",
+                        "mutators": [
+                            {
+                                "modDependencies": [],
+                                "targetProperty": "PassiveList",
+                                "useGameLevel": false,
+                                "values": {
+                                    "passives": [
+                                        "MartialAdvantage"
+                                    ],
+                                    "randomizedPassivePoolSize": [
+                                        1
+                                    ]
+                                }
+                            }
+                        ],
+                        "name": "Hobgoblin",
+                        "selectors": [
+                            {
+                                "criteriaCategory": "Race",
+                                "criteriaValue": {
+                                    "RaceId": "899d275e-9893-490a-9cd5-be856794929f",
+                                    "SubRaceIds": [
+                                        "a234ff21-6324-4ce2-977a-ae921475c046"
+                                    ]
+                                },
+                                "inclusive": true,
+                                "modDependencies": [],
+                                "subSelectors": []
+                            }
+                        ]
+                    },
                     "21ed4c7d-8205-4864-95f0-a1173b6e1241": {
                         "description": "",
                         "mutators": [
@@ -11390,6 +11455,40 @@
                                 "criteriaValue": {
                                     "RaceId": "f1b3f884-4029-4f0f-b158-1f9fe0ae5a0d",
                                     "SubRaceIds": []
+                                },
+                                "inclusive": true,
+                                "modDependencies": [],
+                                "subSelectors": []
+                            }
+                        ]
+                    },
+                    "6824e643-5235-45cc-acbb-9d25361c1d7c": {
+                        "description": "",
+                        "mutators": [
+                            {
+                                "modDependencies": [],
+                                "targetProperty": "PassiveList",
+                                "useGameLevel": false,
+                                "values": {
+                                    "passives": [
+                                        "HumanVersatility",
+                                        "HumanMilitia"
+                                    ],
+                                    "randomizedPassivePoolSize": [
+                                        1
+                                    ]
+                                }
+                            }
+                        ],
+                        "name": "Human",
+                        "selectors": [
+                            {
+                                "criteriaCategory": "Race",
+                                "criteriaValue": {
+                                    "RaceId": "899d275e-9893-490a-9cd5-be856794929f",
+                                    "SubRaceIds": [
+                                        "0eb594cb-8820-4be6-a58d-8be7a1a98fba"
+                                    ]
                                 },
                                 "inclusive": true,
                                 "modDependencies": [],
@@ -24422,7 +24521,7 @@
                                 1,
                                 1,
                                 6,
-                                1
+                                2
                             ],
                             "packagedItems": {
                                 "Projectile_ATT_DelayedBlastFireball": "Delayed Blast Fireball"
@@ -24763,7 +24862,7 @@
                                 1,
                                 1,
                                 6,
-                                1
+                                2
                             ],
                             "packagedItems": {
                                 "Target_ATT_DominateMonster": "Dominate Monster",
@@ -25094,7 +25193,7 @@
                                 1,
                                 1,
                                 6,
-                                1
+                                2
                             ],
                             "packagedItems": {
                                 "Target_ATT_DominateMonster": "Dominate Monster",
@@ -26280,7 +26379,7 @@
                                 1,
                                 1,
                                 6,
-                                1
+                                2
                             ],
                             "packagedItems": {
                                 "Target_ATT_DominateMonster": "Dominate Monster",
@@ -26591,7 +26690,7 @@
                                 1,
                                 1,
                                 6,
-                                1
+                                2
                             ],
                             "packagedItems": {
                                 "Target_ATT_Regenerate": "Regenerate"
@@ -27117,7 +27216,7 @@
                                 1,
                                 1,
                                 6,
-                                1
+                                2
                             ],
                             "packagedItems": {
                                 "Target_ATT_DominateMonster": "Dominate Monster",
@@ -28055,7 +28154,7 @@
                                 1,
                                 1,
                                 6,
-                                1
+                                2
                             ],
                             "packagedItems": {
                                 "Projectile_ATT_DelayedBlastFireball": "Delayed Blast Fireball"
@@ -28932,7 +29031,7 @@
                                 1,
                                 1,
                                 6,
-                                1
+                                2
                             ],
                             "packagedItems": {
                                 "Target_ATT_DominateMonster": "Dominate Monster",
@@ -30977,7 +31076,7 @@
                                 1,
                                 1,
                                 6,
-                                1
+                                2
                             ],
                             "packagedItems": {
                                 "Target_ATT_DominateMonster": "Dominate Monster",
@@ -32013,7 +32112,7 @@
                                 1,
                                 1,
                                 6,
-                                1
+                                2
                             ],
                             "packagedItems": {
                                 "Target_ATT_DominateMonster": "Dominate Monster",
@@ -32587,7 +32686,7 @@
                                 1,
                                 1,
                                 6,
-                                1
+                                2
                             ],
                             "packagedItems": {
                                 "Target_ATT_DominateMonster": "Dominate Monster",
@@ -33056,7 +33155,7 @@
                                 1,
                                 1,
                                 6,
-                                1
+                                2
                             ],
                             "packagedItems": {
                                 "Target_ATT_Foresight": "Foresight",
@@ -33759,7 +33858,7 @@
                                 1,
                                 1,
                                 6,
-                                1
+                                2
                             ],
                             "packagedItems": {
                                 "Target_ATT_DominateMonster": "Dominate Monster",
@@ -34912,7 +35011,7 @@
                                 1,
                                 1,
                                 6,
-                                1
+                                2
                             ],
                             "packagedItems": {
                                 "Shout_ATT_TimeStop": "Time Stop",
@@ -35294,13 +35393,13 @@
                                 1,
                                 1,
                                 6,
-                                1
+                                2
                             ],
                             "packagedItems": {
                                 "Target_ATT_DominateMonster": "Dominate Monster",
                                 "Target_ATT_Foresight": "Foresight",
                                 "Target_ATT_PowerWordKill": "Power Word: Kill",
-                                "Target_ATT_PowerWordPain": "Power Word: Pain"
+                                "Target_ATT_PowerWordPain": "Power Word Pain"
                             }
                         },
                         "fb5f528d-4d48-4bf2-a668-2274d3cfba96": {
@@ -35993,7 +36092,7 @@
                                 1,
                                 1,
                                 6,
-                                1
+                                2
                             ],
                             "packagedItems": {
                                 "Target_ATT_DominateMonster": "Dominate Monster",
@@ -36208,7 +36307,7 @@
                                 1,
                                 1,
                                 6,
-                                1
+                                2
                             ],
                             "packagedItems": {
                                 "Projectile_ATT_DelayedBlastFireball": "Delayed Blast Fireball"

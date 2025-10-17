@@ -26,6 +26,30 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 	Logger.mode = "timer"
 	Ext.Utils.ProfileBegin("Lab Profile Execution")
 	local activeProfile = MutationConfigurationProxy.profiles[Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile]
+
+	---@type ProfileExecutionStatus
+	local profileExecutorStatus = {
+		stage = "Selecting",
+		currentEntity = "N/A",
+		totalNumberOfEntities = 0,
+		numberOfEntitiesBeingProcessed = 0,
+		numberOfEntitiesProcessed = 0,
+		profile = activeProfile.name,
+		timeElapsed = 0,
+	}
+
+	local sendCount = 0
+	local executorView = MCM.Get("profile_execution_view")
+	local function broadcastStatus()
+		if executorView ~= "Off" then
+			if sendCount == 10 or profileExecutorStatus.stage == "Complete" or profileExecutorStatus.stage == "Error" then
+				Channels.ProfileExecutionStatus:Broadcast(profileExecutorStatus)
+				sendCount = 0
+			end
+			sendCount = sendCount + 1
+		end
+	end
+
 	local success, error = xpcall(function(...)
 		local trackerFile = FileUtils:LoadTableFile(EntityRecorder.trackerFilename)
 		if trackerFile and next(trackerFile) then
@@ -43,29 +67,6 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 		end
 
 		if activeProfile and next(activeProfile.mutationRules) then
-			---@type ProfileExecutionStatus
-			local profileExecutorStatus = {
-				stage = "Selecting",
-				currentEntity = "N/A",
-				totalNumberOfEntities = 0,
-				numberOfEntitiesBeingProcessed = 0,
-				numberOfEntitiesProcessed = 0,
-				profile = activeProfile.name,
-				timeElapsed = 0,
-			}
-
-			local sendCount = 0
-			local executorView = MCM.Get("profile_execution_view")
-			local function broadcastStatus()
-				if executorView ~= "Off" then
-					if sendCount == 10 or profileExecutorStatus.stage == "Complete" then
-						Channels.ProfileExecutionStatus:Broadcast(profileExecutorStatus)
-						sendCount = 0
-					end
-					sendCount = sendCount + 1
-				end
-			end
-
 			local time = Ext.Timer:MonotonicTime()
 
 			---@type {[string] : fun()}
@@ -169,7 +170,7 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 					}
 					Ext.Utils.ProfileBegin("Lab Profiles - Selecting and Building Pool On " .. EntityRecorder:GetEntityName(entity))
 					for i, mProfileRule in TableUtils:OrderedPairs(activeProfile.mutationRules) do
-						if not MutationConfigurationProxy.folders[mProfileRule.mutationFolderId] or not MutationConfigurationProxy.folders[mProfileRule.mutationFolderId].mutations[mProfileRule.mutationId] then
+						if not MutationConfigurationProxy.folders[mProfileRule.mutationFolderId] and MutationConfigurationProxy.folders[mProfileRule.mutationFolderId].mutations[mProfileRule.mutationId] then
 							if not TableUtils:IndexOf(loggedIndexes, i) then
 								Logger:BasicError("Couldn't find Mutation at index %d - folderId: %s | mutationId: %s", i, mProfileRule.mutationFolderId, mProfileRule.mutationId)
 								loggedIndexes[#loggedIndexes + 1] = i
@@ -274,10 +275,14 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 			Logger:BasicInfo("======= Cleared Mutations From %s Entities in %dms =======", counter, Ext.Timer:MonotonicTime() - time)
 		end
 	end, debug.traceback)
+	
 	if not success then
 		Logger:BasicError("Unrecoverable error happened while executing the Mutation Profile %s: %s",
 			activeProfile.name .. (activeProfile.modId and string.format(" (from mod %s)", Ext.Mod.GetMod(activeProfile.modId).Info.Name) or ""),
 			error)
+		profileExecutorStatus.stage = "Error"
+		profileExecutorStatus.error = error
+		broadcastStatus()
 	end
 	Ext.Utils.ProfileEnd("Lab Profile Execution")
 	Logger.mode = "buffer"

@@ -1553,11 +1553,15 @@ if Ext.IsServer() then
 											table.insert(appliedLinkedLists, linkedSpellListId)
 
 											local linkedList = MutationConfigurationProxy.lists.spellLists[linkedSpellListId]
-											Logger:BasicDebug("### STARTING List %s, linked from %s ###", linkedList.name, list.name)
-											applySpellList(linkedSpellListId, list.name)
-											Logger:BasicDebug("### FINISHED List %s, linked from %s ###", linkedList.name, list.name)
+											if linkedList then
+												Logger:BasicDebug("### STARTING List %s, linked from %s ###", linkedList.name, list.name)
+												applySpellList(linkedSpellListId, list.name)
+												Logger:BasicDebug("### FINISHED List %s, linked from %s ###", linkedList.name, list.name)
 
-											recursivelyApplyLinkedLists(linkedList)
+												recursivelyApplyLinkedLists(linkedList)
+											else
+												Logger:BasicWarning("Can't find a SpellList with a UUID of %s, linked to %s - skipping", linkedSpellListId, list.name)
+											end
 										end
 									end
 								end
@@ -1742,17 +1746,23 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function SpellListMutator:generateChangelog()
 	return {
+		["1.7.1"] = {
+			type = "Bullet",
+			text = {
+				"Added safety check + log in case a linked list isn't found"
+			}
+		},
 		["1.7.0"] = {
 			type = "Bullet",
 			text = {
 				"Fix lists not applying entries from linked progressions"
 			}
-		} --[[@as MazzleDocsContentItem]],
+		},
 		["1.6.0"] = {
 			type = "Bullet",
 			text = {
 				"Excludes SpellList groups from the apply logic that don't have a leveledSpellPool"
 			}
-		} --[[@as MazzleDocsContentItem]]
-	}
+		}
+	} --[[@as {[string]: MazzleDocsContentItem}]]
 end

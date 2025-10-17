@@ -570,11 +570,15 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 					table.insert(appliedLists, linkedListId)
 
 					local linkedList = MutationConfigurationProxy.lists.passiveLists[linkedListId]
-					Logger:BasicDebug("### STARTING List %s, linked from %s ###", linkedList.name, listToProcess.name)
-					applyPassiveLists(entity, levelToUse, linkedList, numRandomPassivesPerLevel, appliedPassives, appliedLists)
-					Logger:BasicDebug("### FINISHED List %s, linked from %s ###", linkedList.name, listToProcess.name)
+					if linkedList then
+						Logger:BasicDebug("### STARTING List %s, linked from %s ###", linkedList.name, listToProcess.name)
+						applyPassiveLists(entity, levelToUse, linkedList, numRandomPassivesPerLevel, appliedPassives, appliedLists)
+						Logger:BasicDebug("### FINISHED List %s, linked from %s ###", linkedList.name, listToProcess.name)
 
-					recursivelyApplyLists(linkedList)
+						recursivelyApplyLists(linkedList)
+					else
+						Logger:BasicWarning("Can't find a PassiveList with a UUID of %s, linked to %s - skipping", linkedListId, listToProcess.name)
+					end
 				end
 			end
 		end
@@ -830,11 +834,17 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function PassiveListMutator:generateChangelog()
 	return {
+		["1.7.1"] = {
+			type = "Bullet",
+			text = {
+				"Added safety check + log in case a linked list isn't found"
+			}
+		},
 		["1.7.0"] = {
 			type = "Bullet",
 			text = {
 				"Fix lists not applying entries from linked progressions"
 			}
-		} --[[@as MazzleDocsContentItem]]
-	}
+		}
+	} --[[@as {[string]: MazzleDocsContentItem}]]
 end

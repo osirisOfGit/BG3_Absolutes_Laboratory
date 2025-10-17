@@ -2150,11 +2150,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function ListDesignerBaseClass:generateChangelog()
 	return {
-		["1.8.0"] = {
+		["1.7.1"] = {
 			type = "Bullet",
 			text = {
 				"Adds ability to copy mod-sourced Lists to your local config",
-				"Fix ModLists not appearing in the Link list popup"
+				"Fix ModLists not appearing in the Link list popup",
+				"Fix linked lists not exporting"
 			}
 		},
 		["1.7.0"] = {

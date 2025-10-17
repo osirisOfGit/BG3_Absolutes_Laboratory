@@ -490,11 +490,15 @@ local function applyStatusLists(entity, levelToUse, statusList, numRandomStatuse
 					table.insert(appliedLists, linkedListId)
 
 					local linkedList = MutationConfigurationProxy.lists.statusLists[linkedListId]
-					Logger:BasicDebug("### STARTING List %s, linked from %s ###", linkedList.name, listToProcess.name)
-					applyStatusLists(entity, levelToUse, linkedList, numRandomStatusesPerLevel, appliedStatuses, appliedLists)
-					Logger:BasicDebug("### FINISHED List %s, linked from %s ###", linkedList.name, listToProcess.name)
+					if linkedList then
+						Logger:BasicDebug("### STARTING List %s, linked from %s ###", linkedList.name, listToProcess.name)
+						applyStatusLists(entity, levelToUse, linkedList, numRandomStatusesPerLevel, appliedStatuses, appliedLists)
+						Logger:BasicDebug("### FINISHED List %s, linked from %s ###", linkedList.name, listToProcess.name)
 
-					recursivelyApplyLists(linkedList)
+						recursivelyApplyLists(linkedList)
+					else
+						Logger:BasicWarning("Can't find a StatusList with a UUID of %s, linked to %s - skipping", linkedListId, listToProcess.name)
+					end
 				end
 			end
 		end
@@ -757,5 +761,11 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function StatusListMutator:generateChangelog()
 	return {
+		["1.7.1"] = {
+			type = "Bullet",
+			text = {
+				"Added safety check + log in case a linked list isn't found"
+			}
+		},
 	} --[[@as {[string]: MazzleDocsContentItem}]]
 end

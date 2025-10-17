@@ -10,10 +10,12 @@ local stage = {
 	"Undoing",
 	"Applying",
 	"Complete",
+	"Error",
 	["Selecting"] = 1,
 	["Undoing"] = 2,
 	["Applying"] = 3,
-	["Complete"] = 4
+	["Complete"] = 4,
+	["Error"] = 5
 }
 
 ---@class ProfileExecutionStatus
@@ -98,7 +100,7 @@ Channels.ProfileExecutionStatus:SetHandler(
 		Helpers:KillChildren(updaterGroup)
 		Styler:CheapTextAlign(("%sExecuting Profile %s"):format(profileView == "Detailed" and "" or "Absolute's Laboratory: ", data.profile), updaterGroup, "Large")
 
-		if data.stage ~= "Complete" then
+		if data.stage ~= "Complete" and data.stage ~= "Error" then
 			if profileView == "Detailed" then
 				Styler:ScaledFont(updaterGroup:AddText(
 						("Stage %d: %s | Time Elapsed: %dms | Number Of Entities: %d"):format(stage[data.stage], data.stage, data.timeElapsed, data.numberOfEntitiesBeingProcessed)),
@@ -128,7 +130,12 @@ Channels.ProfileExecutionStatus:SetHandler(
 				Styler:Color(Styler:CheapTextAlign("Debug Logs Are Currently Enabled - This Will Slow Things Down!", updaterGroup), "ErrorText")
 			end
 		else
-			Styler:CheapTextAlign("Completed!", updaterGroup, "Large")
+			Styler:CheapTextAlign(data.stage == "Complete" and "Completed!" or "Unrecoverable Error Occurred", updaterGroup, "Large")
+
+			if data.stage == "Error" then
+				local line = data.error:match("^(.-)\n") or data.error:match("^(.-)\\n") or data.error
+				Styler:CheapTextAlign("See log.txt more details and report on Nexus", updaterGroup)
+			end
 
 			backgroundWindow.AlwaysAutoResize = false
 			window.AlwaysAutoResize = false
