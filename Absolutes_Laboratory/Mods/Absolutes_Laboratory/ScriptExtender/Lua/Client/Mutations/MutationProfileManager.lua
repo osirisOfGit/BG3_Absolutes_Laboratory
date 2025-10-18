@@ -1730,7 +1730,8 @@ function MutationProfileManager:generateChangelog()
 				"Restructures the Profile Manager column to be more user-friendly and properly adjust to mutation widths",
 				"Fixed export utility not accounting for skipped indexes",
 				"Add robust fallbacks in case a mutation that once existed and is present in a profile was removed outside of Lab (i.e. relying on a mod-sourced mutation)",
-				"Adds unrecoverable error reporting to the Profile Execution Status Window"
+				"Adds unrecoverable error reporting to the Profile Execution Status Window",
+				"Massively improve the accuracy of the Execution Status report on profiles with a large amount of mutations, and misc improvements to the window"
 			}
 		},
 		["1.7.0"] = {

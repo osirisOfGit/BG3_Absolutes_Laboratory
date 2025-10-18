@@ -473,24 +473,32 @@ function HealthMutator:applyMutator(entity, entityVar)
 
 	entity:Replicate("Health")
 	local maxHealth = entity.Health.MaxHp
-	local currentHealthPercentage = 1 - (entity.Health.Hp / entity.Health.MaxHp)
 
 	mutators[1].subscription = Ext.Entity.OnChange("Health",
 		---@param entity EntityHandle
 		---@diagnostic disable-next-line: param-type-mismatch
 		function(entity)
-			if entity.Health.MaxHp ~= maxHealth then
-				Logger:BasicDebug("Entity %s (%s) had their maxHp set to %s by something other than Lab - resetting it to the Lab value of %s",
+			local mutationVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME]
+			local firstMutator = (mutationVar.appliedMutators[self.name][1] or mutationVar.appliedMutators[self.name])
+
+			if entity.Health.MaxHp <= (maxHealth * .90) then
+				local currentHealthPercentage = firstMutator.currentHealthPercentage
+
+				Logger:BasicDebug(
+					"Entity %s (%s) had their maxHp set to %s by something other than Lab - resetting it to the Lab value of %s (maintaining the current health %% of %s%%)",
 					EntityRecorder:GetEntityName(entity),
 					entity.Uuid.EntityUuid,
 					entity.Health.MaxHp,
-					maxHealth)
+					maxHealth,
+					currentHealthPercentage * 100)
 
 				entity.Health.MaxHp = maxHealth
-				if ((entity.Health.Hp / entity.Health.MaxHp) * 100) ~= currentHealthPercentage then
-					entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * currentHealthPercentage)))
+				if (1 - (entity.Health.Hp / entity.Health.MaxHp)) ~= currentHealthPercentage then
+					entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * (1 - currentHealthPercentage))))
 				end
 				entity:Replicate("Health")
+			else
+				firstMutator.currentHealthPercentage = (entity.Health.Hp / entity.Health.MaxHp)
 			end
 		end, entity)
 end
@@ -507,7 +515,7 @@ function HealthMutator:undoMutator(entity, entityVar)
 	end
 
 	entity.Health.MaxHp = entityVar.originalValues[self.name]
-	entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * healthPercentage)))
+	entity.Health.Hp = math.min(entity.Health.MaxHp, entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * healthPercentage))))
 
 	entity:Replicate("Health")
 
@@ -517,6 +525,8 @@ function HealthMutator:undoMutator(entity, entityVar)
 		entity.Health.MaxHp,
 		entity.Health.Hp
 	)
+
+	Ext.System.ServerStats.CalculationRequests[entity] = Ext.Enums.StatsDirtyFlags.MaxHP
 end
 
 ---@return MazzleDocsDocumentation
