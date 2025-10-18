@@ -7,6 +7,10 @@ Logger = {}
 
 Logger.fileName = "log.txt"
 Logger.logBuffer = {}
+Logger.timer = nil
+Logger.prefix = true
+---@type "buffer"|"timer"
+Logger.mode = "buffer"
 
 Logger.PrintTypes = {
     TRACE = 5,
@@ -35,7 +39,7 @@ local TEXT_COLORS = {
 }
 
 ---@return Logger
-function Logger:new(fileName)
+function Logger:new(fileName, prefix)
     ---@type Logger
     local instance = {}
 
@@ -44,6 +48,7 @@ function Logger:new(fileName)
 
     instance.fileName = fileName or self.fileName
     instance.logBuffer = {}
+    instance.prefix = prefix == nil and true or prefix
 
     return instance
 end
@@ -100,7 +105,7 @@ end
 
 --- Function to print text with custom colors, message type, custom prefix, rainbowText, and prefix length
 function Logger:BasicPrint(content, messageType, textColor, customPrefix, rainbowText, prefixLength)
-    prefixLength = prefixLength or 15
+    prefixLength = self.prefix and (prefixLength or 15) or 0
     messageType = messageType or self.PrintTypes.INFO
     local textColorCode = textColor or TEXT_COLORS.cyan -- Default to cyan
 
@@ -108,7 +113,11 @@ function Logger:BasicPrint(content, messageType, textColor, customPrefix, rainbo
     local padding = string.rep(" ", prefixLength - #customPrefix)
     local message = ConcatOutput(ConcatPrefix(customPrefix .. padding .. "  [" .. self.PrintTypes[messageType] .. "]" .. " (" .. (Ext.IsClient() and "C" or "S") .. ")", content))
 
-    self:LogMessage(ConcatOutput("[" .. self.PrintTypes[messageType] .. "]" .. " (" .. (Ext.IsClient() and "C" or "S") .. ")", content))
+    if self.prefix then
+        self:LogMessage(ConcatOutput("[" .. self.PrintTypes[messageType] .. "]" .. " (" .. (Ext.IsClient() and "C" or "S") .. ")", content))
+    else
+        self:LogMessage(content)
+    end
     if messageType <= self.PrintTypes.INFO then
         local coloredMessage = rainbowText and GetRainbowText(message) or
             string.format("\x1b[%dm%s\x1b[0m", textColorCode, message)
@@ -176,9 +185,8 @@ function Logger:BasicInfo(content, ...)
     end
 end
 
-local bufferLimit = 20 -- Adjust buffer size as needed
+local bufferLimit = 50
 
---- Flushes the buffer to the log file
 function Logger:FlushLogBuffer()
     if #self.logBuffer == 0 then return end
     local fileContent = FileUtils:LoadFile(self.fileName) or ""
@@ -187,34 +195,34 @@ function Logger:FlushLogBuffer()
     self.logBuffer = {}
 end
 
-Logger.timer = nil
-
---- Saves the log to the log.txt using a buffer
 function Logger:LogMessage(message)
-    local logMessage = GetTimestamp() .. " " .. message
+    local logMessage = (self.prefix and (GetTimestamp() .. " ") or "") .. message
     table.insert(self.logBuffer, logMessage)
 
-    if self.timer then
-        Ext.Timer.Cancel(self.timer)
-        self.timer = nil
-    end
-
-    if #self.logBuffer >= bufferLimit then
-        self:FlushLogBuffer()
-    else
-        self.timer = Ext.Timer.WaitFor(500, function()
-            self:FlushLogBuffer()
+    if self.mode == "buffer" then
+        if self.timer then
+            Ext.Timer.Cancel(self.timer)
             self.timer = nil
-        end)
+        end
+
+        if #self.logBuffer >= bufferLimit then
+            self:FlushLogBuffer()
+        else
+            self.timer = Ext.Timer.WaitFor(500, function()
+                self:FlushLogBuffer()
+                self.timer = nil
+            end)
+        end
+    else
+        if not self.timer then
+            self.timer = Ext.Timer.WaitFor(3000, function()
+                self:FlushLogBuffer()
+                self.timer = nil
+            end)
+        end
     end
 end
 
---- Optionally, flush buffer on shutdown or at key moments
-function Logger:Flush()
-    self:FlushLogBuffer()
-end
-
---- Wipes the log file
 function Logger:ClearLogFile()
     if FileUtils:LoadFile(self.fileName) then
         Ext.IO.SaveFile(FileUtils:BuildAbsoluteFileTargetPath(self.fileName), "")

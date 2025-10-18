@@ -104,6 +104,7 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 						resultsWindow = Ext.IMGUI.NewWindow("Dry Run Results###resultswindow")
 						resultsWindow.Closeable = true
 						resultsWindow.AlwaysAutoResize = true
+						resultsWindow.Scaling = "Scaled"
 					else
 						resultsWindow.Open = true
 						resultsWindow:SetFocus()
