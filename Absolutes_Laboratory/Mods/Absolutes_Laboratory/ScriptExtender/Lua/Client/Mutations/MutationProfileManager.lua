@@ -1745,7 +1745,7 @@ function MutationProfileManager:generateChangelog()
 			type = "Bullet",
 			text = {
 				"Server: Fix ProfileExecutor duplicating it's completion checks",
-				"Server: Fix ProfileExecutor reprocessing all entities when a unprocessed entity is enters combat",
+				"Server: Fix ProfileExecutor reprocessing all entities when a unprocessed entity enters combat",
 				"Restructures the Profile Manager column to be more user-friendly and properly adjust to mutation widths",
 				"Fixed export utility not accounting for skipped indexes",
 				"Add robust fallbacks in case a mutation that once existed and is present in a profile was removed outside of Lab (i.e. relying on a mod-sourced mutation)",
