@@ -275,7 +275,7 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 			Logger:BasicInfo("======= Cleared Mutations From %s Entities in %dms =======", counter, Ext.Timer:MonotonicTime() - time)
 		end
 	end, debug.traceback)
-	
+
 	if not success then
 		Logger:BasicError("Unrecoverable error happened while executing the Mutation Profile %s: %s",
 			activeProfile.name .. (activeProfile.modId and string.format(" (from mod %s)", Ext.Mod.GetMod(activeProfile.modId).Info.Name) or ""),

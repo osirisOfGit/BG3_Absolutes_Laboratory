@@ -150,6 +150,7 @@ Using entity level will use the entity's character level, post Character Level M
 							local spellList = configuredSpellLists[spellListId]
 							if spellList then
 								local text = cell:AddTextLink(spellList.name .. (spellList.modId and string.format(" (%s)", Ext.Mod.GetMod(spellList.modId).Info.Name) or ""))
+								text.UserData = "EnableForMods"
 								text.OnClick = function()
 									SpellListDesigner:launch(spellListId)
 								end
@@ -1344,8 +1345,10 @@ if Ext.IsServer() then
 						end
 
 						if spellListId and MutationConfigurationProxy.lists.spellLists[spellListId] then
-							local nextAnchor = math.min((spellMutatorGroup.leveledSpellPool[lSP + 1]
-									and spellMutatorGroup.leveledSpellPool[lSP + 1].anchorLevel - 1) or (useGameLevel and #EntityRecorder.Levels or 30),
+							local nextAnchor = math.min(
+								spellMutatorGroup.leveledSpellPool[lSP + 1]
+									and spellMutatorGroup.leveledSpellPool[lSP + 1].anchorLevel - 1
+									or (useGameLevel and #EntityRecorder.Levels or 30),
 								useGameLevel and EntityRecorder.Levels[entity.Level.LevelName] or entity.EocLevel.Level)
 
 							local maxAppliedLevel = 0

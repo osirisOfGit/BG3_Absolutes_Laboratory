@@ -480,7 +480,8 @@ function HealthMutator:applyMutator(entity, entityVar)
 		---@diagnostic disable-next-line: param-type-mismatch
 		function(entity)
 			if entity.Health.MaxHp ~= maxHealth then
-				Logger:BasicDebug("Entity %s had their maxHp set to %s by something other than Lab - resetting it to the Lab value of %s",
+				Logger:BasicDebug("Entity %s (%s) had their maxHp set to %s by something other than Lab - resetting it to the Lab value of %s",
+					EntityRecorder:GetEntityName(entity),
 					entity.Uuid.EntityUuid,
 					entity.Health.MaxHp,
 					maxHealth)
