@@ -80,10 +80,6 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 			local entityCounter = 0
 
 			local function checkCompletion()
-				if profileExecutorStatus.stage ~= "Applying" then
-					profileExecutorStatus.stage = "Waiting"
-				end
-
 				if Logger:IsLogLevelEnabled(Logger.PrintTypes.DEBUG) then
 					Logger:BasicDebug("%s entities left to process, %s currently eligible", TableUtils:CountElements(entitiesToProcess), TableUtils:CountElements(eligible))
 				end
