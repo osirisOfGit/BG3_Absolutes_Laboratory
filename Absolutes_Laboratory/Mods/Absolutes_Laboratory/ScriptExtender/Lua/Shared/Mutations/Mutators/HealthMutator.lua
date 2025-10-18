@@ -475,7 +475,7 @@ function HealthMutator:applyMutator(entity, entityVar)
 	local maxHealth = entity.Health.MaxHp
 	local currentHealthPercentage = 1 - (entity.Health.Hp / entity.Health.MaxHp)
 
-	Ext.Entity.OnChange("Health",
+	mutators[1].subscription = Ext.Entity.OnChange("Health",
 		---@param entity EntityHandle
 		---@diagnostic disable-next-line: param-type-mismatch
 		function(entity)
@@ -499,6 +499,12 @@ function HealthMutator:undoMutator(entity, entityVar)
 	local healthPercentage = 1 - (entity.Health.Hp / entity.Health.MaxHp)
 
 	local originalMaxHp = entity.Health.MaxHp
+
+	local subHandle = (entityVar.appliedMutators[self.name][1] or entityVar.appliedMutators[self.name]).subscription
+	if subHandle then
+		Logger:BasicTrace("Cancelled Subscription with handle %s", subHandle)
+		Ext.Entity.Unsubscribe(subHandle)
+	end
 
 	entity.Health.MaxHp = entityVar.originalValues[self.name]
 	entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * healthPercentage)))

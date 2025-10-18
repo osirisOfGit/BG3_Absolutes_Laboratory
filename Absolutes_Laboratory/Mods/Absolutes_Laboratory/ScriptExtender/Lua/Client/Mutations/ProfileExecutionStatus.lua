@@ -81,11 +81,13 @@ Channels.ProfileExecutionStatus:SetHandler(
 			end
 
 			local function sizing()
-				if backgroundWindow.LastSize[2] and backgroundWindow.LastSize[2] > 200 then
-					window:SetSize(backgroundWindow.LastSize, "Always")
-					window:SetPos(Styler:ScaleFactor({ -10, -10 }), "Always")
-				else
-					Ext.Timer.WaitFor(10, sizing)
+				if backgroundWindow then
+					if backgroundWindow.LastSize[2] and backgroundWindow.LastSize[2] > 200 then
+						window:SetSize(backgroundWindow.LastSize, "Always")
+						window:SetPos(Styler:ScaleFactor({ -10, -10 }), "Always")
+					else
+						Ext.Timer.WaitFor(10, sizing)
+					end
 				end
 			end
 

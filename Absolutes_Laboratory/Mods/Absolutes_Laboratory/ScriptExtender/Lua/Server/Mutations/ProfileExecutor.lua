@@ -23,6 +23,7 @@ MutationProfileExecutor = {}
 local mutatedEntities = {}
 
 function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
+	local specifiedEntities = { ... }
 	Logger.mode = "timer"
 	Ext.Utils.ProfileBegin("Lab Profile Execution")
 	local activeProfile = MutationConfigurationProxy.profiles[Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile]
@@ -154,7 +155,7 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 
 			local loggedIndexes = {}
 
-			for _, entity in pairs(... and { ... } or Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
+			for _, entity in pairs(next(specifiedEntities) and specifiedEntities or Ext.Entity.GetAllEntitiesWithComponent("ServerCharacter")) do
 				---@cast entity EntityHandle
 
 				if (Osi.IsDead(entity.Uuid.EntityUuid) == 0 or not entity.DeadByDefault) and not entity.PartyMember and entity.ServerCharacter.Level == currentLevel then
