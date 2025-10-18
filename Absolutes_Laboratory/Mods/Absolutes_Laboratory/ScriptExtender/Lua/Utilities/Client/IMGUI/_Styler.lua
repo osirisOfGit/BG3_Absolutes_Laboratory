@@ -9,7 +9,7 @@ function Styler:DynamicLabelTree(tree)
 	tree.SpanFullWidth = true
 
 	return tree, function(count)
-		tree.Label = label .. (count > 0 and (" - " .. count .. " " .. Translator:translate("selected")) or "") .. "###" .. label
+		tree.Label = label .. (count > 0 and (" - " .. count .. " " .. (Translator.translationTable["selected"] and Translator:translate("selected") or "selected")) or "") .. "###" .. label
 	end
 end
 
