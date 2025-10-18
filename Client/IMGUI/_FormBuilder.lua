@@ -173,7 +173,10 @@ function FormBuilder:CreateForm(parent, onSubmitFunc, formInputs)
 		return inputs
 	end
 
-	local submit = parent:AddButton(Translator:translate("Submit"))
+	---@type ExtuiSelectable
+	local submit = parent:AddSelectable(Translator:translate("Submit"))
+	submit:SetStyle("SelectableTextAlign", 0.5)
+	submit.SpanAllColumns = false
 	submit.OnClick = function()
 		local results = buildInputs()
 		if results then

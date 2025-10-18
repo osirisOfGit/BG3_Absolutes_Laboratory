@@ -4,6 +4,13 @@ Source Repo: https://github.com/osirisOfGit/BG3-Common-Dev-Utilities
 
 This repository is meant to house common utilities used by BG3 SE developers, without the burden of an external mod dependency - just use [Git Subtree](https://gist.github.com/SKempin/b7857a6ff6bddb05717cc17a44091202)!
 
+Example:
+
+`git subtree add --prefix Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities git@github.com:osirisOfGit/BG3-Common-Dev-Utilities.git main --squash`
+
+`git subtree pull --prefix Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities git@github.com:osirisOfGit/BG3-Common-Dev-Utilities.git main --squash`
+
+`git subtree push --prefix Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities git@github.com:osirisOfGit/BG3-Common-Dev-Utilities.git main`
 ## Credits/Helpful Links:
 
 ### IDE Helper Files
