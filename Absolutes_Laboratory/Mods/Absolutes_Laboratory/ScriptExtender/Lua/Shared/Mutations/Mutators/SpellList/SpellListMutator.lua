@@ -1529,6 +1529,9 @@ if Ext.IsServer() then
 										end
 
 										for _, spellName in pairs(spellsToGive) do
+											---@type SpellData
+											local spell = Ext.Stats.Get(spellName)
+
 											addSpells[#addSpells + 1] = {
 												PrepareType = "AlwaysPrepared",
 												SpellId = {
@@ -1536,7 +1539,8 @@ if Ext.IsServer() then
 													SourceType = "SpellSet2"
 												},
 												PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
-												SpellCastingAbility = entity.Stats.SpellCastingAbility
+												SpellCastingAbility = entity.Stats.SpellCastingAbility,
+												CooldownType = spell.Cooldown ~= "None" and spell.Cooldown or "Default"
 											}
 
 											origValues.addedSpells = origValues.addedSpells or {}
@@ -1757,7 +1761,8 @@ function SpellListMutator:generateChangelog()
 			type = "Bullet",
 			text = {
 				"Added safety check + log in case a linked list isn't found",
-				"Reindex Leveled Pools when applying the mutator, ensuring they're processed in order according to their anchor level"
+				"Reindex Leveled Pools when applying the mutator, ensuring they're processed in order according to their anchor level",
+				"Force the Spell's cooldown type to be specified when adding to the spellbook"
 			}
 		},
 		["1.7.0"] = {
