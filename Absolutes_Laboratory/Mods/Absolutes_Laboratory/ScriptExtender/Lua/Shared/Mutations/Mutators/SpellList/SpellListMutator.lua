@@ -1324,6 +1324,10 @@ if Ext.IsServer() then
 
 			local appliedSpellListsForEntityVar = {}
 
+			TableUtils:ReindexNumericTable(spellMutatorGroup.leveledSpellPool, function(key, value)
+				return value.anchorLevel
+			end)
+
 			for lSP, leveledSpellPool in ipairs(spellMutatorGroup.leveledSpellPool) do
 				if (useGameLevel and EntityRecorder.Levels[entity.Level.LevelName] >= leveledSpellPool.anchorLevel)
 					or (not useGameLevel and entity.AvailableLevel and entity.AvailableLevel.Level >= leveledSpellPool.anchorLevel)
@@ -1347,8 +1351,8 @@ if Ext.IsServer() then
 						if spellListId and MutationConfigurationProxy.lists.spellLists[spellListId] then
 							local nextAnchor = math.min(
 								spellMutatorGroup.leveledSpellPool[lSP + 1]
-									and spellMutatorGroup.leveledSpellPool[lSP + 1].anchorLevel - 1
-									or (useGameLevel and #EntityRecorder.Levels or 30),
+								and spellMutatorGroup.leveledSpellPool[lSP + 1].anchorLevel - 1
+								or (useGameLevel and #EntityRecorder.Levels or 30),
 								useGameLevel and EntityRecorder.Levels[entity.Level.LevelName] or entity.EocLevel.Level)
 
 							local maxAppliedLevel = 0
@@ -1752,7 +1756,8 @@ function SpellListMutator:generateChangelog()
 		["1.7.1"] = {
 			type = "Bullet",
 			text = {
-				"Added safety check + log in case a linked list isn't found"
+				"Added safety check + log in case a linked list isn't found",
+				"Reindex Leveled Pools when applying the mutator, ensuring they're processed in order according to their anchor level"
 			}
 		},
 		["1.7.0"] = {

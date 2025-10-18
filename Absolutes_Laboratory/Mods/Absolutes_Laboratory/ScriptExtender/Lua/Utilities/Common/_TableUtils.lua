@@ -159,12 +159,14 @@ function TableUtils:IndexOf(list, valueToFind)
 end
 
 --- Reindexes a table with numeric keys so they increment sequentially from 1, modifying the input table in-place
----@generic T:table
+---@generic K, V
+---@generic T
 ---@param tbl T
+---@param keyTransformFunc (fun(key: any, value: any): boolean)?
 ---@return T
-function TableUtils:ReindexNumericTable(tbl)
+function TableUtils:ReindexNumericTable(tbl, keyTransformFunc)
 	local values = {}
-	for k, value in pairs(tbl) do
+	for k, value in TableUtils:OrderedPairs(tbl, keyTransformFunc) do
 		table.insert(values, value)
 		if type(tbl[k]) == "table" then
 			tbl[k].delete = true
