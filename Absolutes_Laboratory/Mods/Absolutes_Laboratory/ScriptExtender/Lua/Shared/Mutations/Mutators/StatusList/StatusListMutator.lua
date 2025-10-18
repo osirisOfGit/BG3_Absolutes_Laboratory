@@ -728,7 +728,7 @@ Composable: All groups will be combined into one large pool, which will be pulle
 					text = [[
 The mutator is designed very similarily to Spell Lists again, so only the differences are notated:
 
-- There are no level pools - instead, the mutator checks the combiend levels of the linked Spell Lists that were assigned and uses that to determine what level to use for the given list
+- There are no level pools - instead, the mutator checks the combined levels of the linked Spell Lists that were assigned and uses that to determine what level to use for the given list
 - If there are no Linked Spell lists, the entity level will be used instead
 - There are no criteria due to the Spell List dependency
 - There is no Progression Browser in the Status List Designer, as Progressions don't assign statuses.
