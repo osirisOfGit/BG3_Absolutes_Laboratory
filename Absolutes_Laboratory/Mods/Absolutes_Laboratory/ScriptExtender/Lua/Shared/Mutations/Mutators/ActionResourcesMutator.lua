@@ -156,8 +156,6 @@ i.e if Base is 5 and this is 2, the next value given will be 3 - if this is 0.3,
 
 		for _, actionResourceId in TableUtils:OrderedPairs(Ext.StaticData.GetAll("ActionResource"), function(key, value)
 			return Ext.StaticData.Get(value, "ActionResource").Name
-		end, function(key, value)
-			return not Ext.StaticData.Get(value, "ActionResource").IsHidden
 		end) do
 			local existingIndex = TableUtils:IndexOf(config, function(value)
 				return value.resourceId == actionResourceId
@@ -1218,11 +1216,17 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function ActionResourcesMutator:generateChangelog()
 	return {
+		["1.7.1"] = {
+			type = "Bullet",
+			text = {
+				"Removed isHidden filtering when displaying the possible Action Resources to add"
+			}
+		},
 		["1.7.0"] = {
 			type = "Bullet",
 			text = {
 				"Deprecated the previous implementation, implementing a new version"
 			}
-		} --[[@as MazzleDocsContentItem]]
-	}
+		}
+	} --[[@as {[string]: MazzleDocsContentItem}]]
 end
