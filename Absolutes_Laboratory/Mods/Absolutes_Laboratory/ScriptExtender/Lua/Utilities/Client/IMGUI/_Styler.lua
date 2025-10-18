@@ -29,7 +29,7 @@ function Styler:CheapTextAlign(text, parent, font)
 		---@type ExtuiSelectable
 		local selectable = parent:AddSelectable(text)
 		if font then
-			selectable.Font = font
+			Styler:ScaledFont(selectable, font)
 		end
 		selectable:SetStyle("SelectableTextAlign", 0.5)
 		selectable.Disabled = true

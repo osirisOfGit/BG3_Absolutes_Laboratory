@@ -165,7 +165,6 @@ function MutationProfileManager:init(parent)
 		self.mutationDesigner = profileRulesRow:AddCell():AddChildWindow("MutationDesigner")
 		local collapseExpandRulesOrderButton = self.mutationDesigner:AddButton("<<")
 		collapseExpandRulesOrderButton.UserData = "keep"
-
 		collapseExpandRulesOrderButton.OnClick = function()
 			Helpers:CollapseExpand(
 				collapseExpandRulesOrderButton.Label == "<<",
@@ -186,6 +185,26 @@ function MutationProfileManager:init(parent)
 						collapseExpandRulesOrderButton.Label = "<<"
 					end
 				end)
+		end
+
+		local shrinkRulesOrderButton = self.mutationDesigner:AddButton("<")
+		shrinkRulesOrderButton.UserData = "keep"
+		shrinkRulesOrderButton.SameLine = true
+		shrinkRulesOrderButton:Tooltip():AddText("\t Collapses the column a bit - temporary measure until i figure out why scaling isn't working")
+		shrinkRulesOrderButton.OnClick = function()
+			local width = self.profileRulesParent.ColumnDefs[1].Width
+			self.profileRulesParent.ColumnDefs[1].Width = width - (width * 0.2)
+			self.profileRulesParent.UserData = width - (width * 0.2)
+		end
+
+		local expandRulesOrderButton = self.mutationDesigner:AddButton(">")
+		expandRulesOrderButton.UserData = "keep"
+		expandRulesOrderButton.SameLine = true
+		expandRulesOrderButton:Tooltip():AddText("\t Expands the column a bit - temporary measure until i figure out why scaling isn't working")
+		expandRulesOrderButton.OnClick = function()
+			local width = self.profileRulesParent.ColumnDefs[1].Width
+			self.profileRulesParent.ColumnDefs[1].Width = width + (width * 0.2)
+			self.profileRulesParent.UserData = width + (width * 0.2)
 		end
 	end
 end
