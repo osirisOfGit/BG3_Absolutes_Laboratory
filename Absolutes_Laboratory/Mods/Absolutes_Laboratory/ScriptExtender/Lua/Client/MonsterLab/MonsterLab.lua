@@ -21,17 +21,17 @@ end
 
 ---@param parent ExtuiTreeParent
 function MonsterLab:init(parent)
-	self.popup = parent:AddPopup("")
-	self.popup:SetColor("PopupBg", { 0, 0, 0, 1 })
-	self.popup:SetColor("Border", { 1, 0, 0, 0.5 })
-	self.popup.AutoClosePopups = true
-	self.popup.UserData = "closeOnSubmit"
+	self.popup = Styler:Popup(parent)
 
-	local layoutTable = Styler:TwoColumnTable(parent, "MonsterLab"):AddRow()
+	local layoutTable = Styler:TwoColumnTable(parent, "MonsterLab")
+	layoutTable.Resizable = false
+	layoutTable.Borders = false
 
-	local encounterFolders = layoutTable:AddCell()
+	local layoutRow = layoutTable:AddRow()
 
-	local encounterDesigner = layoutTable:AddCell()
+	local encounterFolders = layoutRow:AddCell():AddChildWindow("folders")
+
+	local encounterDesigner = layoutRow:AddCell()
 
 	self:buildFolderView(encounterFolders, encounterDesigner)
 end
@@ -40,63 +40,123 @@ function MonsterLab:buildProfileView(parent, designerSection)
 
 end
 
----@param parent ExtuiTreeParent
+---@param parent ExtuiChildWindow
 ---@param designerSection ExtuiTreeParent
 function MonsterLab:buildFolderView(parent, designerSection)
 	Helpers:KillChildren(parent)
 
+	Styler:ScaledFont(parent:AddSeparatorText("Your Encounters"), "Big")
+
+	local longestText = 0
+
 	for folderId, folder in TableUtils:OrderedPairs(self.config.folders, function(key, value)
 		return value.name
 	end) do
-		local header = parent:AddCollapsingHeader(folder.name .. "##" .. folderId)
-		header:SetColor("Header", { 1, 1, 1, 0 })
-		header.UserData = folderId
+		---@type ExtuiSelectable
+		local folderSelect = parent:AddSelectable("")
+		folderSelect.IDContext = folderId
+		folderSelect:SetStyle("SelectableTextAlign", 0.5, 0)
+
+		local sep = parent:AddSeparatorText(folder.name)
+		sep.PositionOffset = Styler:ScaleFactor({ 0, -50 })
+
+		local header = parent:AddGroup("encounters")
+		header.Visible = folderSelect.Selected
+
+		folderSelect.OnClick = function()
+			header.Visible = not header.Visible
+		end
+
+		local width = Styler:calculateTextDimensions(folder.name)
+		longestText = width > longestText and width or longestText
 
 		for encounterId, encounter in TableUtils:OrderedPairs(folder.encounters, function(key, value)
 			return value.name
 		end) do
+			local width = Styler:calculateTextDimensions(folder.name)
+			longestText = width > longestText and width or longestText
+
 			---@type ExtuiSelectable
 			local encounterSelect = header:AddSelectable(encounter.name .. "##" .. encounterId)
 			encounterSelect.OnClick = function()
 				encounterSelect.Selected = false
 				self:buildEncounterView(designerSection, encounter)
 			end
-		end
 
-		---@type ExtuiSelectable
-		local manageFolderButton = header:AddSelectable("Manage Folder")
-		manageFolderButton:SetStyle("SelectableTextAlign", 0.5)
+			encounterSelect.OnRightClick = function()
+				Helpers:KillChildren(self.popup)
+				self.popup:Open()
 
-		manageFolderButton.OnClick = function()
-			manageFolderButton.Selected = false
+				---@type ExtuiMenu
+				local editMenu = self.popup:AddMenu("Edit")
 
-			Helpers:KillChildren(self.popup)
-			self.popup:Open()
-			FormBuilder:CreateForm(self.popup, function(formResults)
-					local encounterId = FormBuilder:generateGUID()
-					folder.encounters[encounterId] = {
-						name = formResults.Name,
-						description = formResults.Description,
-						entities = {},
-						gameLevel = EntityRecorder.Levels[1],
-						baseCoords = { 0, 0, 0 },
-						combatGroupId = encounterId,
-						faction = "64321d50-d516-b1b2-cfac-2eb773de1ff6"
-					}
+				FormBuilder:CreateForm(editMenu, function(formResults)
+						folder.encounters[encounterId].name = formResults.Name
+						folder.encounters[encounterId].description = formResults.Description
 
+						self:buildFolderView(parent, designerSection)
+					end,
+					{
+						{
+							label = "Name",
+							type = "Text",
+							errorMessageIfEmpty = "Name is required",
+							defaultValue = encounter.name
+						},
+						{
+							label = "Description",
+							type = "Multiline",
+							defaultValue = encounter.description
+						}
+					})
+				self.popup:AddSelectable("Copy").OnClick = function()
+					---@type MonsterLabEncounter
+					local encounterCopy = TableUtils:DeeplyCopyTable(encounter._real)
+					encounterCopy.name = encounterCopy.name .. " (Copy)"
+
+					folder.encounters[FormBuilder:generateGUID()] = encounterCopy
 					self:buildFolderView(parent, designerSection)
-				end,
-				{
-					{
-						label = "Name",
-						type = "Text",
-						errorMessageIfEmpty = "Name is required"
-					},
-					{
-						label = "Description",
-						type = "Multiline"
-					}
-				})
+				end
+
+				if TableUtils:CountElements(self.config.folders) > 1 then
+					---@type ExtuiMenu
+					local moveMenu = self.popup:AddMenu("Move To Folder")
+					for _, otherFolder in TableUtils:OrderedPairs(self.config.folders, function(key, value)
+							return value.name
+						end,
+						function(key, value)
+							return key ~= folderId
+						end) do
+						moveMenu:AddSelectable(otherFolder.name).OnClick = function()
+							---@type MonsterLabEncounter
+							local encounterCopy = TableUtils:DeeplyCopyTable(encounter._real)
+
+							if TableUtils:IndexOf(otherFolder.encounters, function(value)
+									return value.name == encounterCopy.name
+								end) then
+								encounterCopy.name = encounterCopy.name .. " (Copy)"
+							end
+
+							otherFolder.encounters[encounterId] = encounterCopy
+							encounter.delete = true
+
+							self:buildFolderView(parent, designerSection)
+						end
+					end
+				end
+
+				self.popup:AddSelectable("Delete", "DontClosePopups").OnClick =
+				---@param select ExtuiSelectable
+					function(select)
+						if select.Label ~= "Delete" then
+							encounter.delete = true
+						else
+							select.Label = "Are You Sure?"
+							Styler:Color(select, "ErrorText")
+							select.DontClosePopups = false
+						end
+					end
+			end
 		end
 	end
 
@@ -132,6 +192,8 @@ function MonsterLab:buildFolderView(parent, designerSection)
 				}
 			})
 	end
+
+	parent.Size = { math.max(300 * Styler:ScaleFactor(), longestText), 0 }
 end
 
 ---@param parent ExtuiTreeParent
@@ -445,8 +507,7 @@ function MonsterLab:ManageRulesets(parent, rulesetSelectCallback)
 
 	parent:AddSeparatorText("Rulesets ( ? )"):Tooltip():AddText([[
 	These rulesets can be used to customize encounters without having to replicate them - left-click the button to customize the encounter according to that ruleset's criteria,
-right-click to modify or delete that ruleset. The Base ruleset can't be modified or deleted - this is the default if there are no other eligible rulesets.
-	]])
+right-click to modify or delete that ruleset. The Base ruleset can't be modified or deleted - this is the default if there are no other eligible rulesets.]])
 
 	---@type ExtuiButton
 	local lastActiveButton
