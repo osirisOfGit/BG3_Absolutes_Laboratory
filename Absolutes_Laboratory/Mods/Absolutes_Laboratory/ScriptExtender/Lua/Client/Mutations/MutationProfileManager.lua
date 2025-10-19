@@ -1741,6 +1741,12 @@ Lab pre-packages a number of Markers that can be used by anyone - these can't be
 ---@return {[string]: MazzleDocsContentItem}
 function MutationProfileManager:generateChangelog()
 	return {
+		["1.7.2"] = {
+			type = "Bullet",
+			text = {
+				"Server: Actually fix ProfileExecutor reprocessing all entities when a unprocessed entity enters combat q_q",
+			}
+		},
 		["1.7.1"] = {
 			type = "Bullet",
 			text = {
