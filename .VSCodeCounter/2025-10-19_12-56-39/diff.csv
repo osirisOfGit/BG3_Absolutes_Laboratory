@@ -1,0 +1,7 @@
+"filename", "language", "Lua", "comment", "blank", "total"
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\BootstrapClient.lua", "Lua", 1, 0, 0, 1
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\BootstrapServer.lua", "Lua", 1, 0, 1, 2
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Client\Mutations\MutationProfileManager.lua", "Lua", 6, 0, 0, 6
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\MissingEnums.lua", "Lua", 18, 1, 1, 20
+"d:\Mods\BG3 Modder MultiTool\Absolutes_Laboratory\Absolutes_Laboratory\Mods\Absolutes_Laboratory\ScriptExtender\Lua\Shared\Mutations\Mutators\SpellList\SpellListMutator.lua", "Lua", 6, 0, 0, 6
+"Total", "-", 32, 1, 2, 35

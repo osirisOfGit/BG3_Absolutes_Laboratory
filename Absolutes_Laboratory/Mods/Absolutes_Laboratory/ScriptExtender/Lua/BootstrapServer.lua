@@ -2,6 +2,8 @@ Ext.Require("Utilities/Common/_Index.lua")
 Ext.Require("Utilities/Networking/Channels.lua")
 Ext.Require("Utilities/Advanced/_ECSPrinter.lua")
 
+Ext.Require("Shared/MissingEnums.lua")
+
 Ext.Require("Shared/Configurations/_ConfigurationStructure.lua")
 
 Ext.Require("Shared/Channels.lua")

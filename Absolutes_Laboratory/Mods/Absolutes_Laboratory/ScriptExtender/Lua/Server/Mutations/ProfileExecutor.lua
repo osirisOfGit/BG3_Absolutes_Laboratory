@@ -310,7 +310,7 @@ Ext.Osiris.RegisterListener("EnteredCombat", 2, "before", function(entityId, com
 	local entity = Ext.Entity.Get(entityId)
 	if not mutatedEntities[entity.Uuid.EntityUuid] and entity.ServerCharacter and not entity.PartyMember then
 		Logger:BasicInfo("%s entered combat %s and hasn't been mutated - executing profile!", entityId, combatGuid)
-		MutationProfileExecutor:ExecuteProfile(false, entityId)
+		MutationProfileExecutor:ExecuteProfile(false, entity)
 	end
 end)
 

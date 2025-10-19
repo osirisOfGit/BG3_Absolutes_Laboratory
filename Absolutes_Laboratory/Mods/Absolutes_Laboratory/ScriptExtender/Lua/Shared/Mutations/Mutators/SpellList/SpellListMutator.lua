@@ -1540,7 +1540,7 @@ if Ext.IsServer() then
 												},
 												PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
 												SpellCastingAbility = entity.Stats.SpellCastingAbility,
-												CooldownType = spell.Cooldown ~= "None" and spell.Cooldown or "Default"
+												CooldownType = Ext.Enums.SpellCooldownType[CooldownType[spell.Cooldown]]
 											}
 
 											origValues.addedSpells = origValues.addedSpells or {}
@@ -1757,6 +1757,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function SpellListMutator:generateChangelog()
 	return {
+		["1.7.2"] = {
+			type = "Bullet",
+			text = {
+				"Actually force the Spell's cooldown type to be specified when adding to the spellbook q_q"
+			}
+		},
 		["1.7.1"] = {
 			type = "Bullet",
 			text = {

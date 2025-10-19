@@ -1428,7 +1428,7 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 						local additiveCheckbox = row:AddCheckbox("", mutationRule.additive)
 						additiveCheckbox.Disabled = activeProfile.modId ~= nil
 						additiveCheckbox:Tooltip():AddText(
-							"\t If checked, relevant mutators under this mutation will be _composable_, meaning they will be combined with any mutators of the same type that are applicable from mutations earlier in the flow. See the documentation for each mutator to see when and how this applies.\n If unchecked, composible mutators of the same type from earlier mutations will be replaced with these.")
+							"\t If checked, relevant mutators under this mutation will be _composable_, meaning they will be combined with any mutators of the same type that are applicable from mutations earlier in the flow. See the documentation for each mutator to see when and how this applies.\n If unchecked, composable mutators of the same type from earlier mutations will be replaced with these.")
 
 						additiveCheckbox.SameLine = true
 						additiveCheckbox.OnChange = function()
@@ -1741,6 +1741,12 @@ Lab pre-packages a number of Markers that can be used by anyone - these can't be
 ---@return {[string]: MazzleDocsContentItem}
 function MutationProfileManager:generateChangelog()
 	return {
+		["1.7.2"] = {
+			type = "Bullet",
+			text = {
+				"Server: Actually fix ProfileExecutor reprocessing all entities when a unprocessed entity enters combat q_q",
+			}
+		},
 		["1.7.1"] = {
 			type = "Bullet",
 			text = {
