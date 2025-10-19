@@ -101,55 +101,57 @@ function BoostsMutator:renderMutator(parent, mutator)
 			for d, boostDefType in ipairs(self.BoostDefinitions[boostTable.name]) do
 				---@cast boostDefType string
 
+				local defIndex = d
+
 				local cell = boostDisplayRow:AddCell()
 
 				if type(boostDefType) == "table" then
 					local enumCombo = cell:AddCombo("")
 					enumCombo.WidthFitPreview = true
 					enumCombo.Options = TableUtils:DeeplyCopyTable(boostDefType)
-					enumCombo.SelectedIndex = (TableUtils:IndexOf(boostDefType, boostTable.definition[d]) or 0) - 1
+					enumCombo.SelectedIndex = (TableUtils:IndexOf(boostDefType, boostTable.definition[defIndex]) or 0) - 1
 					enumCombo.OnChange = function()
-						boostTable.definition[d] = enumCombo.Options[enumCombo.SelectedIndex + 1]
+						boostTable.definition[defIndex] = enumCombo.Options[enumCombo.SelectedIndex + 1]
 					end
 				elseif boostDefType:lower() == "number" then
-					boostTable.definition[d] = boostTable.definition[d] or 0
+					boostTable.definition[defIndex] = boostTable.definition[defIndex] or 0
 
-					local numberInput = cell:AddInputInt("", boostTable.definition[d])
+					local numberInput = cell:AddInputInt("", boostTable.definition[defIndex])
 					numberInput.ItemWidth = 80
 					numberInput.OnChange = function()
-						boostTable.definition[d] = numberInput.Value[1]
+						boostTable.definition[defIndex] = numberInput.Value[1]
 					end
 				elseif boostDefType:lower() == "boolean" then
-					local booleanBox = cell:AddCheckbox("", boostTable.definition[d] == "true")
+					local booleanBox = cell:AddCheckbox("", boostTable.definition[defIndex] == "true")
 					booleanBox.Label = booleanBox.Checked and "True" or "False"
 
 					booleanBox.OnChange = function()
-						boostTable.definition[d] = booleanBox.Checked
+						boostTable.definition[defIndex] = booleanBox.Checked
 						booleanBox.Label = booleanBox.Checked and "True" or "False"
 					end
 				elseif boostDefType:lower() == "dice" then
-					boostTable.definition[d] = boostTable.definition[d] or {}
-					boostTable.definition[d]["diceNum"] = boostTable.definition[d]["diceNum"] or 1
-					local numberOfDice = cell:AddInputInt("##diceNum", boostTable.definition[d]["diceNum"])
+					boostTable.definition[defIndex] = boostTable.definition[defIndex] or {}
+					boostTable.definition[defIndex]["diceNum"] = boostTable.definition[defIndex]["diceNum"] or 1
+					local numberOfDice = cell:AddInputInt("##diceNum", boostTable.definition[defIndex]["diceNum"])
 					numberOfDice.ItemWidth = 40
 					numberOfDice.OnChange = function()
 						if numberOfDice.Value[1] < 1 then
 							numberOfDice.Value = { 1, 1, 1, 1 }
 						end
-						boostTable.definition[d]["diceNum"] = numberOfDice.Value[1]
+						boostTable.definition[defIndex]["diceNum"] = numberOfDice.Value[1]
 					end
 
 					cell:AddText("d").SameLine = true
 
-					boostTable.definition[d]["diceSize"] = boostTable.definition[d]["diceSize"] or 1
-					local diceSize = cell:AddInputInt("##diceSize", boostTable.definition[d]["diceSize"])
+					boostTable.definition[defIndex]["diceSize"] = boostTable.definition[defIndex]["diceSize"] or 1
+					local diceSize = cell:AddInputInt("##diceSize", boostTable.definition[defIndex]["diceSize"])
 					diceSize.SameLine = true
 					diceSize.ItemWidth = 40
 					diceSize.OnChange = function()
 						if diceSize.Value[1] < 1 then
 							diceSize.Value = { 1, 1, 1, 1 }
 						end
-						boostTable.definition[d]["diceSize"] = diceSize.Value[1]
+						boostTable.definition[defIndex]["diceSize"] = diceSize.Value[1]
 					end
 				elseif Ext.Enums[boostDefType] then
 					local enum = Ext.Enums[boostDefType]
@@ -163,9 +165,9 @@ function BoostsMutator:renderMutator(parent, mutator)
 					local enumCombo = cell:AddCombo("")
 					enumCombo.WidthFitPreview = true
 					enumCombo.Options = options
-					enumCombo.SelectedIndex = (TableUtils:IndexOf(options, boostTable.definition[d]) or 0) - 1
+					enumCombo.SelectedIndex = (TableUtils:IndexOf(options, boostTable.definition[defIndex]) or 0) - 1
 					enumCombo.OnChange = function()
-						boostTable.definition[d] = enumCombo.Options[enumCombo.SelectedIndex + 1]
+						boostTable.definition[defIndex] = enumCombo.Options[enumCombo.SelectedIndex + 1]
 					end
 				else
 					local success, data = pcall(
@@ -175,9 +177,9 @@ function BoostsMutator:renderMutator(parent, mutator)
 						end)
 					if success then
 						local searchInput = cell:AddInputText("")
-						searchInput.Text = (boostDefType == "Faction" and boostTable.definition[d])
-							and Ext.StaticData.Get(boostTable.definition[d], boostDefType).Faction
-							or boostTable.definition[d]
+						searchInput.Text = (boostDefType == "Faction" and boostTable.definition[defIndex])
+							and Ext.StaticData.Get(boostTable.definition[defIndex], boostDefType).Faction
+							or boostTable.definition[defIndex]
 							or ""
 
 						searchInput.AutoSelectAll = true
@@ -201,7 +203,7 @@ function BoostsMutator:renderMutator(parent, mutator)
 										if ((boostDefType == "Faction") and resource.Faction or resource.Name):lower():find(searchInput.Text:lower()) then
 											popup:AddSelectable((boostDefType == "Faction") and resource.Faction or resource.Name).OnClick = function(select)
 												searchInput.Text = select.Label
-												boostTable.definition[d] = (boostDefType == "Faction") and resourceId or select.Label
+												boostTable.definition[defIndex] = (boostDefType == "Faction") and resourceId or select.Label
 											end
 										end
 									end
@@ -514,8 +516,7 @@ BoostsMutator.BoostDefinitions = {
 	},
 	RollBonus = {
 		"StatsRollType",
-		"dice",
-		"wildcard"
+		"dice"
 	},
 	ScaleMultiplier = {
 		"number"
@@ -742,23 +743,6 @@ This only matters when a player saves mid-combat and restarts the game, so it sh
 				},
 				{
 					type = "SubHeading",
-					text = "Example Use Cases"
-				},
-				{
-					type = "Section",
-					text = "Selected entities:"
-				},
-				{
-					type = "Bullet",
-					text = {
-						"TODO"
-					}
-				} --[[@as MazzleDoctsBullet]],
-				{
-					type = "Separator"
-				},
-				{
-					type = "SubHeading",
 					text = "Short List of Possible Boosts for use in the Custom Boosts section"
 				},
 				{
@@ -798,12 +782,18 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function BoostsMutator:generateChangelog()
 	return {
+		["1.7.1"] = {
+			type = "Bullet",
+			text = {
+				"Fix boosts with dice values not saving appropriately, causing crashes"
+			}
+		},
 		["1.6.0"] = {
 			type = "Bullet",
 			text = {
 				"Adds up/down arrows to allow sorting the Boosts in the Builder section",
 				"Cleans up logic around semicolons for the pretty output"
 			}
-		} --[[@as MazzleDocsContentItem]]
-	}
+		}
+	} --[[@as {[string]: MazzleDocsContentItem}]]
 end

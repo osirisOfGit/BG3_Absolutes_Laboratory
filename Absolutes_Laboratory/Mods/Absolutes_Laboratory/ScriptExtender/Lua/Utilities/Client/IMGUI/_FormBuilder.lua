@@ -15,7 +15,7 @@ end
 ---@field label string
 ---@field propertyField string?
 ---@field type "Text"|"NumericText"|"Multiline"|"Checkbox"
----@field disabled boolean?
+---@field enabled boolean?
 ---@field defaultValue string|string[]|boolean?
 ---@field dependsOn string?
 ---@field errorMessageIfEmpty string?
@@ -51,7 +51,7 @@ function FormBuilder:CreateForm(parent, onSubmitFunc, formInputs)
 		elseif formInput.type == "Checkbox" then
 			input = parent:AddCheckbox("", formInput.defaultValue or false)
 		end
-		input.Disabled = formInput.disabled or false
+		input.Disabled = formInput.enabled ~= nil and formInput.enabled or false
 		if input.Disabled then
 			input:SetColor("Text", { 1, 1, 1, .5 })
 		end

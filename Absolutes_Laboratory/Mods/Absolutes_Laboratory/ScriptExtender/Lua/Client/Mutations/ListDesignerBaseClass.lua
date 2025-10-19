@@ -161,9 +161,7 @@ function ListDesignerBaseClass:launch(activeListId)
 			self.browserTabs["Progressions"].NoSavedSettings = true
 		end
 
-		self.popup = self.mainWindow:AddPopup(self.name .. "popup")
-		self.popup:SetColor("PopupBg", { 0, 0, 0, 1 })
-		self.popup:SetColor("Border", { 1, 0, 0, 0.5 })
+		self.popup = Styler:Popup(self.mainWindow)
 
 		local docsButton = MazzleDocs:addDocButton(self.designerSection, MutatorInterface:generateDocs({}))
 		docsButton.SameLine = true
@@ -323,7 +321,7 @@ function ListDesignerBaseClass:buildLists(activeListId)
 	self:buildModLists(activeListId)
 end
 
-function ListDesignerBaseClass:buildModLists(activeListID)
+function ListDesignerBaseClass:buildModLists(activeListId)
 	if MutationModProxy.ModProxy.lists[self.configKey]() then
 		---@type {[Guid]: Guid[]}
 		local modLists = {}
@@ -361,6 +359,29 @@ function ListDesignerBaseClass:buildModLists(activeListID)
 						spellListSelect:Tooltip():AddText("\t " .. list.description)
 					end
 
+					spellListSelect.OnRightClick = function()
+						Helpers:KillChildren(self.popup)
+						self.popup:Open()
+
+						self.popup:AddSelectable("Copy To Local Config").OnClick = function()
+							---@type CustomList
+							local listCopy = TableUtils:DeeplyCopyTable(list)
+							listCopy.modId = nil
+
+							if TableUtils:IndexOf(ConfigurationStructure.config.mutations.lists[self.configKey],
+									---@param value CustomList
+									function(value)
+										return value.name == listCopy.name
+									end)
+							then
+								listCopy.name = listCopy.name .. " (Copy)"
+							end
+
+							ConfigurationStructure.config.mutations.lists[self.configKey][FormBuilder:generateGUID()] = listCopy
+							self:launch(activeListId)
+						end
+					end
+
 					spellListSelect.OnClick = function()
 						if self.activeListHandle then
 							self.activeListHandle.Selected = false
@@ -375,7 +396,7 @@ function ListDesignerBaseClass:buildModLists(activeListID)
 						self:buildDesigner()
 					end
 
-					if guid == activeListID then
+					if guid == activeListId then
 						spellListSelect.Selected = true
 						spellListSelect:OnClick()
 					end
@@ -530,19 +551,18 @@ This logic will be run recursively, applying the lists linked to the linked list
 			Helpers:KillChildren(self.popup)
 			self.popup:Open()
 
-			local userLists = self.popup:AddChildWindow("UserLists")
-			userLists:SetColor("ChildBg", { 0, 0, 0, 1 })
-
-			local userListSep = userLists:AddSeparatorText("Local Lists")
-			userListSep:SetStyle("SeparatorTextAlign", 0.5)
-
-			for id, list in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.lists[self.configKey], function(key, list)
-				return list.name
-			end) do
-				if self.activeList.useGameLevel == list.useGameLevel and self.activeListHandle.IDContext ~= id then
-					---@type ExtuiSelectable
-					local select = userLists:AddSelectable(list.name, "DontClosePopups")
-					select.IDContext = id
+			Styler:BuildCompleteUserAndModLists(self.popup,
+				function(config)
+					return config.lists and config.lists[self.configKey] and next(config.lists[self.configKey]) and config.lists[self.configKey]
+				end,
+				function(key, value)
+					return value.name
+				end,
+				function(key, listItem)
+					return self.activeList.useGameLevel == listItem.useGameLevel and self.activeListHandle.IDContext ~= key
+				end,
+				function(select, id, item)
+					select.Label = item.name
 					select.Selected = TableUtils:IndexOf(self.activeList.linkedLists, id) ~= nil
 					select.OnClick = function()
 						local index = TableUtils:IndexOf(self.activeList.linkedLists, id)
@@ -555,74 +575,7 @@ This logic will be run recursively, applying the lists linked to the linked list
 						end
 						buildTable()
 					end
-				end
-			end
-
-			if #userLists.Children == 1 then
-				userLists:Destroy()
-			else
-				userLists.Size = { 0, math.min(500, 80 * (#userLists.Children - 1)) }
-			end
-
-			if MutationModProxy.ModProxy.lists[self.configKey]() then
-				local modListsSep = self.popup:AddSeparatorText("Mod Lists")
-				modListsSep:SetStyle("SeparatorTextAlign", 0.5)
-
-				---@type {[Guid]: Guid[]}
-				local modLists = {}
-
-				for modId, modCache in pairs(MutationModProxy.ModProxy.lists[self.configKey]) do
-					---@cast modCache +LocalModCache
-
-					if modCache.lists and modCache.lists[self.configKey] and next(modCache.lists[self.configKey]) then
-						modLists[modId] = {}
-						table.insert(modLists[modId], spellListId)
-						for spellListId in pairs(modCache.lists[self.configKey]) do
-						end
-					end
-				end
-
-				if next(modLists) then
-					for modId, lists in TableUtils:OrderedPairs(modLists, function(key, value)
-						return Ext.Mod.GetMod(key).Info.Name
-					end) do
-						self.popup:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name).Font = "Small"
-
-						local modGroup = self.popup:AddChildWindow("Mods" .. modId)
-						modGroup:SetColor("ChildBg", { 0, 0, 0, 1 })
-						modGroup.Size = { 0, 500 }
-
-						for _, guid in TableUtils:OrderedPairs(lists, function(key, value)
-							return MutationModProxy.ModProxy.lists[self.configKey][value].name
-						end) do
-							local spellList = MutationModProxy.ModProxy.lists[self.configKey][guid]
-							if self.activeList.useGameLevel == spellList.useGameLevel and self.activeListHandle.IDContext ~= guid then
-								---@type ExtuiSelectable
-								local select = modGroup:AddSelectable(spellList.name, "DontClosePopups")
-								select.Selected = TableUtils:IndexOf(self.activeList.linkedLists, guid) ~= nil
-								select.OnClick = function()
-									local index = TableUtils:IndexOf(self.activeList.linkedLists, guid)
-									if index then
-										self.activeList.linkedLists[index] = nil
-										select.Selected = false
-									else
-										select.Selected = true
-										table.insert(self.activeList.linkedLists, guid)
-									end
-									buildTable()
-								end
-							end
-						end
-						if #modGroup.Children == 1 then
-							modGroup:Destroy()
-						else
-							modGroup.Size = { 0, math.min(500, 40 * (#modGroup.Children - 1)) }
-						end
-					end
-				else
-					modListsSep:Destroy()
-				end
-			end
+				end)
 		end
 	end)
 
@@ -2197,6 +2150,14 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function ListDesignerBaseClass:generateChangelog()
 	return {
+		["1.7.1"] = {
+			type = "Bullet",
+			text = {
+				"Adds ability to copy mod-sourced Lists to your local config",
+				"Fix ModLists not appearing in the Link list popup",
+				"Fix linked lists not exporting"
+			}
+		},
 		["1.7.0"] = {
 			type = "Bullet",
 			text = {
@@ -2210,7 +2171,7 @@ function ListDesignerBaseClass:generateChangelog()
 				"Adds a new Stat Browser setting to show all spell upcasts in addition to the base spell",
 				"Minor visual bug fixes",
 			}
-		} --[[@as MazzleDocsContentItem]],
+		},
 		["1.6.0"] = {
 			type = "Bullet",
 			text = {
@@ -2226,6 +2187,6 @@ function ListDesignerBaseClass:generateChangelog()
 				"Restructures the ui a bit, allows collapsing the folder sidebar (happens automatically on selecting a list)",
 				"Adds ability to hide/show each level in a list",
 			}
-		} --[[@as MazzleDocsContentItem]]
-	}
+		}
+	} --[[@as {[string]: MazzleDocsContentItem}]]
 end

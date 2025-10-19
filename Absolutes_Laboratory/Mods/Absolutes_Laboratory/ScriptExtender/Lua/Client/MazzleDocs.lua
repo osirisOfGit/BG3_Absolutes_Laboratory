@@ -11,6 +11,7 @@ MazzleDocs = Mods["Mazzle_Docs"]
 ---@return ExtuiImageButton
 function MazzleDocs:addDocButton(parent, document, configConsumer)
 	local button = Styler:ImageButton(parent:AddImageButton("Docs", "Item_BOOK_GEN_Books_Row_Multiple_D", Styler:ScaleFactor({ 32, 32 })))
+	button.UserData = "EnableForMods"
 	button.OnClick = function()
 		local document = TableUtils:DeeplyCopyTable(document)
 		local config = TableUtils:DeeplyCopyTable(Absolutes_Lab_Doc_Config)

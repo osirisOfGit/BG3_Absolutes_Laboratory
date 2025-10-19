@@ -625,24 +625,7 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 					type = "Content",
 					text =
 					[[When setting the classes, the `Classes.Classes` component is overwritten entirely; any specific Abilities overwrite their respective Stat component property: SpellCastingAbility, RangedAttackAbility, UnarmedAttackAbility. ]]
-				},
-				{
-					type = "Separator"
-				},
-				{
-					type = "SubHeading",
-					text = "Example Use Cases"
-				},
-				{
-					type = "Section",
-					text = "Selected entities:"
-				},
-				{
-					type = "Bullet",
-					text = {
-						"TODO"
-					}
-				} --[[@as MazzleDoctsBullet]],
+				}
 			}
 		}
 	} --[[@as MazzleDocsDocumentation]]

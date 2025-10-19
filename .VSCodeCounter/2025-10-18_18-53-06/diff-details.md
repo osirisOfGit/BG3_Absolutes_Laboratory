@@ -1,0 +1,41 @@
+# Diff Details
+
+Date : 2025-10-18 18:53:06
+
+Directory d:\\Mods\\BG3 Modder MultiTool\\Absolutes_Laboratory\\Absolutes_Laboratory\\Mods\\Absolutes_Laboratory\\ScriptExtender\\Lua
+
+Total : 26 files,  529 codes, 59 comments, 70 blanks, all 658 lines
+
+[Summary](results.md) / [Details](details.md) / [Diff Summary](diff.md) / Diff Details
+
+## Files
+| filename | language | code | comment | blank | total |
+| :--- | :--- | ---: | ---: | ---: | ---: |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Client/MazzleDocs.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Client/MazzleDocs.lua) | Lua | 1 | 0 | 0 | 1 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Client/Mutations/ListDesignerBaseClass.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Client/Mutations/ListDesignerBaseClass.lua) | Lua | -31 | -2 | -6 | -39 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Client/Mutations/MutationDesigner.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Client/Mutations/MutationDesigner.lua) | Lua | 1 | -3 | 0 | -2 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Client/Mutations/MutationProfileManager.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Client/Mutations/MutationProfileManager.lua) | Lua | 65 | -1 | 7 | 71 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Client/Mutations/ProfileExecutionStatus.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Client/Mutations/ProfileExecutionStatus.lua) | Lua | 14 | 0 | 2 | 16 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Client/Styler.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Client/Styler.lua) | Lua | -272 | -65 | -45 | -382 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Server/Mutations/ProfileExecutor.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Server/Mutations/ProfileExecutor.lua) | Lua | 13 | 0 | 3 | 16 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/ListConfigurationManager.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/ListConfigurationManager.lua) | Lua | 3 | 0 | 1 | 4 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/ActionResourcesMutator.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/ActionResourcesMutator.lua) | Lua | 2 | 0 | 0 | 2 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/BoostsMutator.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/BoostsMutator.lua) | Lua | -11 | 0 | 1 | -10 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/ClassesAndSubclassesMutator.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/ClassesAndSubclassesMutator.lua) | Lua | -17 | 0 | 0 | -17 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/HealthMutator.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/HealthMutator.lua) | Lua | 35 | 3 | 6 | 44 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/PassiveList/PassiveListDesigner.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/PassiveList/PassiveListDesigner.lua) | Lua | 7 | -1 | 0 | 6 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/PassiveList/PassiveListMutator.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/PassiveList/PassiveListMutator.lua) | Lua | -41 | -4 | -9 | -54 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/SpellList/SpellListMutator.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/SpellList/SpellListMutator.lua) | Lua | -30 | -3 | -8 | -41 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/StatusList/StatusListDesigner.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/StatusList/StatusListDesigner.lua) | Lua | 7 | -1 | 0 | 6 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/StatusList/StatusListMutator.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Shared/Mutations/Mutators/StatusList/StatusListMutator.lua) | Lua | -23 | -4 | -6 | -33 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities/Advanced/_ECSPrinter.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities/Advanced/_ECSPrinter.lua) | Lua | -3 | 0 | 0 | -3 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities/Client/IMGUI/_Index.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities/Client/IMGUI/_Index.lua) | Lua | 1 | 0 | 0 | 1 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities/Client/IMGUI/_Styler.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities/Client/IMGUI/_Styler.lua) | Lua | 341 | 77 | 62 | 480 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities/Common/_Translator.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities/Common/_Translator.lua) | Lua | 0 | 0 | -1 | -1 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities/IDEHelpers/ExtIdeHelpers.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities/IDEHelpers/ExtIdeHelpers.lua) | Lua | 62 | 3 | 1 | 66 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities/Networking/Channels.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities/Networking/Channels.lua) | Lua | 0 | 0 | -1 | -1 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities/README.md](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities/README.md) | Markdown | 4 | 0 | 3 | 7 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities/_CustomEntitySerializer.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities/_CustomEntitySerializer.lua) | Lua | 74 | 6 | 6 | 86 |
+| [Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities/_ECSPrinter.lua](/Absolutes_Laboratory/Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities/_ECSPrinter.lua) | Lua | 327 | 54 | 54 | 435 |
+
+[Summary](results.md) / [Details](details.md) / [Diff Summary](diff.md) / Diff Details

@@ -962,7 +962,8 @@ Osi = {}
 --- @alias AdvantageContext string|"Ability"|"AllAbilities"|"AllSavingThrows"|"AllSkills"|"AttackRoll"|"AttackTarget"|"Concentration"|"DeathSavingThrow"|"SavingThrow"|"Skill"|"SourceDialogue"
 --- @alias AiActionFlags string|"CanCastWithoutMovement"|"CanExecuteThisTurn"|"CanReachTarget"|"FallbackAttackBlocker"|"FallbackJump"|"FallbackSpell"|"HasMoveSpells"|"HasPathfindTrajectory"|"HasPosition"|"HasPositionScore"|"IgnoreMovementScore"|"IsFromItem"|"MoveCompleted"|"MoveToSecondTarget"|"MovementCalculated"|"NoSafeReachablePosition"|"PlayFallbackDialogue"|"RemoveCastPositionScore"|"TriggeredFallbackJump"
 --- @alias AiActionType string|"Consume"|"Fallback"|"None"|"Seek"|"Spell"|"UseItem"|"WeaponPickUp"
---- @alias AiBaseFlags string|"Blocker"|"CanClimbOn"|"CloudSurfaceBlock"|"Door"|"DoorItemBlock"|"GroundSurfaceBlock"|"Indestructible"|"Portal"|"PortalTarget"|"ShootBlock"|"ShootBlockCharacter"|"ShootBlockItem"|"SubgridEdge"|"Trap"|"UnknownBlock1"|"UnknownBlock2"|"UnknownBlock3"|"UnknownBlock4"|"UnknownBlock5"|"WalkBlock"|"WalkBlock2"|"WalkBlockCharacter"|"WalkBlockItem"
+--- @alias AiBaseFlags string|"Blocker"|"CanClimbOn"|"Climbable"|"CloudSurfaceBlock"|"Door"|"DoorItemBlock"|"GenericBlock"|"GroundSurfaceBlock"|"Indestructible"|"PaintedBlock"|"Portal"|"PortalTarget"|"ShootBlock"|"ShootBlockCharacter"|"ShootBlockItem"|"Slope"|"SlopeBlock"|"StaticBlock"|"SubgridEdge"|"Trap"|"UnknownBlock1"|"UnknownBlock2"|"UnknownBlock3"|"UnknownBlock4"|"UnknownBlock5"|"WalkBlock"|"WalkBlock2"|"WalkBlockCharacter"|"WalkBlockItem"
+--- @alias AiExtraFlags string|"AllowsSunlight"|"Chasm"|"FixedCloudSurface"|"FixedGroundSurface"|"HalfLit"|"Ledge"|"LedgeE"|"LedgeN"|"LedgeS"|"LedgeW"|"Lit"|"LitByAtmosphere"|"LitBySunlight"|"Obscured"|"PaintedCloudSurface"|"PaintedGroundSurface"|"SubgridEdge"|"SubgridIntersection"
 --- @alias AnimationSetAnimationFlags string|"AlwaysIgnore"|"NoFallback"
 --- @alias AppliedMaterialFlags string|"Instantiated"|"IsOverlay"|"OverlayOriginalMapsSet"
 --- @alias ApprovalReactionScope string|"Dialog"|"Global"|"Local"
@@ -1098,7 +1099,7 @@ Osi = {}
 --- @alias OsiFunctionType string|"Call"|"DB"|"Event"|"Proc"|"Query"
 --- @alias OsirisTaskType string|"Appear"|"AutomatedDialog"|"Combine"|"Disappear"|"Drop"|"FleeFromEntity"|"FleeFromGrid"|"FleeFromRelation"|"FollowNPC"|"FollowOwnerOrLeader"|"LookAt"|"MoveInRange"|"MoveItem"|"MoveToAndTalk"|"MoveToLocation"|"MoveToObject"|"PickupItem"|"PlayAnimation"|"RateLimitedAutomatedDialog"|"Resurrect"|"Steer"|"TeleportToLocation"|"Timer"|"UseItem"|"UseSpell"|"Wander"
 --- @alias PassiveSourceType string|"Debug"|"Equipment"|"Feat"|"Progression"|"Progression2"|"Script"|"Stats"|"Status"|"Tadpole"
---- @alias PathRootType string|"Bin"|"Bin2"|"Data"|"Debug"|"EngineMod"|"GameMod"|"LocalAppData"|"Localization"|"Mods"|"Projects"|"Public"|"Public2"|"Root"|"Scripts"|"UserProfile"|"WorkingDir"
+--- @alias PathRootType string|"Bin"|"Bin2"|"Data"|"Debug"|"EngineMod"|"GameMod"|"LocalAppData"|"Localization"|"Mods"|"Mods2"|"PhotoMode"|"Projects"|"Public"|"Public2"|"Root"|"Savegame"|"Scripts"|"UserProfile"|"WorkingDir"
 --- @alias PathRotateMode string|"Follow"|"Lerp"|"SLerp"|"Static"
 --- @alias PathTrajectoryType string|"Bezier3"|"Bezier4"|"Pathfind"
 --- @alias PathVelocityMode string|"Constant"|"Linear"|"Mapped"
@@ -1160,9 +1161,9 @@ Osi = {}
 --- @alias SpellCastOptions string|"AvoidAoO"|"AvoidDangerousAuras"|"CheckProjectileTargets"|"DestroySource"|"Forced"|"FromClient"|"IgnoreCastChecks"|"IgnoreHasSpell"|"IgnoreSpellRolls"|"IgnoreTargetChecks"|"Immediate"|"IsHoverPreview"|"IsInterrupt"|"IsPreview"|"IsReaction"|"IsRoll"|"NoMovement"|"NoUnsheath"|"ShowPrepareAnimation"|"Silent"|"Unknown100000"
 --- @alias SpellCastPhase string|"Finished"|"LogicExecutionEnd"|"LogicExecutionFinished"|"LogicExecutionInterrupted"|"LogicExecutionStart"|"LogicExecutionUpdate"|"MovementFinished"|"MovementStart"|"MovementSteering"|"MovementUpdate"|"None"|"PrecalculationFinished"|"PrecalculationStart"|"PrepareEnd"|"PrepareFinished"|"PrepareStart"|"PrepareUpdate"|"ValidationFindCastEndPosition"|"ValidationFindCastPosition"|"ValidationFinished"|"ValidationPathfind"|"ValidationStart"
 --- @alias SpellCooldownType string|"Default"|"OncePerCombat"|"OncePerShortRestPerItem"|"OncePerTurn"|"OncePerTurnNoRealtime"|"UntilPerRestPerItem"|"UntilRest"|"UntilShortRest"
---- @alias SpellFlags string|"AbortOnSecondarySpellRollFail"|"AbortOnSpellRollFail"|"AddFallDamageOnLand"|"AddWeaponRange"|"AllowMoveAndCast"|"CallAlliesSpell"|"CanAreaDamageEvade"|"CanDualWield"|"CannotRotate"|"CannotTargetCharacter"|"CannotTargetItems"|"CannotTargetTerrain"|"CombatLogSetSingleLineRoll"|"ConcentrationIgnoresResting"|"DisableBlood"|"DisplayInItemTooltip"|"DontAbortPerforming"|"HasHighGroundRangeExtension"|"HasSomaticComponent"|"HasVerbalComponent"|"HideInItemTooltip"|"IgnoreAoO"|"IgnorePreviouslyPickedEntities"|"IgnoreSilence"|"IgnoreVisionBlock"|"ImmediateCast"|"InventorySelection"|"Invisible"|"IsAttack"|"IsConcentration"|"IsDefaultWeaponAction"|"IsEnemySpell"|"IsHarmful"|"IsJump"|"IsLinkedSpellContainer"|"IsMelee"|"IsSpell"|"IsSwarmAttack"|"IsTrap"|"NoAOEDamageOnLand"|"NoCameraMove"|"NoCooldownOnMiss"|"NoSurprise"|"PickupEntityAndMove"|"RangeIgnoreBlindness"|"RangeIgnoreSourceBounds"|"RangeIgnoreTargetBounds"|"RangeIgnoreVerticalThreshold"|"Stealth"|"TargetClosestEqualGroundSurface"|"Temporary"|"TrajectoryRules"|"UNUSED_D"|"UNUSED_E"|"UnavailableInDialogs"|"Wildshape"
+--- @alias SpellFlags string|"AbortOnSecondarySpellRollFail"|"AbortOnSpellRollFail"|"AddFallDamageOnLand"|"AddWeaponRange"|"AllowMoveAndCast"|"CallAlliesSpell"|"CanAreaDamageEvade"|"CanDualWield"|"CannotRotate"|"CannotTargetCharacter"|"CannotTargetItems"|"CannotTargetTerrain"|"ChasmRecovery"|"CombatLogSetSingleLineRoll"|"ConcentrationIgnoresResting"|"DisableBlood"|"DisplayDamageModifiers"|"DisplayInItemTooltip"|"DontAbortPerforming"|"HasHighGroundRangeExtension"|"HasSomaticComponent"|"HasVerbalComponent"|"HideInItemTooltip"|"IgnoreAoO"|"IgnorePreviouslyPickedEntities"|"IgnoreSilence"|"IgnoreVisionBlock"|"ImmediateCast"|"InventorySelection"|"Invisible"|"IsAttack"|"IsConcentration"|"IsDefaultWeaponAction"|"IsEnemySpell"|"IsHarmful"|"IsJump"|"IsLinkedSpellContainer"|"IsMelee"|"IsSpell"|"IsSwarmAttack"|"IsTrap"|"NoAOEDamageOnLand"|"NoCameraMove"|"NoCooldownOnMiss"|"NoSurprise"|"PickupEntityAndMove"|"RangeIgnoreBlindness"|"RangeIgnoreSourceBounds"|"RangeIgnoreTargetBounds"|"RangeIgnoreVerticalThreshold"|"Stealth"|"TargetClosestEqualGroundSurface"|"Temporary"|"TrajectoryRules"|"UNUSED_D"|"UNUSED_E"|"UnavailableInDialogs"|"Wildshape"
 --- @alias SpellLearningStrategy string|"AddChildren"|"MostPowerful"|"Singular"
---- @alias SpellMetaConditionType string|"AoE"|"Cycle"|"Forking"|"Highlight"|"None"|"OriginRoll"|"OriginTarget"|"Requirements"|"Roll"|"Target"|"ThrowableRoll"|"ThrowableTarget"
+--- @alias SpellMetaConditionType string|"AoE"|"Cycle"|"Forking"|"Highlight"|"None"|"OriginRoll"|"OriginTarget"|"ProjectileTarget"|"Requirements"|"Roll"|"Target"|"ThrowableRoll"|"ThrowableTarget"
 --- @alias SpellModificationValueType string|"AdditiveBase"|"AdditiveFinal"|"Multiplicative"|"Override"
 --- @alias SpellPrepareType string|"AlwaysPrepared"|"RequiresPreparation"|"Unknown"
 --- @alias SpellSchoolId string|"Abjuration"|"Conjuration"|"Divination"|"Enchantment"|"Evocation"|"Illusion"|"Necromancy"|"None"|"Transmutation"
@@ -1517,10 +1518,10 @@ Osi = {}
 --- @class AiGridLuaTile
 --- @field CloudSurface SurfaceType
 --- @field Entities EntityHandle[]
---- @field ExtraFlags uint32
+--- @field ExtraFlags AiExtraFlags
 --- @field Flags AiBaseFlags
 --- @field GroundSurface SurfaceType
---- @field Material uint8
+--- @field Material MaterialType
 --- @field MaxHeight number
 --- @field MetaDataIndex uint16
 --- @field MinHeight number
@@ -1940,7 +1941,7 @@ Osi = {}
 
 
 --- @class AttitudeIdentifier
---- @field BodyType BodyType
+--- @field BodyType uint8
 --- @field Character EntityHandle
 --- @field Identity IdentityType
 --- @field Race Guid
@@ -2028,8 +2029,8 @@ Osi = {}
 
 
 --- @class BodyTypeComponent:BaseComponent
---- @field BodyType BodyType
---- @field BodyType2 BodyType
+--- @field BodyType uint8
+--- @field BodyType2 uint8
 
 
 --- @class BookActionData:IActionData
@@ -2254,7 +2255,7 @@ Osi = {}
 --- @class CharacterCreationStatsComponent:BaseComponent
 --- @field Abilities int32[]
 --- @field BodyShape uint8
---- @field BodyType BodyType
+--- @field BodyType uint8
 --- @field Name string
 --- @field Race Guid
 --- @field SubRace Guid
@@ -4581,6 +4582,7 @@ Osi = {}
 --- @field Parent NoesisFrameworkElement
 --- @field TemplatedParent NoesisFrameworkElement
 --- @field Child fun(self:NoesisFrameworkElement, a1:NoesisFrameworkElement, a2:uint32):NoesisBaseComponent
+--- @field DebugAttach fun(self:NoesisFrameworkElement, a1:NoesisFrameworkElement)
 --- @field Find fun(self:NoesisFrameworkElement, a1:NoesisFrameworkElement, a2:string):NoesisBaseComponent
 --- @field Resource fun(self:NoesisFrameworkElement, a1:NoesisFrameworkElement, a2:string, a3:boolean?):NoesisBaseComponent
 --- @field TreeParent fun(self:NoesisFrameworkElement, a1:NoesisFrameworkElement):NoesisBaseObject
@@ -8342,7 +8344,7 @@ Osi = {}
 --- @class CharacterCreationBaseCharacterDefinition
 --- @field Background Guid
 --- @field BodyShape uint8
---- @field BodyType BodyType
+--- @field BodyType uint8
 --- @field Deity Guid
 --- @field Origin Guid
 --- @field Race Guid
@@ -8353,7 +8355,7 @@ Osi = {}
 --- @field field_20 Guid
 --- @field field_30 Guid
 --- @field field_40 Guid
---- @field field_50 BodyType
+--- @field field_50 uint8
 --- @field field_51 uint8
 --- @field field_58 Guid
 --- @field field_68 Guid
@@ -17842,7 +17844,7 @@ Osi = {}
 
 --- @class ResourceCharacterCreationAppearanceVisual:ResourceGuidResource
 --- @field BodyShape uint8
---- @field BodyType BodyType
+--- @field BodyType uint8
 --- @field DefaultForBodyType uint8
 --- @field DefaultSkinColor Guid
 --- @field DisplayName TranslatedString
@@ -17904,7 +17906,7 @@ Osi = {}
 
 --- @class ResourceCharacterCreationPreset:ResourceGuidResource
 --- @field BodyShape uint8
---- @field BodyType BodyType
+--- @field BodyType uint8
 --- @field CloseUpA string
 --- @field CloseUpB string
 --- @field Overview string
@@ -17998,7 +18000,7 @@ Osi = {}
 
 --- @class ResourceCompanionPreset:ResourceGuidResource
 --- @field BodyShape uint8
---- @field BodyType BodyType
+--- @field BodyType uint8
 --- @field CloseUpA string
 --- @field CloseUpB string
 --- @field Overview string
@@ -18496,7 +18498,7 @@ Osi = {}
 --- @field AvailableInCharacterCreation uint8
 --- @field BackgroundUUID Guid
 --- @field BodyShape uint8
---- @field BodyType BodyType
+--- @field BodyType uint8
 --- @field ClassEquipmentOverride FixedString
 --- @field ClassUUID Guid
 --- @field CloseUpA string
@@ -19440,7 +19442,7 @@ Osi = {}
 
 
 --- @class ResourceVoice:ResourceGuidResource
---- @field BodyType BodyType
+--- @field BodyType uint8
 --- @field DisplayName TranslatedString
 --- @field SpeakerUuid Guid
 --- @field TableUuid Guid
@@ -22421,15 +22423,21 @@ Ext_Enums.AiBaseFlags = {
 	WalkBlockCharacter = 16,
 	ShootBlockCharacter = 32,
 	SubgridEdge = 64,
+	Climbable = 64,
 	WalkBlockItem = 128,
 	ShootBlockItem = 256,
 	GroundSurfaceBlock = 512,
 	CloudSurfaceBlock = 1024,
+	Slope = 2048,
 	UnknownBlock1 = 2048,
 	UnknownBlock2 = 4096,
+	SlopeBlock = 4096,
 	UnknownBlock3 = 8192,
+	PaintedBlock = 8192,
 	UnknownBlock4 = 16384,
+	StaticBlock = 16384,
 	UnknownBlock5 = 32768,
+	GenericBlock = 32768,
 	Indestructible = 65536,
 	CanClimbOn = 131072,
 	Trap = 262144,
@@ -22444,15 +22452,21 @@ Ext_Enums.AiBaseFlags = {
 	[16] = "WalkBlockCharacter",
 	[32] = "ShootBlockCharacter",
 	[64] = "SubgridEdge",
+	[64] = "Climbable",
 	[128] = "WalkBlockItem",
 	[256] = "ShootBlockItem",
 	[512] = "GroundSurfaceBlock",
 	[1024] = "CloudSurfaceBlock",
+	[2048] = "Slope",
 	[2048] = "UnknownBlock1",
 	[4096] = "UnknownBlock2",
+	[4096] = "SlopeBlock",
 	[8192] = "UnknownBlock3",
+	[8192] = "PaintedBlock",
 	[16384] = "UnknownBlock4",
+	[16384] = "StaticBlock",
 	[32768] = "UnknownBlock5",
+	[32768] = "GenericBlock",
 	[65536] = "Indestructible",
 	[131072] = "CanClimbOn",
 	[262144] = "Trap",
@@ -22460,6 +22474,46 @@ Ext_Enums.AiBaseFlags = {
 	[1048576] = "PortalTarget",
 	[4194304] = "Door",
 	[8388608] = "DoorItemBlock",
+}
+
+--- @enum AiExtraFlags
+Ext_Enums.AiExtraFlags = {
+	Obscured = 1,
+	LitBySunlight = 2,
+	HalfLit = 4,
+	Ledge = 8,
+	LedgeN = 16,
+	LedgeE = 32,
+	LedgeS = 64,
+	LedgeW = 128,
+	Chasm = 256,
+	SubgridEdge = 512,
+	AllowsSunlight = 1024,
+	SubgridIntersection = 2048,
+	Lit = 4096,
+	LitByAtmosphere = 8192,
+	PaintedGroundSurface = 16384,
+	PaintedCloudSurface = 32768,
+	FixedGroundSurface = 65536,
+	FixedCloudSurface = 131072,
+	[1] = "Obscured",
+	[2] = "LitBySunlight",
+	[4] = "HalfLit",
+	[8] = "Ledge",
+	[16] = "LedgeN",
+	[32] = "LedgeE",
+	[64] = "LedgeS",
+	[128] = "LedgeW",
+	[256] = "Chasm",
+	[512] = "SubgridEdge",
+	[1024] = "AllowsSunlight",
+	[2048] = "SubgridIntersection",
+	[4096] = "Lit",
+	[8192] = "LitByAtmosphere",
+	[16384] = "PaintedGroundSurface",
+	[32768] = "PaintedCloudSurface",
+	[65536] = "FixedGroundSurface",
+	[131072] = "FixedCloudSurface",
 }
 
 --- @enum AnimationSetAnimationFlags
@@ -29246,6 +29300,9 @@ Ext_Enums.PathRootType = {
 	Scripts = 13,
 	WorkingDir = 14,
 	Debug = 15,
+	Savegame = 16,
+	Mods2 = 17,
+	PhotoMode = 18,
 	[0] = "Root",
 	[1] = "Data",
 	[2] = "Public",
@@ -29262,6 +29319,9 @@ Ext_Enums.PathRootType = {
 	[13] = "Scripts",
 	[14] = "WorkingDir",
 	[15] = "Debug",
+	[16] = "Savegame",
+	[17] = "Mods2",
+	[18] = "PhotoMode",
 }
 
 --- @enum PathRotateMode
@@ -31510,6 +31570,8 @@ Ext_Enums.SpellFlags = {
 	DisableBlood = 9007199254740992,
 	IgnorePreviouslyPickedEntities = 18014398509481984,
 	IgnoreAoO = 36028797018963968,
+	DisplayDamageModifiers = 72057594037927936,
+	ChasmRecovery = 144115188075855872,
 	[1] = "HasVerbalComponent",
 	[2] = "HasSomaticComponent",
 	[4] = "IsJump",
@@ -31566,6 +31628,8 @@ Ext_Enums.SpellFlags = {
 	[9007199254740992] = "DisableBlood",
 	[18014398509481984] = "IgnorePreviouslyPickedEntities",
 	[36028797018963968] = "IgnoreAoO",
+	[72057594037927936] = "DisplayDamageModifiers",
+	[144115188075855872] = "ChasmRecovery",
 }
 
 --- @enum SpellLearningStrategy
@@ -31592,6 +31656,7 @@ Ext_Enums.SpellMetaConditionType = {
 	Requirements = 9,
 	OriginTarget = 10,
 	Highlight = 11,
+	ProjectileTarget = 12,
 	[0] = "None",
 	[1] = "Roll",
 	[2] = "OriginRoll",
@@ -31604,6 +31669,7 @@ Ext_Enums.SpellMetaConditionType = {
 	[9] = "Requirements",
 	[10] = "OriginTarget",
 	[11] = "Highlight",
+	[12] = "ProjectileTarget",
 }
 
 --- @enum SpellModificationValueType
@@ -33234,67 +33300,67 @@ Ext_Enums.WeaponType = {
 
 
 --- @class Ext_System
+--- @field ServerPartyTeleport EsvPartyTeleportSystem
+--- @field ServerParty EsvPartyPartySystem
+--- @field ServerStats EsvStatsSystem
+--- @field ServerTurnOrder EsvCombatTurnOrderSystem
+--- @field ServerRating EsvApprovalRatingSystem
+--- @field ServerGravity EsvGravitySystem
+--- @field ServerCombat EsvCombatSystem
+--- @field ServerInventoryEquipment EsvInventoryEquipmentSystem
 --- @field ServerHit EsvHitHitSystem
---- @field ClientCharacterIconRender EclCharacterIconRenderSystem
+--- @field ServerLeader EsvLeaderSystem
+--- @field ServerFTBZone EsvFtbZoneSystem
+--- @field ServerInventoryStack EsvInventoryStackSystem
+--- @field ServerTreasureGeneration EsvInventoryTreasureGenerationSystem
+--- @field ServerStatusRequest EsvStatusRequestSystem
+--- @field ServerDualWielding EsvDualWieldingSystem
+--- @field ServerBodyType EsvBodyTypeSystem
+--- @field ServerPingRequest EsvPingRequestSystem
+--- @field ServerConcentration EsvConcentrationConcentrationSystem
+--- @field ServerInterruptRequests EsvInterruptRequestsSystem
 --- @field ClientVisual EclVisualSystem
+--- @field ServerTemplateChange EsvTemplatesChangeSystem
+--- @field ServerPassive EsvPassivePassiveSystem
+--- @field ServerSpellLearning EsvSpellLearningSystem
+--- @field ServerInventoryCanPlace EsvInventoryCanPlaceSystem
+--- @field ServerInventoryLocking EsvInventoryLockingSystem
+--- @field ServerMagicPocketsTracking EsvInventoryMagicPocketsTrackingSystem
+--- @field ServerRestore EsvRestoreSystem
+--- @field ClientEquipmentVisuals EclEquipmentVisualsSystem
+--- @field ServerSummonSpawn EsvSummonSpawnSystem
+--- @field ClientCharacterIconRender EclCharacterIconRenderSystem
 --- @field ServerRoll EsvRollRollSystem
 --- @field ServerSpellCooldown EsvSpellSpellCooldownSystem
---- @field ServerRestore EsvRestoreSystem
+--- @field ServerVisual EsvVisualSystem
+--- @field ServerInventoryReceivalNotification EsvInventoryEntityReceivalNotificationSystem
+--- @field ServerGod EsvGodSystem
 --- @field ServerTradeBuyback EsvInventoryTradeBuybackSystem
---- @field ServerTreasureGeneration EsvInventoryTreasureGenerationSystem
 --- @field ServerDisplayName EsvDisplayNameSystem
+--- @field ServerPlatform EsvPlatformSystem
 --- @field ServerActionResource EsvActionResourceSystem
+--- @field ServerFalling EsvFallingSystem
 --- @field ServerSummonDespawn EsvSummonDespawnSystem
---- @field ServerConcentration EsvConcentrationConcentrationSystem
 --- @field ServerInterruptManagement EsvInterruptManagementSystem
 --- @field ServerBoost EsvBoostBoostSystem
---- @field ServerVisual EsvVisualSystem
+--- @field ServerAi EsvAiHelpers
+--- @field ClientVisualsVisibilityState EclEquipmentVisualsVisibilityStateSystem
 --- @field ServerShapeshift EsvShapeshiftSystem
 --- @field ServerLongRest EsvRestLongRestSystem
 --- @field ServerExperience EsvExperienceSystem
---- @field ServerGod EsvGodSystem
 --- @field ServerInventoryManagement EsvInventoryManagementSystem
---- @field ServerMagicPocketsTracking EsvInventoryMagicPocketsTrackingSystem
---- @field ServerPlatform EsvPlatformSystem
---- @field ServerFalling EsvFallingSystem
+--- @field SoundRouting SoundRoutingSystem
+--- @field ServerNewInventoryMember EsvInventoryNewInventoryMemberSystem
 --- @field ServerCapabilities EsvCapabilitiesSystem
 --- @field ServerInterruptDecision EsvInterruptDecisionSystem
 --- @field ClientCharacterManager EclCharacterManager
 --- @field ServerCastRequest EsvSpellCastCastRequestSystem
 --- @field ServerSpell EsvSpellSpellSystem
 --- @field ServerAttitude EsvAttitudeUpdateSystem
---- @field ServerAi EsvAiHelpers
 --- @field ServerInventoryInteraction EsvInventoryInteractionSystem
---- @field ServerInventoryReceivalNotification EsvInventoryEntityReceivalNotificationSystem
---- @field SoundRouting SoundRoutingSystem
+--- @field ServerInventoryInteractionRequest EsvInventoryInteractionRequestSystem
 --- @field ServerShortRest EsvRestShortRestSystem
 --- @field ServerProgression EsvProgressionManagementSystem
---- @field ServerPartyTeleport EsvPartyTeleportSystem
---- @field ServerParty EsvPartyPartySystem
---- @field ServerTurnOrder EsvCombatTurnOrderSystem
---- @field ServerRating EsvApprovalRatingSystem
---- @field ClientVisualsVisibilityState EclEquipmentVisualsVisibilityStateSystem
---- @field ServerInventoryEquipment EsvInventoryEquipmentSystem
---- @field ServerInventoryStack EsvInventoryStackSystem
---- @field ServerNewInventoryMember EsvInventoryNewInventoryMemberSystem
---- @field ServerStatusRequest EsvStatusRequestSystem
---- @field ServerDualWielding EsvDualWieldingSystem
---- @field ServerStats EsvStatsSystem
---- @field ServerPingRequest EsvPingRequestSystem
---- @field ServerInterruptRequests EsvInterruptRequestsSystem
---- @field ServerTemplateChange EsvTemplatesChangeSystem
---- @field ServerGravity EsvGravitySystem
---- @field ServerPassive EsvPassivePassiveSystem
---- @field ServerSpellLearning EsvSpellLearningSystem
---- @field ServerCombat EsvCombatSystem
---- @field ServerInventoryCanPlace EsvInventoryCanPlaceSystem
---- @field ServerLeader EsvLeaderSystem
---- @field ServerFTBZone EsvFtbZoneSystem
---- @field ServerInventoryLocking EsvInventoryLockingSystem
---- @field ServerInventoryInteractionRequest EsvInventoryInteractionRequestSystem
---- @field ServerBodyType EsvBodyTypeSystem
---- @field ClientEquipmentVisuals EclEquipmentVisualsSystem
---- @field ServerSummonSpawn EsvSummonSpawnSystem
 
 --- @class Ext
 --- @field Audio Ext_ClientAudio

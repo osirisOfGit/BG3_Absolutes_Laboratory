@@ -332,10 +332,7 @@ end
 function ChangePrinter:OnTick()
 	local trace = Ext.Entity.GetTrace()
 	for entity, changes in pairs(trace.Entities) do
-		if ((not next(self.TargetedEntities) or not entity.Uuid)
-				or (entity.Uuid and TableUtils:IndexOf(self.TargetedEntities, entity.Uuid.EntityUuid)))
-			and self:EntityHasPrintableChanges(entity, changes)
-		then
+		if ((not next(self.TargetedEntities) or not entity.Uuid) or (entity.Uuid and TableUtils:IndexOf(self.TargetedEntities, entity.Uuid.EntityUuid))) and self:EntityHasPrintableChanges(entity, changes) then
 			if self.PrintChanges then
 				local msg = "[#" .. self.FrameNo .. "] " .. self:GetEntityNameDecorated(entity) .. ": "
 				if changes.Create then msg = msg .. " Created" end

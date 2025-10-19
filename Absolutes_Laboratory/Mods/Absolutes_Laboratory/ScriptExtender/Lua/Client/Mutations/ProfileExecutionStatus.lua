@@ -10,10 +10,12 @@ local stage = {
 	"Undoing",
 	"Applying",
 	"Complete",
+	"Error",
 	["Selecting"] = 1,
 	["Undoing"] = 2,
 	["Applying"] = 3,
-	["Complete"] = 4
+	["Complete"] = 4,
+	["Error"] = 5,
 }
 
 ---@class ProfileExecutionStatus
@@ -79,11 +81,13 @@ Channels.ProfileExecutionStatus:SetHandler(
 			end
 
 			local function sizing()
-				if backgroundWindow.LastSize[2] and backgroundWindow.LastSize[2] > 200 then
-					window:SetSize(backgroundWindow.LastSize, "Always")
-					window:SetPos(Styler:ScaleFactor({ -10, -10 }), "Always")
-				else
-					Ext.Timer.WaitFor(10, sizing)
+				if backgroundWindow then
+					if backgroundWindow.LastSize[2] and backgroundWindow.LastSize[2] > 200 then
+						window:SetSize(backgroundWindow.LastSize, "Always")
+						window:SetPos(Styler:ScaleFactor({ -10, -10 }), "Always")
+					else
+						Ext.Timer.WaitFor(10, sizing)
+					end
 				end
 			end
 
@@ -98,19 +102,25 @@ Channels.ProfileExecutionStatus:SetHandler(
 		Helpers:KillChildren(updaterGroup)
 		Styler:CheapTextAlign(("%sExecuting Profile %s"):format(profileView == "Detailed" and "" or "Absolute's Laboratory: ", data.profile), updaterGroup, "Large")
 
-		if data.stage ~= "Complete" then
+		if data.stage ~= "Complete" and data.stage ~= "Error" then
 			if profileView == "Detailed" then
-				Styler:ScaledFont(updaterGroup:AddText(
-						("Stage %d: %s | Time Elapsed: %dms | Number Of Entities: %d"):format(stage[data.stage], data.stage, data.timeElapsed, data.numberOfEntitiesBeingProcessed)),
+				Styler:CheapTextAlign("Change Report Level In Lab's MCM General Tab", updaterGroup, "Tiny")
+
+				Styler:CheapTextAlign(("Stage %d: %s | Time Elapsed: %dms | Number Of Entities: %d%s"):format(
+						stage[data.stage],
+						data.stage,
+						data.timeElapsed,
+						data.numberOfEntitiesProcessed,
+						data.stage == "Selecting" and (" out of " .. data.totalNumberOfEntities) or ""),
+					updaterGroup,
 					"Big")
 
 				if data.stage ~= "Selecting" then
 					Styler:MiddleAlignedColumnLayout(updaterGroup, function(ele)
 						---@type ExtuiProgressBar
-						local progressBar = updaterGroup:AddProgressBar()
-						if data.stage == "Applying" then
-							progressBar.Value = data.numberOfEntitiesProcessed / data.numberOfEntitiesBeingProcessed
-						end
+						local progressBar = ele:AddProgressBar()
+						progressBar.ItemWidth = math.floor(window.LastSize[1] * .8)
+						progressBar.Value = data.numberOfEntitiesProcessed / data.numberOfEntitiesBeingProcessed
 						progressBar:SetColor("PlotHistogram", { 1, 1, 1, 1 })
 					end)
 				end
@@ -128,26 +138,32 @@ Channels.ProfileExecutionStatus:SetHandler(
 				Styler:Color(Styler:CheapTextAlign("Debug Logs Are Currently Enabled - This Will Slow Things Down!", updaterGroup), "ErrorText")
 			end
 		else
-			Styler:CheapTextAlign("Completed!", updaterGroup, "Large")
+			Styler:CheapTextAlign(data.stage == "Complete" and "Completed!" or "Unrecoverable Error Occurred", updaterGroup, "Large")
+
+			if data.stage == "Error" then
+				Styler:CheapTextAlign("See log.txt more details and report on Nexus", updaterGroup)
+			end
 
 			backgroundWindow.AlwaysAutoResize = false
 			window.AlwaysAutoResize = false
 
 			if profileView == "Detailed" then
-				Styler:ScaledFont(updaterGroup:AddText("Stats:"), "Big")
-				local statusTable = updaterGroup:AddTable("stats", 2)
+				Styler:MiddleAlignedColumnLayout(updaterGroup, function(ele)
+					Styler:CheapTextAlign("Stats:", ele, "Big")
+					local statusTable = ele:AddTable("stats", 2)
 
-				local row = statusTable:AddRow()
-				row:AddCell():AddText("Total Time")
-				row:AddCell():AddText(("%d milliseconds"):format(data.timeElapsed))
+					local row = statusTable:AddRow()
+					row:AddCell():AddText("Total Time")
+					row:AddCell():AddText(("%d milliseconds"):format(data.timeElapsed))
 
-				local row = statusTable:AddRow()
-				row:AddCell():AddText("Total Entities Eligible For Mutation")
-				row:AddCell():AddText(("%d"):format(data.totalNumberOfEntities))
+					local row = statusTable:AddRow()
+					row:AddCell():AddText("Total Eligible Entities On Server")
+					row:AddCell():AddText(("%d"):format(data.totalNumberOfEntities))
 
-				local row = statusTable:AddRow()
-				row:AddCell():AddText("Total Entities Mutated")
-				row:AddCell():AddText(tostring(data.numberOfEntitiesProcessed))
+					local row = statusTable:AddRow()
+					row:AddCell():AddText("Total Entities Mutated")
+					row:AddCell():AddText(tostring(data.numberOfEntitiesProcessed))
+				end)
 
 				local stepDelay = 33
 				local minHeight = window.LastSize[2] * 0.025

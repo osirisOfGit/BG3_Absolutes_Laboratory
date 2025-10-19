@@ -341,6 +341,10 @@ function ListConfigurationManager:HandleDependences(export, mutator, lists, remo
 					end
 				end
 
+				if listDef.linkedLists and next(listDef.linkedLists._real or listDef.linkedLists) then
+					self:HandleDependences(export, mutator, listDef.linkedLists, removeMissingDependencies, configKey)
+				end
+
 				if listDef.levels then
 					for level, levelSubList in pairs(listDef.levels) do
 						if levelSubList.linkedProgressions then

@@ -4,6 +4,13 @@ Source Repo: https://github.com/osirisOfGit/BG3-Common-Dev-Utilities
 
 This repository is meant to house common utilities used by BG3 SE developers, without the burden of an external mod dependency - just use [Git Subtree](https://gist.github.com/SKempin/b7857a6ff6bddb05717cc17a44091202)!
 
+Example:
+
+`git subtree add --prefix Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities git@github.com:osirisOfGit/BG3-Common-Dev-Utilities.git main --squash`
+
+`git subtree pull --prefix Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities git@github.com:osirisOfGit/BG3-Common-Dev-Utilities.git main --squash`
+
+`git subtree push --prefix Absolutes_Laboratory/Mods/Absolutes_Laboratory/ScriptExtender/Lua/Utilities git@github.com:osirisOfGit/BG3-Common-Dev-Utilities.git main`
 ## Credits/Helpful Links:
 
 ### IDE Helper Files
@@ -28,5 +35,3 @@ https://github.com/Norbyte/bg3se/blob/main/BG3Extender/IdeHelpers/ExtIdeHelpers.
 Most of the Common Utilities: [Fararagi](https://next.nexusmods.com/profile/Fararagi?gameId=3474)
 
 Aahz's toolbox of insanity - https://github.com/Aahzmandius/_Libs
-
-Norb's IMGUI Color Scheme - https://github.com/Norbyte/bg3se/blob/f8b982125c6c1997ceab2d65cfaa3c1a04908ea6/BG3Extender/Extender/Client/IMGUI/IMGUI.cpp#L1901C34-L1901C60

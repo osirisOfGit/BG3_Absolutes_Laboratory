@@ -57,25 +57,31 @@ function PassiveListDesigner:customizeDesigner(parent)
 		Helpers:KillChildren(self.popup)
 		self.popup:Open()
 
-		for spellListId, spellList in pairs(MutationConfigurationProxy.lists.spellLists) do
-			if spellList.useGameLevel == self.activeList.useGameLevel then
-				---@type ExtuiSelectable
-				local select = self.popup:AddSelectable(spellList.name .. (spellList.modId and string.format(" (from %s)", Ext.Mod.GetMod(spellList.modId).Info.Name) or ""),
-					"DontClosePopups")
-				select.Selected = TableUtils:IndexOf(self.activeList.spellListDependencies, spellListId) ~= nil
+		Styler:BuildCompleteUserAndModLists(self.popup,
+			function(config)
+				return config.lists and config.lists.spellLists and next(config.lists.spellLists) and config.lists.spellLists
+			end,
+			function(key, value)
+				return value.name
+			end,
+			function(key, listItem)
+				return self.activeList.useGameLevel == listItem.useGameLevel
+			end,
+			function(select, id, item)
+				select.Label = item.name
+				select.Selected = TableUtils:IndexOf(self.activeList.spellListDependencies, id) ~= nil
 
 				select.OnClick = function()
 					if not select.Selected then
-						self.activeList.spellListDependencies[TableUtils:IndexOf(self.activeList.spellListDependencies, spellListId)] = nil
+						self.activeList.spellListDependencies[TableUtils:IndexOf(self.activeList.spellListDependencies, id)] = nil
 						TableUtils:ReindexNumericTable(self.activeList.spellListDependencies)
 					else
 						self.activeList.spellListDependencies = self.activeList.spellListDependencies or {}
-						self.activeList.spellListDependencies[#self.activeList.spellListDependencies + 1] = spellListId
+						self.activeList.spellListDependencies[#self.activeList.spellListDependencies + 1] = id
 					end
 
 					buildTable()
 				end
-			end
-		end
+			end)
 	end
 end

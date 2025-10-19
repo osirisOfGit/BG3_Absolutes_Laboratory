@@ -1,3 +1,4 @@
+---@class HealthMutatorClass : MutatorInterface
 HealthMutator = MutatorInterface:new("Health")
 HealthMutator.affectedComponents = {
 	"Health",
@@ -471,6 +472,35 @@ function HealthMutator:applyMutator(entity, entityVar)
 	end
 
 	entity:Replicate("Health")
+	local maxHealth = entity.Health.MaxHp
+
+	mutators[1].subscription = Ext.Entity.OnChange("Health",
+		---@param entity EntityHandle
+		---@diagnostic disable-next-line: param-type-mismatch
+		function(entity)
+			local mutationVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME]
+			local firstMutator = (mutationVar.appliedMutators[self.name][1] or mutationVar.appliedMutators[self.name])
+
+			if entity.Health.MaxHp <= (maxHealth * .90) then
+				local currentHealthPercentage = firstMutator.currentHealthPercentage
+
+				Logger:BasicDebug(
+					"Entity %s (%s) had their maxHp set to %s by something other than Lab - resetting it to the Lab value of %s (maintaining the current health %% of %s%%)",
+					EntityRecorder:GetEntityName(entity),
+					entity.Uuid.EntityUuid,
+					entity.Health.MaxHp,
+					maxHealth,
+					currentHealthPercentage * 100)
+
+				entity.Health.MaxHp = maxHealth
+				if (1 - (entity.Health.Hp / entity.Health.MaxHp)) ~= currentHealthPercentage then
+					entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * (1 - currentHealthPercentage))))
+				end
+				entity:Replicate("Health")
+			else
+				firstMutator.currentHealthPercentage = (entity.Health.Hp / entity.Health.MaxHp)
+			end
+		end, entity)
 end
 
 function HealthMutator:undoMutator(entity, entityVar)
@@ -478,8 +508,14 @@ function HealthMutator:undoMutator(entity, entityVar)
 
 	local originalMaxHp = entity.Health.MaxHp
 
+	local subHandle = (entityVar.appliedMutators[self.name][1] or entityVar.appliedMutators[self.name]).subscription
+	if subHandle then
+		Logger:BasicTrace("Cancelled Subscription with handle %s", subHandle)
+		Ext.Entity.Unsubscribe(subHandle)
+	end
+
 	entity.Health.MaxHp = entityVar.originalValues[self.name]
-	entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * healthPercentage)))
+	entity.Health.Hp = math.min(entity.Health.MaxHp, entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * healthPercentage))))
 
 	entity:Replicate("Health")
 
@@ -489,6 +525,8 @@ function HealthMutator:undoMutator(entity, entityVar)
 		entity.Health.MaxHp,
 		entity.Health.Hp
 	)
+
+	Ext.System.ServerStats.CalculationRequests[entity] = Ext.Enums.StatsDirtyFlags.MaxHP
 end
 
 ---@return MazzleDocsDocumentation
@@ -587,12 +625,18 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function HealthMutator:generateChangelog()
 	return {
+		["1.7.1"] = {
+			type = "Bullet",
+			text = {
+				"Added a Health Component Subscription to entities to reset their MaxHP to the Lab-set value whenever it's reset by the game"
+			}
+		},
 		["1.6.0"] = {
 			type = "Bullet",
 			text = {
 				"Fix execution when the math ain't whole numbers",
 				"Changes Additive behavior for Health Mutators - Dynamic overwrites Dynamic, Static Overwrites Static, but Static and Dynamic can be run together (Static will always run first)"
 			}
-		} --[[@as MazzleDocsContentItem]]
-	}
+		}
+	} --[[@as {[string]: MazzleDocsContentItem}]]
 end

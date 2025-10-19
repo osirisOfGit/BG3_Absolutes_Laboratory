@@ -156,8 +156,6 @@ i.e if Base is 5 and this is 2, the next value given will be 3 - if this is 0.3,
 
 		for _, actionResourceId in TableUtils:OrderedPairs(Ext.StaticData.GetAll("ActionResource"), function(key, value)
 			return Ext.StaticData.Get(value, "ActionResource").Name
-		end, function(key, value)
-			return not Ext.StaticData.Get(value, "ActionResource").IsHidden
 		end) do
 			local existingIndex = TableUtils:IndexOf(config, function(value)
 				return value.resourceId == actionResourceId
@@ -166,7 +164,7 @@ i.e if Base is 5 and this is 2, the next value given will be 3 - if this is 0.3,
 			---@type ResourceActionResource
 			local actionResource = Ext.StaticData.Get(actionResourceId, "ActionResource")
 			---@type ExtuiSelectable
-			local select = popWin:AddSelectable(string.format("%s (%s)", actionResource.Name, actionResource.DisplayName:Get()), "DontClosePopups")
+			local select = popWin:AddSelectable(string.format("%s (%s)", actionResource.Name, actionResource.DisplayName:Get() or "N/A"), "DontClosePopups")
 			select.Selected = actionResource.MaxLevel == 0 and existingIndex ~= nil
 
 			Styler:HyperlinkRenderable(select, actionResource.Name, "Shift", true, nil, function(parent)
@@ -578,8 +576,6 @@ If Level 1 is set, Lab will hardset the existing resource on the entity (if appl
 
 			for _, actionResourceId in TableUtils:OrderedPairs(Ext.StaticData.GetAll("ActionResource"), function(key, value)
 				return Ext.StaticData.Get(value, "ActionResource").Name
-			end, function(key, value)
-				return not Ext.StaticData.Get(value, "ActionResource").IsHidden
 			end) do
 				---@type ResourceActionResource
 				local actionResource = Ext.StaticData.Get(actionResourceId, "ActionResource")
@@ -1218,11 +1214,17 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function ActionResourcesMutator:generateChangelog()
 	return {
+		["1.7.1"] = {
+			type = "Bullet",
+			text = {
+				"Removed isHidden filtering when displaying the possible Action Resources to add"
+			}
+		},
 		["1.7.0"] = {
 			type = "Bullet",
 			text = {
 				"Deprecated the previous implementation, implementing a new version"
 			}
-		} --[[@as MazzleDocsContentItem]]
-	}
+		}
+	} --[[@as {[string]: MazzleDocsContentItem}]]
 end

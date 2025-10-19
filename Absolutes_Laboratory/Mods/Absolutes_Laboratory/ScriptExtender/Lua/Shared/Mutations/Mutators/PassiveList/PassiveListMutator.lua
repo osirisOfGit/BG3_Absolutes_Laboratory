@@ -114,19 +114,18 @@ and this list will use the sum of the assigned spell list levels to determine wh
 		Helpers:KillChildren(popup)
 		popup:Open()
 
-		local userSep = popup:AddSeparatorText("Your Lists")
-		userSep:SetStyle("SeparatorTextAlign", 0.5)
-
-		local userLists = popup:AddChildWindow("userLists")
-		userLists.Size = { 500, 500 }
-
-		for id, passiveList in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.lists.passiveLists, function(key, value)
-			return value.name
-		end) do
-			if mutator.useGameLevel == passiveList.useGameLevel then
-				---@type ExtuiSelectable
-				local select = userLists:AddSelectable(passiveList.name, "DontClosePopups")
-				select.IDContext = id
+		Styler:BuildCompleteUserAndModLists(popup,
+			function(config)
+				return config.lists and config.lists.passiveLists and next(config.lists.passiveLists) and config.lists.passiveLists
+			end,
+			function(key, value)
+				return value.name
+			end,
+			function(key, listItem)
+				return mutator.useGameLevel == listItem.useGameLevel
+			end,
+			function(select, id, item)
+				select.Label = item.name
 				select.Selected = TableUtils:IndexOf(mutator.values.passiveLists, id) ~= nil
 				select.OnClick = function()
 					local index = TableUtils:IndexOf(mutator.values.passiveLists, id)
@@ -135,75 +134,12 @@ and this list will use the sum of the assigned spell list levels to determine wh
 						select.Selected = false
 					else
 						select.Selected = true
+						mutator.values.passiveLists = mutator.values.passiveLists or {}
 						table.insert(mutator.values.passiveLists, id)
 					end
 					self:renderMutator(parent, mutator)
 				end
-			end
-		end
-
-		if #userLists.Children == 0 then
-			userLists:Destroy()
-			userSep:Destroy()
-		else
-			userLists.Size = { 0, math.min(500, 35 * (#userLists.Children)) }
-		end
-
-		if MutationModProxy.ModProxy.lists.passiveLists() then
-			---@type {[Guid]: Guid[]}
-			local modPassiveLists = {}
-
-			for modId, modCache in pairs(MutationModProxy.ModProxy.lists.passiveLists) do
-				---@cast modCache +LocalModCache
-
-				if modCache.lists and modCache.lists.passiveLists and next(modCache.lists.passiveLists) then
-					modPassiveLists[modId] = {}
-					for spellListId in pairs(modCache.lists.passiveLists) do
-						table.insert(modPassiveLists[modId], spellListId)
-					end
-				end
-			end
-
-			if next(modPassiveLists) then
-				for modId, spellLists in TableUtils:OrderedPairs(modPassiveLists, function(key, value)
-					return Ext.Mod.GetMod(key).Info.Name
-				end) do
-					local modSep = popup:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name)
-					modSep.Font = "Small"
-
-					local modGroup = popup:AddChildWindow("Mods" .. modId)
-					modGroup.Size = { 500, 500 }
-
-					for _, guid in TableUtils:OrderedPairs(spellLists, function(key, value)
-						return MutationModProxy.ModProxy.lists.passiveLists[value].name
-					end) do
-						local passiveList = MutationModProxy.ModProxy.lists.passiveLists[guid]
-						if mutator.useGameLevel == passiveList.useGameLevel then
-							---@type ExtuiSelectable
-							local select = modGroup:AddSelectable(passiveList.name, "DontClosePopups")
-							select.Selected = TableUtils:IndexOf(mutator.values.passiveLists, guid) ~= nil
-							select.OnClick = function()
-								local index = TableUtils:IndexOf(mutator.values.passiveLists, guid)
-								if index then
-									mutator.values.passiveLists[index] = nil
-									select.Selected = false
-								else
-									select.Selected = true
-									table.insert(mutator.values.passiveLists, guid)
-								end
-								self:renderMutator(parent, mutator)
-							end
-						end
-					end
-					if #modGroup.Children == 0 then
-						modGroup:Destroy()
-						modSep:Destroy()
-					else
-						modGroup.Size = { 0, math.min(500, 35 * (#modGroup.Children)) }
-					end
-				end
-			end
-		end
+			end)
 	end
 
 	local looseSep = mutatorSection:AddSeparatorText("Loose Passives ( ? )")
@@ -634,11 +570,15 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 					table.insert(appliedLists, linkedListId)
 
 					local linkedList = MutationConfigurationProxy.lists.passiveLists[linkedListId]
-					Logger:BasicDebug("### STARTING List %s, linked from %s ###", linkedList.name, listToProcess.name)
-					applyPassiveLists(entity, levelToUse, linkedList, numRandomPassivesPerLevel, appliedPassives, appliedLists)
-					Logger:BasicDebug("### FINISHED List %s, linked from %s ###", linkedList.name, listToProcess.name)
+					if linkedList then
+						Logger:BasicDebug("### STARTING List %s, linked from %s ###", linkedList.name, listToProcess.name)
+						applyPassiveLists(entity, levelToUse, linkedList, numRandomPassivesPerLevel, appliedPassives, appliedLists)
+						Logger:BasicDebug("### FINISHED List %s, linked from %s ###", linkedList.name, listToProcess.name)
 
-					recursivelyApplyLists(linkedList)
+						recursivelyApplyLists(linkedList)
+					else
+						Logger:BasicWarning("Can't find a PassiveList with a UUID of %s, linked to %s - skipping", linkedListId, listToProcess.name)
+					end
 				end
 			end
 		end
@@ -894,11 +834,17 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function PassiveListMutator:generateChangelog()
 	return {
+		["1.7.1"] = {
+			type = "Bullet",
+			text = {
+				"Added safety check + log in case a linked list isn't found"
+			}
+		},
 		["1.7.0"] = {
 			type = "Bullet",
 			text = {
 				"Fix lists not applying entries from linked progressions"
 			}
-		} --[[@as MazzleDocsContentItem]]
-	}
+		}
+	} --[[@as {[string]: MazzleDocsContentItem}]]
 end
