@@ -57,7 +57,7 @@ function MonsterLab:buildFolderView(parent, designerSection)
 		folderSelect.IDContext = folderId
 		folderSelect:SetStyle("SelectableTextAlign", 0.5, 0)
 
-		local sep = parent:AddSeparatorText(folder.name)
+		local sep = parent:AddSeparatorText(">  " .. folder.name)
 		sep.PositionOffset = Styler:ScaleFactor({ 0, -50 })
 
 		local header = parent:AddGroup("encounters")
@@ -65,7 +65,9 @@ function MonsterLab:buildFolderView(parent, designerSection)
 
 		folderSelect.OnClick = function()
 			header.Visible = not header.Visible
+			sep.Label = (header.Visible and "" or ">  ") .. folder.name
 		end
+
 		folderSelect.OnRightClick = function()
 			Helpers:KillChildren(self.popup)
 			self.popup:Open()
@@ -525,7 +527,7 @@ function MonsterLab:buildCreateEntityForm(parent, encounter, completedCallback, 
 
 				local openWindow = Styler:HyperlinkRenderable(templateSelect,
 					templateId,
-					"Shift",
+					"Alt",
 					true,
 					nil,
 					function(parent)
