@@ -1,9 +1,40 @@
+Ext.Vars.RegisterModVariable(ModuleUUID, "ActiveMonsterLabProfile", {
+	Server = true,
+	Client = true,
+	WriteableOnServer = true,
+	WriteableOnClient = true,
+	SyncToClient = true,
+	SyncToServer = true,
+	SyncOnWrite = true
+})
+
+Ext.Vars.RegisterModVariable(ModuleUUID, "HasDisabledMonsterLabProfiles", {
+	Server = true,
+	Client = true,
+	WriteableOnServer = true,
+	WriteableOnClient = true,
+	SyncToClient = true,
+	SyncToServer = true,
+	SyncOnWrite = true
+})
+
+
 Ext.Require("Client/MonsterLab/EncounterDesigner.lua")
 -- Ext.Require("Client/MonsterLab/ExistingEncounters.lua")
 
 MonsterLab = {
 	config = ConfigurationStructure.config.monsterLab,
-	activeRuleset = "Base"
+	activeRuleset = "Base",
+	---@param newProfile (string|boolean)?
+	---@return string?
+	activeProfile = function(newProfile)
+		if newProfile or newProfile == false then
+			Ext.Vars.GetModVariables(ModuleUUID).ActiveMonsterLabProfile = (type(newProfile) == "string" and newProfile or nil)
+			Ext.Vars.GetModVariables(ModuleUUID).HasDisabledMonsterLabProfiles = not type(newProfile) == "string"
+		end
+
+		return Ext.Vars.GetModVariables(ModuleUUID).ActiveMonsterLabProfile
+	end
 }
 
 local hasInitialized
@@ -30,23 +61,117 @@ function MonsterLab:init(parent)
 	local layoutRow = layoutTable:AddRow()
 
 	self.encounterFoldersSidebar = layoutRow:AddCell():AddChildWindow("folders")
-	self.encounterDesigner = layoutRow:AddCell()
+	self.designerSection = layoutRow:AddCell()
 
 	self:buildFolderView()
 end
 
 function MonsterLab:buildProfileView()
+	Styler:MiddleAlignedColumnLayout(self.encounterFoldersSidebar, function(ele)
+		local sIndex = 1
+		local opt = { "Disabled" }
 
+		for profileId, profile in TableUtils:OrderedPairs(self.config.profiles, function(_, value)
+			return value.name
+		end) do
+			table.insert(opt, profile.name .. (profile.modId and "(M)" or ""))
+			if self.activeProfile() == profileId then
+				sIndex = #opt
+			end
+		end
+
+		Styler:CheapTextAlign("Profiles", ele, "Big")
+
+		local viewProfileButton = Styler:ImageButton(ele:AddImageButton("seeProfile", "ico_concentration", Styler:ScaleFactor({ 32, 32 })))
+
+		local profileCombo = ele:AddCombo("##profiles")
+		profileCombo.SameLine = true
+		profileCombo.Options = opt
+		profileCombo.WidthFitPreview = true
+		profileCombo.SelectedIndex = sIndex - 1
+
+		local manageProfileButton = Styler:ImageButton(ele:AddImageButton("Manage", "ico_edit_d", Styler:ScaleFactor({ 32, 32 })))
+		manageProfileButton.SameLine = true
+
+		local function renderProfile()
+			Helpers:KillChildren(self.designerSection)
+
+			if self.activeProfile() and self.config.profiles[self.activeProfile()] then
+				---@type MonsterLabProfile
+				local profile = self.config.profiles[self.activeProfile()]
+
+				Styler:CheapTextAlign(profile.name, self.designerSection, "Large")
+			end
+		end
+
+		viewProfileButton.OnClick = renderProfile
+
+		profileCombo.OnChange = function()
+			local selectedName = profileCombo.Options[profileCombo.SelectedIndex + 1]
+
+			if selectedName == "Disabled" then
+				self.activeProfile(false)
+				Helpers:KillChildren(self.designerSection)
+			else
+				local isModProfile = selectedName:sub(#selectedName - 2) == "(M)"
+
+				local activeProfile = self.activeProfile()
+
+				self.activeProfile(TableUtils:IndexOf(self.config.profiles, function(value)
+					if isModProfile then
+						if value.modId then
+							return value.name == selectedName:sub(1, #selectedName - 3)
+						else
+							return false
+						end
+					elseif not value.modId then
+						return value.name == selectedName
+					end
+
+					return false
+				end))
+
+				if self.activeProfile() ~= activeProfile then
+					renderProfile()
+				end
+			end
+		end
+
+		manageProfileButton.OnClick = function()
+			Helpers:KillChildren(self.popup)
+			self.popup:Open()
+
+			FormBuilder:CreateForm(self.popup:AddMenu("Create New Profile"), function(formResults)
+					---@type MonsterLabProfile
+					local profile = {
+						name = formResults.Name,
+						description = formResults.Description,
+						encounters = {}
+					}
+
+					self.config.profiles[FormBuilder:generateGUID()] = profile
+					self:buildFolderView()
+				end,
+				{
+					{
+						label = "Name",
+						type = "Text",
+						errorMessageIfEmpty = "Required Field"
+					},
+					{
+						label = "Description",
+						type = "Multiline"
+					}
+				})
+		end
+	end)
+	self.encounterFoldersSidebar:AddNewLine()
 end
 
 function MonsterLab:buildFolderView()
 	Helpers:KillChildren(self.encounterFoldersSidebar)
 
-	local manageProfilesButton = self.encounterFoldersSidebar:AddSelectable("Manage Profiles")
-	manageProfilesButton:SetStyle("SelectableTextAlign", 0.5)
-	manageProfilesButton.OnClick = function ()
-		self:buildProfileView()
-	end
+	self:buildProfileView()
 
 	Styler:CheapTextAlign("Your Encounters", self.encounterFoldersSidebar, "Big")
 	self.encounterFoldersSidebar:AddNewLine()
@@ -80,7 +205,7 @@ function MonsterLab:buildFolderView()
 					folder.name = formResults.Name
 					folder.description = formResults.Description
 
-					self:buildFolderView(self.encounterFoldersSidebar, self.encounterDesigner)
+					self:buildFolderView(self.encounterFoldersSidebar, self.designerSection)
 				end,
 				{
 					{
@@ -100,7 +225,7 @@ function MonsterLab:buildFolderView()
 			self.popup:AddSelectable("Delete", "DontClosePopups").OnClick = function(select)
 				if select.Label ~= "Delete" then
 					folder.delete = true
-					self:buildFolderView(self.encounterFoldersSidebar, self.encounterDesigner)
+					self:buildFolderView(self.encounterFoldersSidebar, self.designerSection)
 				else
 					select.DontClosePopups = false
 					select.Label = "Are You Sure?"
@@ -241,26 +366,26 @@ end
 
 ---@param encounter MonsterLabEncounter
 function MonsterLab:buildEncounterView(encounter)
-	Helpers:KillChildren(self.encounterDesigner)
+	Helpers:KillChildren(self.designerSection)
 
-	Styler:MiddleAlignedColumnLayout(self.encounterDesigner, function(ele)
+	Styler:MiddleAlignedColumnLayout(self.designerSection, function(ele)
 		Styler:CheapTextAlign(encounter.name, ele).Font = "Big"
 
 		if encounter.description then
-			Styler:CheapTextAlign(encounter.description, self.encounterDesigner)
+			Styler:CheapTextAlign(encounter.description, self.designerSection)
 		end
 	end)
 
 	---@type fun()
 	local buildEncounter
 
-	Styler:MiddleAlignedColumnLayout(self.encounterDesigner, function(ele)
+	Styler:MiddleAlignedColumnLayout(self.designerSection, function(ele)
 		self:ManageRulesets(ele:AddGroup("Rulesets"), function(...)
 			buildEncounter(...)
 		end)
 	end)
 
-	local encounterGroup = self.encounterDesigner:AddGroup("Encounter")
+	local encounterGroup = self.designerSection:AddGroup("Encounter")
 
 	local lastSelectedEntity
 	---@type ExtuiImage?

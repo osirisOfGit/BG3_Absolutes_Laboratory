@@ -1,3 +1,23 @@
+Ext.Vars.RegisterModVariable(ModuleUUID, "ActiveMonsterLabProfile", {
+	Server = true,
+	Client = true,
+	WriteableOnServer = true,
+	WriteableOnClient = true,
+	SyncToClient = true,
+	SyncToServer = true,
+	SyncOnWrite = true
+})
+
+Ext.Vars.RegisterModVariable(ModuleUUID, "HasDisabledMonsterLabProfiles", {
+	Server = true,
+	Client = true,
+	WriteableOnServer = true,
+	WriteableOnClient = true,
+	SyncToClient = true,
+	SyncToServer = true,
+	SyncOnWrite = true
+})
+
 Ext.Vars.RegisterModVariable(ModuleUUID, "MonsterLab_SpawnedEntities", {
 	Server = true,
 	Client = true,
