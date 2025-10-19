@@ -251,8 +251,8 @@ function MonsterLab:buildEncounterView(parent, encounter)
 	local buildEncounter
 
 	Styler:MiddleAlignedColumnLayout(parent, function(ele)
-		self:ManageRulesets(ele:AddGroup("Rulesets"), function()
-			buildEncounter()
+		self:ManageRulesets(ele:AddGroup("Rulesets"), function(...)
+			buildEncounter(...)
 		end)
 	end)
 
@@ -262,7 +262,9 @@ function MonsterLab:buildEncounterView(parent, encounter)
 	---@type ExtuiImage?
 	local activeSelectedIcon
 
-	buildEncounter = function()
+	---@param rulesetToCopyTo string?
+	---@param rulesetToCopyFrom string?
+	buildEncounter = function(rulesetToCopyTo, rulesetToCopyFrom)
 		activeSelectedIcon = nil
 
 		Helpers:KillChildren(encounterGroup)
@@ -279,6 +281,20 @@ function MonsterLab:buildEncounterView(parent, encounter)
 		for id, entity in TableUtils:OrderedPairs(encounter.entities, function(key, value)
 			return value.displayName
 		end) do
+			if rulesetToCopyTo and rulesetToCopyFrom then
+				if entity.rulesetModifiers[rulesetToCopyFrom] then
+					---@type MonsterLab_RulesetModifiers
+					local rulesetCopy = TableUtils:DeeplyCopyTable(entity.rulesetModifiers[rulesetToCopyFrom]._real)
+
+					if entity.rulesetModifiers[rulesetToCopyTo] then
+						entity.rulesetModifiers[rulesetToCopyTo].delete = true
+						entity.rulesetModifiers[rulesetToCopyTo] = nil
+					end
+
+					entity.rulesetModifiers[rulesetToCopyTo] = rulesetCopy
+				end
+			end
+
 			local entityGroup = entitySidebar:AddGroup(id)
 			local deleteButton = Styler:ImageButton(entityGroup:AddImageButton("delete" .. id, "ico_red_x", Styler:ScaleFactor({ 16, 16 })))
 			deleteButton.OnClick = function()
@@ -318,7 +334,7 @@ function MonsterLab:buildEncounterView(parent, encounter)
 				self:buildCreateEntityForm(designerSection, encounter, buildEncounter, entity)
 			end
 
-			local openPopupFunc = Styler:HyperlinkRenderable(name, entity.template, "Shift", true, nil, function(parent)
+			local openPopupFunc = Styler:HyperlinkRenderable(name, entity.template, "Alt", true, nil, function(parent)
 				CharacterWindow:BuildWindow(parent, entity.template)
 			end)
 
@@ -584,124 +600,138 @@ right-click to modify or delete that ruleset. The Base ruleset can't be modified
 		end
 
 		rulesetButton.OnRightClick = function()
-			if rulesetId == "Base" then
-				return
-			end
-
 			Helpers:KillChildren(self.popup)
 			self.popup:Open()
 
-			---@type ExtuiMenu
-			local editRulesetMetaMenu = self.popup:AddMenu("Edit Ruleset Name/Description")
-			FormBuilder:CreateForm(editRulesetMetaMenu, function(formResults)
-				ruleset.name = formResults.Name
-				ruleset.description = formResults.Description
-				self:ManageRulesets(parent, rulesetSelectCallback)
-			end, {
-				{
-					label = "Name",
-					type = "Text",
-					defaultValue = ruleset.name,
-					errorMessageIfEmpty = "A name is required"
-				},
-				{
-					label = "Description",
-					type = "Multiline",
-					defaultValue = ruleset.description
-				}
-			})
+			if rulesetId ~= "Base" then
+				---@type ExtuiMenu
+				local editRulesetMetaMenu = self.popup:AddMenu("Edit Ruleset Name/Description")
+				FormBuilder:CreateForm(editRulesetMetaMenu, function(formResults)
+					ruleset.name = formResults.Name
+					ruleset.description = formResults.Description
+					self:ManageRulesets(parent, rulesetSelectCallback)
+				end, {
+					{
+						label = "Name",
+						type = "Text",
+						defaultValue = ruleset.name,
+						errorMessageIfEmpty = "A name is required"
+					},
+					{
+						label = "Description",
+						type = "Multiline",
+						defaultValue = ruleset.description
+					}
+				})
 
-			---@type ExtuiMenu
-			local customizeModifiersMenu = self.popup:AddMenu("Customize Ruleset Modifiers")
-			customizeModifiersMenu.IDContext = rulesetId
+				---@type ExtuiMenu
+				local customizeModifiersMenu = self.popup:AddMenu("Customize Ruleset Modifiers")
+				customizeModifiersMenu.IDContext = rulesetId
 
-			---@type ExtuiMenu
-			local selectModifiersMenu = customizeModifiersMenu:AddMenu("Select Modifiers")
+				---@type ExtuiMenu
+				local selectModifiersMenu = customizeModifiersMenu:AddMenu("Select Modifiers")
 
-			local modGroup = customizeModifiersMenu:AddGroup("mods")
+				local modGroup = customizeModifiersMenu:AddGroup("mods")
 
-			local function buildCustomizer()
-				modGroup.Visible = TableUtils:CountElements(ruleset.activeModifiers) ~= 0
-				Helpers:KillChildren(modGroup)
-				for modifierId in TableUtils:OrderedPairs(ruleset.activeModifiers, function(key)
-					---@type ResourceRulesetModifier
-					local modifierResource = Ext.StaticData.Get(key, "RulesetModifier")
-					return tostring(modifierResource.RulesetModifierType) .. (modifierResource.DisplayName:Get() or modifierResource.Name)
-				end) do
-					---@type ResourceRulesetModifier
-					local modifierResource = Ext.StaticData.Get(modifierId, "RulesetModifier")
+				local function buildCustomizer()
+					modGroup.Visible = TableUtils:CountElements(ruleset.activeModifiers) ~= 0
+					Helpers:KillChildren(modGroup)
+					for modifierId in TableUtils:OrderedPairs(ruleset.activeModifiers, function(key)
+						---@type ResourceRulesetModifier
+						local modifierResource = Ext.StaticData.Get(key, "RulesetModifier")
+						return tostring(modifierResource.RulesetModifierType) .. (modifierResource.DisplayName:Get() or modifierResource.Name)
+					end) do
+						---@type ResourceRulesetModifier
+						local modifierResource = Ext.StaticData.Get(modifierId, "RulesetModifier")
 
-					modGroup:AddSeparatorText(modifierResource.DisplayName:Get() or modifierResource.Name)
+						modGroup:AddSeparatorText(modifierResource.DisplayName:Get() or modifierResource.Name)
 
-					local modifierGroup = modGroup:AddGroup(modifierId)
-					modifierGroup.IDContext = modifierId
+						local modifierGroup = modGroup:AddGroup(modifierId)
+						modifierGroup.IDContext = modifierId
 
-					if modifierResource.RulesetModifierType == 4 then
-						Styler:DualToggleButton(modifierGroup, "Enabled", "Disabled", false, function(swap)
-							if swap then
-								ruleset.activeModifiers[modifierId] = not ruleset.activeModifiers[modifierId]
+						if modifierResource.RulesetModifierType == 4 then
+							Styler:DualToggleButton(modifierGroup, "Enabled", "Disabled", false, function(swap)
+								if swap then
+									ruleset.activeModifiers[modifierId] = not ruleset.activeModifiers[modifierId]
+								end
+								return ruleset.activeModifiers[modifierId]
+							end)
+						elseif modifierResource.RulesetModifierType == 3 then
+							local resourceModifierValues = {}
+							for _, modifierValueId in pairs(Ext.StaticData.GetAll("RulesetModifierOption")) do
+								---@type ResourceRulesetModifierOption
+								local rulesetModifierValue = Ext.StaticData.Get(modifierValueId, "RulesetModifierOption")
+								if rulesetModifierValue.Modifier == modifierId then
+									table.insert(resourceModifierValues, rulesetModifierValue.DisplayName:Get())
+								end
 							end
-							return ruleset.activeModifiers[modifierId]
-						end)
-					elseif modifierResource.RulesetModifierType == 3 then
-						local resourceModifierValues = {}
-						for _, modifierValueId in pairs(Ext.StaticData.GetAll("RulesetModifierOption")) do
-							---@type ResourceRulesetModifierOption
-							local rulesetModifierValue = Ext.StaticData.Get(modifierValueId, "RulesetModifierOption")
-							if rulesetModifierValue.Modifier == modifierId then
-								table.insert(resourceModifierValues, rulesetModifierValue.DisplayName:Get())
-							end
-						end
-						table.sort(resourceModifierValues)
+							table.sort(resourceModifierValues)
 
-						local selectedModifiers = ruleset.activeModifiers[modifierId]
+							local selectedModifiers = ruleset.activeModifiers[modifierId]
 
-						for i, modifierOption in ipairs(resourceModifierValues) do
-							local box = modifierGroup:AddCheckbox(modifierOption, TableUtils:IndexOf(selectedModifiers, modifierOption) ~= nil)
-							box.IDContext = modifierId
-							box.SameLine = i > 1
-							box.OnChange = function()
-								if box.Checked then
-									table.insert(selectedModifiers, modifierOption)
-								else
-									selectedModifiers[TableUtils:IndexOf(selectedModifiers, modifierOption)] = nil
-									TableUtils:ReindexNumericTable(selectedModifiers)
+							for i, modifierOption in ipairs(resourceModifierValues) do
+								local box = modifierGroup:AddCheckbox(modifierOption, TableUtils:IndexOf(selectedModifiers, modifierOption) ~= nil)
+								box.IDContext = modifierId
+								box.SameLine = i > 1
+								box.OnChange = function()
+									if box.Checked then
+										table.insert(selectedModifiers, modifierOption)
+									else
+										selectedModifiers[TableUtils:IndexOf(selectedModifiers, modifierOption)] = nil
+										TableUtils:ReindexNumericTable(selectedModifiers)
+									end
 								end
 							end
 						end
 					end
 				end
-			end
-			buildCustomizer()
+				buildCustomizer()
 
-			for modifierName, modifierId in TableUtils:OrderedPairs(Lab_RulesetModifiers, function(_, value)
-				---@type ResourceRulesetModifier
-				local modifierResource = Ext.StaticData.Get(value, "RulesetModifier")
-				return tostring(modifierResource.RulesetModifierType) .. (modifierResource.DisplayName:Get() or modifierResource.Name)
-			end) do
-				---@type ResourceRulesetModifier
-				local modifierResource = Ext.StaticData.Get(modifierId, "RulesetModifier")
+				for modifierName, modifierId in TableUtils:OrderedPairs(Lab_RulesetModifiers, function(_, value)
+					---@type ResourceRulesetModifier
+					local modifierResource = Ext.StaticData.Get(value, "RulesetModifier")
+					return tostring(modifierResource.RulesetModifierType) .. (modifierResource.DisplayName:Get() or modifierResource.Name)
+				end) do
+					---@type ResourceRulesetModifier
+					local modifierResource = Ext.StaticData.Get(modifierId, "RulesetModifier")
 
-				---@type ExtuiSelectable
-				local modSelect = selectModifiersMenu:AddSelectable(modifierResource.DisplayName:Get() or modifierResource.Name, "DontClosePopups")
-				modSelect.Selected = ruleset.activeModifiers[modifierId] ~= nil
-				modSelect.OnClick = function()
-					if ruleset.activeModifiers[modifierId] ~= nil then
-						if type(ruleset.activeModifiers[modifierId]) == "table" then
-							ruleset.activeModifiers[modifierId].delete = true
+					---@type ExtuiSelectable
+					local modSelect = selectModifiersMenu:AddSelectable(modifierResource.DisplayName:Get() or modifierResource.Name, "DontClosePopups")
+					modSelect.Selected = ruleset.activeModifiers[modifierId] ~= nil
+					modSelect.OnClick = function()
+						if ruleset.activeModifiers[modifierId] ~= nil then
+							if type(ruleset.activeModifiers[modifierId]) == "table" then
+								ruleset.activeModifiers[modifierId].delete = true
+							end
+							ruleset.activeModifiers[modifierId] = nil
+						else
+							ruleset.activeModifiers[modifierId] = modifierResource.RulesetModifierType == 3 and {} or false
 						end
-						ruleset.activeModifiers[modifierId] = nil
-					else
-						ruleset.activeModifiers[modifierId] = modifierResource.RulesetModifierType == 3 and {} or false
-					end
 
-					buildCustomizer()
+						buildCustomizer()
+					end
+				end
+
+				self.popup:AddSelectable("Delete Ruleset").OnClick = function()
+					self.config.rulesets[rulesetId].delete = true
+					self:ManageRulesets(parent, rulesetSelectCallback)
 				end
 			end
 
-			self.popup:AddSelectable("Delete Ruleset").OnClick = function()
-				self.config.rulesets[rulesetId].delete = true
-				self:ManageRulesets(parent, rulesetSelectCallback)
+			---@type ExtuiMenu
+			local copyMenu = self.popup:AddMenu("Copy Encounter Configs From: ")
+			copyMenu:Tooltip():AddText("\t This will completely override the configs in this ruleset")
+
+			for otherRulesetId, otherRuleset in TableUtils:OrderedPairs(self.config.rulesets, function(key, value)
+					return key == "Base" and 1 or value.name
+				end,
+				function(key, value)
+					return key ~= rulesetId
+				end)
+			do
+				copyMenu:AddSelectable(otherRuleset.name).OnClick = function()
+					rulesetSelectCallback(rulesetId, otherRulesetId)
+				end
 			end
 		end
 	end
