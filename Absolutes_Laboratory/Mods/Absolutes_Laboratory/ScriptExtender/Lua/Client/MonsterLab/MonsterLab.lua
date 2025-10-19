@@ -67,6 +67,9 @@ function MonsterLab:init(parent)
 end
 
 function MonsterLab:buildProfileView()
+	---@type fun()
+	local renderProfile
+
 	Styler:MiddleAlignedColumnLayout(self.encounterFoldersSidebar, function(ele)
 		local sIndex = 1
 		local opt = { "Disabled" }
@@ -93,18 +96,9 @@ function MonsterLab:buildProfileView()
 		local manageProfileButton = Styler:ImageButton(ele:AddImageButton("Manage", "ico_edit_d", Styler:ScaleFactor({ 32, 32 })))
 		manageProfileButton.SameLine = true
 
-		local function renderProfile()
-			Helpers:KillChildren(self.designerSection)
-
-			if self.activeProfile() and self.config.profiles[self.activeProfile()] then
-				---@type MonsterLabProfile
-				local profile = self.config.profiles[self.activeProfile()]
-
-				Styler:CheapTextAlign(profile.name, self.designerSection, "Large")
-			end
+		viewProfileButton.OnClick = function()
+			renderProfile()
 		end
-
-		viewProfileButton.OnClick = renderProfile
 
 		profileCombo.OnChange = function()
 			local selectedName = profileCombo.Options[profileCombo.SelectedIndex + 1]
@@ -166,6 +160,205 @@ function MonsterLab:buildProfileView()
 		end
 	end)
 	self.encounterFoldersSidebar:AddNewLine()
+
+	renderProfile = function()
+		Helpers:KillChildren(self.designerSection)
+
+		if self.activeProfile() and self.config.profiles[self.activeProfile()] then
+			---@type MonsterLabProfile
+			local profile = self.config.profiles[self.activeProfile()]
+
+			Styler:CheapTextAlign("Active Profile: " .. profile.name, self.designerSection, "Large")
+
+			local levelTable = self.designerSection:AddTable("levels", 1)
+			levelTable.NoSavedSettings = true
+			levelTable.RowBg = true
+			levelTable.Resizable = false
+			levelTable:SetColor("TableRowBg", Styler:ConvertRGBAToIMGUI({ 34, 34, 34, 0.6 }))
+			levelTable:SetColor("TableRowBgAlt", Styler:ConvertRGBAToIMGUI({ 22, 22, 22, 0.96 }))
+
+			-- Only using this to determine the width of the container, as it keeps scaling the vertical dimension infinitely
+			local cardsWindow = self.designerSection:AddChildWindow("Combat Group Cards")
+			cardsWindow.AlwaysAutoResize = true
+			cardsWindow.Size = { 0, 1 }
+
+			local cardColours = {
+				{ 255, 0,   0,   0.5 },
+				{ 0,   255, 0,   0.5 },
+				{ 0,   0,   255, 0.5 },
+				{ 255, 0,   255, 0.5 },
+				{ 255, 255, 0,   0.5 },
+				{ 0,   255, 255, 0.5 },
+			}
+
+			-- Giving the cardsWindow time to resize itself
+			Ext.Timer.WaitFor(50, function()
+				for l, level in ipairs(EntityRecorder.Levels) do
+					local row = levelTable:AddRow():AddCell()
+
+					row:AddDummy(Styler:ScaleFactor() * 50, 0)
+					local title = Styler:ScaledFont(row:AddText(level), "Large")
+					title.SameLine = true
+
+					---@class ML_CombatGroup
+					---@field profileEncounter MonsterLabProfileEncounterEntry
+					---@field encounter MonsterLabEncounter
+
+					---@type ML_CombatGroup[]
+					local combatGroups = {}
+
+					for _, profileEncounter in pairs(profile.encounters) do
+						local encounter = self.config.folders[profileEncounter.folderId]
+							and self.config.folders[profileEncounter.folderId].encounters[profileEncounter.encounterId]
+
+						if encounter and encounter.gameLevel == level then
+							table.insert(combatGroups, {
+								profileEncounter = profileEncounter,
+								encounter = encounter
+							})
+						end
+					end
+
+					local maxRowSize = math.floor(cardsWindow.LastSize[1] / (Styler:ScaleFactor() * 300))
+					local entriesPerColumn = math.floor(TableUtils:CountElements(combatGroups) / maxRowSize)
+					entriesPerColumn = entriesPerColumn > 0 and entriesPerColumn or 1
+					local layoutTable = row:AddTable("cards", maxRowSize)
+
+					local encounterManagerGroup = row:AddGroup("encounterManager")
+					encounterManagerGroup.Visible = false
+
+					local cardRow = layoutTable:AddRow()
+
+					for _ = 1, maxRowSize do
+						cardRow:AddCell()
+					end
+
+					local counter = 0
+
+					for index, combatGroup in TableUtils:OrderedPairs(combatGroups, function(key, value)
+						return TableUtils:CountElements(value)
+					end) do
+						counter = counter + 1
+
+						---@type ExtuiChildWindow
+						local combatGroupCard = cardRow.Children[(counter % maxRowSize) > 0 and (counter % maxRowSize) or maxRowSize]:AddChildWindow(index)
+						combatGroupCard.Size = Styler:ScaleFactor({ 300, (TableUtils:CountElements(combatGroup.encounter.entities) + 1.5) * 40 })
+
+						local groupTable = combatGroupCard:AddTable("chlidTable", 1)
+						groupTable.Borders = true
+						groupTable:SetColor("TableBorderStrong", Styler:ConvertRGBAToIMGUI(cardColours[(counter % (#cardColours - (maxRowSize % 2 == 0 and 1 or 0))) + 1]))
+
+						local headerCell = groupTable:AddRow():AddCell()
+
+						local modName = combatGroup.encounter.modId and Ext.Mod.GetMod(combatGroup.encounter.modId).Info.Name
+						local titleText = headerCell:AddTextLink(("%s (%s)%s"):format(
+							combatGroup.encounter.name,
+							self.config.folders[combatGroup.profileEncounter.folderId].name,
+							modName and ("\nMod: " .. modName:sub(0, 10)) or ""))
+
+						titleText:SetColor("TextLink", { 0.86, 0.79, 0.68, 0.78 })
+						titleText.OnClick = function()
+							if encounterManagerGroup.Visible == false then
+								encounterManagerGroup.Visible = true
+								self:buildEncounterView(combatGroup.encounter, encounterManagerGroup)
+							else
+								Helpers:KillChildren(encounterManagerGroup)
+								encounterManagerGroup.Visible = false
+							end
+						end
+
+						for entityId, entityRecord in TableUtils:OrderedPairs(combatGroup.encounter.entities, function(key, value)
+							return value.displayName
+						end) do
+							local entityRow = groupTable:AddRow():AddCell()
+
+							---@type CharacterTemplate
+							local template = Ext.ClientTemplate.GetTemplate(entityRecord.template)
+
+							local image = entityRow:AddImage(template and template.Icon or "", Styler:ScaleFactor({ 32, 32 }))
+							if image.ImageData.Icon == "" then
+								image:Destroy()
+								entityRow:AddImage("Item_Unknown", Styler:ScaleFactor({ 32, 32 }))
+							end
+
+							entityRow:AddText(entityRecord.displayName).SameLine = true
+						end
+					end
+
+					counter = counter + 1
+					---@type ExtuiChildWindow
+					local addGroupCard = cardRow.Children[(counter % maxRowSize) > 0 and (counter % maxRowSize) or maxRowSize]:AddGroup("Add Group")
+
+					local groupTable = addGroupCard:AddTable("chlidTable", 1)
+					groupTable.Borders = true
+					groupTable:SetColor("TableBorderStrong", Styler:ConvertRGBAToIMGUI(cardColours[(counter % (#cardColours - (maxRowSize % 2 == 0 and 1 or 0))) + 1]))
+
+					local addEncounterSelect = groupTable:AddRow():AddCell():AddSelectable("Add Encounter")
+					addEncounterSelect:SetStyle("SelectableTextAlign", 0.5)
+					addEncounterSelect.Selected = true
+					addEncounterSelect.OnClick = function()
+						addEncounterSelect.Selected = true
+						Helpers:KillChildren(self.popup)
+						self.popup:Open()
+
+						for folderId, folder in TableUtils:OrderedPairs(self.config.folders,
+							function(key, value)
+								return value.name
+							end,
+							function(key, value)
+								return TableUtils:IndexOf(value.encounters, function(value)
+									return value.gameLevel == level
+								end) ~= nil
+							end)
+						do
+							local folderWindow = self.popup:AddChildWindow(folderId)
+							folderWindow.NoSavedSettings = true
+
+							Styler:CheapTextAlign(folder.name, folderWindow)
+
+							local width, height = Styler:calculateTextDimensions(folder.name)
+
+							for encounterId, encounter in TableUtils:OrderedPairs(folder.encounters,
+								function(key, value)
+									return value.name
+								end,
+								function(key, value)
+									return value.gameLevel == level and not TableUtils:IndexOf(profile.encounters, function(value)
+										return value.folderId == folderId and value.encounterId == key
+									end)
+								end)
+							do
+								local optWidth, optHeight = Styler:calculateTextDimensions(encounter.name)
+
+								if optWidth > width then
+									width = optWidth
+								end
+								height = height + optHeight
+								folderWindow:AddSelectable(encounter.name, "DontClosePopups").OnClick = function()
+									table.insert(profile.encounters, {
+										encounterId = encounterId,
+										folderId = folderId
+									} --[[@as MonsterLabProfileEncounterEntry]])
+
+									renderProfile()
+								end
+							end
+
+							if #folderWindow.Children == 1 then
+								folderWindow:Destroy()
+							else
+								folderWindow.Size = { width, height }
+							end
+						end
+
+						if #self.popup.Children == 0 then
+							Styler:Color(self.popup:AddText("No Encounters Available For Level " .. level), "ErrorText")
+						end
+					end
+				end
+			end)
+		end
+	end
 end
 
 function MonsterLab:buildFolderView()
@@ -365,27 +558,29 @@ function MonsterLab:buildFolderView()
 end
 
 ---@param encounter MonsterLabEncounter
-function MonsterLab:buildEncounterView(encounter)
-	Helpers:KillChildren(self.designerSection)
+---@param parent ExtuiTreeParent?
+function MonsterLab:buildEncounterView(encounter, parent)
+	local parent = parent or self.designerSection
+	Helpers:KillChildren(parent)
 
-	Styler:MiddleAlignedColumnLayout(self.designerSection, function(ele)
+	Styler:MiddleAlignedColumnLayout(parent, function(ele)
 		Styler:CheapTextAlign(encounter.name, ele).Font = "Big"
 
 		if encounter.description then
-			Styler:CheapTextAlign(encounter.description, self.designerSection)
+			Styler:CheapTextAlign(encounter.description, parent)
 		end
 	end)
 
 	---@type fun()
 	local buildEncounter
 
-	Styler:MiddleAlignedColumnLayout(self.designerSection, function(ele)
+	Styler:MiddleAlignedColumnLayout(parent, function(ele)
 		self:ManageRulesets(ele:AddGroup("Rulesets"), function(...)
 			buildEncounter(...)
 		end)
 	end)
 
-	local encounterGroup = self.designerSection:AddGroup("Encounter")
+	local encounterGroup = parent:AddGroup("Encounter")
 
 	local lastSelectedEntity
 	---@type ExtuiImage?
