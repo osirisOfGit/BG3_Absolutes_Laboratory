@@ -45,7 +45,8 @@ end
 function MonsterLab:buildFolderView(parent, designerSection)
 	Helpers:KillChildren(parent)
 
-	Styler:ScaledFont(parent:AddSeparatorText("Your Encounters"), "Big")
+	Styler:CheapTextAlign("Your Encounters", parent, "Big")
+	parent:AddNewLine()
 
 	local longestText = 0
 
@@ -65,6 +66,42 @@ function MonsterLab:buildFolderView(parent, designerSection)
 
 		folderSelect.OnClick = function()
 			header.Visible = not header.Visible
+		end
+		folderSelect.OnRightClick = function()
+			Helpers:KillChildren(self.popup)
+			self.popup:Open()
+
+			FormBuilder:CreateForm(self.popup:AddMenu("Edit"), function(formResults)
+					folder.name = formResults.Name
+					folder.description = formResults.Description
+
+					self:buildFolderView(parent, designerSection)
+				end,
+				{
+					{
+						label = "Name",
+						type = "Text",
+						errorMessageIfEmpty = "Name is required",
+						defaultValue = folder.name
+					},
+					{
+						label = "Description",
+						type = "Multiline",
+						defaultValue = folder.description
+					}
+				})
+
+			---@param select ExtuiSelectable
+			self.popup:AddSelectable("Delete", "DontClosePopups").OnClick = function(select)
+				if select.Label ~= "Delete" then
+					folder.delete = true
+					self:buildFolderView(parent, designerSection)
+				else
+					select.DontClosePopups = false
+					select.Label = "Are You Sure?"
+					Styler:Color(select, "ErrorText")
+				end
+			end
 		end
 
 		local width = Styler:calculateTextDimensions(folder.name)
@@ -91,8 +128,8 @@ function MonsterLab:buildFolderView(parent, designerSection)
 				local editMenu = self.popup:AddMenu("Edit")
 
 				FormBuilder:CreateForm(editMenu, function(formResults)
-						folder.encounters[encounterId].name = formResults.Name
-						folder.encounters[encounterId].description = formResults.Description
+						encounter.name = formResults.Name
+						encounter.description = formResults.Description
 
 						self:buildFolderView(parent, designerSection)
 					end,
@@ -109,6 +146,7 @@ function MonsterLab:buildFolderView(parent, designerSection)
 							defaultValue = encounter.description
 						}
 					})
+
 				self.popup:AddSelectable("Copy").OnClick = function()
 					---@type MonsterLabEncounter
 					local encounterCopy = TableUtils:DeeplyCopyTable(encounter._real)
