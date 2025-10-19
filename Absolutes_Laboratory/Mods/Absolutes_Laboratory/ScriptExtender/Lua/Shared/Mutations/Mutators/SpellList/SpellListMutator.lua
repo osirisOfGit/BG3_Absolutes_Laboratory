@@ -1760,7 +1760,7 @@ function SpellListMutator:generateChangelog()
 		["1.7.2"] = {
 			type = "Bullet",
 			text = {
-				"Actually force the Spell's cooldown type to be specified when adding to the spellbook ಥ_ಥ"
+				"Actually force the Spell's cooldown type to be specified when adding to the spellbook q_q"
 			}
 		},
 		["1.7.1"] = {
