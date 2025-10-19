@@ -30,7 +30,6 @@ function MonsterLab:init(parent)
 	local layoutRow = layoutTable:AddRow()
 
 	local encounterFolders = layoutRow:AddCell():AddChildWindow("folders")
-
 	local encounterDesigner = layoutRow:AddCell()
 
 	self:buildFolderView(encounterFolders, encounterDesigner)
@@ -328,10 +327,54 @@ function MonsterLab:buildEncounterView(parent, encounter)
 			selectedIcon.SameLine = true
 
 			---@type ExtuiTextLink
-			local name = Styler:Color(nameGroup:AddTextLink(entity.displayName), "PlainLink")
+			local name = Styler:Color(nameGroup:AddTextLink(("%s (%s)"):format(entity.displayName, id:sub(#id - 5))), "PlainLink")
 			name.IDContext = id
 			name.OnRightClick = function()
-				self:buildCreateEntityForm(designerSection, encounter, buildEncounter, entity)
+				Helpers:KillChildren(self.popup)
+				self.popup:Open()
+
+				self.popup:AddSelectable("Edit Entity Details").OnClick = function()
+					self:buildCreateEntityForm(designerSection, encounter, buildEncounter, entity)
+				end
+
+				---@type ExtuiMenu
+				local copyEntityMutations = self.popup:AddMenu("Copy Entity Mutations From:")
+				for rulesetId, ruleset in TableUtils:OrderedPairs(self.config.rulesets, function(key, value)
+					return key == "Base" and 1 or value.name
+				end) do
+					---@type ExtuiMenu
+					local rulesetMenu = copyEntityMutations:AddMenu(ruleset.name)
+					rulesetMenu.IDContext = rulesetId
+
+					for entityId, otherEntity in TableUtils:OrderedPairs(encounter.entities, function(key, value)
+							return value.displayName
+						end,
+						function(key, value)
+							return key ~= id and value.rulesetModifiers[rulesetId] and next(value.rulesetModifiers[rulesetId]._real)
+						end)
+					do
+						rulesetMenu:AddSelectable(("%s (%s)"):format(otherEntity.displayName, entityId:sub(#entityId - 5))).OnClick = function()
+							---@type MonsterLab_RulesetModifiers
+							local copy = TableUtils:DeeplyCopyTable(otherEntity.rulesetModifiers[rulesetId]._real)
+
+							if entity.rulesetModifiers[rulesetId] then
+								entity.rulesetModifiers[rulesetId].delete = true
+								entity.rulesetModifiers[rulesetId] = nil
+							end
+							entity.rulesetModifiers[rulesetId] = copy
+							buildEncounter()
+						end
+					end
+
+					if #rulesetMenu.Children == 0 then
+						rulesetMenu:Destroy()
+					end
+				end
+
+				self.popup:AddSelectable("Clone").OnClick = function()
+					encounter.entities[FormBuilder:generateGUID()] = TableUtils:DeeplyCopyTable(entity._real)
+					buildEncounter()
+				end
 			end
 
 			local openPopupFunc = Styler:HyperlinkRenderable(name, entity.template, "Alt", true, nil, function(parent)

@@ -109,7 +109,7 @@ end
 ---@generic V
 ---@param t table<K,V>
 ---@param keyTransformFunc (fun(key: K, value: V):any)?
----@param filter (fun(key: K, value: V):boolean)?
+---@param filter (fun(key: K, value: V):boolean?)?
 ---@return fun(table: table<K, V>, index?: K):K,V
 function TableUtils:OrderedPairs(t, keyTransformFunc, filter)
 	local keys = {}
