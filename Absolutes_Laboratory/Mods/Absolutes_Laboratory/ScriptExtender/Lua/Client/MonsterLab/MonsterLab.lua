@@ -170,6 +170,10 @@ function MonsterLab:buildProfileView()
 
 			Styler:CheapTextAlign("Active Profile: " .. profile.name, self.designerSection, "Large")
 
+			if profile.description and profile.description ~= "" then
+				Styler:CheapTextAlign(profile.description, self.designerSection)
+			end
+
 			local levelTable = self.designerSection:AddTable("levels", 1)
 			levelTable.NoSavedSettings = true
 			levelTable.RowBg = true

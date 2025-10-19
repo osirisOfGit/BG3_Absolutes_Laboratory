@@ -156,6 +156,7 @@ Channels.OrbAtPosition:SetHandler(
 
 ---@type MonsterLab_SpawnedEntities
 local allSpawnedEntities
+
 Channels.ManageEncounterSpawns:SetHandler(
 ---@param request ManageEncounterRequest
 	function(request)
