@@ -29,23 +29,27 @@ function MonsterLab:init(parent)
 
 	local layoutRow = layoutTable:AddRow()
 
-	local encounterFolders = layoutRow:AddCell():AddChildWindow("folders")
-	local encounterDesigner = layoutRow:AddCell()
+	self.encounterFoldersSidebar = layoutRow:AddCell():AddChildWindow("folders")
+	self.encounterDesigner = layoutRow:AddCell()
 
-	self:buildFolderView(encounterFolders, encounterDesigner)
+	self:buildFolderView()
 end
 
-function MonsterLab:buildProfileView(parent, designerSection)
+function MonsterLab:buildProfileView()
 
 end
 
----@param parent ExtuiChildWindow
----@param designerSection ExtuiTreeParent
-function MonsterLab:buildFolderView(parent, designerSection)
-	Helpers:KillChildren(parent)
+function MonsterLab:buildFolderView()
+	Helpers:KillChildren(self.encounterFoldersSidebar)
 
-	Styler:CheapTextAlign("Your Encounters", parent, "Big")
-	parent:AddNewLine()
+	local manageProfilesButton = self.encounterFoldersSidebar:AddSelectable("Manage Profiles")
+	manageProfilesButton:SetStyle("SelectableTextAlign", 0.5)
+	manageProfilesButton.OnClick = function ()
+		self:buildProfileView()
+	end
+
+	Styler:CheapTextAlign("Your Encounters", self.encounterFoldersSidebar, "Big")
+	self.encounterFoldersSidebar:AddNewLine()
 
 	local longestText = 0
 
@@ -53,14 +57,14 @@ function MonsterLab:buildFolderView(parent, designerSection)
 		return value.name
 	end) do
 		---@type ExtuiSelectable
-		local folderSelect = parent:AddSelectable("")
+		local folderSelect = self.encounterFoldersSidebar:AddSelectable("")
 		folderSelect.IDContext = folderId
 		folderSelect:SetStyle("SelectableTextAlign", 0.5, 0)
 
-		local sep = parent:AddSeparatorText(">  " .. folder.name)
+		local sep = self.encounterFoldersSidebar:AddSeparatorText(">  " .. folder.name)
 		sep.PositionOffset = Styler:ScaleFactor({ 0, -50 })
 
-		local header = parent:AddGroup("encounters")
+		local header = self.encounterFoldersSidebar:AddGroup("encounters")
 		header.Visible = folderSelect.Selected
 
 		folderSelect.OnClick = function()
@@ -76,7 +80,7 @@ function MonsterLab:buildFolderView(parent, designerSection)
 					folder.name = formResults.Name
 					folder.description = formResults.Description
 
-					self:buildFolderView(parent, designerSection)
+					self:buildFolderView(self.encounterFoldersSidebar, self.encounterDesigner)
 				end,
 				{
 					{
@@ -96,7 +100,7 @@ function MonsterLab:buildFolderView(parent, designerSection)
 			self.popup:AddSelectable("Delete", "DontClosePopups").OnClick = function(select)
 				if select.Label ~= "Delete" then
 					folder.delete = true
-					self:buildFolderView(parent, designerSection)
+					self:buildFolderView(self.encounterFoldersSidebar, self.encounterDesigner)
 				else
 					select.DontClosePopups = false
 					select.Label = "Are You Sure?"
@@ -118,7 +122,7 @@ function MonsterLab:buildFolderView(parent, designerSection)
 			local encounterSelect = header:AddSelectable(encounter.name .. "##" .. encounterId)
 			encounterSelect.OnClick = function()
 				encounterSelect.Selected = false
-				self:buildEncounterView(designerSection, encounter)
+				self:buildEncounterView(encounter)
 			end
 
 			encounterSelect.OnRightClick = function()
@@ -132,7 +136,7 @@ function MonsterLab:buildFolderView(parent, designerSection)
 						encounter.name = formResults.Name
 						encounter.description = formResults.Description
 
-						self:buildFolderView(parent, designerSection)
+						self:buildFolderView()
 					end,
 					{
 						{
@@ -154,7 +158,7 @@ function MonsterLab:buildFolderView(parent, designerSection)
 					encounterCopy.name = encounterCopy.name .. " (Copy)"
 
 					folder.encounters[FormBuilder:generateGUID()] = encounterCopy
-					self:buildFolderView(parent, designerSection)
+					self:buildFolderView()
 				end
 
 				if TableUtils:CountElements(self.config.folders) > 1 then
@@ -179,7 +183,7 @@ function MonsterLab:buildFolderView(parent, designerSection)
 							otherFolder.encounters[encounterId] = encounterCopy
 							encounter.delete = true
 
-							self:buildFolderView(parent, designerSection)
+							self:buildFolderView()
 						end
 					end
 				end
@@ -199,10 +203,10 @@ function MonsterLab:buildFolderView(parent, designerSection)
 		end
 	end
 
-	parent:AddNewLine()
+	self.encounterFoldersSidebar:AddNewLine()
 
 	---@type ExtuiSelectable
-	local createFolderButton = parent:AddSelectable("Create Folder")
+	local createFolderButton = self.encounterFoldersSidebar:AddSelectable("Create Folder")
 	createFolderButton:SetStyle("SelectableTextAlign", 0.5)
 
 	createFolderButton.OnClick = function()
@@ -217,7 +221,7 @@ function MonsterLab:buildFolderView(parent, designerSection)
 					encounters = {}
 				} --[[@as MonsterLabFolder]]
 
-				self:buildFolderView(parent, designerSection)
+				self:buildFolderView()
 			end,
 			{
 				{
@@ -232,32 +236,31 @@ function MonsterLab:buildFolderView(parent, designerSection)
 			})
 	end
 
-	parent.Size = { math.max(300 * Styler:ScaleFactor(), longestText), 0 }
+	self.encounterFoldersSidebar.Size = { math.max(300 * Styler:ScaleFactor(), longestText), 0 }
 end
 
----@param parent ExtuiTreeParent
 ---@param encounter MonsterLabEncounter
-function MonsterLab:buildEncounterView(parent, encounter)
-	Helpers:KillChildren(parent)
+function MonsterLab:buildEncounterView(encounter)
+	Helpers:KillChildren(self.encounterDesigner)
 
-	Styler:MiddleAlignedColumnLayout(parent, function(ele)
+	Styler:MiddleAlignedColumnLayout(self.encounterDesigner, function(ele)
 		Styler:CheapTextAlign(encounter.name, ele).Font = "Big"
 
 		if encounter.description then
-			Styler:CheapTextAlign(encounter.description, parent)
+			Styler:CheapTextAlign(encounter.description, self.encounterDesigner)
 		end
 	end)
 
 	---@type fun()
 	local buildEncounter
 
-	Styler:MiddleAlignedColumnLayout(parent, function(ele)
+	Styler:MiddleAlignedColumnLayout(self.encounterDesigner, function(ele)
 		self:ManageRulesets(ele:AddGroup("Rulesets"), function(...)
 			buildEncounter(...)
 		end)
 	end)
 
-	local encounterGroup = parent:AddGroup("Encounter")
+	local encounterGroup = self.encounterDesigner:AddGroup("Encounter")
 
 	local lastSelectedEntity
 	---@type ExtuiImage?
