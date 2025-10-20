@@ -7,7 +7,7 @@ local config = ConfigurationStructure.config.monsterLab
 local buildMeta = function(target)
 	return {
 		__index = function(t, k)
-			return MutationModProxy.ModProxy[target][k] or config[target][k]
+			return (MutationModProxy.ModProxy[target] and MutationModProxy.ModProxy[target][k]) or config[target][k]
 		end,
 		__newindex = function(t, k, v)
 			config[target][k] = v
