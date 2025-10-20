@@ -173,10 +173,18 @@ function MonsterLab:buildProfileView()
 				end
 
 				---@type ExtuiMenu
-				local profileMenu = modGroups[profile.modId or "user"]:AddMenu(profile.name)
+				local profileMenu = modGroups[profile.modId or "user"]:AddMenu(("%s%s"):format(profile.name, self.config.settings.defaultActiveProfile == profileId and " (D)" or ""))
 				-- If groups only contain a menu, they resize indefinitely. They need some non-parent element inside em with a concrete size
 				-- Putting it once above wasn't working for some reason
 				modGroups[profile.modId or "user"]:AddDummy(0, 0)
+
+				profileMenu:AddSelectable(("%s As Default"):format(self.config.settings.defaultActiveProfile == profileId and "Unset" or "Set")).OnClick = function()
+					if self.config.settings.defaultActiveProfile == profileId then
+						self.config.settings.defaultActiveProfile = nil
+					else
+						self.config.settings.defaultActiveProfile = profileId
+					end
+				end
 				profileMenu:AddSelectable("Clone").OnClick = function()
 					local profileCopy = TableUtils:DeeplyCopyTable(profile._real or profile)
 					if TableUtils:IndexOf(self.config.profiles, function(value)

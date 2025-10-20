@@ -5,7 +5,12 @@ ConfigurationStructure.config.monsterLab = {
 	---@type {[Guid]: MonsterLabFolder}
 	folders = {},
 	---@type {[Guid]: MonsterLab_Ruleset}
-	rulesets = {}
+	rulesets = {},
+	---@class MonsterLabSettings
+	settings = {
+		---@type Guid?
+		defaultActiveProfile = nil
+	}
 }
 
 ---@alias Lab_RulesetName string
@@ -21,7 +26,7 @@ ConfigurationStructure.DynamicClassDefinitions.monsterLab.profile = {
 	---@type MonsterLabProfileEncounterEntry[]
 	encounters = {},
 	---@type Guid?
-	modId = nil
+	modId = nil,
 }
 
 ---@class MonsterLabProfileEncounterEntry
