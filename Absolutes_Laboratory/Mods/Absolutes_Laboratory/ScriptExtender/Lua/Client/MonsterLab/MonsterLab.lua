@@ -173,8 +173,52 @@ function MonsterLab:buildProfileView()
 
 				---@type ExtuiMenu
 				local profileMenu = modGroups[modName or "user"]:AddMenu(profile.name)
-				if not profile.modId then
 
+				profileMenu:AddSelectable("Clone", "DontClosePopups").OnClick = function()
+					local profileCopy = TableUtils:DeeplyCopyTable(profile._real or profile)
+					if TableUtils:IndexOf(self.config.profiles, function(value)
+							return value.name == profile.name and not value.modId
+						end)
+					then
+						profileCopy.name = profileCopy.name .. " (Copy)"
+					end
+
+					self.config.profiles[FormBuilder:generateGUID()] = profileCopy
+					self:buildFolderView()
+				end
+
+				if not profile.modId then
+					FormBuilder:CreateForm(profileMenu:AddMenu("Edit"), function(formResults)
+							profile.name = formResults.Name
+							profile.description = formResults.Description
+
+							self:buildFolderView()
+						end,
+						{
+							{
+								label = "Name",
+								type = "Text",
+								errorMessageIfEmpty = "Required Field",
+								defaultValue = profile.name
+							},
+							{
+								label = "Description",
+								type = "Multiline",
+								defaultValue = profile.description
+							}
+						})
+
+					---@param select ExtuiSelectable
+					profileMenu:AddSelectable("Delete", "DontClosePopups").OnClick = function(select)
+						if select.Label ~= "Delete" then
+							profile.delete = true
+							self:buildFolderView()
+						else
+							select.Label = "Are You Sure?"
+							select.DontClosePopups = false
+							Styler:Color(select, "ErrorText")
+						end
+					end
 				end
 			end
 		end
