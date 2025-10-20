@@ -23,9 +23,10 @@ MutationProfileExecutor = {}
 local mutatedEntities = {}
 
 function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
-	local specifiedEntities = { ... }
 	Logger.mode = "timer"
-	Ext.Utils.ProfileBegin("Lab Profile Execution")
+	MonsterLabProfileExecutor:ExecuteProfile()
+
+	Ext.Utils.ProfileBegin("Lab Mutation Profile Execution")
 	local activeProfile = MutationConfigurationProxy.profiles[Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile]
 
 	---@type ProfileExecutionStatus
@@ -153,6 +154,8 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 			-- 		coroutine.yield()
 			-- 	end
 			-- end)
+
+			local specifiedEntities = { ... }
 
 			---@type {[Guid] : {[Guid]: SelectorPredicate}}
 			local cachedSelectors = {}
@@ -295,7 +298,7 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 		profileExecutorStatus.error = error
 		broadcastStatus()
 	end
-	Ext.Utils.ProfileEnd("Lab Profile Execution")
+	Ext.Utils.ProfileEnd("Lab Mutation Profile Execution")
 	Logger.mode = "buffer"
 end
 

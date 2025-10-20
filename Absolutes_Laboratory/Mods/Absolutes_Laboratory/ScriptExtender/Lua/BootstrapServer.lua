@@ -10,8 +10,12 @@ Ext.Require("Shared/Channels.lua")
 Ext.Require("Shared/EntityRecorder.lua")
 
 Ext.Require("Server/ClientHelpers.lua")
-Ext.Require("Server/Mutations/ProfileExecutor.lua")
+
+Ext.Require("Shared/MonsterLab/MonsterLabConfigurationProxy.lua")
+Ext.Require("Server/MonsterLab/MonsterLabProfileExecutor.lua")
 Ext.Require("Server/MonsterLab/EncounterManager.lua")
+
+Ext.Require("Server/Mutations/MutationProfileExecutor.lua")
 Ext.Require("Server/Mutations/ExecutionDiagramGenerator.lua")
 
 Ext.Require("Shared/Mutations/MutationConfigurationProxy.lua")

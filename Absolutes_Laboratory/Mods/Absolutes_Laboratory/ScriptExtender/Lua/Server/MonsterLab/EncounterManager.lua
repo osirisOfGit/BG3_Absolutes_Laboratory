@@ -157,47 +157,112 @@ Channels.OrbAtPosition:SetHandler(
 ---@type MonsterLab_SpawnedEntities
 local allSpawnedEntities
 
-Channels.ManageEncounterSpawns:SetHandler(
 ---@param request ManageEncounterRequest
-	function(request)
-		if not allSpawnedEntities then
-			allSpawnedEntities = Ext.Vars.GetModVariables(ModuleUUID).MonsterLab_SpawnedEntities or {}
-		end
+function EncounterManager:ManageEncounterSpanws(request)
+	if not allSpawnedEntities then
+		allSpawnedEntities = Ext.Vars.GetModVariables(ModuleUUID).MonsterLab_SpawnedEntities or {}
+	end
 
-		allSpawnedEntities[request.encounterId] = allSpawnedEntities[request.encounterId] or {}
+	allSpawnedEntities[request.encounterId] = allSpawnedEntities[request.encounterId] or {}
 
-		local encounterEntities = allSpawnedEntities[request.encounterId]
-		encounterEntities.entities = encounterEntities.entities or {}
+	local encounterEntities = allSpawnedEntities[request.encounterId]
+	encounterEntities.entities = encounterEntities.entities or {}
 
-		if request.delete then
-			for _, entity in pairs(encounterEntities.entities) do
-				if entity.realEntityId then
-					Osi.RequestDeleteTemporary(entity.realEntityId)
-				end
+	if request.delete then
+		for _, entity in pairs(encounterEntities.entities) do
+			if entity.realEntityId then
+				Osi.RequestDeleteTemporary(entity.realEntityId)
 			end
-			allSpawnedEntities[request.encounterId] = nil
-		else
-			for mlEntityId, mlEntity in pairs(request.encounter.entities) do
-				if encounterEntities.entities[mlEntityId] and encounterEntities.entities[mlEntityId].realEntityId and encounterEntities.entities[mlEntityId].template == mlEntity.template then
-					local spawnedEntity = encounterEntities.entities[mlEntityId]
-					if not TableUtils:CompareLists(mlEntity.coordinates, spawnedEntity.coordinates) then
-						Osi.TeleportToPosition(spawnedEntity.realEntityId, mlEntity.coordinates[1], mlEntity.coordinates[2], mlEntity.coordinates[3])
-						spawnedEntity.coordinates = mlEntity.coordinates
+		end
+		allSpawnedEntities[request.encounterId] = nil
+	else
+		for mlEntityId, mlEntity in pairs(request.encounter.entities) do
+			if encounterEntities.entities[mlEntityId] and encounterEntities.entities[mlEntityId].realEntityId and encounterEntities.entities[mlEntityId].template == mlEntity.template then
+				local spawnedEntity = encounterEntities.entities[mlEntityId]
+				if not TableUtils:CompareLists(mlEntity.coordinates, spawnedEntity.coordinates) then
+					Osi.TeleportToPosition(spawnedEntity.realEntityId, mlEntity.coordinates[1], mlEntity.coordinates[2], mlEntity.coordinates[3])
+					spawnedEntity.coordinates = mlEntity.coordinates
+				end
+
+				if mlEntity.rotation ~= spawnedEntity.rotation then
+					self.mazzleMap:Turn_To_Angle(spawnedEntity.realEntityId, mlEntity.rotation)
+					spawnedEntity.rotation = mlEntity.rotation
+				end
+
+				if mlEntity.animation.simple then
+					if mlEntity.animation.simple ~= spawnedEntity.animation.simple then
+						Osi.PlayAnimation(spawnedEntity.realEntityId, mlEntity.animation.simple)
+					end
+				else
+					if not TableUtils:CompareLists(mlEntity.animation.looping, spawnedEntity.animation.looping) then
+						local looping = mlEntity.animation.looping
+						Osi.PlayLoopingAnimation(spawnedEntity.realEntityId,
+							looping.startAnimation,
+							looping.loopAnimation,
+							looping.endAnimation,
+							looping.loopVariation1,
+							looping.loopVariation2,
+							looping.loopVariation3,
+							looping.loopVariation4
+						)
+					end
+				end
+				spawnedEntity.animation = mlEntity.animation
+
+				if request.encounter.faction and request.encounter.faction ~= Osi.GetFaction(spawnedEntity.realEntityId) then
+					Osi.SetFaction(spawnedEntity.realEntityId, request.encounter.faction)
+				end
+
+				if request.encounter.combatGroupId and request.encounter.combatGroupId ~= Osi.GetCombatGroupID(spawnedEntity.realEntityId) then
+					Osi.SetCombatGroupID(spawnedEntity.realEntityId, request.encounter.combatGroupId)
+				end
+			elseif not TableUtils:CompareLists(mlEntity.coordinates, { 0, 0, 0 }) then
+				if encounterEntities.entities[mlEntityId] and encounterEntities.entities[mlEntityId].realEntityId then
+					Osi.RequestDeleteTemporary(encounterEntities.entities[mlEntityId].realEntityId)
+				end
+
+				encounterEntities.entities[mlEntityId] = mlEntity
+
+				encounterEntities.entities[mlEntityId].realEntityId = Osi.CreateAt(mlEntity.template,
+					mlEntity.coordinates[1],
+					mlEntity.coordinates[2],
+					mlEntity.coordinates[3],
+					1,
+					1,
+					"")
+
+				Ext.Timer.WaitFor(100, function()
+					---@type EntityHandle
+					local entity = Ext.Entity.Get(encounterEntities.entities[mlEntityId].realEntityId)
+					entity.Vars.AbsolutesLaboratory_MonsterLab_Entity = {
+						profileId = request.profileId,
+						encounterId = request.encounterId,
+						mlEntityId = mlEntityId,
+					} --[[@as MonsterLab_EntityVariable]]
+
+					Osi.SetCombatGroupID(entity.Uuid.EntityUuid, request.encounter.combatGroupId)
+					Osi.SetFaction(entity.Uuid.EntityUuid, request.encounter.faction)
+
+					Osi.SetStoryDisplayName(entity.Uuid.EntityUuid, mlEntity.displayName)
+
+					if mlEntity.title and mlEntity.title ~= "" then
+						Osi.ObjectSetTitle(entity.Uuid.EntityUuid, mlEntity.title)
 					end
 
-					if mlEntity.rotation ~= spawnedEntity.rotation then
-						EncounterManager.mazzleMap:Turn_To_Angle(spawnedEntity.realEntityId, mlEntity.rotation)
-						spawnedEntity.rotation = mlEntity.rotation
+					if self.mazzleLib then
+						self.mazzleMap:Turn_To_Angle(entity.Uuid.EntityUuid, mlEntity.rotation)
 					end
+
+					Osi.AddPassive(entity.Uuid.EntityUuid, "ABSOLUTES_LAB_MONSTER_LAB_ENTITY_MARKER")
 
 					if mlEntity.animation.simple then
-						if mlEntity.animation.simple ~= spawnedEntity.animation.simple then
-							Osi.PlayAnimation(spawnedEntity.realEntityId, mlEntity.animation.simple)
+						if mlEntity.animation.simple ~= "" then
+							Osi.PlayAnimation(entity.Uuid.EntityUuid, mlEntity.animation.simple)
 						end
 					else
-						if not TableUtils:CompareLists(mlEntity.animation.looping, spawnedEntity.animation.looping) then
+						if not TableUtils:IndexOf(mlEntity.animation.looping, "") then
 							local looping = mlEntity.animation.looping
-							Osi.PlayLoopingAnimation(spawnedEntity.realEntityId,
+							Osi.PlayLoopingAnimation(entity.Uuid.EntityUuid,
 								looping.startAnimation,
 								looping.loopAnimation,
 								looping.endAnimation,
@@ -208,76 +273,16 @@ Channels.ManageEncounterSpawns:SetHandler(
 							)
 						end
 					end
-					spawnedEntity.animation = mlEntity.animation
-
-					if request.encounter.faction and request.encounter.faction ~= Osi.GetFaction(spawnedEntity.realEntityId) then
-						Osi.SetFaction(spawnedEntity.realEntityId, request.encounter.faction)
-					end
-
-					if request.encounter.combatGroupId and request.encounter.combatGroupId ~= Osi.GetCombatGroupID(spawnedEntity.realEntityId) then
-						Osi.SetCombatGroupID(spawnedEntity.realEntityId, request.encounter.combatGroupId)
-					end
-				elseif not TableUtils:CompareLists(mlEntity.coordinates, { 0, 0, 0 }) then
-					if encounterEntities.entities[mlEntityId] and encounterEntities.entities[mlEntityId].realEntityId then
-						Osi.RequestDeleteTemporary(encounterEntities.entities[mlEntityId].realEntityId)
-					end
-
-					encounterEntities.entities[mlEntityId] = mlEntity
-
-					encounterEntities.entities[mlEntityId].realEntityId = Osi.CreateAt(mlEntity.template,
-						mlEntity.coordinates[1],
-						mlEntity.coordinates[2],
-						mlEntity.coordinates[3],
-						1,
-						1,
-						"")
-
-					Ext.Timer.WaitFor(100, function()
-						---@type EntityHandle
-						local entity = Ext.Entity.Get(encounterEntities.entities[mlEntityId].realEntityId)
-						entity.Vars.AbsolutesLaboratory_MonsterLab_Entity = {
-							profileId = request.profileId,
-							encounterId = request.encounterId,
-							mlEntityId = mlEntityId,
-						} --[[@as MonsterLab_EntityVariable]]
-
-						Osi.SetCombatGroupID(entity.Uuid.EntityUuid, request.encounter.combatGroupId)
-						Osi.SetFaction(entity.Uuid.EntityUuid, request.encounter.faction)
-
-						Osi.SetStoryDisplayName(entity.Uuid.EntityUuid, mlEntity.displayName)
-
-						if mlEntity.title and mlEntity.title ~= "" then
-							Osi.ObjectSetTitle(entity.Uuid.EntityUuid, mlEntity.title)
-						end
-
-						if EncounterManager.mazzleLib then
-							EncounterManager.mazzleMap:Turn_To_Angle(entity.Uuid.EntityUuid, mlEntity.rotation)
-						end
-
-						Osi.AddPassive(entity.Uuid.EntityUuid, "ABSOLUTES_LAB_MONSTER_LAB_ENTITY_MARKER")
-
-						if mlEntity.animation.simple then
-							if mlEntity.animation.simple ~= "" then
-								Osi.PlayAnimation(entity.Uuid.EntityUuid, mlEntity.animation.simple)
-							end
-						else
-							if not TableUtils:IndexOf(mlEntity.animation.looping, "") then
-								local looping = mlEntity.animation.looping
-								Osi.PlayLoopingAnimation(entity.Uuid.EntityUuid,
-									looping.startAnimation,
-									looping.loopAnimation,
-									looping.endAnimation,
-									looping.loopVariation1,
-									looping.loopVariation2,
-									looping.loopVariation3,
-									looping.loopVariation4
-								)
-							end
-						end
-					end)
-				end
+				end)
 			end
 		end
+	end
 
-		Ext.Vars.GetModVariables(ModuleUUID).MonsterLab_SpawnedEntities = allSpawnedEntities
+	Ext.Vars.GetModVariables(ModuleUUID).MonsterLab_SpawnedEntities = allSpawnedEntities
+end
+
+Channels.ManageEncounterSpawns:SetHandler(
+---@param request ManageEncounterRequest
+	function(request)
+		EncounterManager:ManageEncounterSpanws(request)
 	end)
