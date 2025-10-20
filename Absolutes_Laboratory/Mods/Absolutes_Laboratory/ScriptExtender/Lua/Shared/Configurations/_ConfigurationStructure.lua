@@ -192,8 +192,17 @@ function ConfigurationStructure:InitializeConfig()
 		else
 			convertStringKeysToNumeric(config)
 			-- All config management is done on the client side - just want server to always use the full config file (instead of attempting to merge with defaults)
-			real_config_table = config
-			ConfigurationStructure.config = config
+			for key in pairs(real_config_table) do
+				if not config[key] then
+					real_config_table[key] = nil
+					ConfigurationStructure.config[key] = nil
+				end
+			end
+
+			for key, value in pairs(config) do
+				real_config_table[key] = value
+				ConfigurationStructure.config[key] = value
+			end
 		end
 	end
 

@@ -1,21 +1,21 @@
 Ext.Require("Shared/MonsterLab/MonsterLabModProxy.lua")
 
-local config = ConfigurationStructure.config.monsterLab
+local config = ConfigurationStructure.config
 
 ---@param target string
 ---@return metatable
 local buildMeta = function(target)
 	return {
 		__index = function(t, k)
-			return MonsterLabModProxy.ModProxy[target][k] or config[target][k]
+			return MonsterLabModProxy.ModProxy[target][k] or config.monsterLab[target][k]
 		end,
 		__newindex = function(t, k, v)
-			config[target][k] = v
+			config.monsterLab[target][k] = v
 		end,
 		__pairs = function(t)
 			local combined = {}
 
-			for id, profile in TableUtils:CombinedPairs(config[target], MonsterLabModProxy.ModProxy[target]) do
+			for id, profile in TableUtils:CombinedPairs(config.monsterLab[target], MonsterLabModProxy.ModProxy[target]) do
 				combined[id] = profile
 			end
 
@@ -30,5 +30,5 @@ MonsterLabConfigurationProxy = {
 	profiles = setmetatable({}, buildMeta("profiles")),
 	folders = setmetatable({}, buildMeta("folders")),
 	rulesets = setmetatable({}, buildMeta("rulesets")),
-	settings = config.settings
+	settings = config.monsterLab.settings
 }
