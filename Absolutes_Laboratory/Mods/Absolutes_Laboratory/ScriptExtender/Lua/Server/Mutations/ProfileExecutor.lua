@@ -261,7 +261,7 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 					end
 				else
 					if entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] then
-						MutatorInterface:undoMutator(entity, entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME], rerunTransient)
+						MutatorInterface:undoMutator(entity, entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME], nil, rerunTransient)
 					end
 				end
 			end

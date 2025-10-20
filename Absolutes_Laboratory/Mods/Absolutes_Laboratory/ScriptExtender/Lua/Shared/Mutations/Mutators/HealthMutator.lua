@@ -479,26 +479,28 @@ function HealthMutator:applyMutator(entity, entityVar)
 		---@diagnostic disable-next-line: param-type-mismatch
 		function(entity)
 			local mutationVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME]
-			local firstMutator = (mutationVar.appliedMutators[self.name][1] or mutationVar.appliedMutators[self.name])
+			if mutationVar then
+				local firstMutator = (mutationVar.appliedMutators[self.name][1] or mutationVar.appliedMutators[self.name])
 
-			if entity.Health.MaxHp <= (maxHealth * .90) then
-				local currentHealthPercentage = firstMutator.currentHealthPercentage
+				if entity.Health.MaxHp <= (maxHealth * .90) then
+					local currentHealthPercentage = firstMutator.currentHealthPercentage
 
-				Logger:BasicDebug(
-					"Entity %s (%s) had their maxHp set to %s by something other than Lab - resetting it to the Lab value of %s (maintaining the current health %% of %s%%)",
-					EntityRecorder:GetEntityName(entity),
-					entity.Uuid.EntityUuid,
-					entity.Health.MaxHp,
-					maxHealth,
-					currentHealthPercentage * 100)
+					Logger:BasicDebug(
+						"Entity %s (%s) had their maxHp set to %s by something other than Lab - resetting it to the Lab value of %s (maintaining the current health %% of %s%%)",
+						EntityRecorder:GetEntityName(entity),
+						entity.Uuid.EntityUuid,
+						entity.Health.MaxHp,
+						maxHealth,
+						currentHealthPercentage * 100)
 
-				entity.Health.MaxHp = maxHealth
-				if (1 - (entity.Health.Hp / entity.Health.MaxHp)) ~= currentHealthPercentage then
-					entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * (1 - currentHealthPercentage))))
+					entity.Health.MaxHp = maxHealth
+					if (1 - (entity.Health.Hp / entity.Health.MaxHp)) ~= currentHealthPercentage then
+						entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * (1 - currentHealthPercentage))))
+					end
+					entity:Replicate("Health")
+				else
+					firstMutator.currentHealthPercentage = (entity.Health.Hp / entity.Health.MaxHp)
 				end
-				entity:Replicate("Health")
-			else
-				firstMutator.currentHealthPercentage = (entity.Health.Hp / entity.Health.MaxHp)
 			end
 		end, entity)
 end
@@ -625,6 +627,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function HealthMutator:generateChangelog()
 	return {
+		["1.7.3"] = {
+			type = "Bullet",
+			text = {
+				"Fix the health listener running on entities that already had their mutations undone"
+			}
+		},
 		["1.7.1"] = {
 			type = "Bullet",
 			text = {

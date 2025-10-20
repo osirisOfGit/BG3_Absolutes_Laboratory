@@ -1002,7 +1002,7 @@ if Ext.IsServer() then
 	Ext.Osiris.RegisterListener("Died", 1, "after", function(character)
 		---@type EntityHandle
 		local entity = Ext.Entity.Get(character)
-		if entity.Vars[SPELL_MUTATOR_ON_DEATH] then
+		if entity and entity.Vars[SPELL_MUTATOR_ON_DEATH] then
 			---@type MutatorEntityVar
 			local entityVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] or {}
 			entityVar.originalValues = entityVar.originalValues or {}
@@ -1127,6 +1127,9 @@ if Ext.IsServer() then
 							return value.Id.OriginatorPrototype == spellName
 						end)
 					then
+						---@type SpellData
+						local spell = Ext.Stats.Get(spellName)
+
 						addSpells[#addSpells + 1] = {
 							PrepareType = "AlwaysPrepared",
 							SpellId = {
@@ -1135,7 +1138,8 @@ if Ext.IsServer() then
 								Source = ModuleUUID
 							},
 							PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
-							SpellCastingAbility = entity.Stats.SpellCastingAbility
+							SpellCastingAbility = entity.Stats.SpellCastingAbility,
+							CooldownType = Ext.Enums.SpellCooldownType[Ext.Enums.SpellCooldownType[CooldownType[spell.Cooldown]]]
 						}
 
 						origValues.addedSpells = origValues.addedSpells or {}
@@ -1540,7 +1544,7 @@ if Ext.IsServer() then
 												},
 												PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
 												SpellCastingAbility = entity.Stats.SpellCastingAbility,
-												CooldownType = Ext.Enums.SpellCooldownType[CooldownType[spell.Cooldown]]
+												CooldownType = Ext.Enums.SpellCooldownType[Ext.Enums.SpellCooldownType[CooldownType[spell.Cooldown]]]
 											}
 
 											origValues.addedSpells = origValues.addedSpells or {}
@@ -1757,6 +1761,13 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function SpellListMutator:generateChangelog()
 	return {
+		["1.7.3"] = {
+			type = "Bullet",
+			text = {
+				"Actually ACTUALLY force the Spell's cooldown type to be specified when adding to the spellbook q_ (I missed the logic for guaranteed spells)",
+				"Fix the on-death event listener trying to run on an entity that was deleted before it died. Yeah, idk either."
+			}
+		},
 		["1.7.2"] = {
 			type = "Bullet",
 			text = {
