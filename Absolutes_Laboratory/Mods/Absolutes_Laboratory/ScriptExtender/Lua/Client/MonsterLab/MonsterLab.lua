@@ -157,6 +157,26 @@ function MonsterLab:buildProfileView()
 						type = "Multiline"
 					}
 				})
+
+			local modGroups = {
+				["user"] = self.popup:AddGroup("")
+			}
+
+			modGroups["user"]:AddSeparatorText("Your Profile(s)"):SetStyle("SeparatorTextAlign", 0.5)
+
+			for profileId, profile in TableUtils:OrderedPairs(self.config.profiles) do
+				local modName = profile.modId and Ext.Mod.GetMod(profile.modId).Info.Name
+
+				if modName and not modGroups[modName] then
+					modGroups[modName] = self.popup:AddGroup(profile.modId)
+				end
+
+				---@type ExtuiMenu
+				local profileMenu = modGroups[modName or "user"]:AddMenu(profile.name)
+				if not profile.modId then
+
+				end
+			end
 		end
 	end)
 	self.encounterFoldersSidebar:AddNewLine()
