@@ -31,8 +31,6 @@ function MonsterLabProfileExecutor:ExecuteProfile()
 	end
 
 	if profileId then
-		Logger.mode = "timer"
-
 		local profile = self.config.profiles[profileId]
 		if profile then
 			local success, error = xpcall(function(...)
@@ -44,16 +42,40 @@ function MonsterLabProfileExecutor:ExecuteProfile()
 					if self.config.folders[encounterRule.folderId] and self.config.folders[encounterRule.folderId].encounters[encounterRule.encounterId] then
 						local encounter = self.config.folders[encounterRule.folderId].encounters[encounterRule.encounterId]
 
-						if encounter.gameLevel == currentLevel then
-						else
-							EncounterManager:ManageEncounterSpanws({
-								encounterId = encounterRule.encounterId,
-								delete = true,
-								profileId = profileId
-							})
+						local encounterName = ("%s%s"):format(
+							encounter.name,
+							encounter.modId and (" - Mod: " .. Ext.Mod.GetMod(encounter.modId).Info.Name) or "")
+
+						Logger:BasicDebug("============ Starting Encounter %s ============", encounterName)
+
+						local success, error = xpcall(function(...)
+							if encounter.gameLevel == currentLevel then
+								EncounterManager:ManageEncounterSpanws({
+									encounterId = encounterRule.encounterId,
+									encounter = encounter,
+									profileId = profileId
+								})
+							else
+								EncounterManager:ManageEncounterSpanws({
+									encounterId = encounterRule.encounterId,
+									delete = true,
+									profileId = profileId
+								})
+							end
+						end, debug.traceback)
+
+						if not success then
+							Logger:BasicError("Couldn't process Encounter %s due to %s", encounterName, error)
 						end
+
+						Logger:BasicDebug("============ Finished Encounter %s ============", encounterName)
 					else
 						Logger:BasicError("Couldn't locate the specified encounter: %s", encounterRule)
+						EncounterManager:ManageEncounterSpanws({
+							encounterId = encounterRule.encounterId,
+							delete = true,
+							profileId = profileId
+						})
 					end
 				end
 			end, debug.traceback)
@@ -65,8 +87,6 @@ function MonsterLabProfileExecutor:ExecuteProfile()
 			Logger:BasicError("Monster Lab: Could not locate a profile with id of %s", profileId)
 			self:ClearEncountersForDisabledProfile()
 		end
-
-		Logger.mode = "buffer"
 	else
 		Logger:BasicDebug("No Active Monster Lab Profile found - skipping")
 		self:ClearEncountersForDisabledProfile()
@@ -80,17 +100,17 @@ function MonsterLabProfileExecutor:ClearEncountersForDisabledProfile()
 		---@type EntityHandle
 		local entity = Ext.Entity.Get(entityId)
 
-		---@type MonsterLab_EntityVariable
-		local var = entity.Vars.AbsolutesLaboratory_MonsterLab_Entity
-		if not TableUtils:IndexOf(encounterIds, var.encounterId) then
-			table.insert(encounterIds)
-		end
-	end
+		if entity then
+			---@type MonsterLab_EntityVariable
+			local var = entity.Vars.AbsolutesLaboratory_MonsterLab_Entity
+			if not TableUtils:IndexOf(encounterIds, var.encounterId) then
+				EncounterManager:ManageEncounterSpanws({
+					encounterId = var.encounterId,
+					delete = true
+				})
 
-	for _, encounterId in pairs(encounterIds) do
-		EncounterManager:ManageEncounterSpanws({
-			encounterId = encounterId,
-			delete = true
-		})
+				table.insert(encounterIds, var.encounterId)
+			end
+		end
 	end
 end
