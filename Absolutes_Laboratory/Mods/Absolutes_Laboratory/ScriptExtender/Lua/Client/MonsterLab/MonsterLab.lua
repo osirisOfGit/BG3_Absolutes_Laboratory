@@ -163,16 +163,21 @@ function MonsterLab:buildProfileView()
 			}
 
 			modGroups["user"]:AddSeparatorText("Your Profile(s)"):SetStyle("SeparatorTextAlign", 0.5)
+			-- If groups only contain a menu, they resize indefinitely. They need some non-parent element inside em with a concrete size
+			modGroups["user"]:AddDummy(0, 0)
 
-			for profileId, profile in TableUtils:OrderedPairs(self.config.profiles) do
-				local modName = profile.modId and Ext.Mod.GetMod(profile.modId).Info.Name
-
-				if modName and not modGroups[modName] then
-					modGroups[modName] = self.popup:AddGroup(profile.modId)
+			for profileId, profile in TableUtils:OrderedPairs(self.config.profiles, function(key, value)
+				return (value.modId and Ext.Mod.GetMod(value.modId).Info.Name or "") .. value.name
+			end) do
+				if profile.modId and not modGroups[profile.modId] then
+					modGroups[profile.modId] = self.popup:AddGroup(profile.modId)
+					modGroups[profile.modId]:AddSeparatorText(Ext.Mod.GetMod(profile.modId).Info.Name):SetStyle("SeparatorTextAlign", 0.5)
+					-- If groups only contain a menu, they resize indefinitely. They need some non-parent element inside em with a concrete size
+					modGroups[profile.modId]:AddDummy(0, 0)
 				end
 
 				---@type ExtuiMenu
-				local profileMenu = modGroups[modName or "user"]:AddMenu(profile.name)
+				local profileMenu = modGroups[profile.modId or "user"]:AddMenu(profile.name)
 
 				profileMenu:AddSelectable("Clone", "DontClosePopups").OnClick = function()
 					local profileCopy = TableUtils:DeeplyCopyTable(profile._real or profile)

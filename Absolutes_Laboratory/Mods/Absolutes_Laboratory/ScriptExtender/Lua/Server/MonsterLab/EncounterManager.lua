@@ -210,11 +210,11 @@ Channels.ManageEncounterSpawns:SetHandler(
 					end
 					spawnedEntity.animation = mlEntity.animation
 
-					if request.encounter.faction ~= Osi.GetFaction(spawnedEntity.realEntityId) then
+					if request.encounter.faction and request.encounter.faction ~= Osi.GetFaction(spawnedEntity.realEntityId) then
 						Osi.SetFaction(spawnedEntity.realEntityId, request.encounter.faction)
 					end
 
-					if request.encounter.combatGroupId ~= Osi.GetCombatGroupID(spawnedEntity.realEntityId) then
+					if request.encounter.combatGroupId and request.encounter.combatGroupId ~= Osi.GetCombatGroupID(spawnedEntity.realEntityId) then
 						Osi.SetCombatGroupID(spawnedEntity.realEntityId, request.encounter.combatGroupId)
 					end
 				elseif not TableUtils:CompareLists(mlEntity.coordinates, { 0, 0, 0 }) then
