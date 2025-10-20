@@ -163,8 +163,6 @@ function MonsterLab:buildProfileView()
 			}
 
 			modGroups["user"]:AddSeparatorText("Your Profile(s)"):SetStyle("SeparatorTextAlign", 0.5)
-			-- If groups only contain a menu, they resize indefinitely. They need some non-parent element inside em with a concrete size
-			modGroups["user"]:AddDummy(0, 0)
 
 			for profileId, profile in TableUtils:OrderedPairs(self.config.profiles, function(key, value)
 				return (value.modId and Ext.Mod.GetMod(value.modId).Info.Name or "") .. value.name
@@ -172,14 +170,14 @@ function MonsterLab:buildProfileView()
 				if profile.modId and not modGroups[profile.modId] then
 					modGroups[profile.modId] = self.popup:AddGroup(profile.modId)
 					modGroups[profile.modId]:AddSeparatorText(Ext.Mod.GetMod(profile.modId).Info.Name):SetStyle("SeparatorTextAlign", 0.5)
-					-- If groups only contain a menu, they resize indefinitely. They need some non-parent element inside em with a concrete size
-					modGroups[profile.modId]:AddDummy(0, 0)
 				end
 
 				---@type ExtuiMenu
 				local profileMenu = modGroups[profile.modId or "user"]:AddMenu(profile.name)
-
-				profileMenu:AddSelectable("Clone", "DontClosePopups").OnClick = function()
+				-- If groups only contain a menu, they resize indefinitely. They need some non-parent element inside em with a concrete size
+				-- Putting it once above wasn't working for some reason
+				modGroups[profile.modId or "user"]:AddDummy(0, 0)
+				profileMenu:AddSelectable("Clone").OnClick = function()
 					local profileCopy = TableUtils:DeeplyCopyTable(profile._real or profile)
 					if TableUtils:IndexOf(self.config.profiles, function(value)
 							return value.name == profile.name and not value.modId
@@ -323,11 +321,23 @@ function MonsterLab:buildProfileView()
 
 						local headerCell = groupTable:AddRow():AddCell()
 
+						local removeEncounterButton = Styler:ImageButton(headerCell:AddImageButton("delete" .. index, "ico_close_d", Styler:ScaleFactor({ 24, 24 })))
+						removeEncounterButton:Tooltip():AddText("\t  Removes this encounter from this Profile - will not delete the encounter itself")
+						removeEncounterButton.OnClick = function()
+							local encounterProfileIndex = TableUtils:IndexOf(profile.encounters, function(value)
+								return value.encounterId == combatGroup.profileEncounter.encounterId and value.folderId == combatGroup.profileEncounter.folderId
+							end)
+							profile.encounters[encounterProfileIndex].delete = true
+							TableUtils:ReindexNumericTable(profile.encounters)
+							renderProfile()
+						end
+
 						local modName = combatGroup.encounter.modId and Ext.Mod.GetMod(combatGroup.encounter.modId).Info.Name
 						local titleText = headerCell:AddTextLink(("%s (%s)%s"):format(
 							combatGroup.encounter.name,
 							self.config.folders[combatGroup.profileEncounter.folderId].name,
 							modName and ("\nMod: " .. modName:sub(0, 10)) or ""))
+						titleText.SameLine = true
 
 						titleText:SetColor("TextLink", { 0.86, 0.79, 0.68, 0.78 })
 						titleText.OnClick = function()
@@ -390,6 +400,7 @@ function MonsterLab:buildProfileView()
 							Styler:CheapTextAlign(folder.name, folderWindow)
 
 							local width, height = Styler:calculateTextDimensions(folder.name)
+							height = height * 2
 
 							for encounterId, encounter in TableUtils:OrderedPairs(folder.encounters,
 								function(key, value)
