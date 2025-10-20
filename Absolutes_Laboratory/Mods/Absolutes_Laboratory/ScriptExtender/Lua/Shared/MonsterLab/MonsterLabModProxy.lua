@@ -9,7 +9,7 @@ local function importMonsterLab(modId)
 	local mod = Ext.Mod.GetMod(modId)
 	if mod then
 		---@type {["monsterLab"]: MonsterLabConfig?}
-		local monsterLab = FileUtils:LoadTableFile(string.format("Mods/%s/%s", mod.Info.Directory, MonsterLabModProxy.Filename .. ".json"), "data")
+		local monsterLab = FileUtils:LoadTableFile(string.format("Mods/%s/%s", mod.Info.Directory, MonsterLabModProxy.fileName .. ".json"), "data")
 		if monsterLab then
 			return monsterLab["monsterLab"], modId
 		end
