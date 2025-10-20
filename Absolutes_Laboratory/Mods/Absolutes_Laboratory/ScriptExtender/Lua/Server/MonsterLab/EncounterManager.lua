@@ -1,23 +1,3 @@
-Ext.Vars.RegisterModVariable(ModuleUUID, "ActiveMonsterLabProfile", {
-	Server = true,
-	Client = true,
-	WriteableOnServer = true,
-	WriteableOnClient = true,
-	SyncToClient = true,
-	SyncToServer = true,
-	SyncOnWrite = true
-})
-
-Ext.Vars.RegisterModVariable(ModuleUUID, "HasDisabledMonsterLabProfiles", {
-	Server = true,
-	Client = true,
-	WriteableOnServer = true,
-	WriteableOnClient = true,
-	SyncToClient = true,
-	SyncToServer = true,
-	SyncOnWrite = true
-})
-
 Ext.Vars.RegisterModVariable(ModuleUUID, "MonsterLab_SpawnedEntities", {
 	Server = true,
 	Client = true,
@@ -43,7 +23,8 @@ EncounterManager = {
 	---@type Map
 	mazzleMap = nil,
 	---@type {[Guid]: {[string]: Guid}}
-	encounterVisualizations = {}
+	encounterVisualizations = {},
+	config = MonsterLabConfigurationProxy
 }
 
 Ext.Events.SessionLoaded:Subscribe(function(e)
@@ -174,6 +155,7 @@ function EncounterManager:ManageEncounterSpanws(request)
 				Osi.RequestDeleteTemporary(entity.realEntityId)
 			end
 		end
+		Logger:BasicDebug("Deleted all members of encounter %s", request.encounterId)
 		allSpawnedEntities[request.encounterId] = nil
 	else
 		for mlEntityId, mlEntity in pairs(request.encounter.entities) do

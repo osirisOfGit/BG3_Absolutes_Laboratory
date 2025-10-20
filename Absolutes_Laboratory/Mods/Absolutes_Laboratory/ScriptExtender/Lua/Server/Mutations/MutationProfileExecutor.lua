@@ -145,16 +145,6 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 				end
 			end
 
-			-- ---@type thread
-			-- local delayedProcessor = coroutine.create(function(...)
-			-- 	local counter = 1
-			-- 	while counter < #entitiesToProcess do
-			-- 		entitiesToProcess[counter]()
-			-- 		counter = counter + 1
-			-- 		coroutine.yield()
-			-- 	end
-			-- end)
-
 			local specifiedEntities = { ... }
 
 			---@type {[Guid] : {[Guid]: SelectorPredicate}}

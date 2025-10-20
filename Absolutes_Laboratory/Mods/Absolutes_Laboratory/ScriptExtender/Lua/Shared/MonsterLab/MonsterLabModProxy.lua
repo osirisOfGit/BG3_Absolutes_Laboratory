@@ -47,17 +47,13 @@ local function importModConfigs()
 	end
 end
 
-local function setModProxyFields(tbl, key, target)
-	importModConfigs()
-
-	local modId = TableUtils:IndexOf(modList, function(value)
-		return value[target] and value[target][key] ~= nil
-	end)
-
-	if modId then
-		local config = importMonsterLab(modId)
-		if config then
-			local targetEntry = config[target][key]
+---@param modId Guid
+---@param key "all"|string
+---@param target "profiles"|"folders"|"rulesets"
+local function setDataFromMod(modId, key, target)
+	local config = importMonsterLab(modId)
+	if config and config[target] then
+		local function doIt(key, targetEntry)
 			targetEntry.modId = modId
 			if targetEntry.encounters then
 				for _, encounter in pairs(targetEntry.encounters) do
@@ -65,41 +61,67 @@ local function setModProxyFields(tbl, key, target)
 				end
 			end
 			rawset(MonsterLabModProxy.ModProxy[target], key, config[target][key])
-			return rawget(tbl, key)
+		end
+
+		if key ~= "all" then
+			doIt(key, config[target][key])
+		else
+			for id, entry in pairs(config[target]) do
+				doIt(id, entry)
+			end
+			return config[target]
 		end
 	end
+end
+
+---@param tbl table
+---@param key string
+---@param target "profiles"|"folders"|"rulesets"
+local function setModProxyFields(tbl, key, target)
+	importModConfigs()
+
+	local modId = TableUtils:IndexOf(modList, function(value)
+		return value[target] and (key ~= "all" or value[target][key] ~= nil)
+	end)
+
+	if modId then
+		setDataFromMod(modId, key, target)
+		return rawget(tbl, key)
+	end
+end
+
+---@param name string
+---@return metatable
+local buildMetatable = function(name)
+	return {
+		__mode = 'k',
+		__index = function(t, k)
+			return setModProxyFields(t, k, name)
+		end,
+		__newindex = function(t, k, v)
+			Logger:BasicError("Tried to set a new value to a mod-sourced %s - key: %s | value: %s\n%s", name, k, v, debug.traceback())
+		end,
+		__pairs = function(t)
+			local collection = {}
+			for modId, container in pairs(modList) do
+				if container.profiles then
+					for id, entry in pairs(setDataFromMod(modId, "all", name)) do
+						collection[id] = entry
+					end
+				end
+			end
+
+			return pairs(collection)
+		end
+	}
 end
 
 ---@type MonsterLabConfig
 ---@diagnostic disable-next-line: missing-fields
 MonsterLabModProxy.ModProxy = {
-	profiles = setmetatable({}, {
-		__mode = 'k',
-		__index = function(t, k)
-			return setModProxyFields(t, k, "profiles")
-		end,
-		__newindex = function(t, k, v)
-			Logger:BasicError("Tried to set a new value to a mod-sourced profile - key: %s | value: %s\n%s", k, v, debug.traceback())
-		end
-	}),
+	profiles = setmetatable({}, buildMetatable("profiles")),
 
-	folders = setmetatable({}, {
-		__mode = 'k',
-		__index = function(t, k)
-			return setModProxyFields(t, k, "folders")
-		end,
-		__newindex = function(t, k, v)
-			Logger:BasicError("Tried to set a new value to a mod-sourced folder - key: %s | value: %s\n%s", k, v, debug.traceback())
-		end
-	}),
+	folders = setmetatable({}, buildMetatable("folders")),
 
-	rulesets = setmetatable({}, {
-		__mode = 'k',
-		__index = function(t, k)
-			return setModProxyFields(t, k, "rulesets")
-		end,
-		__newindex = function(t, k, v)
-			Logger:BasicError("Tried to set a new value to a mod-sourced ruleset - key: %s | value: %s\n%s", k, v, debug.traceback())
-		end
-	})
+	rulesets = setmetatable({}, buildMetatable("rulesets"))
 }

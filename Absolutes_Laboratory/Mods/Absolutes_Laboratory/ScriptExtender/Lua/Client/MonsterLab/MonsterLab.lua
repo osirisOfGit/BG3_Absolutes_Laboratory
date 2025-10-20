@@ -23,7 +23,7 @@ Ext.Require("Client/MonsterLab/EncounterDesigner.lua")
 -- Ext.Require("Client/MonsterLab/ExistingEncounters.lua")
 
 MonsterLab = {
-	config = ConfigurationStructure.config.monsterLab,
+	config = MonsterLabConfigurationProxy,
 	activeRuleset = "Base",
 	---@param newProfile (string|boolean)?
 	---@return string?
