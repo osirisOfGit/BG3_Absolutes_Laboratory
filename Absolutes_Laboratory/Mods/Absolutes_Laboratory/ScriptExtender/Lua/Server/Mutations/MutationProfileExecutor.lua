@@ -200,26 +200,21 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 								broadcastStatus()
 							end
 
-							for _, mutator in pairs(mutation.mutators) do
-								if entityVar.appliedMutators[mutator.targetProperty]
-									and mProfileRule.additive
-									and MutatorInterface.registeredMutators[mutator.targetProperty]:canBeAdditive(mutator, entityVar.appliedMutators[mutator.targetProperty])
-								then
-									if entityVar.appliedMutators[mutator.targetProperty][1] then
-										table.insert(entityVar.appliedMutators[mutator.targetProperty], mutator)
-									else
-										entityVar.appliedMutators[mutator.targetProperty] = { entityVar.appliedMutators[mutator.targetProperty], mutator }
-									end
-
-									entityVar.appliedMutatorsPath[mutator.targetProperty][i] = mProfileRule
-								else
-									entityVar.appliedMutators[mutator.targetProperty] = mutator
-									entityVar.appliedMutatorsPath[mutator.targetProperty] = { [i] = mProfileRule }
-								end
-							end
+							MutationProfileExecutor:compileMutatorsForEntity(entityVar,
+								mutation.mutators,
+								mProfileRule,
+								i)
 						end
 						::continue::
 					end
+					local monsterLabRulesetRule = MonsterLabProfileExecutor:GetRulesetForEntity(entity)
+					if monsterLabRulesetRule and next(monsterLabRulesetRule.mutators) then
+						MutationProfileExecutor:compileMutatorsForEntity(entityVar,
+							monsterLabRulesetRule.mutators,
+							monsterLabRulesetRule,
+							9999)
+					end
+
 					Ext.Utils.ProfileEnd("Lab Profiles - Selecting and Building Pool On " .. EntityRecorder:GetEntityName(entity))
 
 					local didUndo = false
@@ -277,6 +272,8 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 				MutatorInterface:undoMutator(entity, mutatorVar)
 			end
 			Logger:BasicInfo("======= Cleared Mutations From %s Entities in %dms =======", counter, Ext.Timer:MonotonicTime() - time)
+
+			MonsterLabEncounterManager:MutateAllEncounters()
 		end
 	end, debug.traceback)
 
@@ -287,9 +284,35 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 		profileExecutorStatus.stage = "Error"
 		profileExecutorStatus.error = error
 		broadcastStatus()
+
+		MonsterLabEncounterManager:MutateAllEncounters()
 	end
 	Ext.Utils.ProfileEnd("Lab Mutation Profile Execution")
 	Logger.mode = "buffer"
+end
+
+---@param entityVar MutatorEntityVar
+---@param mutators Mutator[]
+---@param profileRule MonsterLab_RulesetRule|MutationProfileRule
+---@param profileRuleIndex any
+function MutationProfileExecutor:compileMutatorsForEntity(entityVar, mutators, profileRule, profileRuleIndex)
+	for _, mutator in pairs(mutators) do
+		if entityVar.appliedMutators[mutator.targetProperty]
+			and (profileRule.additive or profileRule.composable)
+			and MutatorInterface.registeredMutators[mutator.targetProperty]:canBeAdditive(mutator, entityVar.appliedMutators[mutator.targetProperty])
+		then
+			if entityVar.appliedMutators[mutator.targetProperty][1] then
+				table.insert(entityVar.appliedMutators[mutator.targetProperty], mutator)
+			else
+				entityVar.appliedMutators[mutator.targetProperty] = { entityVar.appliedMutators[mutator.targetProperty], mutator }
+			end
+
+			entityVar.appliedMutatorsPath[mutator.targetProperty][profileRuleIndex] = profileRule
+		else
+			entityVar.appliedMutators[mutator.targetProperty] = mutator
+			entityVar.appliedMutatorsPath[mutator.targetProperty] = { [profileRuleIndex] = profileRule }
+		end
+	end
 end
 
 Ext.Osiris.RegisterListener("LevelGameplayReady", 2, "after", function(levelName, isEditorMode)

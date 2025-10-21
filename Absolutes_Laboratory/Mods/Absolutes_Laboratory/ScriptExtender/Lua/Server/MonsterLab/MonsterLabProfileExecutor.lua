@@ -50,13 +50,15 @@ function MonsterLabProfileExecutor:ExecuteProfile()
 
 						local success, error = xpcall(function(...)
 							if encounter.gameLevel == currentLevel then
-								EncounterManager:ManageEncounterSpanws({
+								MonsterLabEncounterManager:ManageEncounterSpanws({
+									folderId = encounterRule.folderId,
 									encounterId = encounterRule.encounterId,
 									encounter = encounter,
 									profileId = profileId
 								})
 							else
-								EncounterManager:ManageEncounterSpanws({
+								MonsterLabEncounterManager:ManageEncounterSpanws({
+									folderId = encounterRule.folderId,
 									encounterId = encounterRule.encounterId,
 									delete = true,
 									profileId = profileId
@@ -71,7 +73,8 @@ function MonsterLabProfileExecutor:ExecuteProfile()
 						Logger:BasicDebug("============ Finished Encounter %s ============", encounterName)
 					else
 						Logger:BasicError("Couldn't locate the specified encounter: %s", encounterRule)
-						EncounterManager:ManageEncounterSpanws({
+						MonsterLabEncounterManager:ManageEncounterSpanws({
+							folderId = encounterRule.folderId,
 							encounterId = encounterRule.encounterId,
 							delete = true,
 							profileId = profileId
@@ -104,7 +107,8 @@ function MonsterLabProfileExecutor:ClearEncountersForDisabledProfile()
 			---@type MonsterLab_EntityVariable
 			local var = entity.Vars.AbsolutesLaboratory_MonsterLab_Entity
 			if not TableUtils:IndexOf(encounterIds, var.encounterId) then
-				EncounterManager:ManageEncounterSpanws({
+				MonsterLabEncounterManager:ManageEncounterSpanws({
+					folderId = var.folderId,
 					encounterId = var.encounterId,
 					delete = true
 				})
@@ -113,4 +117,72 @@ function MonsterLabProfileExecutor:ClearEncountersForDisabledProfile()
 			end
 		end
 	end
+end
+
+local cachedRulesetStates = {}
+
+---@param entity EntityHandle
+---@return MonsterLab_RulesetRule
+function MonsterLabProfileExecutor:GetRulesetForEntity(entity)
+	if entity.Vars.AbsolutesLaboratory_MonsterLab_Entity then
+		self:GetRulesetForEntityVar(entity.Vars.AbsolutesLaboratory_MonsterLab_Entity)
+	end
+end
+
+---@param entityVar MonsterLab_EntityVariable
+---@return MonsterLab_RulesetRule
+function MonsterLabProfileExecutor:GetRulesetForEntityVar(entityVar)
+	Ext.Utils.ProfileBegin("Monster Lab Get Ruleset For  " .. entityVar.mlEntityId:sub(#entityVar.mlEntityId - 5))
+
+	local rulesetModifiers = MonsterLabConfigurationProxy.folders[entityVar.folderId]
+		.encounters[entityVar.encounterId]
+		.entities[entityVar.mlEntityId]
+		.rulesetModifiers
+
+	---@type Guid
+	local activeRuleset
+
+	for rulesetGuid in pairs(rulesetModifiers) do
+		local rulesetDef = MonsterLabConfigurationProxy.rulesets[rulesetGuid]
+		for modifierId, modiferValue in pairs(rulesetDef.activeModifiers) do
+			if type(modiferValue) == "boolean" then
+				if cachedRulesetStates[modifierId] == nil then
+					cachedRulesetStates[modifierId] = Osi.CheckRulesetModifierBool(modifierId, modiferValue) == 1
+				end
+
+				if not cachedRulesetStates[modifierId] then
+					Logger:BasicDebug("Ruleset modifier %s is not set to %s", Lab_RulesetModifiers[modifierId], modiferValue)
+					goto next_ruleset
+				end
+			else
+				local matched = false
+				for _, acceptableValue in pairs(modiferValue) do
+					if not cachedRulesetStates[modifierId] or cachedRulesetStates[modifierId][acceptableValue] == nil then
+						cachedRulesetStates[modifierId] = cachedRulesetStates[modifierId] or {}
+						cachedRulesetStates[modifierId][acceptableValue] = Osi.CheckRulesetModifierString(modifierId, acceptableValue) == 1
+					end
+
+					matched = cachedRulesetStates[modifierId][acceptableValue]
+				end
+				if not matched then
+					Logger:BasicDebug("Ruleset modifier %s is not set to any of %s", Lab_RulesetModifiers[modifierId], modiferValue)
+
+					goto next_ruleset
+				end
+			end
+		end
+		activeRuleset = rulesetGuid
+		goto done
+
+		::next_ruleset::
+	end
+	if not activeRuleset then
+		activeRuleset = "Base"
+	end
+	::done::
+
+	Logger:BasicDebug("Ruleset %s is active!", MonsterLabConfigurationProxy.rulesets[activeRuleset].name)
+	Ext.Utils.ProfileEnd("Monster Lab Get Ruleset For  " .. entityVar.mlEntityId:sub(#entityVar.mlEntityId - 5))
+
+	return rulesetModifiers[activeRuleset]
 end

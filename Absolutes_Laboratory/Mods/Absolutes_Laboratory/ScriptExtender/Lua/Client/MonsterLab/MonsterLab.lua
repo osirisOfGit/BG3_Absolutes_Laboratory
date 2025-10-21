@@ -351,7 +351,7 @@ function MonsterLab:buildProfileView()
 						titleText.OnClick = function()
 							if encounterManagerGroup.Visible == false then
 								encounterManagerGroup.Visible = true
-								self:buildEncounterView(combatGroup.encounter, encounterManagerGroup)
+								self:buildEncounterView(combatGroup.encounter, encounterManagerGroup, combatGroup.profileEncounter)
 							else
 								Helpers:KillChildren(encounterManagerGroup)
 								encounterManagerGroup.Visible = false
@@ -532,7 +532,10 @@ function MonsterLab:buildFolderView()
 			local encounterSelect = header:AddSelectable(encounter.name .. "##" .. encounterId)
 			encounterSelect.OnClick = function()
 				encounterSelect.Selected = false
-				self:buildEncounterView(encounter)
+				self:buildEncounterView(encounter, nil, {
+					folderId = folderId,
+					encounterId = encounterId
+				})
 			end
 
 			encounterSelect.OnRightClick = function()
@@ -651,7 +654,8 @@ end
 
 ---@param encounter MonsterLabEncounter
 ---@param parent ExtuiTreeParent?
-function MonsterLab:buildEncounterView(encounter, parent)
+---@param encounterMeta MonsterLabProfileEncounterEntry
+function MonsterLab:buildEncounterView(encounter, parent, encounterMeta)
 	local parent = parent or self.designerSection
 	Helpers:KillChildren(parent)
 
@@ -690,7 +694,7 @@ function MonsterLab:buildEncounterView(encounter, parent)
 
 		local entitySidebar = layoutRow:AddCell()
 		entitySidebar:AddButton("Launch Designer Mode").OnClick = function()
-			EncounterDesigner:buildDesigner(encounter)
+			EncounterDesigner:buildDesigner(encounter, encounterMeta)
 		end
 		local designerSection = layoutRow:AddCell()
 
@@ -699,7 +703,7 @@ function MonsterLab:buildEncounterView(encounter, parent)
 		end) do
 			if rulesetToCopyTo and rulesetToCopyFrom then
 				if entity.rulesetModifiers[rulesetToCopyFrom] then
-					---@type MonsterLab_RulesetModifiers
+					---@type MonsterLab_RulesetRule
 					local rulesetCopy = TableUtils:DeeplyCopyTable(entity.rulesetModifiers[rulesetToCopyFrom]._real)
 
 					if entity.rulesetModifiers[rulesetToCopyTo] then
@@ -771,7 +775,7 @@ function MonsterLab:buildEncounterView(encounter, parent)
 						end)
 					do
 						rulesetMenu:AddSelectable(("%s (%s)"):format(otherEntity.displayName, entityId:sub(#entityId - 5))).OnClick = function()
-							---@type MonsterLab_RulesetModifiers
+							---@type MonsterLab_RulesetRule
 							local copy = TableUtils:DeeplyCopyTable(otherEntity.rulesetModifiers[rulesetId]._real)
 
 							if entity.rulesetModifiers[rulesetId] then
@@ -819,18 +823,24 @@ function MonsterLab:buildEncounterView(encounter, parent)
 					Styler:EnableToggleButton(designerSection, "Spawn", false, nil, function(swap)
 						if swap then
 							activeRuleset.shouldSpawn = not activeRuleset.shouldSpawn
-							if not activeRuleset.shouldSpawn then
-								Helpers:KillChildren(mutatorGroup)
-							else
-								activeRuleset.mutators = activeRuleset.mutators or {}
-
-								MutationDesigner:RenderMutatorsSidebarStyle(mutatorGroup, activeRuleset.mutators, nil, nil, self.popup)
-							end
+							mutatorGroup.Visible = activeRuleset.shouldSpawn
 						end
 						return activeRuleset.shouldSpawn
 					end)
 
 					mutatorGroup = designerSection:AddGroup("DesignIt")
+
+					Styler:EnableToggleButton(mutatorGroup,
+						"Composable",
+						false,
+						[[If enabled, these mutators will be _composable_, meaning they will be combined with any mutators of the same type that are applicable for this entity per the active Mutation Profile. See the documentation for each mutator to see when and how this applies.
+	If unchecked, composable mutators of the same type from earlier mutations will be replaced with these - these mutators will always be processed last, so they are guaranteed to overwrite any conflicts from the Mutation Profile]],
+						function(swap)
+							if swap then
+								activeRuleset.composable = not activeRuleset.composable
+							end
+							return activeRuleset.composable
+						end)
 
 					if activeRuleset.shouldSpawn then
 						activeRuleset.mutators = activeRuleset.mutators or {}

@@ -26,7 +26,8 @@ EncounterDesigner = {
 }
 
 ---@param encounter MonsterLabEncounter
-function EncounterDesigner:buildDesigner(encounter)
+---@param encounterMeta MonsterLabProfileEncounterEntry
+function EncounterDesigner:buildDesigner(encounter, encounterMeta)
 	if not self.designerWindow then
 		self.designerWindow = Ext.IMGUI.NewWindow(encounter.name)
 		self.designerWindow.Closeable = true
@@ -97,7 +98,8 @@ function EncounterDesigner:buildDesigner(encounter)
 		currentGameLevel = levelName
 		if levelName == encounter.gameLevel then
 			Channels.ManageEncounterSpawns:SendToServer({
-				encounterId = encounter._parent_key,
+				folderId = encounterMeta.folderId,
+				encounterId = encounterMeta.encounterId,
 				encounter = (encounter._real or encounter)
 			} --[[@as ManageEncounterRequest]])
 		end
@@ -106,16 +108,16 @@ function EncounterDesigner:buildDesigner(encounter)
 
 	if not TableUtils:TablesAreEqual(encounter.baseCoords, { 0, 0, 0 }) and encounter.entities() then
 		Channels.OrbAtPosition:SendToServer({
-			encounterId = encounter._parent_key,
+			encounterId = encounterMeta.encounterId,
 			context = "BaseCoords",
-			coords = encounter.baseCoords._real,
+			coords = encounter.baseCoords._real or encounter.baseCoords,
 			moonbeam = 5
 		} --[[@as VisualizationRequest]])
 	end
 
 	self.designerWindow.OnClose = function()
 		Channels.OrbAtPosition:SendToServer({
-			encounterId = encounter._parent_key,
+			encounterId = encounterMeta.encounterId,
 			cleanupEncounter = true
 		} --[[@as VisualizationRequest]])
 
@@ -126,7 +128,8 @@ function EncounterDesigner:buildDesigner(encounter)
 		} --[[@as ManageDesignerModeRequest]])
 
 		Channels.ManageEncounterSpawns:SendToServer({
-			encounterId = encounter._parent_key,
+			folderId = encounterMeta.folderId,
+			encounterId = encounterMeta.encounterId,
 			delete = true
 		} --[[@as ManageEncounterRequest]])
 
@@ -184,7 +187,7 @@ function EncounterDesigner:buildDesigner(encounter)
 						end
 
 						Channels.OrbAtPosition:SendToServer({
-							encounterId = encounter._parent_key,
+							encounterId = encounterMeta.encounterId,
 							coords = coords,
 							context = "BaseCoords"
 						} --[[@as VisualizationRequest]])
@@ -239,7 +242,11 @@ function EncounterDesigner:buildDesigner(encounter)
 			refreshEntitiesButton.SameLine = true
 			refreshEntitiesButton:Tooltip():AddText("\t Refresh the Entity Card View to match the current window dimensions")
 			refreshEntitiesButton.OnClick = function()
-				self:RenderCardForEntities(entityCardsGroup, encounter.entities, currentGameLevel == encounter.gameLevel)
+				self:RenderCardForEntities(entityCardsGroup,
+					encounter.entities,
+					currentGameLevel == encounter.gameLevel,
+					encounter,
+					encounterMeta)
 			end
 		end)
 
@@ -253,7 +260,11 @@ function EncounterDesigner:buildDesigner(encounter)
 			teleportToCoordsButton.Visible = true
 			pickCoordsButton.Visible = true
 			teleportToLevelButton.Visible = false
-			self:RenderCardForEntities(entityCardsGroup, encounter.entities, currentGameLevel == encounter.gameLevel)
+			self:RenderCardForEntities(entityCardsGroup,
+				encounter.entities,
+				currentGameLevel == encounter.gameLevel,
+				encounter,
+				encounterMeta)
 		end
 
 		local function checkCurrentLevel()
@@ -263,7 +274,11 @@ function EncounterDesigner:buildDesigner(encounter)
 				teleportToCoordsButton.Visible = not teleportToLevelButton.Visible
 				pickCoordsButton.Visible = teleportToCoordsButton.Visible
 
-				self:RenderCardForEntities(entityCardsGroup, encounter.entities, currentGameLevel == encounter.gameLevel)
+				self:RenderCardForEntities(entityCardsGroup,
+					encounter.entities,
+					currentGameLevel == encounter.gameLevel,
+					encounter,
+					encounterMeta)
 			end)
 		end
 		checkCurrentLevel()
@@ -280,7 +295,8 @@ end
 ---@param parent ExtuiTreeParent
 ---@param entities {[Guid]: MonsterLabEntity}
 ---@param renderCoordPickers boolean
-function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPickers)
+---@param encounterMeta MonsterLabProfileEncounterEntry
+function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPickers, encounter, encounterMeta)
 	Helpers:KillChildren(parent)
 
 	-- Only using this to determine the width of the container, as it keeps scaling the vertical dimension infinitely
@@ -367,23 +383,25 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 					self.popup:AddSelectable("Edit", "DontClosePopups").OnClick = function()
 						MonsterLab:buildCreateEntityForm(self.popup, entities._parent_proxy, function()
 							Channels.ManageEncounterSpawns:SendToServer({
-								encounterId = entities._parent_proxy._parent_key,
+								folderId = encounterMeta.folderId,
+								encounterId = encounterMeta.encounterId,
 								encounter = entities._parent_proxy._real
 							} --[[@as ManageEncounterRequest]])
 
 							self.popup:SetCollapsed(true)
-							self:RenderCardForEntities(parent, entities, renderCoordPickers)
+							self:RenderCardForEntities(parent, entities, renderCoordPickers, encounter, encounterMeta)
 						end, mlEntity)
 					end
 
 					self.popup:AddSelectable("Copy").OnClick = function()
 						entities[FormBuilder:generateGUID()] = TableUtils:DeeplyCopyTable(mlEntity._real)
 						Channels.ManageEncounterSpawns:SendToServer({
-							encounterId = entities._parent_proxy._parent_key,
+							folderId = encounterMeta.folderId,
+							encounterId = encounterMeta.encounterId,
 							encounter = entities._parent_proxy._real
 						} --[[@as ManageEncounterRequest]])
 
-						self:RenderCardForEntities(parent, entities, renderCoordPickers)
+						self:RenderCardForEntities(parent, entities, renderCoordPickers, encounter, encounterMeta)
 					end
 
 					---@param selectable ExtuiSelectable
@@ -393,17 +411,19 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 
 							-- Clean up, then respawn
 							Channels.ManageEncounterSpawns:SendToServer({
-								encounterId = entities._parent_proxy._parent_key,
+								folderId = encounterMeta.folderId,
+								encounterId = encounterMeta.encounterId,
 								delete = true
 							} --[[@as ManageEncounterRequest]])
 
 							Channels.ManageEncounterSpawns:SendToServer({
-								encounterId = entities._parent_proxy._parent_key,
+								folderId = encounterMeta.folderId,
+								encounterId = encounterMeta.encounterId,
 								encounter = entities._parent_proxy._real
 							} --[[@as ManageEncounterRequest]])
 
 							self.popup:SetCollapsed(true)
-							self:RenderCardForEntities(parent, entities, renderCoordPickers)
+							self:RenderCardForEntities(parent, entities, renderCoordPickers, encounter, encounterMeta)
 						else
 							selectable.Label = "Are You Sure?"
 							Styler:Color(selectable, "ErrorText")
@@ -435,7 +455,8 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 						entityCopy.coordinates = coords
 
 						Channels.ManageEncounterSpawns:SendToServer({
-							encounterId = entities._parent_proxy._parent_key,
+							folderId = encounterMeta.folderId,
+							encounterId = encounterMeta.encounterId,
 							encounter = {
 								entities = {
 									[mlEntityId] = entityCopy
@@ -494,7 +515,8 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 				mlEntity.rotation = rotationValue.Value[1]
 
 				Channels.ManageEncounterSpawns:SendToServer({
-					encounterId = entities._parent_proxy._parent_key,
+					folderId = encounterMeta.folderId,
+					encounterId = encounterMeta.encounterId,
 					encounter = {
 						entities = {
 							[mlEntityId] = mlEntity._real
@@ -538,7 +560,8 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 							animationInput.Text = animation.SourceFile:match("([^/\\]+)$")
 							animationInput:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
 							Channels.ManageEncounterSpawns:SendToServer({
-								encounterId = entities._parent_proxy._parent_key,
+								folderId = encounterMeta.folderId,
+								encounterId = encounterMeta.encounterId,
 								encounter = {
 									entities = {
 										[mlEntityId] = mlEntity._real
@@ -567,7 +590,8 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 								animationInput:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
 
 								Channels.ManageEncounterSpawns:SendToServer({
-									encounterId = entities._parent_proxy._parent_key,
+									folderId = encounterMeta.folderId,
+									encounterId = encounterMeta.encounterId,
 									encounter = {
 										entities = {
 											[mlEntityId] = mlEntity._real
@@ -602,12 +626,13 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 			ele:AddButton("Launch Form").OnClick = function(button)
 				if #formGroup.Children == 0 then
 					button.Label = "Close Form"
-					MonsterLab:buildCreateEntityForm(formGroup, entities._parent_proxy, function()
+					MonsterLab:buildCreateEntityForm(formGroup, encounter, function()
 						Channels.ManageEncounterSpawns:SendToServer({
-							encounterId = entities._parent_proxy._parent_key,
+							folderId = encounterMeta.folderId,
+							encounterId = encounterMeta.encounterId,
 							encounter = entities._parent_proxy._real
 						} --[[@as ManageEncounterRequest]])
-						self:RenderCardForEntities(parent, entities, renderCoordPickers)
+						self:RenderCardForEntities(parent, entities, renderCoordPickers, encounter, encounterMeta)
 					end)
 				else
 					button.Label = "Launch Form"
@@ -624,7 +649,7 @@ end
 
 ---@param parent ExtuiTreeParent
 ---@param encounter MonsterLabEncounter
-function EncounterDesigner:manageExtraSettings(parent, encounter)
+function EncounterDesigner:manageExtraSettings(parent, encounter, encounterMeta)
 	Helpers:KillChildren(parent)
 
 	parent:AddText("Copy Values By Selecting Entity: ")
@@ -639,7 +664,8 @@ function EncounterDesigner:manageExtraSettings(parent, encounter)
 			combatGroupId:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
 			encounter.combatGroupId = combatGroupId.Text
 			Channels.ManageEncounterSpawns:SendToServer({
-				encounterId = encounter._parent_key,
+				folderId = encounterMeta.folderId,
+				encounterId = encounterMeta.encounterId,
 				encounter = encounter._real
 			} --[[@as ManageEncounterRequest]])
 		else
@@ -683,7 +709,8 @@ function EncounterDesigner:manageExtraSettings(parent, encounter)
 			factionInput:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
 			encounter.faction = factionInput.Text
 			Channels.ManageEncounterSpawns:SendToServer({
-				encounterId = encounter._parent_key,
+				folderId = encounterMeta.folderId,
+				encounterId = encounterMeta.encounterId,
 				encounter = encounter._real
 			} --[[@as ManageEncounterRequest]])
 		else

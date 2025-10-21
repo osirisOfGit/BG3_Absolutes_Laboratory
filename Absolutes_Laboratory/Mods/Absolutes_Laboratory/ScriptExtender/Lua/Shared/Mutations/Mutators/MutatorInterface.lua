@@ -1,6 +1,6 @@
 ---@class MutatorEntityVar
 ---@field appliedMutators {[string]: Mutator|Mutator[]}
----@field appliedMutatorsPath {[string]: MutationProfileRule|MutationProfileRule[]}
+---@field appliedMutatorsPath {[string]: (MutationProfileRule|MonsterLab_RulesetRule)|(MutationProfileRule|MonsterLab_RulesetRule)[]}
 ---@field originalValues {[string]: any}
 
 ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME = "Absolutes_Laboratory_Mutations"

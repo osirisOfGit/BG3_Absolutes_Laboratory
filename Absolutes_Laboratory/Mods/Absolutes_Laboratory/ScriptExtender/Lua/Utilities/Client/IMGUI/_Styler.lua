@@ -9,7 +9,8 @@ function Styler:DynamicLabelTree(tree)
 	tree.SpanFullWidth = true
 
 	return tree, function(count)
-		tree.Label = label .. (count > 0 and (" - " .. count .. " " .. (Translator.translationTable["selected"] and Translator:translate("selected") or "selected")) or "") .. "###" .. label
+		tree.Label = label ..
+		(count > 0 and (" - " .. count .. " " .. (Translator.translationTable["selected"] and Translator:translate("selected") or "selected")) or "") .. "###" .. label
 	end
 end
 
@@ -275,20 +276,21 @@ end
 ---@param startSameLine boolean
 ---@param tooltip string?
 ---@param callback fun(swap: boolean?): boolean
+---@return ExtuiGroup
 function Styler:EnableToggleButton(parent, buttonText, startSameLine, tooltip, callback)
+	local toggleGroup = parent:AddGroup("toggle")
+	toggleGroup.SameLine = startSameLine or false
+
 	if tooltip then
 		buttonText = "(?) " .. buttonText
+		toggleGroup:Tooltip():AddText("\t " .. tooltip)
 	end
-	local option1 = parent:AddButton(buttonText)
+	local option1 = toggleGroup:AddButton(buttonText)
 	option1.AllowDuplicateId = true
 	option1.Disabled = true
 	self:Color(option1, "ActiveButton")
-	option1.SameLine = startSameLine or false
-	if tooltip then
-		option1:Tooltip():AddText("\t " .. tooltip)
-	end
 
-	local toggle = parent:AddSliderInt("", callback() and 0 or 1, 0, 1)
+	local toggle = toggleGroup:AddSliderInt("", callback() and 0 or 1, 0, 1)
 	toggle:SetColor("Text", { 1, 1, 1, 0 })
 	toggle:SetColor("SliderGrab", { 0, 1, 0.2, 1 })
 	toggle.SameLine = true
@@ -329,6 +331,8 @@ function Styler:EnableToggleButton(parent, buttonText, startSameLine, tooltip, c
 
 		callback(true)
 	end
+
+	return toggleGroup
 end
 
 ---@param dimensionalArray number[]?

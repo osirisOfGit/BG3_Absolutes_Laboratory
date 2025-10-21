@@ -104,7 +104,7 @@ local buildMetatable = function(name)
 		__pairs = function(t)
 			local collection = {}
 			for modId, container in pairs(modList) do
-				if container.profiles then
+				if container[name] then
 					for id, entry in pairs(setDataFromMod(modId, "all", name)) do
 						collection[id] = entry
 					end
@@ -119,7 +119,7 @@ end
 ---@type MonsterLabConfig
 ---@diagnostic disable-next-line: missing-fields
 MonsterLabModProxy.ModProxy = {
-	profiles = setmetatable({}, buildMetatable("profiles")),
+	profiles = setmetatable({}, buildMetatable("profilSet the following:es")),
 
 	folders = setmetatable({}, buildMetatable("folders")),
 
