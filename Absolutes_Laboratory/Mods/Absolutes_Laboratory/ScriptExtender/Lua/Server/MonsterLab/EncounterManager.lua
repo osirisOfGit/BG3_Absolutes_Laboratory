@@ -154,14 +154,30 @@ function MonsterLabEncounterManager:ManageEncounterSpanws(request)
 	encounterEntities.entities = encounterEntities.entities or {}
 
 	local success, error = xpcall(function()
+		if request.encounter then
+			for mlEntityId, spawnedEntity in pairs(encounterEntities.entities) do
+				if not request.encounter.entities[mlEntityId] and spawnedEntity.realEntityId then
+					Osi.RequestDeleteTemporary(spawnedEntity.realEntityId)
+					Logger:BasicDebug("Deleted %s (%s) due to no longer being in the encounter", spawnedEntity.displayName, mlEntityId:sub(#mlEntityId - 5))
+					encounterEntities.entities[mlEntityId] = nil
+				end
+			end
+		end
+
 		if request.delete then
-			for _, entity in pairs(encounterEntities.entities) do
-				if entity.realEntityId then
+			for index, entity in pairs(encounterEntities.entities) do
+				if entity.realEntityId
+					and request.profileId
+					or not Ext.Entity.Get(entity.realEntityId).Vars.AbsolutesLaboratory_MonsterLab_Entity.profileId
+				then
+					encounterEntities.entities[index] = nil
 					Osi.RequestDeleteTemporary(entity.realEntityId)
 				end
 			end
 			Logger:BasicDebug("Deleted all members of encounter %s", request.encounterId)
-			allSpawnedEntities[request.encounterId] = nil
+			if not next(encounterEntities.entities) then
+				allSpawnedEntities[request.encounterId] = nil
+			end
 		else
 			for mlEntityId, mlEntity in pairs(request.encounter.entities) do
 				Ext.Utils.ProfileBegin("Monster Lab Entity Execution - " .. mlEntityId:sub(#mlEntityId - 5))
@@ -169,12 +185,14 @@ function MonsterLabEncounterManager:ManageEncounterSpanws(request)
 
 				local shouldSpawn = true
 				if request.profileId then
-					shouldSpawn = MonsterLabProfileExecutor:GetRulesetForEntityVar({
+					local ruleset = MonsterLabProfileExecutor:GetRulesetForEntityVar({
 						encounterId = request.encounterId,
 						folderId = request.folderId,
 						mlEntityId = mlEntityId,
 						profileId = request.profileId
-					}).shouldSpawn
+					})
+
+					shouldSpawn = ruleset and ruleset.shouldSpawn
 				end
 
 				if shouldSpawn then
@@ -185,6 +203,13 @@ function MonsterLabEncounterManager:ManageEncounterSpanws(request)
 						Logger:BasicDebug("Already exists - checking if it needs updates")
 
 						local spawnedEntity = encounterEntities.entities[mlEntityId]
+
+						Osi.SetStoryDisplayName(spawnedEntity.realEntityId, mlEntity.displayName)
+
+						if mlEntity.title and mlEntity.title ~= "" then
+							Osi.ObjectSetTitle(spawnedEntity.realEntityId, mlEntity.title)
+						end
+
 						if Osi.IsInCombat(spawnedEntity.realEntityId) == 0 then
 							if not TableUtils:CompareLists(mlEntity.coordinates, spawnedEntity.coordinates) then
 								Logger:BasicDebug("Updating coordinates from %s to %s", spawnedEntity.coordinates, mlEntity.coordinates)
@@ -243,8 +268,11 @@ function MonsterLabEncounterManager:ManageEncounterSpanws(request)
 					elseif not TableUtils:CompareLists(mlEntity.coordinates, { 0, 0, 0 }) then
 						Logger:BasicDebug("Does not exist yet - setting properties")
 
-						if encounterEntities.entities[mlEntityId] and encounterEntities.entities[mlEntityId].realEntityId then
-							Logger:BasicDebug("Something deleted - don't remember why this exists, check back later me")
+						if encounterEntities.entities[mlEntityId]
+							and encounterEntities.entities[mlEntityId].realEntityId
+							and encounterEntities.entities[mlEntityId].template ~= mlEntity.template
+						then
+							Logger:BasicDebug("Deleting entity to change their template")
 							Osi.RequestDeleteTemporary(encounterEntities.entities[mlEntityId].realEntityId)
 						end
 

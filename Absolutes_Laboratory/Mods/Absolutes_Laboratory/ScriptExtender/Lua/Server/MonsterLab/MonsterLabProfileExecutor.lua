@@ -130,7 +130,7 @@ function MonsterLabProfileExecutor:GetRulesetForEntity(entity)
 end
 
 ---@param entityVar MonsterLab_EntityVariable
----@return MonsterLab_RulesetRule
+---@return MonsterLab_RulesetRule?
 function MonsterLabProfileExecutor:GetRulesetForEntityVar(entityVar)
 	Ext.Utils.ProfileBegin("Monster Lab Get Ruleset For  " .. entityVar.mlEntityId:sub(#entityVar.mlEntityId - 5))
 
@@ -164,6 +164,9 @@ function MonsterLabProfileExecutor:GetRulesetForEntityVar(entityVar)
 						end
 
 						matched = cachedRulesetStates[modifierId][acceptableValue]
+						if matched then
+							break
+						end
 					end
 					if not matched then
 						Logger:BasicDebug("Ruleset modifier %s is not set to any of %s", Lab_RulesetModifiers[modifierId], modiferValue)
@@ -186,5 +189,5 @@ function MonsterLabProfileExecutor:GetRulesetForEntityVar(entityVar)
 	Logger:BasicDebug("Ruleset %s is active!", MonsterLabConfigurationProxy.rulesets[activeRuleset].name)
 	Ext.Utils.ProfileEnd("Monster Lab Get Ruleset For  " .. entityVar.mlEntityId:sub(#entityVar.mlEntityId - 5))
 
-	return rulesetModifiers[activeRuleset]._real or rulesetModifiers[activeRuleset]
+	return rulesetModifiers[activeRuleset] and (rulesetModifiers[activeRuleset]._real or rulesetModifiers[activeRuleset])
 end

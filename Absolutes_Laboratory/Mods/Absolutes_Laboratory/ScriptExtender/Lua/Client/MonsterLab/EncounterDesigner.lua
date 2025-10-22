@@ -21,9 +21,13 @@ EncounterDesigner = {
 	designerWindow = nil,
 	---@type ExtuiWindow
 	designerModeHeader = nil,
+	---@type ExtuiWindow
+	designerPickerInfo = nil,
 	---@type ExtuiPopup
 	popup = nil
 }
+
+local saveButton = 2
 
 ---@param encounter MonsterLabEncounter
 ---@param encounterMeta MonsterLabProfileEncounterEntry
@@ -69,6 +73,17 @@ function EncounterDesigner:buildDesigner(encounter, encounterMeta)
 				return manageDesignerModeRequest.playersCanDialogue
 			end)
 		end)
+
+		self.designerPickerInfo = Ext.IMGUI.NewWindow("Picker Help")
+		self.designerPickerInfo.Visible = false
+		self.designerPickerInfo.Closeable = false
+		self.designerPickerInfo.NoResize = true
+		self.designerPickerInfo.NoTitleBar = true
+		self.designerPickerInfo.NoMove = true
+		self.designerPickerInfo:SetBgAlpha(0)
+		self.designerPickerInfo:SetColor("FrameBg", { 1, 1, 1, 0 })
+
+		Styler:CheapTextAlign("Middle-Click to save current value, Left/Right-Click to cancel", self.designerPickerInfo).UserData = "keep"
 	else
 		self.designerModeHeader.Open = true
 
@@ -82,6 +97,7 @@ function EncounterDesigner:buildDesigner(encounter, encounterMeta)
 
 	Ext.Timer.WaitFor(50, function()
 		self.designerModeHeader:SetPos({ 0, 0 }, "Always")
+		self.designerPickerInfo:SetPos({ (Ext.IMGUI.GetViewportSize()[1] / 2) - (Ext.IMGUI.GetViewportSize()[1] * .1), 0 }, "Always")
 	end)
 
 	Channels.ManageDesignerMode:SendToServer({
@@ -105,8 +121,7 @@ function EncounterDesigner:buildDesigner(encounter, encounterMeta)
 		end
 	end)
 
-
-	if not TableUtils:TablesAreEqual(encounter.baseCoords, { 0, 0, 0 }) and encounter.entities() then
+	if not TableUtils:TablesAreEqual(encounter.baseCoords, { 0, 0, 0 }) and next(encounter.entities._real or encounter.entities) then
 		Channels.OrbAtPosition:SendToServer({
 			encounterId = encounterMeta.encounterId,
 			context = "BaseCoords",
@@ -180,6 +195,8 @@ function EncounterDesigner:buildDesigner(encounter, encounterMeta)
 			pickCoordsButton.OnClick = function()
 				if not pickCoordsButton.UserData then
 					pickCoordsButton.UserData = true
+					self.designerPickerInfo.Visible = true
+
 					local tickSub = Ext.Events.Tick:Subscribe(function(e)
 						local coords = Ext.ClientUI.GetPickingHelper(1).Inner.Position
 						for i = 1, 3 do
@@ -198,18 +215,22 @@ function EncounterDesigner:buildDesigner(encounter, encounterMeta)
 					---@param e EclLuaMouseButtonEvent
 						function(e)
 							if e.Pressed then
-								if e.Button == 3 then
-									Ext.Events.Tick:Unsubscribe(tickSub)
-									Ext.Events.MouseButtonInput:Unsubscribe(mouseSub)
-									for i = 1, 3 do
+								for i = 1, 3 do
+									if e.Button == saveButton then
 										coordsGroup.Children[i * 2]:OnChange()
-									end
-									pickCoordsButton.UserData = false
-								else
-									for i = 1, 3 do
-										coordsGroup.Children[i * 2]:OnChange()
+									else
+										coordsGroup.Children[i * 2].Value = { encounter.baseCoords[i], encounter.baseCoords[i], encounter.baseCoords[i], encounter.baseCoords[i] }
 									end
 								end
+
+								Ext.Events.Tick:Unsubscribe(tickSub)
+								Ext.Events.MouseButtonInput:Unsubscribe(mouseSub)
+								Channels.OrbAtPosition:SendToServer({
+									encounterId = encounterMeta.encounterId,
+									cleanupEncounter = true
+								} --[[@as VisualizationRequest]])
+								pickCoordsButton.UserData = false
+								self.designerPickerInfo.Visible = false
 							end
 						end)
 				end
@@ -295,6 +316,7 @@ end
 ---@param parent ExtuiTreeParent
 ---@param entities {[Guid]: MonsterLabEntity}
 ---@param renderCoordPickers boolean
+---@param encounter MonsterLabEncounter
 ---@param encounterMeta MonsterLabProfileEncounterEntry
 function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPickers, encounter, encounterMeta)
 	Helpers:KillChildren(parent)
@@ -381,11 +403,11 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 					self.popup:Open()
 
 					self.popup:AddSelectable("Edit", "DontClosePopups").OnClick = function()
-						MonsterLab:buildCreateEntityForm(self.popup, entities._parent_proxy, function()
+						MonsterLab:buildCreateEntityForm(self.popup, encounter, function()
 							Channels.ManageEncounterSpawns:SendToServer({
 								folderId = encounterMeta.folderId,
 								encounterId = encounterMeta.encounterId,
-								encounter = entities._parent_proxy._real
+								encounter = encounter._real
 							} --[[@as ManageEncounterRequest]])
 
 							self.popup:SetCollapsed(true)
@@ -398,7 +420,7 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 						Channels.ManageEncounterSpawns:SendToServer({
 							folderId = encounterMeta.folderId,
 							encounterId = encounterMeta.encounterId,
-							encounter = entities._parent_proxy._real
+							encounter = encounter._real
 						} --[[@as ManageEncounterRequest]])
 
 						self:RenderCardForEntities(parent, entities, renderCoordPickers, encounter, encounterMeta)
@@ -419,7 +441,7 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 							Channels.ManageEncounterSpawns:SendToServer({
 								folderId = encounterMeta.folderId,
 								encounterId = encounterMeta.encounterId,
-								encounter = entities._parent_proxy._real
+								encounter = encounter._real
 							} --[[@as ManageEncounterRequest]])
 
 							self.popup:SetCollapsed(true)
@@ -441,51 +463,6 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 
 			---@diagnostic disable-next-line: missing-fields
 			local pickCoordsButton = Styler:ImageButton(pickerPlaceholder:AddImageButton("PickCoords", "Spell_Divination_TrueStrike", Styler:ScaleFactor({ 26, 26 })))
-
-			pickCoordsButton.OnClick = function()
-				if not pickCoordsButton.UserData then
-					pickCoordsButton.UserData = true
-					local tickSub = Ext.Events.Tick:Subscribe(function(e)
-						local coords = Ext.ClientUI.GetPickingHelper(1).Inner.Position
-						for i = 1, 3 do
-							coordsGroup.Children[i * 2].Value = { coords[i], coords[i], coords[i], coords[i] }
-						end
-
-						local entityCopy = TableUtils:DeeplyCopyTable((mlEntity._real or mlEntity))
-						entityCopy.coordinates = coords
-
-						Channels.ManageEncounterSpawns:SendToServer({
-							folderId = encounterMeta.folderId,
-							encounterId = encounterMeta.encounterId,
-							encounter = {
-								entities = {
-									[mlEntityId] = entityCopy
-								}
-							}
-						} --[[@as ManageEncounterRequest]])
-					end)
-
-					local mouseSub
-					mouseSub = Ext.Events.MouseButtonInput:Subscribe(
-					---@param e EclLuaMouseButtonEvent
-						function(e)
-							if e.Pressed then
-								if e.Button == 3 then
-									Ext.Events.Tick:Unsubscribe(tickSub)
-									Ext.Events.MouseButtonInput:Unsubscribe(mouseSub)
-									for i = 1, 3 do
-										coordsGroup.Children[i * 2]:OnChange()
-									end
-									pickCoordsButton.UserData = false
-								else
-									for i = 1, 3 do
-										coordsGroup.Children[i * 2]:OnChange()
-									end
-								end
-							end
-						end)
-				end
-			end
 
 			for i, coord in ipairs({ "X", "Y", "Z" }) do
 				coordsGroup:AddText(coord .. ": ").SameLine = i > 1
@@ -523,6 +500,69 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 						}
 					}
 				} --[[@as ManageEncounterRequest]])
+			end
+
+			pickCoordsButton.OnClick = function()
+				if not pickCoordsButton.UserData then
+					pickCoordsButton.UserData = true
+					self.designerPickerInfo.Visible = true
+					local entityCopy = TableUtils:DeeplyCopyTable((mlEntity._real or mlEntity))
+
+					local tickSub = Ext.Events.Tick:Subscribe(function(e)
+						local coords = Ext.ClientUI.GetPickingHelper(1).Inner.Position
+						for i = 1, 3 do
+							coordsGroup.Children[i * 2].Value = { coords[i], coords[i], coords[i], coords[i] }
+						end
+
+						entityCopy.coordinates = coords
+						entityCopy.rotation = rotationValue.Value[1]
+
+						Channels.ManageEncounterSpawns:SendToServer({
+							folderId = encounterMeta.folderId,
+							encounterId = encounterMeta.encounterId,
+							encounter = {
+								entities = {
+									[mlEntityId] = entityCopy
+								}
+							}
+						} --[[@as ManageEncounterRequest]])
+					end)
+
+					local buttonSub = Ext.Events.KeyInput:Subscribe(
+					---@param e EclLuaKeyInputEvent
+						function(e)
+							if e.Pressed then
+								if e.Key == "F" then
+									entityCopy.rotation = rotationValue.Value[1] - .25
+								elseif e.Key == "G" then
+									entityCopy.rotation = rotationValue.Value[1] + .25
+								end
+								rotationValue.Value = { entityCopy.rotation, entityCopy.rotation, entityCopy.rotation, entityCopy.rotation }
+							end
+						end)
+
+					local mouseSub
+					mouseSub = Ext.Events.MouseButtonInput:Subscribe(
+					---@param e EclLuaMouseButtonEvent
+						function(e)
+							if e.Pressed then
+								for i = 1, 3 do
+									if e.Button == saveButton then
+										coordsGroup.Children[i * 2]:OnChange()
+										rotationValue:OnChange()
+									else
+										coordsGroup.Children[i * 2].Value = { mlEntity.coordinates[i], mlEntity.coordinates[i], mlEntity.coordinates[i], mlEntity.coordinates[i] }
+										rotationValue.Value = {mlEntity.rotation, mlEntity.rotation, mlEntity.rotation, mlEntity.rotation}
+									end
+								end
+								pickCoordsButton.UserData = false
+								Ext.Events.KeyInput:Unsubscribe(buttonSub)
+								Ext.Events.Tick:Unsubscribe(tickSub)
+								Ext.Events.MouseButtonInput:Unsubscribe(mouseSub)
+								self.designerPickerInfo.Visible = false
+							end
+						end)
+				end
 			end
 			--#endregion
 
@@ -630,7 +670,7 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 						Channels.ManageEncounterSpawns:SendToServer({
 							folderId = encounterMeta.folderId,
 							encounterId = encounterMeta.encounterId,
-							encounter = entities._parent_proxy._real
+							encounter = encounter._real
 						} --[[@as ManageEncounterRequest]])
 						self:RenderCardForEntities(parent, entities, renderCoordPickers, encounter, encounterMeta)
 					end)
@@ -747,7 +787,7 @@ function EncounterDesigner:manageExtraSettings(parent, encounter, encounterMeta)
 			---@param e EclLuaMouseButtonEvent
 				function(e)
 					if e.Pressed then
-						if e.Button == 3 then
+						if e.Button == saveButton then
 							Ext.Events.Tick:Unsubscribe(tickSub)
 							Ext.Events.MouseButtonInput:Unsubscribe(mouseSub)
 							combatGroupId.Disabled = false

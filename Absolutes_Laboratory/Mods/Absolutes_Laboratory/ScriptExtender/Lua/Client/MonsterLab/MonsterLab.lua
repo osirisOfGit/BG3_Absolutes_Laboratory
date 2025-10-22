@@ -453,7 +453,15 @@ function MonsterLab:buildProfileView()
 	end
 end
 
+local waitedOnce = false
 function MonsterLab:buildFolderView()
+	if not waitedOnce and not self.activeProfile() then
+		waitedOnce = true
+		Ext.Timer.WaitFor(100, function()
+			self:buildFolderView()
+		end)
+	end
+
 	Helpers:KillChildren(self.encounterFoldersSidebar)
 
 	self:buildProfileView()
@@ -694,7 +702,7 @@ function MonsterLab:buildEncounterView(encounter, parent, encounterMeta)
 
 		local entitySidebar = layoutRow:AddCell()
 		entitySidebar:AddButton("Launch Designer Mode").OnClick = function()
-			EncounterDesigner:buildDesigner(encounter, encounterMeta)
+			EncounterDesigner:buildDesigner(encounter, encounterMeta._real or encounterMeta)
 		end
 		local designerSection = layoutRow:AddCell()
 
