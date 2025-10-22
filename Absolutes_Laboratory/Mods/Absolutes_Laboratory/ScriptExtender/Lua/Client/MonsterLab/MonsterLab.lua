@@ -840,7 +840,7 @@ function MonsterLab:buildEncounterView(encounter, parent, encounterMeta)
 								activeRuleset.composable = not activeRuleset.composable
 							end
 							return activeRuleset.composable
-						end)
+						end).UserData = "keep"
 
 					if activeRuleset.shouldSpawn then
 						activeRuleset.mutators = activeRuleset.mutators or {}

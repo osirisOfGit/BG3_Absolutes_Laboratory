@@ -24,7 +24,6 @@ local mutatedEntities = {}
 
 function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 	Logger.mode = "timer"
-	MonsterLabProfileExecutor:ExecuteProfile()
 
 	Ext.Utils.ProfileBegin("Lab Mutation Profile Execution")
 	local activeProfile = MutationConfigurationProxy.profiles[Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile]
@@ -69,6 +68,9 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 		end
 
 		if activeProfile and next(activeProfile.mutationRules) then
+			Logger:BasicDebug("======= Started Processing Mutation Profile %s =======",
+				activeProfile.name .. (activeProfile.modId and string.format(" (from mod %s)", Ext.Mod.GetMod(activeProfile.modId).Info.Name) or ""))
+
 			local time = Ext.Timer:MonotonicTime()
 
 			---@type {[string] : fun()}
@@ -207,6 +209,7 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 						end
 						::continue::
 					end
+
 					local monsterLabRulesetRule = MonsterLabProfileExecutor:GetRulesetForEntity(entity)
 					if monsterLabRulesetRule and next(monsterLabRulesetRule.mutators) then
 						MutationProfileExecutor:compileMutatorsForEntity(entityVar,
@@ -318,7 +321,10 @@ end
 Ext.Osiris.RegisterListener("LevelGameplayReady", 2, "after", function(levelName, isEditorMode)
 	if levelName == "SYS_CC_I" then return end
 
-	MutationProfileExecutor:ExecuteProfile()
+	MonsterLabProfileExecutor:ExecuteProfile()
+	Ext.Timer.WaitFor(200, function()
+		MutationProfileExecutor:ExecuteProfile()
+	end)
 end)
 
 Ext.Osiris.RegisterListener("EnteredCombat", 2, "before", function(entityId, combatGuid)
