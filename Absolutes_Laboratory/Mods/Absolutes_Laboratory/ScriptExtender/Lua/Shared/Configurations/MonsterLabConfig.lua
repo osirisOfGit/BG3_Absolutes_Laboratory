@@ -34,7 +34,9 @@ ConfigurationStructure.DynamicClassDefinitions.monsterLab.profileEncounter = {
 	---@type Guid
 	folderId = "",
 	---@type Guid
-	encounterId = ""
+	encounterId = "",
+	---@type ModDependency
+	sourceMod = nil
 }
 
 ---@class MonsterLabFolder
@@ -65,6 +67,8 @@ ConfigurationStructure.DynamicClassDefinitions.monsterLab.encounter = {
 	combatGroupId = "",
 	---@type Guid?
 	modId = nil,
+	---@type ModDependencies
+	modDependencies = nil
 }
 
 ---@class MonsterLab_RulesetRule

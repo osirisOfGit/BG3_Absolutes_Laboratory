@@ -44,7 +44,7 @@ end
 ---@param obj T
 ---@return T
 function TableUtils:DeeplyCopyTable(obj)
-	return copy(obj, nil, false)
+	return copy(obj._real or obj, nil, false)
 end
 
 ---Compare two lists
