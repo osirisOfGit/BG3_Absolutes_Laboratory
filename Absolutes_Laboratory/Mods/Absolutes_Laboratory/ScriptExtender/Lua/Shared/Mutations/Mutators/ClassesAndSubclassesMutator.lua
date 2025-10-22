@@ -369,6 +369,9 @@ end
 
 ---@param mutator ClassesAndSubclassesMutator
 function ClassesAndSubclassesMutator:handleDependencies(_, mutator, removeMissingDependencies)
+	if not mutator.values then
+		return
+	end
 	local classesIndex = Ext.StaticData.GetSources("ClassDescription")
 	for c, classGroup in pairs(mutator.values) do
 		for classId in pairs(classGroup.classIds) do

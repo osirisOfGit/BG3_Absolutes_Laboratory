@@ -219,6 +219,10 @@ function MonsterLab:buildProfileView()
 							}
 						})
 
+					profileMenu:AddSelectable("Export").OnClick = function()
+						MonsterLabExportImport:exportProfile(false, profileId)
+					end
+
 					---@param select ExtuiSelectable
 					profileMenu:AddSelectable("Delete", "DontClosePopups").OnClick = function(select)
 						if select.Label ~= "Delete" then

@@ -112,7 +112,8 @@ ConfigurationStructure.DynamicClassDefinitions.monsterLab.ruleset = {
 	---@type {[string]: (boolean)|(string[])}
 	activeModifiers = {},
 	name = "",
-	description = ""
+	description = "",
+	modId = nil
 }
 
 ---@enum Lab_RulesetModifiers

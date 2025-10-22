@@ -26,6 +26,7 @@ Ext.Require("Client/Mutations/MutationProfileManager.lua")
 Ext.Require("Client/Mutations/ProfileExecutionStatus.lua")
 
 Ext.Require("Shared/MonsterLab/MonsterLabConfigurationProxy.lua")
+Ext.Require("Client/MonsterLab/MonsterLabExportImport.lua")
 Ext.Require("Client/MonsterLab/MonsterLab.lua")
 
 ---@type MazzleDocsConfig

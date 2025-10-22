@@ -74,7 +74,30 @@ function MonsterLabExportImport:exportProfile(forMod, ...)
 						end
 					end
 
-					for _, ruleset in pairs(mlEntity.rulesetModifiers) do
+					for rulesetId, ruleset in pairs(mlEntity.rulesetModifiers) do
+						if not export.rulesets[rulesetId] then
+							local ruleset = TableUtils:DeeplyCopyTable(MonsterLabConfigurationProxy.rulesets[rulesetId])
+							if not ruleset.modId then
+								export.rulesets[rulesetId] = ruleset
+							else
+								---@type ModuleInfo
+								local modInfo = Ext.Mod.GetMod(ruleset.modId).Info
+
+								encounter.modDependencies = encounter.modDependencies or {}
+								if not encounter.modDependencies[modInfo.ModuleUUID] then
+									encounter.modDependencies[modInfo.ModuleUUID] = {
+										modName = modInfo.Name,
+										modAuthor = modInfo.Author,
+										modVersion = modInfo.ModVersion,
+										modId = modInfo.ModuleUUID,
+										packagedItems = {}
+									}
+
+									encounter.modDependencies[modInfo.ModuleUUID].packagedItems[rulesetId] = ruleset.name
+								end
+							end
+						end
+
 						for _, mutator in pairs(ruleset.mutators) do
 							MutatorInterface:handleDependencies(export, mutator)
 						end
