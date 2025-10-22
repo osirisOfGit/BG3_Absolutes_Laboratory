@@ -67,6 +67,14 @@ ConfigurationStructure.DynamicClassDefinitions.monsterLab.encounter = {
 	modId = nil,
 }
 
+---@class MonsterLab_RulesetRule
+ConfigurationStructure.DynamicClassDefinitions.monsterLab.rulesetModifiers = {
+	shouldSpawn = true,
+	---@type Mutator[]
+	mutators = {},
+	composable = true
+}
+
 ---@class MonsterLabEntity
 ConfigurationStructure.DynamicClassDefinitions.monsterLab.entity = {
 	displayName = "",
@@ -78,7 +86,9 @@ ConfigurationStructure.DynamicClassDefinitions.monsterLab.entity = {
 	---@type number
 	rotation = 0,
 	---@type {[Lab_RulesetName]: MonsterLab_RulesetRule}
-	rulesetModifiers = {},
+	rulesetModifiers = {
+		["Base"] = ConfigurationStructure.DynamicClassDefinitions.monsterLab.rulesetModifiers
+	},
 	animation = {
 		simple = "",
 		looping = {
@@ -91,14 +101,6 @@ ConfigurationStructure.DynamicClassDefinitions.monsterLab.entity = {
 			loopVariation4 = "",
 		}
 	}
-}
-
----@class MonsterLab_RulesetRule
-ConfigurationStructure.DynamicClassDefinitions.monsterLab.rulesetModifiers = {
-	shouldSpawn = true,
-	---@type Mutator[]
-	mutators = {},
-	composable = true
 }
 
 ---@class MonsterLab_Ruleset

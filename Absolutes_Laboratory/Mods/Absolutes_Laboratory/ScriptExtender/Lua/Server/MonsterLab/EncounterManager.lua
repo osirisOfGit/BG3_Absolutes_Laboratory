@@ -154,7 +154,7 @@ function MonsterLabEncounterManager:ManageEncounterSpanws(request)
 	encounterEntities.entities = encounterEntities.entities or {}
 
 	local success, error = xpcall(function()
-		if request.encounter then
+		if request.encounter and request.profileId then
 			for mlEntityId, spawnedEntity in pairs(encounterEntities.entities) do
 				if not request.encounter.entities[mlEntityId] and spawnedEntity.realEntityId then
 					Osi.RequestDeleteTemporary(spawnedEntity.realEntityId)
