@@ -44,6 +44,9 @@ end
 ---@param obj T
 ---@return T
 function TableUtils:DeeplyCopyTable(obj)
+	if not obj then
+		return nil
+	end
 	return copy(obj._real or obj, nil, false)
 end
 

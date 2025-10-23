@@ -1049,7 +1049,7 @@ right-click to modify or delete that ruleset. The Base ruleset can't be modified
 	local lastActiveButton
 
 	local createdOne = false
-	for rulesetId, ruleset in TableUtils:OrderedPairs(self.config.rulesets, function(key, value)
+	for rulesetId, ruleset in TableUtils:OrderedPairs(MonsterLabConfigurationProxy.rulesets, function(key, value)
 		return key == "Base" and 1 or value.name
 	end) do
 		local rulesetButton = parent:AddButton(ruleset.name)
@@ -1057,9 +1057,18 @@ right-click to modify or delete that ruleset. The Base ruleset can't be modified
 		createdOne = true
 
 		rulesetButton.IDContext = rulesetId
+		local tooltip = ""
 		if ruleset.description ~= "" then
-			rulesetButton:Tooltip():AddText("\t" .. ruleset.description)
+			tooltip = ("\t" .. ruleset.description)
 		end
+
+		if ruleset.modId then
+			if #tooltip > 0 then
+				tooltip = tooltip .. "\n"
+			end
+			tooltip = tooltip .. ("\t From Mod %s - Can't Be Modified"):format(Ext.Mod.GetMod(ruleset.modId).Info.Name)
+		end
+		rulesetButton:Tooltip():AddText(tooltip)
 
 		if rulesetId == self.activeRuleset then
 			Styler:Color(rulesetButton, "ActiveButton")
@@ -1111,7 +1120,10 @@ right-click to modify or delete that ruleset. The Base ruleset can't be modified
 				customizeModifiersMenu.IDContext = rulesetId
 
 				---@type ExtuiMenu
-				local selectModifiersMenu = customizeModifiersMenu:AddMenu("Select Modifiers")
+				local selectModifiersMenu
+				if not ruleset.modId then
+					selectModifiersMenu = customizeModifiersMenu:AddMenu("Select Modifiers")
+				end
 
 				local modGroup = customizeModifiersMenu:AddGroup("mods")
 
@@ -1169,34 +1181,54 @@ right-click to modify or delete that ruleset. The Base ruleset can't be modified
 				end
 				buildCustomizer()
 
-				for modifierName, modifierId in TableUtils:OrderedPairs(Lab_RulesetModifiers, function(_, value)
-					---@type ResourceRulesetModifier
-					local modifierResource = Ext.StaticData.Get(value, "RulesetModifier")
-					return tostring(modifierResource.RulesetModifierType) .. (modifierResource.DisplayName:Get() or modifierResource.Name)
-				end) do
-					---@type ResourceRulesetModifier
-					local modifierResource = Ext.StaticData.Get(modifierId, "RulesetModifier")
+				if not ruleset.modId then
+					for modifierName, modifierId in TableUtils:OrderedPairs(Lab_RulesetModifiers, function(_, value)
+						---@type ResourceRulesetModifier
+						local modifierResource = Ext.StaticData.Get(value, "RulesetModifier")
+						return tostring(modifierResource.RulesetModifierType) .. (modifierResource.DisplayName:Get() or modifierResource.Name)
+					end) do
+						---@type ResourceRulesetModifier
+						local modifierResource = Ext.StaticData.Get(modifierId, "RulesetModifier")
 
-					---@type ExtuiSelectable
-					local modSelect = selectModifiersMenu:AddSelectable(modifierResource.DisplayName:Get() or modifierResource.Name, "DontClosePopups")
-					modSelect.Selected = ruleset.activeModifiers[modifierId] ~= nil
-					modSelect.OnClick = function()
-						if ruleset.activeModifiers[modifierId] ~= nil then
-							if type(ruleset.activeModifiers[modifierId]) == "table" then
-								ruleset.activeModifiers[modifierId].delete = true
+						---@type ExtuiSelectable
+						local modSelect = selectModifiersMenu:AddSelectable(modifierResource.DisplayName:Get() or modifierResource.Name, "DontClosePopups")
+						modSelect.Selected = ruleset.activeModifiers[modifierId] ~= nil
+						modSelect.OnClick = function()
+							if ruleset.activeModifiers[modifierId] ~= nil then
+								if type(ruleset.activeModifiers[modifierId]) == "table" then
+									ruleset.activeModifiers[modifierId].delete = true
+								end
+								ruleset.activeModifiers[modifierId] = nil
+							else
+								ruleset.activeModifiers[modifierId] = modifierResource.RulesetModifierType == 3 and {} or false
 							end
-							ruleset.activeModifiers[modifierId] = nil
-						else
-							ruleset.activeModifiers[modifierId] = modifierResource.RulesetModifierType == 3 and {} or false
-						end
 
-						buildCustomizer()
+							buildCustomizer()
+						end
 					end
 				end
 
-				self.popup:AddSelectable("Delete Ruleset").OnClick = function()
-					self.config.rulesets[rulesetId].delete = true
-					self:ManageRulesets(parent, rulesetSelectCallback)
+				---@param select ExtuiSelectable
+				self.popup:AddSelectable("Delete Ruleset", "DontClosePopups").OnClick = function(select)
+					if select.Label ~= "Delete Ruleset" then
+						self.config.rulesets[rulesetId].delete = true
+						for _, folder in pairs(self.config.folders) do
+							if not folder.modId then
+								for _, encounter in pairs(folder.encounters) do
+									for _, entity in pairs(encounter.entities) do
+										if entity.rulesetModifiers[rulesetId] then
+											entity.rulesetModifiers[rulesetId].delete = true
+										end
+									end
+								end
+							end
+						end
+						self:ManageRulesets(parent, rulesetSelectCallback)
+					else
+						select.Label = "Are You Sure?"
+						Styler:Color(select, "ErrorText")
+						select.DontClosePopups = false
+					end
 				end
 			end
 

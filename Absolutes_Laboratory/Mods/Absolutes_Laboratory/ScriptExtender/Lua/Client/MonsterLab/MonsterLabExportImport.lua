@@ -75,7 +75,7 @@ function MonsterLabExportImport:exportProfile(forMod, ...)
 					end
 
 					for rulesetId, ruleset in pairs(mlEntity.rulesetModifiers) do
-						if not export.rulesets[rulesetId] then
+						if rulesetId ~= "Base" and not export.rulesets[rulesetId] then
 							local ruleset = TableUtils:DeeplyCopyTable(MonsterLabConfigurationProxy.rulesets[rulesetId])
 							if not ruleset.modId then
 								export.rulesets[rulesetId] = ruleset
