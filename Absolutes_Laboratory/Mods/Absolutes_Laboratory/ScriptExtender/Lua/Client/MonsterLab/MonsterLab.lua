@@ -158,10 +158,118 @@ function MonsterLab:buildProfileView()
 					}
 				})
 
+			---@type ExtuiMenu
+			local importMenu = self.popup:AddMenu("Import Profile(s)")
+
+			local importGroup = importMenu:AddGroup("Import")
+			importGroup:AddText("Enter the full, EXACT (case-sensitive) file path + name relative to Lab's SE Folder")
+
+			local fileNameInput = importGroup:AddInputText("")
+			fileNameInput.Hint = "imported/otherProfile.json"
+			fileNameInput:SetColor("Text", Styler:ConvertRGBAToIMGUI({ 1, 0, 0, 0.4 }))
+
+			local importButton = importGroup:AddButton("Import")
+			importButton.SameLine = true
+
+			local errorGroup = importGroup:AddGroup("DepErrors")
+			errorGroup.Visible = false
+
+			local timer
+			fileNameInput.OnChange = function()
+				errorGroup.Visible = false
+
+				if timer then
+					Ext.Timer.Cancel(timer)
+				end
+
+				timer = Ext.Timer.WaitFor(200, function()
+					if not FileUtils:LoadFile(fileNameInput.Text) then
+						fileNameInput:SetColor("Text", Styler:ConvertRGBAToIMGUI({ 1, 0, 0, 0.4 }))
+						importButton.Disabled = true
+					else
+						fileNameInput:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
+						importButton.Disabled = false
+					end
+				end)
+			end
+
+			importButton.OnClick = function()
+				local importFunc, mods, failedDependencies, showDepWindowFunc = MonsterLabExportImport:importProfile(FileUtils:LoadTableFile(fileNameInput.Text))
+				if not importFunc then
+					self:buildFolderView()
+					Styler:CheapTextAlign("Imported!", importGroup)
+				else
+					errorGroup.Visible = true
+					Helpers:KillChildren(errorGroup)
+
+					errorGroup:AddSeparatorText("Missing Dependencies!"):SetColor("Separator", { 1, 0, 0, 0.4 })
+					Styler:MiddleAlignedColumnLayout(errorGroup, function(ele)
+						local continueButton = ele:AddButton("Continue")
+						continueButton:Tooltip():AddText("\t This will remove all items that depend on a missing mod while importing - it will not affect the file")
+						continueButton.OnClick = function()
+							importFunc()
+							self:buildFolderView()
+							Styler:CheapTextAlign("Imported!", importGroup)
+						end
+
+						local viewReport = ele:AddButton("View Report")
+						viewReport.SameLine = true
+						viewReport.OnClick = showDepWindowFunc
+					end)
+
+					local modTable = errorGroup:AddTable("Deps", 3)
+
+					for modId, mod in TableUtils:OrderedPairs(mods, function(key, value)
+						return value.modName
+					end) do
+						local row = modTable:AddRow()
+						if failedDependencies[modId] then
+							row:SetColor("Text", { 1, 0, 0, 0.6 })
+						end
+
+						row:AddCell():AddText(mod.modName)
+						row:AddCell():AddText(table.concat(mod.modVersion, "."))
+						row:AddCell():AddText(mod.modAuthor)
+					end
+
+					errorGroup:AddSeparatorText("Missing Dependencies!"):SetColor("Separator", { 1, 0, 0, 0.4 })
+				end
+			end
+
+			if ConfigurationStructure.config.monsterLab.profiles() then
+				---@type ExtuiMenu
+				local exportMenu = self.popup:AddMenu("Export")
+				local checkboxGroup = exportMenu:AddGroup("")
+				for profileId, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.monsterLab.profiles, function(key, value)
+					return value.name
+				end) do
+					checkboxGroup:AddCheckbox(profile.name).UserData = profileId
+				end
+
+				exportMenu:AddSelectable("Export").OnClick = function()
+					local profiles = {}
+					for _, child in pairs(checkboxGroup.Children) do
+						if child.Checked then
+							table.insert(profiles, child.UserData)
+						end
+					end
+					MonsterLabExportImport:exportProfile(false, table.unpack(profiles))
+				end
+
+				exportMenu:AddSelectable("Export For Mod").OnClick = function()
+					local profiles = {}
+					for _, child in pairs(checkboxGroup.Children) do
+						if child.Checked then
+							table.insert(profiles, child.UserData)
+						end
+					end
+					MonsterLabExportImport:exportProfile(true, table.unpack(profiles))
+				end
+			end
+
 			local modGroups = {
 				["user"] = self.popup:AddGroup("")
 			}
-
 			modGroups["user"]:AddSeparatorText("Your Profile(s)"):SetStyle("SeparatorTextAlign", 0.5)
 
 			for profileId, profile in TableUtils:OrderedPairs(self.config.profiles, function(key, value)
@@ -522,7 +630,7 @@ function MonsterLab:buildFolderView()
 			self.popup:AddSelectable("Delete", "DontClosePopups").OnClick = function(select)
 				if select.Label ~= "Delete" then
 					folder.delete = true
-					self:buildFolderView(self.encounterFoldersSidebar, self.designerSection)
+					self:buildFolderView()
 				else
 					select.DontClosePopups = false
 					select.Label = "Are You Sure?"
@@ -618,6 +726,7 @@ function MonsterLab:buildFolderView()
 					function(select)
 						if select.Label ~= "Delete" then
 							encounter.delete = true
+							self:buildFolderView()
 						else
 							select.Label = "Are You Sure?"
 							Styler:Color(select, "ErrorText")

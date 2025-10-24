@@ -306,10 +306,10 @@ function MutationExternalProfileUtility:exportProfile(forMod, ...)
 
 	if forMod then
 		names = MutationModProxy.Filename
-		FileUtils:SaveStringContentToFile("ExportedProfiles/ExportedModMetaLsxDependencies.lsx", self:BuildMetaDependencyBlock(export, mutationDependencies) or "")
+		FileUtils:SaveStringContentToFile("ExportedProfiles/Mutations/ExportedModMetaLsxDependencies.lsx", self:BuildMetaDependencyBlock(export, mutationDependencies) or "")
 	end
 
-	FileUtils:SaveTableToFile("ExportedProfiles/" .. names .. ".json", {
+	FileUtils:SaveTableToFile("ExportedProfiles/Mutations/" .. names .. ".json", {
 		["mutations"] = export
 	})
 end
@@ -318,7 +318,7 @@ end
 local window
 
 ---@class DependencyFailure
----@field type "Selector"|"Mutator"|"SpellList"|"Folder"
+---@field type "Selector"|"Mutator"|"SpellList"|"Folder"|"Encounter"
 ---@field target string?
 ---@field folderName string?
 ---@field mutationName string?
