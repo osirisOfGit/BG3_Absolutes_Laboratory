@@ -146,6 +146,24 @@ function MonsterLabEncounterManager:ManageEncounterSpanws(request)
 
 	if not allSpawnedEntities then
 		allSpawnedEntities = Ext.Vars.GetModVariables(ModuleUUID).MonsterLab_SpawnedEntities or {}
+	else
+		for encounterId, entities in pairs(allSpawnedEntities) do
+			local deleteEntities = false
+			for folderId, folder in pairs(MonsterLabConfigurationProxy.folders) do
+				if folder.encounters[encounterId] then
+					deleteEntities = true
+					break
+				end
+			end
+
+			if not deleteEntities then
+				Logger:BasicDebug("Deleting all entities from encounter %s as it no longer exists", encounterId)
+				for _, entity in pairs(entities) do
+					Osi.RequestDeleteTemporary(entity.realEntityId)
+				end
+				allSpawnedEntities[encounterId] = nil
+			end
+		end
 	end
 
 	allSpawnedEntities[request.encounterId] = allSpawnedEntities[request.encounterId] or {}
@@ -166,10 +184,7 @@ function MonsterLabEncounterManager:ManageEncounterSpanws(request)
 
 		if request.delete then
 			for index, entity in pairs(encounterEntities.entities) do
-				if entity.realEntityId
-					and request.profileId
-					or not Ext.Entity.Get(entity.realEntityId).Vars.AbsolutesLaboratory_MonsterLab_Entity.profileId
-				then
+				if entity.realEntityId and (request.profileId or not Ext.Entity.Get(entity.realEntityId).Vars.AbsolutesLaboratory_MonsterLab_Entity.profileId) then
 					encounterEntities.entities[index] = nil
 					Osi.RequestDeleteTemporary(entity.realEntityId)
 				end

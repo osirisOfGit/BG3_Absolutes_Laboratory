@@ -84,7 +84,8 @@ function MonsterLabProfileExecutor:ExecuteProfile()
 			end, debug.traceback)
 
 			if not success then
-				Logger:BasicError("Monster Lab: Unrecoverable error occured: %s", error)
+				Logger:BasicError("Monster Lab: Unrecoverable error occurred: %s", error)
+				self:ClearEncountersForDisabledProfile()
 			end
 		else
 			Logger:BasicError("Monster Lab: Could not locate a profile with id of %s", profileId)
@@ -108,6 +109,7 @@ function MonsterLabProfileExecutor:ClearEncountersForDisabledProfile()
 			local var = entity.Vars.AbsolutesLaboratory_MonsterLab_Entity
 			if not TableUtils:IndexOf(encounterIds, var.encounterId) then
 				MonsterLabEncounterManager:ManageEncounterSpanws({
+					profileId = "N/A",
 					folderId = var.folderId,
 					encounterId = var.encounterId,
 					delete = true

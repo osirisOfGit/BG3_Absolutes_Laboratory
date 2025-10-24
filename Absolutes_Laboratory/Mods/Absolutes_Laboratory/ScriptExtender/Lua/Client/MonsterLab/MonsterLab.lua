@@ -335,6 +335,10 @@ function MonsterLab:buildProfileView()
 					profileMenu:AddSelectable("Delete", "DontClosePopups").OnClick = function(select)
 						if select.Label ~= "Delete" then
 							profile.delete = true
+							if self.activeProfile() == profileId then
+								self.activeProfile(false)
+							end
+							
 							self:buildFolderView()
 						else
 							select.Label = "Are You Sure?"

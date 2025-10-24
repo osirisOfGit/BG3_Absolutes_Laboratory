@@ -528,7 +528,7 @@ function HealthMutator:undoMutator(entity, entityVar)
 		entity.Health.Hp
 	)
 
-	Ext.System.ServerStats.CalculationRequests[entity] = Ext.Enums.StatsDirtyFlags.MaxHP
+	-- Ext.System.ServerStats.CalculationRequests[entity] = Ext.Enums.StatsDirtyFlags.MaxHP
 end
 
 ---@return MazzleDocsDocumentation
@@ -627,6 +627,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function HealthMutator:generateChangelog()
 	return {
+		["1.8.0"] = {
+			type = "Bullet",
+			text = {
+				"Remove a system call in the undo functionality that may have occasionally been giving all entities a heart attack"
+			}
+		},
 		["1.7.3"] = {
 			type = "Bullet",
 			text = {
