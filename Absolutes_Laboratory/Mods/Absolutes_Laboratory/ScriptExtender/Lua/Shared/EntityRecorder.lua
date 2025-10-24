@@ -10,7 +10,6 @@ EntityRecorder.trackerFilename = "recorderTracker.json"
 
 -- Thanks Aahz
 ---@enum GameLevel
----@enum GameLevel
 EntityRecorder.Levels = {
 	[1] = "TUT_Avernus_C", -- nautiloid
 	[2] = "WLD_Main_A", -- beach, grove, goblin camp, underdark

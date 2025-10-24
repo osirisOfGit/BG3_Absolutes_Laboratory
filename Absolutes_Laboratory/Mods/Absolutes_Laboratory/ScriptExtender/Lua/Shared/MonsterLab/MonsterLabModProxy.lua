@@ -119,7 +119,7 @@ end
 ---@type MonsterLabConfig
 ---@diagnostic disable-next-line: missing-fields
 MonsterLabModProxy.ModProxy = {
-	profiles = setmetatable({}, buildMetatable("profilSet the following:es")),
+	profiles = setmetatable({}, buildMetatable("profiles")),
 
 	folders = setmetatable({}, buildMetatable("folders")),
 
