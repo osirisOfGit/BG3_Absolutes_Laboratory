@@ -97,7 +97,7 @@ function ExistingEncounters:renderEncounters(parent, currentGameLevel)
 			combatGroupCard.ChildAlwaysAutoResize = true
 			combatGroupCard.Size = Styler:ScaleFactor({ 300, (TableUtils:CountElements(entityRecords) * 40) + 40 })
 
-			local groupTable = combatGroupCard:AddTable("chlidTable", 1)
+			local groupTable = combatGroupCard:AddTable("childTable", 1)
 			groupTable.Borders = true
 			groupTable:SetColor("TableBorderStrong", Styler:ConvertRGBAToIMGUI(cardColours[(counter % (#cardColours - (maxRowSize % 2 == 0 and 1 or 0))) + 1]))
 

@@ -338,7 +338,7 @@ function MonsterLab:buildProfileView()
 							if self.activeProfile() == profileId then
 								self.activeProfile(false)
 							end
-							
+
 							self:buildFolderView()
 						else
 							select.Label = "Are You Sure?"
@@ -583,27 +583,25 @@ function MonsterLab:buildFolderView()
 	self:buildProfileView()
 
 	Styler:CheapTextAlign("Your Encounters", self.encounterFoldersSidebar, "Big")
-	self.encounterFoldersSidebar:AddNewLine()
 
 	local longestText = 0
 
 	for folderId, folder in TableUtils:OrderedPairs(self.config.folders, function(key, value)
 		return value.name
 	end) do
-		---@type ExtuiSelectable
-		local folderSelect = self.encounterFoldersSidebar:AddSelectable("")
+		local folderSelect = self.encounterFoldersSidebar:AddTree(folder.name)
 		folderSelect.IDContext = folderId
-		folderSelect:SetStyle("SelectableTextAlign", 0.5, 0)
+		folderSelect:SetOpen(false, "Always")
+		folderSelect.SpanFullWidth = true
+		Styler:ScaledFont(folderSelect, "Big")
 
-		local sep = self.encounterFoldersSidebar:AddSeparatorText(">  " .. folder.name)
-		sep.PositionOffset = Styler:ScaleFactor({ 0, -50 })
-
+		self.encounterFoldersSidebar:AddDummy(50, 0)
 		local header = self.encounterFoldersSidebar:AddGroup("encounters")
+		header.SameLine = true
 		header.Visible = folderSelect.Selected
 
 		folderSelect.OnClick = function()
 			header.Visible = not header.Visible
-			sep.Label = (header.Visible and "" or ">  ") .. folder.name
 		end
 
 		folderSelect.OnRightClick = function()

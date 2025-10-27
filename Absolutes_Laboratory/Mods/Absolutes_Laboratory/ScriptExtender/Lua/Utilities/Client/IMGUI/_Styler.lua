@@ -10,7 +10,7 @@ function Styler:DynamicLabelTree(tree)
 
 	return tree, function(count)
 		tree.Label = label ..
-			(count > 0 and (" - " .. count .. " " .. (Translator.translationTable["selected"] and Translator:translate("selected") or "selected")) or "") .. "###" .. label
+		(count > 0 and (" - " .. count .. " " .. (Translator.translationTable["selected"] and Translator:translate("selected") or "selected")) or "") .. "###" .. label
 	end
 end
 
@@ -340,12 +340,12 @@ end
 function Styler:ScaleFactor(dimensionalArray)
 	if dimensionalArray then
 		for i, v in ipairs(dimensionalArray) do
-			dimensionalArray[i] = v * 1 -- * (Ext.IMGUI.GetViewportSize()[2] / 1440)
+			dimensionalArray[i] = v * (Ext.IMGUI.GetViewportSize()[2] / 1440)
 		end
 		return dimensionalArray
 	end
 	-- testing monitor for development is 1440p
-	return 1 --Ext.IMGUI.GetViewportSize()[2] / 1440
+	return Ext.IMGUI.GetViewportSize()[2] / 1440
 end
 
 ---@enum FontSize
