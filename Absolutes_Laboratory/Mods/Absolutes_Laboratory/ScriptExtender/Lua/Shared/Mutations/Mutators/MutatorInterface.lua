@@ -109,7 +109,7 @@ function MutatorInterface:applyMutator(entity, entityVar)
 		end, debug.traceback)
 
 		if not success then
-			Logger:BasicError("Failed to apply mutator %s to %s - %s", mutatorName, entity.Uuid.EntityUuid, error)
+			Logger:BasicError("Failed to apply mutator %s to %s - %s", mutatorName, entityName, error)
 		else
 			self.registeredMutators[mutatorName]:FinalizeMutator(entity)
 
@@ -164,7 +164,7 @@ function MutatorInterface:undoMutator(entity, entityVar, primedEntityVar, reproc
 				end, debug.traceback)
 
 				if not success then
-					Logger:BasicError("Failed to undo %s - %s", mutatorName, error)
+					Logger:BasicError("Failed to undo %s on %s - %s", mutatorName, entityName, error)
 				else
 					if not primedEntityVar or not primedEntityVar.appliedMutators[mutatorName] then
 						Logger:BasicTrace("Finalized undo as it's not queued up to be applied")
