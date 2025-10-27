@@ -1509,7 +1509,7 @@ if Ext.IsServer() then
 									else
 										local maxLevel = nil
 										for level, _ in pairs(spellMutatorGroup.randomizedSpellPoolSize) do
-											if level < (maxAppliedLevel + i) and (not maxLevel or level > maxLevel) then
+											if tonumber(level) < tonumber(maxAppliedLevel + i) and (not maxLevel or (level > maxLevel)) then
 												maxLevel = level
 											end
 										end

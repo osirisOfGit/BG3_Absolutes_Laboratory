@@ -56,9 +56,9 @@ function ExistingEncounters:renderEncounters(parent, currentGameLevel)
 		for entityId, entityRecord in TableUtils:OrderedPairs(EntityRecorder:GetEntities()[level], function(key, value)
 				return value.CombatGroupId
 			end,
-		function (key, value)
-			return value.CombatGroupId ~= ""
-		end)
+			function(key, value)
+				return value.CombatGroupId ~= ""
+			end)
 		do
 			combatGroups[entityRecord.CombatGroupId] = combatGroups[entityRecord.CombatGroupId] or {}
 
@@ -91,10 +91,11 @@ function ExistingEncounters:renderEncounters(parent, currentGameLevel)
 			counter = counter + 1
 
 			---@type ExtuiChildWindow
-			local combatGroupCard = row.Children[(counter % maxRowSize) > 0 and (counter % maxRowSize) or maxRowSize]:AddGroup(combatGroupId)
-			-- combatGroupCard.ResizeY = true
-			-- combatGroupCard.ChildAlwaysAutoResize = true
-			-- combatGroupCard.Size = Styler:ScaleFactor({ 300, (TableUtils:CountElements(entityRecords) + 1) * 40 })
+			local combatGroupCard = row.Children[(counter % maxRowSize) > 0 and (counter % maxRowSize) or maxRowSize]:AddChildWindow(combatGroupId)
+			combatGroupCard:SetColor("ChildBg", { 1, 1, 1, 0 })
+			combatGroupCard.ResizeY = true
+			combatGroupCard.ChildAlwaysAutoResize = true
+			combatGroupCard.Size = Styler:ScaleFactor({ 300, (TableUtils:CountElements(entityRecords) * 40) + 40 })
 
 			local groupTable = combatGroupCard:AddTable("chlidTable", 1)
 			groupTable.Borders = true
