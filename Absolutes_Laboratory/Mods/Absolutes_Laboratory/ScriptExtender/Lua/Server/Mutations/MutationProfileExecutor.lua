@@ -23,51 +23,49 @@ MutationProfileExecutor = {}
 local mutatedEntities = {}
 
 function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
+	local trackerFile = FileUtils:LoadTableFile(EntityRecorder.trackerFilename)
+	if trackerFile and next(trackerFile) then
+		Logger:BasicInfo("Recorder is currently running - skipping Mutations")
+		return
+	end
+
 	Logger.mode = "timer"
 
 	Ext.Utils.ProfileBegin("Lab Mutation Profile Execution")
 	local activeProfile = MutationConfigurationProxy.profiles[Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile]
+	if not activeProfile and not Ext.Vars.GetModVariables(ModuleUUID).HasDisabledProfiles then
+		local defaultProfile = ConfigurationStructure.config.mutations.settings.defaultProfile
+		if defaultProfile then
+			Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = defaultProfile
+			activeProfile = MutationConfigurationProxy.profiles[defaultProfile]
+			Logger:BasicInfo("Default Profile %s activated", activeProfile.name)
+		end
+	end
+	---@type ProfileExecutionStatus
+	local profileExecutorStatus = {
+		stage = "Selecting",
+		currentEntity = "N/A",
+		totalNumberOfEntities = 0,
+		numberOfEntitiesBeingProcessed = 0,
+		numberOfEntitiesProcessed = 0,
+		profile = activeProfile.name,
+		timeElapsed = 0,
+	}
+	
+	local sendCount = 0
+	local executorView = MCM.Get("profile_execution_view")
+	local function broadcastStatus()
+		if executorView ~= "Off" then
+			if sendCount == 3 or profileExecutorStatus.stage == "Complete" or profileExecutorStatus.stage == "Error" then
+				Channels.ProfileExecutionStatus:Broadcast(profileExecutorStatus)
+				sendCount = 0
+			end
+			sendCount = sendCount + 1
+		end
+	end
 
 	local success, error = xpcall(function(...)
-		local trackerFile = FileUtils:LoadTableFile(EntityRecorder.trackerFilename)
-		if trackerFile and next(trackerFile) then
-			Logger:BasicInfo("Recorder is currently running - skipping Mutations")
-			return
-		end
-
-		if not activeProfile and not Ext.Vars.GetModVariables(ModuleUUID).HasDisabledProfiles then
-			local defaultProfile = ConfigurationStructure.config.mutations.settings.defaultProfile
-			if defaultProfile then
-				Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = defaultProfile
-				activeProfile = MutationConfigurationProxy.profiles[defaultProfile]
-				Logger:BasicInfo("Default Profile %s activated", activeProfile.name)
-			end
-		end
-
 		if activeProfile and next(activeProfile.mutationRules) then
-			---@type ProfileExecutionStatus
-			local profileExecutorStatus = {
-				stage = "Selecting",
-				currentEntity = "N/A",
-				totalNumberOfEntities = 0,
-				numberOfEntitiesBeingProcessed = 0,
-				numberOfEntitiesProcessed = 0,
-				profile = activeProfile.name,
-				timeElapsed = 0,
-			}
-
-			local sendCount = 0
-			local executorView = MCM.Get("profile_execution_view")
-			local function broadcastStatus()
-				if executorView ~= "Off" then
-					if sendCount == 3 or profileExecutorStatus.stage == "Complete" or profileExecutorStatus.stage == "Error" then
-						Channels.ProfileExecutionStatus:Broadcast(profileExecutorStatus)
-						sendCount = 0
-					end
-					sendCount = sendCount + 1
-				end
-			end
-			
 			Logger:BasicDebug("======= Started Processing Mutation Profile %s =======",
 				activeProfile.name .. (activeProfile.modId and string.format(" (from mod %s)", Ext.Mod.GetMod(activeProfile.modId).Info.Name) or ""))
 
@@ -322,7 +320,7 @@ Ext.Osiris.RegisterListener("LevelGameplayReady", 2, "after", function(levelName
 	if levelName == "SYS_CC_I" then return end
 
 	MonsterLabProfileExecutor:ExecuteProfile()
-	Ext.Timer.WaitFor(200, function()
+	Ext.Timer.WaitFor(500, function()
 		MutationProfileExecutor:ExecuteProfile()
 	end)
 end)

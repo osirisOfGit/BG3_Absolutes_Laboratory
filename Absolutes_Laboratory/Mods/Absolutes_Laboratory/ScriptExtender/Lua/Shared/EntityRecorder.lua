@@ -295,6 +295,7 @@ else
 
 									entityRecord.LevelName = charLevel
 									entityRecord.Id = entity.Uuid.EntityUuid
+									entityRecord.CombatGroupId = entity.CombatParticipant.CombatGroupId
 									entityRecord.Icon = entity.Icon.Icon
 									entityRecord.Size = entity.ObjectSize and entity.ObjectSize.Size
 									entityRecord.Race = entity.Race.Race

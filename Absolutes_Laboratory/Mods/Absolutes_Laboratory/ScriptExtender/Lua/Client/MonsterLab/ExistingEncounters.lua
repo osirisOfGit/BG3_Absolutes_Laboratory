@@ -1,8 +1,9 @@
 ExistingEncounters = {}
 
 ---@param parent ExtuiTreeParent
-function ExistingEncounters:init(parent)
-	-- Helpers:KillChildren(parent)
+---@param currentGameLevel GameLevel
+function ExistingEncounters:renderEncounters(parent, currentGameLevel)
+	Helpers:KillChildren(parent)
 
 	---@type ExtuiCombo
 	local levelCombo
@@ -12,11 +13,12 @@ function ExistingEncounters:init(parent)
 
 		local opts = {}
 		for _, level in ipairs(EntityRecorder.Levels) do
+			if currentGameLevel == level then
+				levelCombo.SelectedIndex = #opts
+			end
 			table.insert(opts, level)
 		end
 		levelCombo.Options = opts
-
-		levelCombo.SelectedIndex = 0
 	end)
 
 	-- Only using this to determine the width of the container, as it keeps scaling the vertical dimension infinitely
@@ -54,9 +56,9 @@ function ExistingEncounters:init(parent)
 		for entityId, entityRecord in TableUtils:OrderedPairs(EntityRecorder:GetEntities()[level], function(key, value)
 				return value.CombatGroupId
 			end,
-			function(key, value)
-				return value.CombatGroupId ~= nil and value.CombatGroupId ~= ""
-			end)
+		function (key, value)
+			return value.CombatGroupId ~= ""
+		end)
 		do
 			combatGroups[entityRecord.CombatGroupId] = combatGroups[entityRecord.CombatGroupId] or {}
 
@@ -89,20 +91,24 @@ function ExistingEncounters:init(parent)
 			counter = counter + 1
 
 			---@type ExtuiChildWindow
-			local combatGroupCard = row.Children[(counter % maxRowSize) > 0 and (counter % maxRowSize) or maxRowSize]:AddChildWindow(combatGroupId)
-			combatGroupCard.Size = Styler:ScaleFactor({ 300, (TableUtils:CountElements(entityRecords) + 1.5) * 40 })
+			local combatGroupCard = row.Children[(counter % maxRowSize) > 0 and (counter % maxRowSize) or maxRowSize]:AddGroup(combatGroupId)
+			-- combatGroupCard.ResizeY = true
+			-- combatGroupCard.ChildAlwaysAutoResize = true
+			-- combatGroupCard.Size = Styler:ScaleFactor({ 300, (TableUtils:CountElements(entityRecords) + 1) * 40 })
 
 			local groupTable = combatGroupCard:AddTable("chlidTable", 1)
 			groupTable.Borders = true
 			groupTable:SetColor("TableBorderStrong", Styler:ConvertRGBAToIMGUI(cardColours[(counter % (#cardColours - (maxRowSize % 2 == 0 and 1 or 0))) + 1]))
 
-			local headerCell = groupTable:AddRow():AddCell()
-			Styler:MiddleAlignedColumnLayout(headerCell, function(ele)
-				local editButton = Styler:ImageButton(ele:AddImageButton("Manage", "ico_edit_d", Styler:ScaleFactor({ 20, 20 })))
+			if currentGameLevel == level then
+				local headerCell = groupTable:AddRow():AddCell()
+				Styler:MiddleAlignedColumnLayout(headerCell, function(ele)
+					local editButton = Styler:ImageButton(ele:AddImageButton("Manage", "ico_edit_d", Styler:ScaleFactor({ 20, 20 })))
 
-				local newWindowButton = Styler:ImageButton(ele:AddImageButton("New Window", "ico_copy_d", Styler:ScaleFactor({ 20, 20 })))
-				newWindowButton.SameLine = true
-			end)
+					local newWindowButton = Styler:ImageButton(ele:AddImageButton("New Window", "ico_copy_d", Styler:ScaleFactor({ 20, 20 })))
+					newWindowButton.SameLine = true
+				end)
+			end
 
 			for entityId, entityRecord in TableUtils:OrderedPairs(entityRecords, function(key, value)
 				return value.Name
@@ -136,5 +142,3 @@ function ExistingEncounters:init(parent)
 		renderCombatGroupCards(levelCombo.Options[levelCombo.SelectedIndex + 1])
 	end
 end
-
-

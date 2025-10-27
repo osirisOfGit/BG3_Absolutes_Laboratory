@@ -16,6 +16,8 @@ Ext.Vars.RegisterUserVariable("AbsolutesLaboratory_MonsterLab_Entity", {
 	SyncToServer = true
 })
 
+Ext.Require("Client/MonsterLab/ExistingEncounters.lua")
+
 EncounterDesigner = {
 	---@type ExtuiWindow
 	designerWindow = nil,
@@ -23,6 +25,8 @@ EncounterDesigner = {
 	designerModeHeader = nil,
 	---@type ExtuiWindow
 	designerPickerInfo = nil,
+	---@type ExtuiWindow
+	existingEncountersWindow = nil,
 	---@type ExtuiPopup
 	popup = nil
 }
@@ -35,6 +39,7 @@ function EncounterDesigner:buildDesigner(encounter, encounterMeta)
 	if not self.designerWindow then
 		self.designerWindow = Ext.IMGUI.NewWindow(encounter.name)
 		self.designerWindow.Closeable = true
+		self.designerWindow.Font = MCM.Get("font_size", "755a8a72-407f-4f0d-9a33-274ac0f0b53d")
 
 		self.popup = self.designerWindow:AddPopup("encounter")
 		self.popup:SetColor("PopupBg", { 0, 0, 0, 1 })
@@ -47,6 +52,7 @@ function EncounterDesigner:buildDesigner(encounter, encounterMeta)
 		self.designerModeHeader.NoMove = true
 		self.designerModeHeader:SetBgAlpha(0)
 		self.designerModeHeader:SetColor("FrameBg", { 1, 1, 1, 0 })
+		self.designerModeHeader.Font = MCM.Get("font_size", "755a8a72-407f-4f0d-9a33-274ac0f0b53d")
 
 		Styler:MiddleAlignedColumnLayout(self.designerModeHeader, function(ele)
 			Styler:CheapTextAlign("DESIGNER MODE ACTIVE", ele, "Big")
@@ -80,10 +86,16 @@ function EncounterDesigner:buildDesigner(encounter, encounterMeta)
 		self.designerPickerInfo.NoResize = true
 		self.designerPickerInfo.NoTitleBar = true
 		self.designerPickerInfo.NoMove = true
+		self.designerPickerInfo.Font = MCM.Get("font_size", "755a8a72-407f-4f0d-9a33-274ac0f0b53d")
 		self.designerPickerInfo:SetBgAlpha(0)
 		self.designerPickerInfo:SetColor("FrameBg", { 1, 1, 1, 0 })
 
 		Styler:CheapTextAlign("Middle-Click to save current value, Left/Right-Click to cancel", self.designerPickerInfo).UserData = "keep"
+
+		self.existingEncountersWindow = Ext.IMGUI.NewWindow("Existing Encounters")
+		self.existingEncountersWindow.Font = MCM.Get("font_size", "755a8a72-407f-4f0d-9a33-274ac0f0b53d")
+		self.existingEncountersWindow.Closeable = true
+		self.existingEncountersWindow.Open = false
 	else
 		self.designerModeHeader.Open = true
 
@@ -251,12 +263,13 @@ function EncounterDesigner:buildDesigner(encounter, encounterMeta)
 			openExtraSettingsButton:Tooltip():AddText("\t Show extra encounter-level settings")
 			openExtraSettingsButton.SameLine = true
 
-			local extraSettingsGroup = self.designerWindow:AddGroup("ExtraSettings")
-			extraSettingsGroup.Visible = false
-
-			self:manageExtraSettings(extraSettingsGroup, encounter)
-			openExtraSettingsButton.OnClick = function()
-				extraSettingsGroup.Visible = not extraSettingsGroup.Visible
+			local existingCombatGroups = Styler:ImageButton(ele:AddImageButton("SeeExistingGroups", "ico_mode_combat", { 48, 48 }))
+			existingCombatGroups.SameLine = true
+			existingCombatGroups:Tooltip():AddText("\t Show all existing enemies, in their combat groups if applicable, in this level with helpful utilities")
+			existingCombatGroups.OnClick = function ()
+				self.existingEncountersWindow.Open = true
+				self.existingEncountersWindow:SetFocus()
+				ExistingEncounters:renderEncounters(self.existingEncountersWindow, currentGameLevel)
 			end
 
 			local refreshEntitiesButton = Styler:ImageButton(ele:AddImageButton("RefreshView", "ico_reset_d", Styler:ScaleFactor({ 48, 48 })))
@@ -268,6 +281,13 @@ function EncounterDesigner:buildDesigner(encounter, encounterMeta)
 					currentGameLevel == encounter.gameLevel,
 					encounter,
 					encounterMeta)
+			end
+
+			local extraSettingsGroup = self.designerWindow:AddGroup("ExtraSettings")
+			extraSettingsGroup.Visible = false
+			openExtraSettingsButton.OnClick = function()
+				extraSettingsGroup.Visible = not extraSettingsGroup.Visible
+				self:manageExtraSettings(extraSettingsGroup, encounter)
 			end
 		end)
 
@@ -552,7 +572,7 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 										rotationValue:OnChange()
 									else
 										coordsGroup.Children[i * 2].Value = { mlEntity.coordinates[i], mlEntity.coordinates[i], mlEntity.coordinates[i], mlEntity.coordinates[i] }
-										rotationValue.Value = {mlEntity.rotation, mlEntity.rotation, mlEntity.rotation, mlEntity.rotation}
+										rotationValue.Value = { mlEntity.rotation, mlEntity.rotation, mlEntity.rotation, mlEntity.rotation }
 									end
 								end
 								pickCoordsButton.UserData = false
