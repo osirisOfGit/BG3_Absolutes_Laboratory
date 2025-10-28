@@ -604,39 +604,60 @@ function MonsterLab:buildFolderView()
 			header.Visible = not header.Visible
 		end
 
-		folderSelect.OnRightClick = function()
-			Helpers:KillChildren(self.popup)
-			self.popup:Open()
+		if not folder.modId then
+			folderSelect.OnRightClick = function()
+				Helpers:KillChildren(self.popup)
+				self.popup:Open()
 
-			FormBuilder:CreateForm(self.popup:AddMenu("Edit"), function(formResults)
-					folder.name = formResults.Name
-					folder.description = formResults.Description
+				FormBuilder:CreateForm(self.popup:AddMenu("Create Encounter"), function(formResults)
+					local encounter = TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.monsterLab.encounter)
+					encounter.name = formResults.Name
+					encounter.description = formResults.Description
 
-					self:buildFolderView(self.encounterFoldersSidebar, self.designerSection)
-				end,
-				{
+					folder.encounters[FormBuilder:generateGUID()] = encounter
+					self:buildFolderView()
+				end, {
 					{
 						label = "Name",
 						type = "Text",
-						errorMessageIfEmpty = "Name is required",
-						defaultValue = folder.name
+						errorMessageIfEmpty = "Required Field"
 					},
 					{
 						label = "Description",
-						type = "Multiline",
-						defaultValue = folder.description
+						type = "Multiline"
 					}
 				})
 
-			---@param select ExtuiSelectable
-			self.popup:AddSelectable("Delete", "DontClosePopups").OnClick = function(select)
-				if select.Label ~= "Delete" then
-					folder.delete = true
-					self:buildFolderView()
-				else
-					select.DontClosePopups = false
-					select.Label = "Are You Sure?"
-					Styler:Color(select, "ErrorText")
+				FormBuilder:CreateForm(self.popup:AddMenu("Edit"), function(formResults)
+						folder.name = formResults.Name
+						folder.description = formResults.Description
+
+						self:buildFolderView(self.encounterFoldersSidebar, self.designerSection)
+					end,
+					{
+						{
+							label = "Name",
+							type = "Text",
+							errorMessageIfEmpty = "Name is required",
+							defaultValue = folder.name
+						},
+						{
+							label = "Description",
+							type = "Multiline",
+							defaultValue = folder.description
+						}
+					})
+
+				---@param select ExtuiSelectable
+				self.popup:AddSelectable("Delete", "DontClosePopups").OnClick = function(select)
+					if select.Label ~= "Delete" then
+						folder.delete = true
+						self:buildFolderView()
+					else
+						select.DontClosePopups = false
+						select.Label = "Are You Sure?"
+						Styler:Color(select, "ErrorText")
+					end
 				end
 			end
 		end

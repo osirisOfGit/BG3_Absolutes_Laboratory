@@ -23,27 +23,28 @@ MutationProfileExecutor = {}
 local mutatedEntities = {}
 
 function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
-	Logger:BasicWarning("God Dammit Cahoot: Inside Mutation Execute")
 	local trackerFile = FileUtils:LoadTableFile(EntityRecorder.trackerFilename)
 	if trackerFile and next(trackerFile) then
 		Logger:BasicInfo("Recorder is currently running - skipping Mutations")
 		return
 	end
 
-	Logger:BasicWarning("God Dammit Cahoot: Before Changing Logger Mode")
 	Logger.mode = "timer"
-	
+
 	Ext.Utils.ProfileBegin("Lab Mutation Profile Execution")
 	local activeProfile = MutationConfigurationProxy.profiles[Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile]
-	Logger:BasicWarning("God Dammit Cahoot: After Getting Profile From Var: %s", activeProfile or "Not available")
 	if not activeProfile and not Ext.Vars.GetModVariables(ModuleUUID).HasDisabledProfiles then
-		Logger:BasicWarning("God Dammit Cahoot: After Getting Profile From Var: was empty, profiles aren't disabled")
 		local defaultProfile = ConfigurationStructure.config.mutations.settings.defaultProfile
-		Logger:BasicWarning("God Dammit Cahoot: After Getting Default Profile From Var: %s", defaultProfile)
 		if defaultProfile then
+			if MutationConfigurationProxy.profiles[defaultProfile] then
 			Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = defaultProfile
 			activeProfile = MutationConfigurationProxy.profiles[defaultProfile]
 			Logger:BasicInfo("Default Profile %s activated", activeProfile.name)
+			else
+				Logger:BasicWarning("Profile %s is set as the default, but can't be found", defaultProfile)
+			end
+		else
+			Logger:BasicDebug("No Default Profile present, skipping")
 		end
 	end
 	---@type ProfileExecutionStatus
@@ -324,13 +325,9 @@ end
 Ext.Osiris.RegisterListener("LevelGameplayReady", 2, "after", function(levelName, isEditorMode)
 	if levelName == "SYS_CC_I" then return end
 
-	Logger:BasicWarning("God Dammit Cahoot: Before ML Execute")
 	MonsterLabProfileExecutor:ExecuteProfile()
-	Logger:BasicWarning("God Dammit Cahoot: After ML Execute")
 	Ext.Timer.WaitFor(500, function()
-		Logger:BasicWarning("God Dammit Cahoot: Before Mutation Execute")
 		MutationProfileExecutor:ExecuteProfile()
-		Logger:BasicWarning("God Dammit Cahoot: After Mutation Execute")
 	end)
 end)
 
