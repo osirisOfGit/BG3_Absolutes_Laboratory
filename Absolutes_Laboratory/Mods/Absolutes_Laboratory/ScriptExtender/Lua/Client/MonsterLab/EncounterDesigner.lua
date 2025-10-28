@@ -38,8 +38,11 @@ local saveButton = 2
 function EncounterDesigner:buildDesigner(encounter, encounterMeta)
 	if not self.designerWindow then
 		self.designerWindow = Ext.IMGUI.NewWindow(encounter.name)
+		self.designerWindow.IDContext = "Monster Lab Designer Window"
 		self.designerWindow.Closeable = true
 		self.designerWindow.Font = MCM.Get("font_size", "755a8a72-407f-4f0d-9a33-274ac0f0b53d")
+		self.designerWindow:SetPos({ Ext.IMGUI.GetViewportSize()[1] / 2, Ext.IMGUI.GetViewportSize()[2] / 2 }, "FirstUseEver")
+		self.designerWindow:SetSize({ 300, 300 }, "FirstUseEver")
 
 		self.popup = self.designerWindow:AddPopup("encounter")
 		self.popup:SetColor("PopupBg", { 0, 0, 0, 1 })
@@ -178,7 +181,7 @@ function EncounterDesigner:buildDesigner(encounter, encounterMeta)
 			levelCombo.WidthFitPreview = true
 			levelCombo.SameLine = true
 			levelCombo.Options = levels
-			levelCombo.SelectedIndex = TableUtils:IndexOf(levels, encounter.gameLevel) - 1
+			levelCombo.SelectedIndex = (TableUtils:IndexOf(levels, encounter.gameLevel) or 1) - 1
 
 			teleportToLevelButton = Styler:ImageButton(ele:AddImageButton("Teleport_Level", "Spell_Conjuration_DimensionDoor", Styler:ScaleFactor({ 32, 32 })))
 			teleportToLevelButton.Visible = false
@@ -266,7 +269,7 @@ function EncounterDesigner:buildDesigner(encounter, encounterMeta)
 			local existingCombatGroups = Styler:ImageButton(ele:AddImageButton("SeeExistingGroups", "ico_mode_combat", { 48, 48 }))
 			existingCombatGroups.SameLine = true
 			existingCombatGroups:Tooltip():AddText("\t Show all existing enemies, in their combat groups if applicable, in this level with helpful utilities")
-			existingCombatGroups.OnClick = function ()
+			existingCombatGroups.OnClick = function()
 				self.existingEncountersWindow.Open = true
 				self.existingEncountersWindow:SetFocus()
 				ExistingEncounters:renderEncounters(self.existingEncountersWindow, currentGameLevel)

@@ -33,18 +33,25 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 
 	Ext.Utils.ProfileBegin("Lab Mutation Profile Execution")
 	local activeProfile = MutationConfigurationProxy.profiles[Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile]
-	if not activeProfile and not Ext.Vars.GetModVariables(ModuleUUID).HasDisabledProfiles then
-		local defaultProfile = ConfigurationStructure.config.mutations.settings.defaultProfile
-		if defaultProfile then
-			if MutationConfigurationProxy.profiles[defaultProfile] then
-			Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = defaultProfile
-			activeProfile = MutationConfigurationProxy.profiles[defaultProfile]
-			Logger:BasicInfo("Default Profile %s activated", activeProfile.name)
+	if not activeProfile then
+		Logger:BasicDebug("Couldn't find saved profile - stored in memory: %s", Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile)
+		Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = nil
+
+		if not Ext.Vars.GetModVariables(ModuleUUID).HasDisabledProfiles then
+			local defaultProfile = ConfigurationStructure.config.mutations.settings.defaultProfile
+			if defaultProfile then
+				if MutationConfigurationProxy.profiles[defaultProfile] then
+					Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = defaultProfile
+					activeProfile = MutationConfigurationProxy.profiles[defaultProfile]
+					Logger:BasicInfo("Default Profile %s activated", activeProfile.name)
+				else
+					Logger:BasicWarning("Profile %s is set as the default, but can't be found", defaultProfile)
+				end
 			else
-				Logger:BasicWarning("Profile %s is set as the default, but can't be found", defaultProfile)
+				Logger:BasicDebug("No Default Profile present, skipping")
 			end
 		else
-			Logger:BasicDebug("No Default Profile present, skipping")
+			Logger:BasicDebug("The default profile is disabled, skipping")
 		end
 	end
 	---@type ProfileExecutionStatus
