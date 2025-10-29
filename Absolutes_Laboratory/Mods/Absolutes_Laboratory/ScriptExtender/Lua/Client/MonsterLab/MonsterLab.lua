@@ -1413,3 +1413,29 @@ right-click to modify or delete that ruleset. The Base ruleset can't be modified
 		})
 	end
 end
+
+---@return MazzleDocsDocumentation
+function MonsterLab:generateDocs()
+	return {
+		{
+			Topic = "Monster Lab",
+			SubTopic = "Encounter Management and Profiles",
+			content = {
+				{
+					type = "Heading",
+					text = "Encounter Management"
+				}
+			}
+		},
+		{
+			Topic = "Monster Lab",
+			SubTopic = "Encounter Management and Profiles",
+			content = {
+				{
+					type = "Heading",
+					text = "Profiles"
+				}
+			}
+		}
+	} --[[@as MazzleDocsDocumentation]]
+end

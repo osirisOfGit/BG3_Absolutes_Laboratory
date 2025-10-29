@@ -83,9 +83,7 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 			title.UserData = "keep"
 			title.AllowOverlap = true
 
-			local docs = MazzleDocs:addDocButton(selectorColumn, SelectorInterface:generateDocs({}), function(config)
-				config.window_title = "Lab: Selectors"
-			end)
+			local docs = MazzleDocs:addDocButton(selectorColumn)
 			docs.AllowItemOverlap = true
 			docs.UserData = "keep"
 			docs.PositionOffset = Styler:ScaleFactor({ 0, -50 })
@@ -177,9 +175,7 @@ function MutationDesigner:RenderMutationManager(parent, existingMutation)
 			title.UserData = "keep"
 			title.AllowOverlap = true
 
-			local docs = MazzleDocs:addDocButton(mutatorColumn, MutatorInterface:generateDocs({}), function(config)
-				config.window_title = "Lab: Mutators"
-			end)
+			local docs = MazzleDocs:addDocButton(mutatorColumn)
 			docs.PositionOffset = Styler:ScaleFactor({ 0, -50 })
 			docs.AllowItemOverlap = true
 			docs.UserData = "keep"

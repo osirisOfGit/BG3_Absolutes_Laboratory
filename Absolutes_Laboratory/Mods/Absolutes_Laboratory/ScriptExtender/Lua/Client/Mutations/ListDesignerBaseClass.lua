@@ -163,7 +163,7 @@ function ListDesignerBaseClass:launch(activeListId)
 
 		self.popup = Styler:Popup(self.mainWindow)
 
-		local docsButton = MazzleDocs:addDocButton(self.designerSection, MutatorInterface:generateDocs({}))
+		local docsButton = MazzleDocs:addDocButton(self.designerSection)
 		docsButton.SameLine = true
 		docsButton.UserData = "keep"
 

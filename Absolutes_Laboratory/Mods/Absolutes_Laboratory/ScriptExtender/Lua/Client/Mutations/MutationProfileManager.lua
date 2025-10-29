@@ -138,7 +138,7 @@ function MutationProfileManager:init(parent)
 				end)
 		end
 
-		local docs = MazzleDocs:addDocButton(rightPanel, Profiles_Docs)
+		local docs = MazzleDocs:addDocButton(rightPanel)
 		docs.UserData = "keep"
 		docs.SameLine = true
 
@@ -1452,98 +1452,101 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 	self.profileRulesParent.UserData = self.profileRulesParent.ColumnDefs[1].Width
 end
 
-Profiles_Docs = {
-	{
-		Topic = "Mutations",
-		content = {
-			{
-				type = "Heading",
-				text = "Console Commands"
-			},
-			{
-				type = "Content",
-				text =
-				"This slide documents all SE Console Commands that Lab has created for use by anyone - the code examples are useful for copy-pasting into your own console if you want."
-			},
-			{
-				type = "SubHeading",
-				text = "Client Only"
-			},
-			{
-				type = "Section",
-				text = [[!Lab_MetaBlock <Mod UUIDs> - generates the meta.lsx Dependency block for the specified mods, printing them out in the console for whatever use you want ]]
-			},
-			{
-				type = "Code",
-				text = [[client
+---@return MazzleDocsDocumentation
+function MutationProfileManager:generateDocs()
+	local docs = {
+		{
+			Topic = "Mutations",
+			content = {
+				{
+					type = "Heading",
+					text = "Console Commands"
+				},
+				{
+					type = "Content",
+					text =
+					"This slide documents all SE Console Commands that Lab has created for use by anyone - the code examples are useful for copy-pasting into your own console if you want."
+				},
+				{
+					type = "SubHeading",
+					text = "Client Only"
+				},
+				{
+					type = "Section",
+					text =
+					[[!Lab_MetaBlock <Mod UUIDs> - generates the meta.lsx Dependency block for the specified mods, printing them out in the console for whatever use you want ]]
+				},
+				{
+					type = "Code",
+					text = [[client
 !Lab_MetaBlock 61e8471b-4eda-4493-829d-e3c29ecc36c3 a17a3a3d-5c16-404a-910a-68ae9e47f247
 ]]
-			},
-			{
-				type = "SubHeading",
-				text = "Server Only"
-			},
-			{
-				type = "Section",
-				text =
-				[[!Lab_ClearEntityClasses - Clears the Classes component of all entities loaded onto the server - useful only to force reset entities that had the Classes and Subclasses mutator applied pre-1.7.0.
+				},
+				{
+					type = "SubHeading",
+					text = "Server Only"
+				},
+				{
+					type = "Section",
+					text =
+					[[!Lab_ClearEntityClasses - Clears the Classes component of all entities loaded onto the server - useful only to force reset entities that had the Classes and Subclasses mutator applied pre-1.7.0.
 Run this, disable your profile, save, reload, enable your profile, save, reload to ensure it's fully cleared.]]
-			},
-			{
-				type = "Code",
-				text = [[server
+				},
+				{
+					type = "Code",
+					text = [[server
 !Lab_ClearEntityClasses
 ]]
-			},
-			{
-				type = "Separator"
-			},
-			{
-				type = "Section",
-				text = {
-					"!Lab_GenerateMutationDiagram <entityId> - generates the code to render a Mermaid diagram for the specified Entity (only one can be specified), showing what mutations would apply to them in the current profile, and which mutators compose and overwrite each other.",
-					"You can get the EntityUUID by copying it from the last field in the Inspector - alternatively, if you've already run your profile against an entity, you'll find a button to run this command for you in their Mutations tab within the Inspector.",
-					"The output will also be written to %localappdata%/Larian Studios/Baldur's Gate 3/Script Extender/Absolutes_Laboratory/DiagramOutputs/<entity name - last 5 characters of their uuid>.txt"
-				}
-			},
-			{
-				type = "Code",
-				text = [[server
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "Section",
+					text = {
+						"!Lab_GenerateMutationDiagram <entityId> - generates the code to render a Mermaid diagram for the specified Entity (only one can be specified), showing what mutations would apply to them in the current profile, and which mutators compose and overwrite each other.",
+						"You can get the EntityUUID by copying it from the last field in the Inspector - alternatively, if you've already run your profile against an entity, you'll find a button to run this command for you in their Mutations tab within the Inspector.",
+						"The output will also be written to %localappdata%/Larian Studios/Baldur's Gate 3/Script Extender/Absolutes_Laboratory/DiagramOutputs/<entity name - last 5 characters of their uuid>.txt"
+					}
+				},
+				{
+					type = "Code",
+					text = [[server
 !Lab_GenerateMutationDiagram cad1854b-8f41-4038-b640-156ee0272f81
 
 Enter the generated code in https://www.mermaidchart.com/play (Hit Edit code in the bottom left)
 ]]
-			},
-			{
-				type = "SubHeading",
-				text = "Either Client or Server"
-			},
-			{
-				type = "Section",
-				text = {
-					"!Lab_DumpProgressions - writes Lab's index of all progressions currently available in the game to %localappdata%/Larian Studios/Baldur's Gate 3/Script Extender/Absolutes_Laboratory/ProgressionDumper.txt.",
-					"This is not a true representation of the progressions, only what Lab indexes for use in the List Mutators"
-				}
-			},
-			{
-				type = "Code",
-				text = [[server
+				},
+				{
+					type = "SubHeading",
+					text = "Either Client or Server"
+				},
+				{
+					type = "Section",
+					text = {
+						"!Lab_DumpProgressions - writes Lab's index of all progressions currently available in the game to %localappdata%/Larian Studios/Baldur's Gate 3/Script Extender/Absolutes_Laboratory/ProgressionDumper.txt.",
+						"This is not a true representation of the progressions, only what Lab indexes for use in the List Mutators"
+					}
+				},
+				{
+					type = "Code",
+					text = [[server
 !Lab_DumpProgressions
 ]]
+				}
 			}
-		}
-	},
-	{
-		Topic = "Mutations",
-		SubTopic = "Profiles",
-		content = {
-			{
-				type = "Heading",
-				text = "What Are Profiles?"
-			},
-			{
-				type = "Content",
-				text = [[
+		},
+		{
+			Topic = "Mutations",
+			SubTopic = "Profiles",
+			content = {
+				{
+					type = "Heading",
+					text = "What Are Profiles?"
+				},
+				{
+					type = "Content",
+					text = [[
 Profiles represent an ordered group of Mutations that should run during the LevelGameplayReady Osiris Event.
 
 You can have any number of profiles using any number of mutations, but only one profile can be active for a given save.
@@ -1555,58 +1558,58 @@ Mutations are applied in the order specified - later Mutations override earlier 
 The details of what this means are specified in each applicable mutator's page, but you can allow these mutators to be composable by checking the checkbox next to the mutation - if this is not checked, simple override behavior will be used instead.
 
 Create your profile using the Gear icon next to the dropdown - once your profile is created, drag and drop mutations from the left sidebar into the profile section, onto the buttons - you can do it for blank or populated buttons.]]
-			},
-			{
-				type = "CallOut",
-				centered = true,
-				text = {
-					"The ProfileExecutor will undo all non-transient mutators before executing all the mutations every time it runs (each LevelGameplayReady event or every player level up (see Level Mutator))!",
-					"Users should only really notice this if they save in the middle of combat, then reload, and even then most mutators shouldn't cause any differences an average user would notice. This is an untested theory though, so please provide feedback!",
-					"",
-					"Mutations included in profiles are not unique to that profile - deleting or changing them in one profile will change them in every profile they're included in"
-				}
-			},
-			{
-				type = "Section",
-				text = "Key Terms",
-			},
-			{
-				type = "Bullet",
-				text = {
-					"Mutations: A group of Mutators and Selectors",
-					"Selectors: Defines what NPCs should be targeted for the Mutators - must run the Scanner in the Inspector tab for the Dry Run to work. Can have duplicate Selector types, but order matters - see Selectors page.",
-					"Mutators: Defines how the NPC should be changed (mutated) if selected by the Selectors. Each Mutation can only have one of each type of Mutator. Order doesn't matter within the context of a Mutation",
+				},
+				{
+					type = "CallOut",
+					centered = true,
+					text = {
+						"The ProfileExecutor will undo all non-transient mutators before executing all the mutations every time it runs (each LevelGameplayReady event or every player level up (see Level Mutator))!",
+						"Users should only really notice this if they save in the middle of combat, then reload, and even then most mutators shouldn't cause any differences an average user would notice. This is an untested theory though, so please provide feedback!",
+						"",
+						"Mutations included in profiles are not unique to that profile - deleting or changing them in one profile will change them in every profile they're included in"
+					}
+				},
+				{
+					type = "Section",
+					text = "Key Terms",
+				},
+				{
+					type = "Bullet",
+					text = {
+						"Mutations: A group of Mutators and Selectors",
+						"Selectors: Defines what NPCs should be targeted for the Mutators - must run the Scanner in the Inspector tab for the Dry Run to work. Can have duplicate Selector types, but order matters - see Selectors page.",
+						"Mutators: Defines how the NPC should be changed (mutated) if selected by the Selectors. Each Mutation can only have one of each type of Mutator. Order doesn't matter within the context of a Mutation",
+					}
 				}
 			}
-		}
-	},
-	{
-		Topic = "Mutations",
-		SubTopic = "Profiles",
-		content = {
-			{
-				type = "Heading",
-				text = "Exporting Profiles and Everything Associated",
-				centered = true
-			},
-			{
-				type = "CallOut",
-				prefix = "Highlights:",
-				prefix_color = "Green",
-				text = [[
+		},
+		{
+			Topic = "Mutations",
+			SubTopic = "Profiles",
+			content = {
+				{
+					type = "Heading",
+					text = "Exporting Profiles and Everything Associated",
+					centered = true
+				},
+				{
+					type = "CallOut",
+					prefix = "Highlights:",
+					prefix_color = "Green",
+					text = [[
 - Loose Exports are for sharing with individuals, Mod Exports are for sharing with the Community (make sure to list Lab as a dependency on Nexus)
 - Exported Mutations will record any and all mods that they depend on
 - You can't export another mod's mutations/lists without copying it to your machine first - this breaks the link with that mod (otherwise, their mod will become a dependency)
 - When updating your Mod Export, copy the Dependency Nodes over as well, to ensure the dependencies list the latest versions]]
-			} --[[@as MazzleDocsCallOut]],
-			{
-				type = "SubHeading",
-				text = "Loose Files",
-				fontsize = "Large"
-			},
-			{
-				type = "Content",
-				text = [[
+				} --[[@as MazzleDocsCallOut]],
+				{
+					type = "SubHeading",
+					text = "Loose Files",
+					fontsize = "Large"
+				},
+				{
+					type = "Content",
+					text = [[
 Choosing to export a Profile (not Export For Mod) will create a JSON file under `%localappdata%\Larian Studios\Baldur's Gate 3\Script Extender\Absolutes_Laboratory\ExportedProfiles\`, named using the profile name(s), which includes all mutations, mutators, selectors, and lists used in that profile.
 
 This file can be reimported immediately by you if you want to check what was exported - Lab will prevent duplication of Mutations and Profile names where necessary by assigning new UUIDs to things that have them, and appending `- Imported` or the first 3 characters of the UUID to the Name of the artifact.
@@ -1614,33 +1617,33 @@ This file can be reimported immediately by you if you want to check what was exp
 Lab will also record any mods used for resources/stats in the packaged mutations in the export itself, validating that these mods are present when the user imports the file. If any are missing, the user is presented with a warning, a detailed report, and the option to continue.
 
 If they choose to continue without first loading the mod, Lab will scrub all references to that resource/stat in the relevant selectors/mutators, proactively removing any possible runtime errors - the file itself will be untouched, allowing it to be reimported later (though the original import will need to be deleted via the menu so it isn't renamed on top of the original renaming, causing an - Imported - Imported situation).]]
-			},
-			{
-				type = "Image",
-				image_index = 3
-			} --[[@as MazzleDocsImage]],
-			{
-				type = "Image",
-				image_index = 4
-			} --[[@as MazzleDocsImage]],
-			{
-				type = "Content",
-				text = [[
+				},
+				{
+					type = "Image",
+					image_index = 3
+				} --[[@as MazzleDocsImage]],
+				{
+					type = "Image",
+					image_index = 4
+				} --[[@as MazzleDocsImage]],
+				{
+					type = "Content",
+					text = [[
 If any mutations from Mods are used (see below), those mutations will not be exported - instead, a dependency on the mod providing those mutations will be recorded, preserving the link to that mod.
 
 If you want to package the mutation separately, copy it to your own folder first, use that in your profile, then export.]]
-			},
-			{
-				type = "Separator"
-			},
-			{
-				type = "SubHeading",
-				text = "Packaging With A Mod",
-				fontsize = "Large"
-			},
-			{
-				type = "Content",
-				text = [[
+				},
+				{
+					type = "Separator"
+				},
+				{
+					type = "SubHeading",
+					text = "Packaging With A Mod",
+					fontsize = "Large"
+				},
+				{
+					type = "Content",
+					text = [[
 Choosing the Export For Mod option will instead create two files in the same location - `AbsolutesLaboratory_ProfilesAndMutations.json` and `ExportedModMetaLsxDependencies.lsx`
 
 The .json file is named this way because that is what Lab looks for in every active mod to determine if there're profiles/mutations to load. Simply place this file next to your meta.lsx and you're good to go - see the Example Mod
@@ -1653,15 +1656,15 @@ Simply copy the contents into your meta.lsx under the Dependencies node, and you
 I recommend repeating this process every time you update your mod's export file, as these blocks also contain the versions of the mods you were using when you exported, so copying it over again will update the versions even if the mod list itself hasn't changed.
 
 What it'll look like in BG3MM, followed by an example meta.lsx with the ExportedModMetaLsxDependencies.lsx copied over:]]
-			},
-			{
-				type = "Image",
-				image_index = 5,
+				},
+				{
+					type = "Image",
+					image_index = 5,
 
-			} --[[@as MazzleDocsImage]],
-			{
-				type = "Code",
-				text = [[
+				} --[[@as MazzleDocsImage]],
+				{
+					type = "Code",
+					text = [[
 <?xml version="1.0" encoding="utf-8"?>
 <save>
   <version major="4" minor="0" revision="9" build="328" />
@@ -1703,40 +1706,46 @@ What it'll look like in BG3MM, followed by an example meta.lsx with the Exported
     </node>
   </region>
 </save>]],
-				centered = true
+					centered = true
+				}
 			}
-		}
-	},
-	{
-		Topic = "Mutations",
-		SubTopic = "Profiles",
-		content = {
-			{
-				type = "Heading",
-				text = "Preparation Phase"
-			},
-			{
-				type = "Content",
-				text =
-				[[The Preparation phase has a unique purpose - it runs Prep Mutations (and only these mutations), which are Mutations that only support the Prep Phase Mutator and don't support the Prep Marker Selector, with the intent being to reduce duplication of common Selectors in Main Mutations.
+		},
+		{
+			Topic = "Mutations",
+			SubTopic = "Profiles",
+			content = {
+				{
+					type = "Heading",
+					text = "Preparation Phase"
+				},
+				{
+					type = "Content",
+					text =
+					[[The Preparation phase has a unique purpose - it runs Prep Mutations (and only these mutations), which are Mutations that only support the Prep Phase Mutator and don't support the Prep Marker Selector, with the intent being to reduce duplication of common Selectors in Main Mutations.
 
 For example, if you find yourself defining the same set of Selectors over and over again (i.e. all bosses) + some specific additions, you can create a Prep Phase Mutation to mark all entities that are common between those Selectors, change your Main selector to just look at that marker, and simply add whatever extra selectors you want on top - e.g. All Bosses that are Humanoids, or all Devils that aren't bosses.
 
 Lab pre-packages a number of Markers that can be used by anyone - these can't be edited or deleted, as each Marker has a UUID assigned to them that is used by the Mutator, so recreating them will cause irreversible duplication for anyone importing your profile and renaming them will just be confusing.]]
-			},
-			{
-				type = "Image",
-				image_index = 1,
-				centered = false
-			} --[[@as MazzleDocsImage]],
-			{
-				type = "Image",
-				image_index = 2,
-				centered = false
-			} --[[@as MazzleDocsImage]]
+				},
+				{
+					type = "Image",
+					image_index = 1,
+					centered = false
+				} --[[@as MazzleDocsImage]],
+				{
+					type = "Image",
+					image_index = 2,
+					centered = false
+				} --[[@as MazzleDocsImage]]
+			}
 		}
-	}
-}
+	} --[[@as MazzleDocsDocumentation]]
+
+	SelectorInterface:generateDocs(docs)
+	MutatorInterface:generateDocs(docs)
+
+	return docs
+end
 
 ---@return {[string]: MazzleDocsContentItem}
 function MutationProfileManager:generateChangelog()
@@ -1793,6 +1802,3 @@ function MutationProfileManager:generateChangelog()
 		}
 	} --[[@as {[string]: MazzleDocsContentItem}]]
 end
-
-SelectorInterface:generateDocs(Profiles_Docs)
-MutatorInterface:generateDocs(Profiles_Docs)

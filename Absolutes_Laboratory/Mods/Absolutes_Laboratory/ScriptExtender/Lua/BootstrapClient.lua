@@ -46,49 +46,85 @@ Absolutes_Lab_Doc_Config = {
 	},
 	theme_override = {
 		-- Window / Frame
-		background         = { 0.07, 0.07, 0.07, 0.90 }, -- WindowBg
-		title_bg           = { 0.07, 0.07, 0.07, 1.00 }, -- TitleBg
-		title_bg_active    = { 0.32, 0.24, 0.16, 0.78 }, -- TitleBgActive (BoxActiveColor)
-		title_bg_collapsed = { 0.05, 0.05, 0.05, 0.75 }, -- TitleBgCollapsed
-		text               = { 0.86, 0.79, 0.68, 0.78 }, -- Text
-		border             = { 0.24, 0.15, 0.08, 0.00 }, -- Border
-		border_shadow      = { 0.07, 0.07, 0.07, 0.78 }, -- BorderShadow
+		background             = { 0.07, 0.07, 0.07, 1.0 },    -- WindowBg
+		content_area_bg        = { 0.07, 0.07, 0.07, 0.90 },    -- WindowBg
+		title_bg               = { 0.07, 0.07, 0.07, 1.00 },    -- TitleBg
+		title_bg_active        = { 0.32, 0.24, 0.16, 0.78 },    -- TitleBgActive (BoxActiveColor)
+		title_bg_collapsed     = { 0.05, 0.05, 0.05, 0.75 },    -- TitleBgCollapsed
+		text                   = { 0.86, 0.79, 0.68, 0.78 },    -- Text
+		border                 = { 0.24, 0.15, 0.08, 1.00 },    -- Border
+		border_shadow          = { 0.07, 0.07, 0.07, 0.78 },    -- BorderShadow
 
 		-- Navigation
-		nav_button_hovered = { 0.80, 0.60, 0.30, 0.80 }, -- Approx. hovered accent in BG3SE UI
-		nav_button_active  = { 0.90, 0.70, 0.40, 0.90 }, -- Active accent
-		nav_area_bg        = { 0.05, 0.05, 0.05, 0.95 }, -- Sidebar/area background
-		nav_header_text    = { 0.86, 0.79, 0.68, 0.95 }, -- Header text
-		nav_topic_text     = { 0.86, 0.79, 0.68, 0.90 }, -- Topic text
-		nav_subtopic_text  = { 0.80, 0.74, 0.64, 0.90 }, -- Subtopic text
-		nav_slide_text     = { 0.86, 0.79, 0.68, 0.90 }, -- Slide text
-		slide_index_text   = { 0.86, 0.79, 0.68, 0.90 }, -- Slide index numbers
-		nav_button_text    = { 0.10, 0.10, 0.10, 1.00 }, -- Expand/collapse glyphs
+		nav_button_hovered     = { 0.80, 0.60, 0.30, 0.80 },
+		nav_button_active      = { 0.90, 0.70, 0.40, 0.90 },
+		nav_area_bg            = { 0.05, 0.05, 0.05, 0.95 },
+		nav_header_text        = { 0.86, 0.79, 0.68, 0.95 },
+		nav_topic_text         = { 0.86, 0.79, 0.68, 0.90 },
+		nav_subtopic_text      = { 0.80, 0.74, 0.64, 0.90 },
+		nav_slide_text         = { 0.86, 0.79, 0.68, 0.90 },
+		slide_index_text       = { 0.86, 0.79, 0.68, 0.90 },
+		nav_button_text        = { 0.10, 0.10, 0.10, 1.00 },
 
 		-- Content text hierarchy
-		content_text       = { 0.86, 0.79, 0.68, 0.95 },
-		heading_text       = { 0.95, 0.88, 0.75, 1.00 },
-		subheading_text    = { 0.90, 0.83, 0.72, 0.95 },
-		section_text       = { 0.90, 0.83, 0.72, 0.95 },
-		note_text          = { 0.80, 0.72, 0.58, 0.95 },
-		callout_text       = { 0.95, 0.88, 0.75, 1.00 },
+		content_text           = { 0.86, 0.79, 0.68, 0.95 },
+		heading_text           = { 0.95, 0.88, 0.75, 1.00 },
+		subheading_text        = { 0.90, 0.83, 0.72, 0.95 },
+		section_text           = { 0.90, 0.83, 0.72, 0.95 },
+		note_text              = { 0.80, 0.72, 0.58, 0.95 },
+		callout_text           = { 0.95, 0.88, 0.75, 1.00 },
 
 		-- Code blocks
-		code_text          = { 0.95, 0.95, 0.95, 1.00 },
-		code_bg            = { 0.09, 0.09, 0.09, 1.00 },
+		code_text              = { 0.95, 0.95, 0.95, 1.00 },
+		code_bg                = { 0.09, 0.09, 0.09, 1.00 },
 
 		-- Lists / separators
-		bullet_text        = { 0.86, 0.79, 0.68, 0.95 },
-		separator_color    = { 0.24, 0.15, 0.08, 0.60 },
+		bullet_text            = { 0.86, 0.79, 0.68, 0.95 },
+		separator_color        = { 0.24, 0.15, 0.08, 0.60 },
 
 		-- Buttons
-		button_bg          = { 0.32, 0.24, 0.16, 0.78 }, -- BoxActiveColor base
-		button_text        = { 0.95, 0.88, 0.75, 1.00 },
-		button_hover       = { 0.37, 0.28, 0.20, 0.85 },
-		button_active      = { 0.27, 0.20, 0.14, 0.90 },
+		button_bg              = { 0.32, 0.24, 0.16, 0.78 },
+		button_text            = { 0.95, 0.88, 0.75, 1.00 },
+		button_hover           = { 0.37, 0.28, 0.20, 0.85 },
+		button_active          = { 0.27, 0.20, 0.14, 0.90 },
 
 		-- Scrollbar
-		scrollbar_bg       = { 0.05, 0.05, 0.05, 0.60 },
-		scrollbar_grab     = { 0.32, 0.24, 0.16, 0.90 },
+		scrollbar_bg           = { 0.05, 0.05, 0.05, 0.60 },
+		scrollbar_grab         = { 0.32, 0.24, 0.16, 0.90 },
+		scrollbar_grab_hovered = { 0.37, 0.28, 0.20, 0.95 },
+		scrollbar_grab_active  = { 0.27, 0.20, 0.14, 1.00 },
+
+		-- New text accents
+		keyword_text           = { 0.90, 0.75, 0.30, 1.00 },
+		highlight_text         = { 0.95, 0.88, 0.75, 1.00 },
+		warning_text           = { 0.95, 0.55, 0.40, 1.00 },
+
+		-- Action point colors
+		action_color           = { 0.25, 0.80, 0.40, 1.00 }, -- green
+		bonus_action_color     = { 0.95, 0.65, 0.25, 1.00 }, -- orange
+
+		-- Input widgets
+		input_text             = { 0.90, 0.83, 0.72, 1.00 },
+		input_bg               = { 0.10, 0.10, 0.10, 1.00 },
+		input_bg_hover         = { 0.13, 0.13, 0.13, 1.00 },
+		input_bg_active        = { 0.16, 0.16, 0.16, 1.00 },
+		slider_grab            = { 0.32, 0.24, 0.16, 0.90 },
+		slider_grab_active     = { 0.27, 0.20, 0.14, 1.00 },
+		checkbox_bg            = { 0.10, 0.10, 0.10, 1.00 },
+		checkbox_bg_hover      = { 0.13, 0.13, 0.13, 1.00 },
+		checkbox_bg_active     = { 0.16, 0.16, 0.16, 1.00 },
+		checkbox_check         = { 0.95, 0.88, 0.75, 1.00 },
+		progress_bar           = { 0.32, 0.24, 0.16, 0.90 },
+		progress_bar_bg        = { 0.07, 0.07, 0.07, 1.00 },
+		callout_prefix         = { 0.95, 0.88, 0.75, 1.00 },
+
+		-- Background image support
+		bg_image               = nil, -- "parchment_bg" | "evil_parchment_bg" | "leather_bg" | "stone_bg" | "monitor_bg"
+
+		-- Window constraints
+		min_window_width       = nil,
+		min_window_height      = 400,
+		max_window_width       = nil,
+		max_window_height      = nil,
 	}
 }
