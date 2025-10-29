@@ -161,7 +161,7 @@ function CharacterWindow:BuildWindow(parent, id)
 
 	if characterTemplate then
 		Styler:MiddleAlignedColumnLayout(displayCell, function(ele)
-			local image = ele:AddImage(characterTemplate.Icon, Styler:ScaleFactor({ 128, 128 }))
+			local image = ele:AddImage(EntityRecorder:GetEntity(id) and EntityRecorder:GetEntity(id).Icon or characterTemplate.Icon, Styler:ScaleFactor({ 128, 128 }))
 			if image.ImageData.Icon == "" then
 				image:Destroy()
 				ele:AddImage("Item_Unknown", Styler:ScaleFactor({ 128, 128 }))

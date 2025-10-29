@@ -268,11 +268,27 @@ function EncounterDesigner:buildDesigner(encounter, encounterMeta)
 
 			local existingCombatGroups = Styler:ImageButton(ele:AddImageButton("SeeExistingGroups", "ico_mode_combat", { 48, 48 }))
 			existingCombatGroups.SameLine = true
-			existingCombatGroups:Tooltip():AddText("\t Show all existing enemies, in their combat groups if applicable, in this level with helpful utilities")
+			existingCombatGroups:Tooltip():AddText("\t Show all existing enemies in their combat groups if applicable with helpful utilities")
 			existingCombatGroups.OnClick = function()
 				self.existingEncountersWindow.Open = true
 				self.existingEncountersWindow:SetFocus()
-				ExistingEncounters:renderEncounters(self.existingEncountersWindow, currentGameLevel)
+				ExistingEncounters:renderEncounters(
+					self.existingEncountersWindow,
+					currentGameLevel,
+					encounter,
+					function()
+						self:RenderCardForEntities(entityCardsGroup,
+							encounter.entities,
+							currentGameLevel == encounter.gameLevel,
+							encounter,
+							encounterMeta)
+
+						Channels.ManageEncounterSpawns:SendToServer({
+							folderId = encounterMeta.folderId,
+							encounterId = encounterMeta.encounterId,
+							encounter = (encounter._real or encounter)
+						} --[[@as ManageEncounterRequest]])
+					end)
 			end
 
 			local refreshEntitiesButton = Styler:ImageButton(ele:AddImageButton("RefreshView", "ico_reset_d", Styler:ScaleFactor({ 48, 48 })))
@@ -472,6 +488,7 @@ function EncounterDesigner:RenderCardForEntities(parent, entities, renderCoordPi
 						else
 							selectable.Label = "Are You Sure?"
 							Styler:Color(selectable, "ErrorText")
+							selectable.DontClosePopups = false
 						end
 					end
 				end
