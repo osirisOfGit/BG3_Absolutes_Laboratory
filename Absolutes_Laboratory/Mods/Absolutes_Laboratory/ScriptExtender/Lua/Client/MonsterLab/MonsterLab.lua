@@ -1421,7 +1421,6 @@ function MonsterLab:generateDocs()
 	return {
 		{
 			Topic = "Monster Lab",
-			SubTopic = "Encounter Management",
 			content = {
 				{
 					type = "Heading",
@@ -1455,7 +1454,6 @@ and maybe more, depending on what I think of/what feedback I get.]]
 		},
 		{
 			Topic = "Monster Lab",
-			SubTopic = "Encounter Management",
 			content = {
 				{
 					type = "Heading",
@@ -1476,6 +1474,7 @@ and maybe more, depending on what I think of/what feedback I get.]]
 					text = {
 						"close MCM when opened and reopen it upon being closed, closing all windows related to the Designer at the same time",
 						"spawn all entities that haven't already been spawned by an active Monster Lab profile on launch and despawn on close - if an entity was already spawned by a profile, their properties will be updated the same way as if it had been spawned by the designer. It will not resurrect dead entities.",
+						"update the properties of the spawned entities whenever a change is made",
 						"block entities ability to enter combat until closed, allowing you to set conflicting factions without watching them die",
 						"default to blocking the player's (and party's) ability to enter combat and dialogue, controlled by the toggles in the top-left. Note that blocking dialogue doesn't prevent you from triggering Triggers placed in the game world, which will often start cutscenes or force dialogue. Teleporting directly to an entity will usually bypass these, depending on the trigger.",
 					}
@@ -1497,12 +1496,11 @@ An encounter can only be statically placed in one spot - if you want the same en
 
 If you select a level you aren't currently in, most of the buttons will be hidden, and a new Teleport button will appear next to the Level Dropdown to teleport you to that level - once you're in the correct level, you can use the coordinate picker to choose the base coordinate.
 
-The base coordinates serve as the default coordinates for your entities, spawning them in a tightly-clustered group, and as the destination for the Teleport button that appears below the dropdown if you're in the correct level.
+The base coordinates serve as the default coordinates for your entities, spawning them in a tightly-clustered group, and as the destination for the Teleport button that appears below the dropdown if you're in the correct level. When choosing your coordinates, an orb and moonbeam effect will trigger to help show you that location (thanks to Mazzle_Lib!)
 
-If you want to attach your encounter to an existing one, click on the Twin Daggers icon in the same row as the Teleport Button - if you've run the Entity Recorder (button in the Inspector) as of Lab Version 1.8.0 (Monster Lab release), you'll see every recorded entity grouped by their shared CombatGroupId if applicable, along with a teleport button that will take you to that encounter (you can also copy entities from any level in the game via this combat group window)
+If you want to attach your encounter to an existing one, click on the Twin Daggers icon in the same row as the Teleport Button - if you've run the Entity Recorder (button in the Inspector) as of Lab Version 1.8.0 (Monster Lab release), you'll see every recorded entity grouped by their shared CombatGroupId if applicable, along with a teleport button that will take you to that encounter (you can also copy entities from any level in the game to your encounter via this combat group window)
 
-Once you've chosen your level and base coordinates, you can move on to the next section.
-]]
+Once you've chosen your level and base coordinates, you can move on to the next section.]]
 				},
 				{
 					type = "Section",
@@ -1516,9 +1514,10 @@ These two settings are available under the Comment looking button in the row und
 CombatGroupId is a random identifier set in the entity's CombatParticipant.CombatGroupID component, ensuring that when one entity enters combat, every entity with that same ID enters combat at the same time, regardless of how far away they are.
 Lab will enforce the presence of a UUID for an encounter and set it for all entities under that encounter, as individual sight/hearing-based engagement is incredibly unreliable.
 
-Factions are set in the Faction component of each entity, and control who they're friendly, neutral, and hostile towards. There are 971 factions in the base game, which various hierarchal deps, so there isn't search/selector functionality for this - by defualt, Lab will use (and force, if the value is cleared) the "Evil NPC" faction, making your entities always hostile to the player.
+Factions are set in the Faction component of each entity, and control who they're friendly, neutral, and hostile towards. There are 971 factions in the base game, with various hierarchal depths, so there isn't search/selector functionality for this - by default, Lab will use (and force, if the value is cleared) the "Evil NPC" faction, making your entities always hostile to the player.
+Keep in mind that factions can swap to being hostile/friendly towards the player just based on triggers - for example, the captured civilians on the Nautaloid will only become hostile when the correct button is pressed, but they all share the same faction and CombatGroupId.
 
-You can search for factions via https://bg3.norbyte.dev/search?q=type%3Afactions or use Lab's Inspector to see what faction a given entity belongs too, but if you're looking to integrate your encounter with an existing one, there's an easier way - click on the True Strike icon above the input boxes and you can copy both CombatGroupId and Faction from an entity in the game world just by middle clicking them.
+You can search for factions via https://bg3.norbyte.dev/search?q=type%3Afactions or use Lab's Inspector to see what faction a given entity belongs to, but if you're looking to integrate your encounter with an existing one, there's an easier way - click on the True Strike icon above the input boxes and you can copy both CombatGroupId and Faction from an entity in the game world just by middle clicking them.
 
 You may see entities within the same encounter have different Factions - these are usually hierarchal, which Larian went really, really in-depth with for some reason, but they should all bubble up to the same parent faction, so don't be concerned about that]]
 				},
@@ -1526,11 +1525,43 @@ You may see entities within the same encounter have different Factions - these a
 					type = "SubHeading",
 					text = "Entity-Level Settings"
 				},
+				{
+					type = "Content",
+					text = [[Most of the settings here are self-explanatory, or behave similarily to above, so here're the highlights:]]
+				},
+				{
+					type = "Section",
+					text = "Animations"
+				},
+				{
+					type = "Content",
+					text = [[
+Basic Animations are set on the entity via `Osi.PlayAnimation({entityId}, {provided UUID})` and looping ones are set via
+Osi.PlayLoopingAnimation({entityId},
+						{startAnimation},
+						{loopAnimation},
+						{endAnimation},
+						{loopVariation1},
+						{loopVariation2},
+						{loopVariation3},
+						{loopVariation4})
+
+I genuinely don't know anything about how, when, why, and what values work - I just exposed the option for those who do. There's no validation around this, and Osi doesn't throw errors if the command doesn't work (as long as it's syntatically valid), so either know what you're doing or be prepared for a _lot_ of experimenting and research.
+]]
+				},
+				{
+					type = "Section",
+					text = "Rotation"
+				},
+				{
+					type = "Content",
+					text =
+					[[Rotation in this game is weird - I offload the computations and implementation of that to Mazzle_Lib, which has to spawn an invisible object and use Osi to force the entity to look at it; because of this, there really isn't sensible math around rotation - just play around with it and see what works.]]
+				}
 			}
 		},
 		{
 			Topic = "Monster Lab",
-			SubTopic = "Encounter Management",
 			content = {
 				{
 					type = "Heading",
@@ -1540,7 +1571,6 @@ You may see entities within the same encounter have different Factions - these a
 		},
 		{
 			Topic = "Monster Lab",
-			SubTopic = "Encounter Management",
 			content = {
 				{
 					type = "Heading",

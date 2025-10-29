@@ -1472,7 +1472,7 @@ function MutationProfileManager:generateDocs()
 					text = "Client Only"
 				},
 				{
-					type = "Section",
+					type = "Content",
 					text =
 					[[!Lab_MetaBlock <Mod UUIDs> - generates the meta.lsx Dependency block for the specified mods, printing them out in the console for whatever use you want ]]
 				},
@@ -1487,7 +1487,7 @@ function MutationProfileManager:generateDocs()
 					text = "Server Only"
 				},
 				{
-					type = "Section",
+					type = "Content",
 					text =
 					[[!Lab_ClearEntityClasses - Clears the Classes component of all entities loaded onto the server - useful only to force reset entities that had the Classes and Subclasses mutator applied pre-1.7.0.
 Run this, disable your profile, save, reload, enable your profile, save, reload to ensure it's fully cleared.]]
@@ -1502,7 +1502,7 @@ Run this, disable your profile, save, reload, enable your profile, save, reload 
 					type = "Separator"
 				},
 				{
-					type = "Section",
+					type = "Content",
 					text = {
 						"!Lab_GenerateMutationDiagram <entityId> - generates the code to render a Mermaid diagram for the specified Entity (only one can be specified), showing what mutations would apply to them in the current profile, and which mutators compose and overwrite each other.",
 						"You can get the EntityUUID by copying it from the last field in the Inspector - alternatively, if you've already run your profile against an entity, you'll find a button to run this command for you in their Mutations tab within the Inspector.",
@@ -1522,7 +1522,7 @@ Enter the generated code in https://www.mermaidchart.com/play (Hit Edit code in 
 					text = "Either Client or Server"
 				},
 				{
-					type = "Section",
+					type = "Content",
 					text = {
 						"!Lab_DumpProgressions - writes Lab's index of all progressions currently available in the game to %localappdata%/Larian Studios/Baldur's Gate 3/Script Extender/Absolutes_Laboratory/ProgressionDumper.txt.",
 						"This is not a true representation of the progressions, only what Lab indexes for use in the List Mutators"
