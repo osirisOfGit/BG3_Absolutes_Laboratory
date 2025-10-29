@@ -146,7 +146,7 @@ function ExistingEncounters:renderEncounters(parent, currentGameLevel, encounter
 					local teleportButton = Styler:ImageButton(entityRow:AddImageButton("Teleport_Group", "Spell_Conjuration_DimensionDoor", { 32, 32 }))
 					teleportButton:Tooltip():AddText("\t Teleport to this combat group")
 					teleportButton.OnClick = function()
-						Channels.TeleportToEntity:SendToServer(next(entityRecords))
+						Channels.TeleportToEntity:SendToServer(entityId)
 					end
 				end
 
