@@ -152,6 +152,7 @@ function EncounterDesigner:buildDesigner(encounter, encounterMeta)
 		} --[[@as VisualizationRequest]])
 
 		self.designerModeHeader.Open = false
+		self.existingEncountersWindow.Open = false
 		Channels.ManageDesignerMode:SendToServer({
 			playersCanDialogue = true,
 			playersCanFight = true
