@@ -70,7 +70,9 @@ function MonsterLab:buildProfileView()
 	---@type fun()
 	local renderProfile
 
-	Styler:MiddleAlignedColumnLayout(self.encounterFoldersSidebar, function(ele)
+	local profileTable = Styler:MiddleAlignedColumnLayout(self.encounterFoldersSidebar, function(ele)
+		Styler:CheapTextAlign("Profiles", ele, "Big").SamePosition = true
+
 		local sIndex = 1
 		local opt = { "Disabled" }
 
@@ -82,8 +84,6 @@ function MonsterLab:buildProfileView()
 				sIndex = #opt
 			end
 		end
-
-		Styler:CheapTextAlign("Profiles", ele, "Big")
 
 		local viewProfileButton = Styler:ImageButton(ele:AddImageButton("seeProfile", "ico_concentration", Styler:ScaleFactor({ 32, 32 })))
 
@@ -350,6 +350,7 @@ function MonsterLab:buildProfileView()
 			end
 		end
 	end)
+	MazzleDocs:addDocButton(profileTable.Children[1].Children[1])
 	self.encounterFoldersSidebar:AddNewLine()
 
 	renderProfile = function()
@@ -573,7 +574,7 @@ local waitedOnce = false
 function MonsterLab:buildFolderView()
 	if not waitedOnce and not self.activeProfile() then
 		waitedOnce = true
-		Ext.Timer.WaitFor(100, function()
+		Ext.Timer.WaitFor(200, function()
 			self:buildFolderView()
 		end)
 	end
@@ -613,7 +614,8 @@ function MonsterLab:buildFolderView()
 					local encounter = TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.monsterLab.encounter)
 					encounter.name = formResults.Name
 					encounter.description = formResults.Description
-
+					encounter.combatGroupId = FormBuilder:generateGUID()
+					encounter.faction = "64321d50-d516-b1b2-cfac-2eb773de1ff6"
 					folder.encounters[FormBuilder:generateGUID()] = encounter
 					self:buildFolderView()
 				end, {
@@ -1423,8 +1425,75 @@ function MonsterLab:generateDocs()
 			content = {
 				{
 					type = "Heading",
-					text = "Folders + Encounters"
+					text = "Encounters"
+				},
+				{
+					type = "CallOut",
+					prefix = "Tips",
+					text = "Always right click on a discrete component, like a folder, encounter, or entity, to manage them",
+					prefix_color = "Green"
+				} --[[@as MazzleDocsCallOut]],
+				{
+					type = "Content",
+					text = [[
+Encounters are exactly what you'd expect - groups of entities that are linked together to form one combat group, or encounter.
+
+You can have as many entities in an encounter as you'd like - just keep basic engine limitations in mind, and of course, what's actually fun.
+
+You create encounters under a dedicated folder in the Monster Lab tab in MCM - folders are just superficial organizational tools, same as with Mutations.
+
+Within an encounter, you create an entity by giving it a dedicated Template, Name, and Title; each entity is given an unique ID by Lab, so you can give the same properties to as many entities as you'd like (i.e. 36 cranium rats :D).
+
+You can also set some properties and assign Mutators to them according to different rulesets, but that's covered in the "Rulesets" section.
+
+As of this writing, only statically-placed encounters are supported, the process of which is documented in the "Encounter Designer" section - in the future, you'll be able to create encounters that:
+- Are trigger based (with custom triggers)
+- Ambush the player's party anywhere in a map based on specified rules
+and maybe more, depending on what I think of/what feedback I get.
+]]
 				}
+			}
+		},
+		{
+			Topic = "Monster Lab",
+			SubTopic = "Encounter Management",
+			content = {
+				{
+					type = "Heading",
+					text = "Encounter Designer"
+				},
+				{
+					type = "CallOut",
+					prefix = "Tips",
+					prefix_color = "Green",
+					text = "When using a in-world picker, middle-click to save the value, left/right-click to cancel and use the existing value"
+				} --[[@as MazzleDocsCallOut]],
+				{
+					type = "SubHeading",
+					text = "Encounter-Level Settings"
+				},
+				{
+					type = "Section",
+					text = "Game Level and Base Coordinates"
+				},
+				{
+					type = "Content",
+					text = [[
+]]
+				},
+				{
+					type = "Section",
+					text = "Combat Group ID and Faction"
+				},
+				{
+					type = "Content",
+					text = [[
+]]
+				},
+				{
+					type = "SubHeading",
+					text = "Entity-Level Settings"
+				},
 			}
 		},
 		{

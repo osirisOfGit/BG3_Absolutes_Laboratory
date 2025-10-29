@@ -307,8 +307,10 @@ function EncounterDesigner:buildDesigner(encounter, encounterMeta)
 			extraSettingsGroup.Visible = false
 			openExtraSettingsButton.OnClick = function()
 				extraSettingsGroup.Visible = not extraSettingsGroup.Visible
-				self:manageExtraSettings(extraSettingsGroup, encounter)
+				self:manageExtraSettings(extraSettingsGroup, encounter, encounterMeta)
 			end
+
+			MazzleDocs:addDocButton(ele, { 48, 48 }).SameLine = true
 		end)
 
 		teleportToCoordsButton.Visible = false
@@ -754,6 +756,13 @@ function EncounterDesigner:manageExtraSettings(parent, encounter, encounterMeta)
 		end
 	end
 
+	combatGroupId.OnDeactivate = function()
+		if combatGroupId.Text == "" or #combatGroupId.Text ~= 36 then
+			combatGroupId.Text = FormBuilder:generateGUID()
+			combatGroupId:OnChange()
+		end
+	end
+
 	parent:AddText("Faction: ")
 	local factionDisplayName
 	factionDisplayName = Styler:HyperlinkText(parent, "", function(parent)
@@ -796,6 +805,13 @@ function EncounterDesigner:manageExtraSettings(parent, encounter, encounterMeta)
 			} --[[@as ManageEncounterRequest]])
 		else
 			Styler:Color(factionInput, "ErrorText")
+		end
+	end
+
+	factionInput.OnDeactivate = function()
+		if #factionInput.Text ~= 36 then
+			factionInput.Text = "64321d50-d516-b1b2-cfac-2eb773de1ff6"
+			factionInput:OnChange()
 		end
 	end
 

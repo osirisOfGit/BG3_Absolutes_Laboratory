@@ -6,9 +6,10 @@
 MazzleDocs = Mods["Mazzle_Docs"]
 
 ---@param parent ExtuiTreeParent
+---@param buttonSize number[]?
 ---@return ExtuiImageButton
-function MazzleDocs:addDocButton(parent)
-	local button = Styler:ImageButton(parent:AddImageButton("Docs", "Item_BOOK_GEN_Books_Row_Multiple_D", Styler:ScaleFactor({ 32, 32 })))
+function MazzleDocs:addDocButton(parent, buttonSize)
+	local button = Styler:ImageButton(parent:AddImageButton("Docs", "Item_BOOK_GEN_Books_Row_Multiple_D", buttonSize or { 32, 32 }))
 	button.UserData = "EnableForMods"
 	button.OnClick = function()
 		local document = {}
