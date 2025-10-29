@@ -1610,7 +1610,7 @@ Create your profile using the Gear icon next to the dropdown - once your profile
 				{
 					type = "Content",
 					text = [[
-Choosing to export a Profile (not Export For Mod) will create a JSON file under `%localappdata%\Larian Studios\Baldur's Gate 3\Script Extender\Absolutes_Laboratory\ExportedProfiles\`, named using the profile name(s), which includes all mutations, mutators, selectors, and lists used in that profile.
+Choosing to export a Profile (not Export For Mod) will create a JSON file under `%localappdata%\Larian Studios\Baldur's Gate 3\Script Extender\Absolutes_Laboratory\ExportedProfiles\Mutations`, named using the profile name(s), which includes all mutations, mutators, selectors, and lists used in that profile.
 
 This file can be reimported immediately by you if you want to check what was exported - Lab will prevent duplication of Mutations and Profile names where necessary by assigning new UUIDs to things that have them, and appending `- Imported` or the first 3 characters of the UUID to the Name of the artifact.
 
@@ -1750,6 +1750,13 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function MutationProfileManager:generateChangelog()
 	return {
+		["1.8.0"] = {
+			type = "Bullet",
+			text = {
+				"Exports now save to the Mutations folder, under the same ExportedProfiles folder as before",
+				"Reworks the Profile Executor a bit to be more robust, have more logs, and account for Monster Lab profile (will always execute after)"
+			}
+		},
 		["1.7.2"] = {
 			type = "Bullet",
 			text = {

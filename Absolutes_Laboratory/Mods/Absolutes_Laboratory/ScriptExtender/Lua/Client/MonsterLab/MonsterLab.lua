@@ -1420,7 +1420,7 @@ end
 function MonsterLab:generateDocs()
 	return {
 		{
-			Topic = "Monster Lab",
+			Topic = "Monster Lab (ML)",
 			content = {
 				{
 					type = "Heading",
@@ -1429,7 +1429,7 @@ function MonsterLab:generateDocs()
 				{
 					type = "CallOut",
 					prefix = "Tips",
-					text = "Always right click on a discrete component, like a folder, encounter, or entity, to manage them",
+					text = "Always right click on a discrete component, like a folder, encounter, ruleset, or entity, to manage them",
 					prefix_color = "Green"
 				} --[[@as MazzleDocsCallOut]],
 				{
@@ -1453,7 +1453,7 @@ and maybe more, depending on what I think of/what feedback I get.]]
 			}
 		},
 		{
-			Topic = "Monster Lab",
+			Topic = "Monster Lab (ML)",
 			content = {
 				{
 					type = "Heading",
@@ -1476,7 +1476,8 @@ and maybe more, depending on what I think of/what feedback I get.]]
 						"spawn all entities that haven't already been spawned by an active Monster Lab profile on launch and despawn on close - if an entity was already spawned by a profile, their properties will be updated the same way as if it had been spawned by the designer. It will not resurrect dead entities.",
 						"update the properties of the spawned entities whenever a change is made",
 						"block entities ability to enter combat until closed, allowing you to set conflicting factions without watching them die",
-						"default to blocking the player's (and party's) ability to enter combat and dialogue, controlled by the toggles in the top-left. Note that blocking dialogue doesn't prevent you from triggering Triggers placed in the game world, which will often start cutscenes or force dialogue. Teleporting directly to an entity will usually bypass these, depending on the trigger.",
+						"default to blocking the player's (and party's) ability to enter combat and dialogue, controlled by the toggles in the top-left. Note that blocking dialogue doesn't prevent you from triggering Triggers placed in the game world, which will often start cutscenes or force dialogue. Teleporting directly to an entity will usually bypass these, deending on the trigger.",
+						"not execute ruleset behavior during the designer phase (but it also won't clear any mutators applied by an active ML + Mutation profile)"
 					}
 				} --[[@as MazzleDoctsBullet]],
 				{
@@ -1561,20 +1562,72 @@ I genuinely don't know anything about how, when, why, and what values work - I j
 			}
 		},
 		{
-			Topic = "Monster Lab",
+			Topic = "Monster Lab (ML)",
 			content = {
 				{
 					type = "Heading",
 					text = "Rulesets"
+				},
+				{
+					type = "Section",
+					text = "Foreword"
+				},
+				{
+					type = "Content",
+					text = [[
+Rulesets are an advanced bit of customization for each entity within an encounter, for those wanting their encounter difficulties to match the player's settings - you can create rulesets for any combination of BG3's difficulty settings, like enemy power and free first-strikes, and that ruleset will only activate when ALL of its specified criteria are met.
+
+If two rulesets have the same criteria, one is randomly chosen - if two rulesets have common criteria, the one with more matched criteria will be chosen.
+
+There is always an immutable Base criteria present, allowing all mods creating encounter to have a guaranteed fallback. This ruleset has no criteria, and will always be chosen if no other ruleet qualifies for the campaign the profile is active within.
+
+If a difficulty setting is changed by the player, they need only save and reload, and Lab will adjust the spawned encounter to meet the new ruleset, if applicable.]]
+				},
+				{
+					type = "Section",
+					text = "What's Controlled By A Ruleset"
+				},
+				{
+					type = "Content",
+					text = [[
+There are two main properties that are set per Ruleset - Whether the entity will spawn, and what (if any) Mutators will apply to them.
+
+Configuring whether or not an entity will spawn is as easy as clicking the toggle - if disabled, it'll clear and hide the mutators section for that entity, and the entity will either not spawn or be deleted next time the ML profile is executed.
+
+The mutators work exactly as in the Mutations tab - the ruleset is treated as a Mutation, selecting the relevant entity and only that entity for the configured mutators.
+
+If there is an active Mutation profile and the entity is selected by mutations within that profile, the mutators specified in ML will be processed last - if you enable the Composable setting, this only means that the Mutation profile can't overwrite your mutator with a non-composable Mutation, but if you disable Composability, that means your mutators will automatically override the same types of mutators from the selected Mutations.
+Regardless of whether you enable or disable Composability, any mutators specified in the applicable Mutation profile that aren't configured in your Entity's Ruleset (i.e. you have a Health mutator in your mutation profile but not your entity's ruleset), that mutator will always apply - you can't enforce that only your mutators should apply for the entity.
+
+Keep in mind that only one ruleset is chosen for the whole encounter - so if you have one entity configured for the chosen custom ruleset, but another is only configured for the Base ruleset, that entity just won't have anything beyond the defaults applied to it.
+
+You can copy ruleset properties between entities by right-clicking on the entity link in the main MCM window.
+
+These rulesets are exported along with your profile, and made available to users if you packaged the export into a mod, but they won't be able to change/delete them, ensuring your customizations always apply in the intended scenarios.]]
 				}
 			}
 		},
 		{
-			Topic = "Monster Lab",
+			Topic = "Monster Lab (ML)",
 			content = {
 				{
 					type = "Heading",
 					text = "Profiles"
+				},
+				{
+					type = "Content",
+					text = [[
+Profiles are a simple set of Encounters that should be active in each Game Level - you can view/edit your active profile by clicking on the Eye icon to the left of the profile dropdown, or by selecting a different profile in that dropdown.
+
+You can edit Encounters directly within the profile view by simply clicking on the encounter's name - click on it again to hide that section.
+
+Profiles can be set as the default the same way Mutation Profiles can - just click the gear icon to the right of the dropdown, choose your Profile, and mark as default. Setting the dropdown to "Disabled" and saving will prevent the chosen default from activating within that campaign.
+
+Monster Lab Profiles are always executed before Mutation profiles to ensure that the spawned entities are mutated by an active Mutation Profile, and are triggered after the `LevelGameplayReady` Osi event fires.
+
+Exporting/Importing a profile works exactly the same as Mutations, so go read that section under "Mutations/Profiles/Exporting Profiles and Everything Associated" - the only difference to note is that ML exports for mods using a different name: AbsolutesLaboratory_MonsterLab_ProfilesAndMutations.json under the MonsterLab directory.
+
+The reasoning for this is that while Mutations will affect MonsterLab entities, the two are conceptually and technically independent functions of Lab that can be mixed and matched at will, so there's actually nothing tying them together - this gives users the freedom to import and export any set of profiles independently of each other, crafting unique but cohesive experiences at will.]]
 				}
 			}
 		}
