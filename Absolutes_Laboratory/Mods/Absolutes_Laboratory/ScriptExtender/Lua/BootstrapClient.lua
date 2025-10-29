@@ -46,14 +46,14 @@ Absolutes_Lab_Doc_Config = {
 	},
 	theme_override = {
 		-- Window / Frame
-		background             = { 0.07, 0.07, 0.07, 1.0 },    -- WindowBg
-		content_area_bg        = { 0.07, 0.07, 0.07, 1.0 },    -- WindowBg
-		title_bg               = { 0.07, 0.07, 0.07, 1.00 },    -- TitleBg
-		title_bg_active        = { 0.32, 0.24, 0.16, 0.78 },    -- TitleBgActive (BoxActiveColor)
-		title_bg_collapsed     = { 0.05, 0.05, 0.05, 0.75 },    -- TitleBgCollapsed
-		text                   = { 0.86, 0.79, 0.68, 0.78 },    -- Text
-		border                 = { 0.24, 0.15, 0.08, 1.00 },    -- Border
-		border_shadow          = { 0.07, 0.07, 0.07, 0.78 },    -- BorderShadow
+		background             = { 0.07, 0.07, 0.07, 1.0 }, -- WindowBg
+		content_area_bg        = { 0.07, 0.07, 0.07, 1.0 }, -- WindowBg
+		title_bg               = { 0.07, 0.07, 0.07, 1.00 }, -- TitleBg
+		title_bg_active        = { 0.32, 0.24, 0.16, 0.78 }, -- TitleBgActive (BoxActiveColor)
+		title_bg_collapsed     = { 0.05, 0.05, 0.05, 0.75 }, -- TitleBgCollapsed
+		text                   = { 0.86, 0.79, 0.68, 0.78 }, -- Text
+		border                 = { 0.24, 0.15, 0.08, 1.00 }, -- Border
+		border_shadow          = { 0.07, 0.07, 0.07, 0.78 }, -- BorderShadow
 
 		-- Navigation
 		nav_button_hovered     = { 0.80, 0.60, 0.30, 0.80 },
@@ -68,9 +68,9 @@ Absolutes_Lab_Doc_Config = {
 
 		-- Content text hierarchy
 		content_text           = { 0.86, 0.79, 0.68, 0.95 },
-		heading_text           = { 0.95, 0.88, 0.75, 1.00 },
-		subheading_text        = { 0.90, 0.83, 0.72, 0.95 },
-		section_text           = { 0.90, 0.83, 0.72, 0.95 },
+		heading_text           = { 0.824, 0.863, 0.824, 1 },
+		subheading_text        = { 0.745, 0.804, 0.725, 1 },
+		section_text           = { 0.686, 0.745, 0.667, 1 },
 		note_text              = { 0.80, 0.72, 0.58, 0.95 },
 		callout_text           = { 0.95, 0.88, 0.75, 1.00 },
 

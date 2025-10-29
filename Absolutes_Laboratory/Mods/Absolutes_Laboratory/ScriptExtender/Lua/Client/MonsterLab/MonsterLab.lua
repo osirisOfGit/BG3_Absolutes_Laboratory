@@ -1438,7 +1438,7 @@ function MonsterLab:generateDocs()
 					text = [[
 Encounters are exactly what you'd expect - groups of entities that are linked together to form one combat group, or encounter.
 
-You can have as many entities in an encounter as you'd like - just keep basic engine limitations in mind, and of course, what's actually fun.
+You can have as many entities in an encounter as you'd like - just keep basic engine limitations in mind.
 
 You create encounters under a dedicated folder in the Monster Lab tab in MCM - folders are just superficial organizational tools, same as with Mutations.
 
@@ -1449,8 +1449,7 @@ You can also set some properties and assign Mutators to them according to differ
 As of this writing, only statically-placed encounters are supported, the process of which is documented in the "Encounter Designer" section - in the future, you'll be able to create encounters that:
 - Are trigger based (with custom triggers)
 - Ambush the player's party anywhere in a map based on specified rules
-and maybe more, depending on what I think of/what feedback I get.
-]]
+and maybe more, depending on what I think of/what feedback I get.]]
 				}
 			}
 		},
@@ -1460,7 +1459,7 @@ and maybe more, depending on what I think of/what feedback I get.
 			content = {
 				{
 					type = "Heading",
-					text = "Encounter Designer"
+					text = "Static Encounter Designer"
 				},
 				{
 					type = "CallOut",
@@ -1468,6 +1467,19 @@ and maybe more, depending on what I think of/what feedback I get.
 					prefix_color = "Green",
 					text = "When using a in-world picker, middle-click to save the value, left/right-click to cancel and use the existing value"
 				} --[[@as MazzleDocsCallOut]],
+				{
+					type = "Section",
+					text = "The Designer, in context of an encounter, will:"
+				},
+				{
+					type = "Bullet",
+					text = {
+						"close MCM when opened and reopen it upon being closed, closing all windows related to the Designer at the same time",
+						"spawn all entities that haven't already been spawned by an active Monster Lab profile on launch and despawn on close - if an entity was already spawned by a profile, their properties will be updated the same way as if it had been spawned by the designer. It will not resurrect dead entities.",
+						"block entities ability to enter combat until closed, allowing you to set conflicting factions without watching them die",
+						"default to blocking the player's (and party's) ability to enter combat and dialogue, controlled by the toggles in the top-left. Note that blocking dialogue doesn't prevent you from triggering Triggers placed in the game world, which will often start cutscenes or force dialogue. Teleporting directly to an entity will usually bypass these, depending on the trigger.",
+					}
+				} --[[@as MazzleDoctsBullet]],
 				{
 					type = "SubHeading",
 					text = "Encounter-Level Settings"
@@ -1479,16 +1491,36 @@ and maybe more, depending on what I think of/what feedback I get.
 				{
 					type = "Content",
 					text = [[
+These two settings are core to your encounter: What Game Level is it active in, and where in that map is it placed?
+
+An encounter can only be statically placed in one spot - if you want the same encounter in multiple places, you'll have to clone it and place them seperately (do this after you've configured the Ruleset properties, covered in the "Rulesets" section).
+
+If you select a level you aren't currently in, most of the buttons will be hidden, and a new Teleport button will appear next to the Level Dropdown to teleport you to that level - once you're in the correct level, you can use the coordinate picker to choose the base coordinate.
+
+The base coordinates serve as the default coordinates for your entities, spawning them in a tightly-clustered group, and as the destination for the Teleport button that appears below the dropdown if you're in the correct level.
+
+If you want to attach your encounter to an existing one, click on the Twin Daggers icon in the same row as the Teleport Button - if you've run the Entity Recorder (button in the Inspector) as of Lab Version 1.8.0 (Monster Lab release), you'll see every recorded entity grouped by their shared CombatGroupId if applicable, along with a teleport button that will take you to that encounter (you can also copy entities from any level in the game via this combat group window)
+
+Once you've chosen your level and base coordinates, you can move on to the next section.
 ]]
 				},
 				{
 					type = "Section",
-					text = "Combat Group ID and Faction"
+					text = "Extra Settings: Combat Group ID and Faction"
 				},
 				{
 					type = "Content",
 					text = [[
-]]
+These two settings are available under the Comment looking button in the row under the Dropdown.
+
+CombatGroupId is a random identifier set in the entity's CombatParticipant.CombatGroupID component, ensuring that when one entity enters combat, every entity with that same ID enters combat at the same time, regardless of how far away they are.
+Lab will enforce the presence of a UUID for an encounter and set it for all entities under that encounter, as individual sight/hearing-based engagement is incredibly unreliable.
+
+Factions are set in the Faction component of each entity, and control who they're friendly, neutral, and hostile towards. There are 971 factions in the base game, which various hierarchal deps, so there isn't search/selector functionality for this - by defualt, Lab will use (and force, if the value is cleared) the "Evil NPC" faction, making your entities always hostile to the player.
+
+You can search for factions via https://bg3.norbyte.dev/search?q=type%3Afactions or use Lab's Inspector to see what faction a given entity belongs too, but if you're looking to integrate your encounter with an existing one, there's an easier way - click on the True Strike icon above the input boxes and you can copy both CombatGroupId and Faction from an entity in the game world just by middle clicking them.
+
+You may see entities within the same encounter have different Factions - these are usually hierarchal, which Larian went really, really in-depth with for some reason, but they should all bubble up to the same parent faction, so don't be concerned about that]]
 				},
 				{
 					type = "SubHeading",

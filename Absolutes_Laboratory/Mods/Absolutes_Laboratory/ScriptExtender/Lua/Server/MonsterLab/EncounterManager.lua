@@ -184,9 +184,14 @@ function MonsterLabEncounterManager:ManageEncounterSpanws(request)
 
 		if request.delete then
 			for index, entity in pairs(encounterEntities.entities) do
-				if entity.realEntityId and (request.profileId or not Ext.Entity.Get(entity.realEntityId).Vars.AbsolutesLaboratory_MonsterLab_Entity.profileId) then
-					encounterEntities.entities[index] = nil
-					Osi.RequestDeleteTemporary(entity.realEntityId)
+				if entity.realEntityId then
+					if (request.profileId or not Ext.Entity.Get(entity.realEntityId).Vars.AbsolutesLaboratory_MonsterLab_Entity.profileId) then
+						encounterEntities.entities[index] = nil
+						Osi.RequestDeleteTemporary(entity.realEntityId)
+					else
+						Osi.SetCanFight(entity.realEntityId, 1)
+						Osi.SetCanJoinCombat(entity.realEntityId, 1)
+					end
 				end
 			end
 			Logger:BasicDebug("Deleted all members of encounter %s", request.encounterId)
@@ -280,6 +285,11 @@ function MonsterLabEncounterManager:ManageEncounterSpanws(request)
 
 							Osi.SetCombatGroupID(spawnedEntity.realEntityId, request.encounter.combatGroupId)
 						end
+
+						if not request.profileId then
+							Osi.SetCanFight(spawnedEntity.realEntityId, 0)
+							Osi.SetCanJoinCombat(spawnedEntity.realEntityId, 0)
+						end
 					elseif not TableUtils:CompareLists(mlEntity.coordinates, { 0, 0, 0 }) then
 						Logger:BasicDebug("Does not exist yet - setting properties")
 
@@ -322,6 +332,11 @@ function MonsterLabEncounterManager:ManageEncounterSpanws(request)
 									encounterId = request.encounterId,
 									mlEntityId = mlEntityId,
 								} --[[@as MonsterLab_EntityVariable]]
+
+								if not request.profileId then
+									Osi.SetCanFight(entity.Uuid.EntityUuid, 0)
+									Osi.SetCanJoinCombat(entity.Uuid.EntityUuid, 0)
+								end
 
 								Osi.SetCombatGroupID(entity.Uuid.EntityUuid, request.encounter.combatGroupId)
 								Osi.SetFaction(entity.Uuid.EntityUuid, request.encounter.faction)
