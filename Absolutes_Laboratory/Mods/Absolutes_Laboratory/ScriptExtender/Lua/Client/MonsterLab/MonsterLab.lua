@@ -1200,7 +1200,10 @@ right-click to modify or delete that ruleset. The Base ruleset can't be modified
 			end
 			tooltip = tooltip .. ("\t From Mod %s - Can't Be Modified"):format(Ext.Mod.GetMod(ruleset.modId).Info.Name)
 		end
-		rulesetButton:Tooltip():AddText(tooltip)
+
+		if tooltip ~= "" then
+			rulesetButton:Tooltip():AddText(tooltip)
+		end
 
 		if rulesetId == self.activeRuleset then
 			Styler:Color(rulesetButton, "ActiveButton")
@@ -1315,10 +1318,13 @@ right-click to modify or delete that ruleset. The Base ruleset can't be modified
 
 				if not ruleset.modId then
 					for modifierName, modifierId in TableUtils:OrderedPairs(Lab_RulesetModifiers, function(_, value)
-						---@type ResourceRulesetModifier
-						local modifierResource = Ext.StaticData.Get(value, "RulesetModifier")
-						return tostring(modifierResource.RulesetModifierType) .. (modifierResource.DisplayName:Get() or modifierResource.Name)
-					end) do
+							---@type ResourceRulesetModifier
+							local modifierResource = Ext.StaticData.Get(value, "RulesetModifier")
+							return tostring(modifierResource.RulesetModifierType) .. (modifierResource.DisplayName:Get() or modifierResource.Name)
+						end,
+						function(key, value)
+							return #value == 36
+						end) do
 						---@type ResourceRulesetModifier
 						local modifierResource = Ext.StaticData.Get(modifierId, "RulesetModifier")
 

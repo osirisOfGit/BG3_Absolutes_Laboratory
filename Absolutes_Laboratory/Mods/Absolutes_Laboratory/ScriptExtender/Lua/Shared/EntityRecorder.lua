@@ -277,6 +277,7 @@ else
 								and not TableUtils:IndexOf(recordedLevels, function(value)
 									return value[entity.Uuid.EntityUuid]
 								end)
+								and not entity.Vars.AbsolutesLaboratory_MonsterLab_Entity
 							then
 								local success, error = xpcall(function(...)
 									local recordedEntities = recordedEntities
