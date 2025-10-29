@@ -431,15 +431,16 @@ If you're not getting the results you want and know it's not a situation where y
 	for version, changelog in TableUtils:OrderedPairs(self:generateChangelog(), function(key, value)
 		-- To Sort Descending Order
 		local M, m, p = key:match("^(%d+)%.(%d+)%.(%d+)$")
-		M, m, p = tonumber(M), tonumber(m), tonumber(p)
-		return -1 * (M + m + p)
+		return -1 * tonumber(M .. m .. p)
 	end) do
 		if version == currentVer then
 			version = version .. " (Current)"
 		end
 		table.insert(existingSlides[#existingSlides].content, {
 			type = "SubHeading",
-			text = version
+			text = version,
+			spacing_after = 0,
+			spacing_before = 10
 		} --[[@as MazzleDocsContentItem]])
 
 		table.insert(existingSlides[#existingSlides].content, changelog)

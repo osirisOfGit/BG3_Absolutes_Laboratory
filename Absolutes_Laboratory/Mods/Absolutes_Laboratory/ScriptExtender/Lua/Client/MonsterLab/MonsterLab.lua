@@ -1419,17 +1419,27 @@ function MonsterLab:generateDocs()
 	return {
 		{
 			Topic = "Monster Lab",
-			SubTopic = "Encounter Management and Profiles",
+			SubTopic = "Encounter Management",
 			content = {
 				{
 					type = "Heading",
-					text = "Encounter Management"
+					text = "Folders + Encounters"
 				}
 			}
 		},
 		{
 			Topic = "Monster Lab",
-			SubTopic = "Encounter Management and Profiles",
+			SubTopic = "Encounter Management",
+			content = {
+				{
+					type = "Heading",
+					text = "Rulesets"
+				}
+			}
+		},
+		{
+			Topic = "Monster Lab",
+			SubTopic = "Encounter Management",
 			content = {
 				{
 					type = "Heading",

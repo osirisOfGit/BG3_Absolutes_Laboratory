@@ -45,8 +45,7 @@ function MazzleDocs:addDocButton(parent)
 			for version, changelog in TableUtils:OrderedPairs(changelogs, function(key)
 				-- To Sort Descending Order
 				local M, m, p = key:match("^(%d+)%.(%d+)%.(%d+)$")
-				M, m, p = tonumber(M), tonumber(m), tonumber(p)
-				return -1 * (M + m + p)
+				return -1 * tonumber(M .. m .. p)
 			end) do
 				if version == currentVer then
 					version = version .. " (Current)"
@@ -54,7 +53,8 @@ function MazzleDocs:addDocButton(parent)
 
 				table.insert(masterChangelogEntry.content, {
 					type = "Heading",
-					text = version
+					text = version,
+					spacing_after = 0
 				} --[[@as MazzleDocsContentItem]])
 
 				if componentName == "Mutators" then

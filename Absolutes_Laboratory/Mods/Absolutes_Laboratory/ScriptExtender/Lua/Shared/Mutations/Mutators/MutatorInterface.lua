@@ -313,8 +313,7 @@ As of this writing, end users don't have to really care about this, as it's acco
 			for version, changelogEntry in TableUtils:OrderedPairs(changelog, function(key, value)
 				-- To Sort Descending Order
 				local M, m, p = key:match("^(%d+)%.(%d+)%.(%d+)$")
-				M, m, p = tonumber(M), tonumber(m), tonumber(p)
-				return -1 * (M + m + p)
+				return -1 * tonumber(M .. m .. p)
 			end) do
 				if version == currentVer then
 					version = version .. " (Current)"

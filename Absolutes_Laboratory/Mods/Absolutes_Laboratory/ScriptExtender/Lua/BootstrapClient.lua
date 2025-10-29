@@ -47,7 +47,7 @@ Absolutes_Lab_Doc_Config = {
 	theme_override = {
 		-- Window / Frame
 		background             = { 0.07, 0.07, 0.07, 1.0 },    -- WindowBg
-		content_area_bg        = { 0.07, 0.07, 0.07, 0.90 },    -- WindowBg
+		content_area_bg        = { 0.07, 0.07, 0.07, 1.0 },    -- WindowBg
 		title_bg               = { 0.07, 0.07, 0.07, 1.00 },    -- TitleBg
 		title_bg_active        = { 0.32, 0.24, 0.16, 0.78 },    -- TitleBgActive (BoxActiveColor)
 		title_bg_collapsed     = { 0.05, 0.05, 0.05, 0.75 },    -- TitleBgCollapsed
