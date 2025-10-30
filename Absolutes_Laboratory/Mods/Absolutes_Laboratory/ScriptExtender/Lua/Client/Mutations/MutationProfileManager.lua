@@ -1755,7 +1755,7 @@ function MutationProfileManager:generateChangelog()
 			text = {
 				"Exports now save to the Mutations folder, under the same ExportedProfiles folder as before",
 				"Reworks the Profile Executor a bit to be more robust, have more logs, and account for Monster Lab profile (will always execute after)",
-				"Fixes the OnCombatEntered logic so load a save that's mid-combat doesn't double/triple mutate entities"
+				"Fixes the OnCombatEntered logic so loading a save that's mid-combat doesn't double/triple mutate entities"
 			}
 		},
 		["1.7.2"] = {
