@@ -1,6 +1,6 @@
 Ext.Require("Shared/Mutations/External/MutationModProxy.lua")
 
-local mutationsConfig = ConfigurationStructure.config.mutations
+local mutationsConfig = ConfigurationStructure.config
 
 if Ext.IsServer() then
 	Channels.UpdateConfiguration:SetHandler(function(payload, user)
@@ -13,21 +13,21 @@ end
 MutationConfigurationProxy = {
 	profiles = setmetatable({}, {
 		__index = function(t, k)
-			return MutationModProxy.ModProxy.profiles[k] or mutationsConfig.profiles[k]
+			return MutationModProxy.ModProxy.profiles[k] or mutationsConfig.mutations.profiles[k]
 		end
 	}),
 	folders = setmetatable({}, {
 		__index = function(t, k)
-			return MutationModProxy.ModProxy.folders[k] or mutationsConfig.folders[k]
+			return MutationModProxy.ModProxy.folders[k] or mutationsConfig.mutations.folders[k]
 		end
 	}),
 	prepPhaseMarkers = setmetatable({}, {
 		__index = function(t, k)
-			return MutationModProxy.ModProxy.prepPhaseMarkers[k] or mutationsConfig.prepPhaseMarkers[k]
+			return MutationModProxy.ModProxy.prepPhaseMarkers[k] or mutationsConfig.mutations.prepPhaseMarkers[k]
 		end,
 		__pairs = function(t)
 			---@type {[Guid]: PrepMarkerCategory}
-			local markerCategories = TableUtils:DeeplyCopyTable(mutationsConfig.prepPhaseMarkers._real or mutationsConfig.prepPhaseMarkers)
+			local markerCategories = TableUtils:DeeplyCopyTable(mutationsConfig.mutations.prepPhaseMarkers._real or mutationsConfig.mutations.prepPhaseMarkers)
 
 			for _, modCache in pairs(MutationModProxy.ModProxy.prepPhaseMarkers) do
 				---@cast modCache +LocalModCache
@@ -47,11 +47,11 @@ MutationConfigurationProxy = {
 	lists = {
 		spellLists = setmetatable({}, {
 			__index = function(t, k)
-				return MutationModProxy.ModProxy.lists.spellLists[k] or mutationsConfig.lists.spellLists[k]
+				return MutationModProxy.ModProxy.lists.spellLists[k] or mutationsConfig.mutations.lists.spellLists[k]
 			end,
 			__pairs = function(t)
 				---@type {[Guid]: CustomList}
-				local spellLists = TableUtils:DeeplyCopyTable(mutationsConfig.lists.spellLists._real or mutationsConfig.lists.spellLists)
+				local spellLists = TableUtils:DeeplyCopyTable(mutationsConfig.mutations.lists.spellLists._real or mutationsConfig.mutations.lists.spellLists)
 
 				for _, modCache in pairs(MutationModProxy.ModProxy.lists.spellLists) do
 					---@cast modCache +LocalModCache
@@ -70,11 +70,11 @@ MutationConfigurationProxy = {
 		}),
 		passiveLists = setmetatable({}, {
 			__index = function(t, k)
-				return MutationModProxy.ModProxy.lists.passiveLists[k] or mutationsConfig.lists.passiveLists[k]
+				return MutationModProxy.ModProxy.lists.passiveLists[k] or mutationsConfig.mutations.lists.passiveLists[k]
 			end,
 			__pairs = function(t)
 				---@type {[Guid]: CustomList}
-				local passiveLists = TableUtils:DeeplyCopyTable(mutationsConfig.lists.passiveLists._real or mutationsConfig.lists.passiveLists)
+				local passiveLists = TableUtils:DeeplyCopyTable(mutationsConfig.mutations.lists.passiveLists._real or mutationsConfig.mutations.lists.passiveLists)
 
 				for _, modCache in pairs(MutationModProxy.ModProxy.lists.passiveLists) do
 					---@cast modCache +LocalModCache
@@ -93,11 +93,11 @@ MutationConfigurationProxy = {
 		}),
 		statusLists = setmetatable({}, {
 			__index = function(t, k)
-				return MutationModProxy.ModProxy.lists.statusLists[k] or mutationsConfig.lists.statusLists[k]
+				return MutationModProxy.ModProxy.lists.statusLists[k] or mutationsConfig.mutations.lists.statusLists[k]
 			end,
 			__pairs = function(t)
 				---@type {[Guid]: CustomList}
-				local statusLists = TableUtils:DeeplyCopyTable(mutationsConfig.lists.statusLists._real or mutationsConfig.lists.statusLists)
+				local statusLists = TableUtils:DeeplyCopyTable(mutationsConfig.mutations.lists.statusLists._real or mutationsConfig.mutations.lists.statusLists)
 
 				for _, modCache in pairs(MutationModProxy.ModProxy.lists.statusLists) do
 					---@cast modCache +LocalModCache

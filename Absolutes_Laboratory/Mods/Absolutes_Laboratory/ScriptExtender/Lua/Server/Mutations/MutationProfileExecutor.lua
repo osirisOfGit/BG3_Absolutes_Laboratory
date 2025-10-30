@@ -23,6 +23,8 @@ MutationProfileExecutor = {}
 local mutatedEntities = {}
 
 function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
+	local specifiedEntities = { ... }
+
 	local trackerFile = FileUtils:LoadTableFile(EntityRecorder.trackerFilename)
 	if trackerFile and next(trackerFile) then
 		Logger:BasicInfo("Recorder is currently running - skipping Mutations")
@@ -54,6 +56,7 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 			Logger:BasicDebug("The default profile is disabled, skipping")
 		end
 	end
+
 	---@type ProfileExecutionStatus
 	local profileExecutorStatus = {
 		stage = "Selecting",
@@ -61,7 +64,7 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 		totalNumberOfEntities = 0,
 		numberOfEntitiesBeingProcessed = 0,
 		numberOfEntitiesProcessed = 0,
-		profile = activeProfile.name,
+		profile = activeProfile and activeProfile.name or "N/A",
 		timeElapsed = 0,
 	}
 
@@ -144,6 +147,7 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 								broadcastStatus()
 
 								funct()
+								mutatedEntities[entity.Uuid.EntityUuid] = true
 								eligible[entityId] = nil
 								entitiesToProcess[entityId] = nil
 							else
@@ -158,8 +162,6 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 				end
 			end
 
-			local specifiedEntities = { ... }
-
 			---@type {[Guid] : {[Guid]: SelectorPredicate}}
 			local cachedSelectors = {}
 
@@ -173,8 +175,6 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 
 				if (Osi.IsDead(entity.Uuid.EntityUuid) == 0 or not entity.DeadByDefault) and not entity.PartyMember and entity.ServerCharacter.Level == currentLevel then
 					profileExecutorStatus.totalNumberOfEntities = profileExecutorStatus.totalNumberOfEntities + 1
-
-					mutatedEntities[entity.Uuid.EntityUuid] = true
 
 					---@type MutatorEntityVar
 					local entityVar = {
@@ -338,12 +338,27 @@ Ext.Osiris.RegisterListener("LevelGameplayReady", 2, "after", function(levelName
 	end)
 end)
 
+local entitiesEnteringCombat = {}
+local combatTimer
+
 Ext.Osiris.RegisterListener("EnteredCombat", 2, "before", function(entityId, combatGuid)
 	---@type EntityHandle
 	local entity = Ext.Entity.Get(entityId)
-	if not mutatedEntities[entity.Uuid.EntityUuid] and entity.ServerCharacter and not entity.PartyMember then
+	if next(mutatedEntities) and not mutatedEntities[entity.Uuid.EntityUuid] and entity.ServerCharacter and not entity.PartyMember then
 		Logger:BasicInfo("%s entered combat %s and hasn't been mutated - executing profile!", entityId, combatGuid)
-		MutationProfileExecutor:ExecuteProfile(false, entity)
+		table.insert(entitiesEnteringCombat, entityId)
+		if combatTimer then
+			Ext.Timer.Cancel(combatTimer)
+		end
+		combatTimer = Ext.Timer.WaitFor(300, function()
+			local entities = {}
+			for _, entityId in pairs(entitiesEnteringCombat) do
+				table.insert(entities, Ext.Entity.Get(entityId))
+			end
+			MutationProfileExecutor:ExecuteProfile(false, table.unpack(entities))
+			entitiesEnteringCombat = {}
+			combatTimer = nil
+		end)
 	end
 end)
 

@@ -421,14 +421,15 @@ function HealthMutator:applyMutator(entity, entityVar)
 		mutators = { mutators }
 	end
 
-	entityVar.originalValues[self.name] = entity.Health.MaxHp
+	entityVar.originalValues[self.name] = {
+		healthPercentage = 1 - (entity.Health.Hp / entity.Health.MaxHp)
+	}
+
+	local percentageToAdd = 0
 
 	for _, mutator in TableUtils:OrderedPairs(mutators, function(key, value)
 		return value.staticHealth and 1 or 2
 	end) do
-		local currentHealth = entity.Health.Hp
-		local currentHealthPercentage = 1 - (entity.Health.Hp / entity.Health.MaxHp)
-
 		if mutator.values then
 			---@type Character
 			local charStat = Ext.Stats.Get(entity.Data.StatsId)
@@ -441,94 +442,65 @@ function HealthMutator:applyMutator(entity, entityVar)
 
 			local gameLevelMod = entity.Level and calculateGameLevelModifier(mutator.modifiers["GameLevel"], entity.Level.LevelName) or 0
 			local characterMod = calculateCharacterLevelModifier(mutator.modifiers["CharacterLevel"], entity.AvailableLevel.Level)
-			local percentageToAdd = (mutator.values + (characterMod + gameLevelMod + xPRewardMod)) / 100
+			local baseHp = percentageToAdd > 0 and percentageToAdd or entity.Health.MaxHp
+			local dynamicPercentage = (mutator.values + (characterMod + gameLevelMod + xPRewardMod)) / 100
 
-			local currentMaxHealth = entity.Health.MaxHp
-			entity.Health.MaxHp = math.floor(entity.Health.MaxHp + (entity.Health.MaxHp * percentageToAdd))
-			entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * currentHealthPercentage)))
+			percentageToAdd = percentageToAdd + (baseHp + math.floor(baseHp * dynamicPercentage))
 
 			Logger:BasicDebug(
-				"Dynamically changed max from %s -> %s, current from %s -> %s, due to set percentage being %s%% (base: %s%%, character: %s%%, gameLevel: %s%%, xpReward: %s%%)",
-				currentMaxHealth,
-				entity.Health.MaxHp,
-				currentHealth,
-				entity.Health.Hp,
-				percentageToAdd * 100,
+				"Dynamic calculation will increase max health by %s%% to a value of %d (base: %s%%, character: %s%%, gameLevel: %s%%, xpReward: %s%%)",
+				(mutator.values + (characterMod + gameLevelMod + xPRewardMod)),
+				percentageToAdd,
 				mutator.values,
 				characterMod,
 				gameLevelMod,
 				xPRewardMod
 			)
 		else
-			entity.Health.MaxHp = mutator.staticHealth
-			entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor(entity.Health.MaxHp * currentHealthPercentage))
-			Logger:BasicDebug("Statically changed max from %s -> %s, current from %s -> %s",
-				entityVar.originalValues[self.name],
+			percentageToAdd = mutator.staticHealth
+			Logger:BasicDebug("Static Calculation will change max health from %d to %d",
 				entity.Health.MaxHp,
-				currentHealth,
-				entity.Health.Hp
-			)
+				mutator.staticHealth)
 		end
 	end
 
-	entity:Replicate("Health")
-	local maxHealth = entity.Health.MaxHp
+	local boostString = ("IncreaseMaxHP(%d)"):format(math.floor(percentageToAdd - entity.Health.MaxHp))
+	entityVar.originalValues[self.name].boost = boostString
 
-	mutators[1].subscription = Ext.Entity.OnChange("Health",
-		---@param entity EntityHandle
-		---@diagnostic disable-next-line: param-type-mismatch
-		function(entity)
-			local mutationVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME]
-			if mutationVar and entity:IsAlive() then
-				local firstMutator = (mutationVar.appliedMutators[self.name][1] or mutationVar.appliedMutators[self.name])
-
-				if entity.Health.MaxHp <= (maxHealth * .90) then
-					local currentHealthPercentage = firstMutator.currentHealthPercentage
-
-					Logger:BasicDebug(
-						"Entity %s (%s) had their maxHp set to %s by something other than Lab - resetting it to the Lab value of %s (maintaining the current health %% of %s%%)",
-						EntityRecorder:GetEntityName(entity),
-						entity.Uuid.EntityUuid,
-						entity.Health.MaxHp,
-						maxHealth,
-						currentHealthPercentage * 100)
-
-					entity.Health.MaxHp = maxHealth
-					if (entity.Health.Hp / entity.Health.MaxHp) ~= currentHealthPercentage then
-						entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * (1 - currentHealthPercentage))))
-					end
-					entity:Replicate("Health")
-				else
-					firstMutator.currentHealthPercentage = (entity.Health.Hp / entity.Health.MaxHp)
-				end
-			end
-		end, entity)
+	Osi.AddBoosts(entity.Uuid.EntityUuid, boostString, entity.Uuid.EntityUuid, entity.Uuid.EntityUuid)
+	Logger:BasicDebug("Applied boost %s", boostString)
 end
 
 function HealthMutator:undoMutator(entity, entityVar)
-	local healthPercentage = 1 - (entity.Health.Hp / entity.Health.MaxHp)
-
-	local originalMaxHp = entity.Health.MaxHp
-
-	local subHandle = (entityVar.appliedMutators[self.name][1] or entityVar.appliedMutators[self.name]).subscription
-	if subHandle then
-		Logger:BasicTrace("Cancelled Subscription with handle %s", subHandle)
-		Ext.Entity.Unsubscribe(subHandle)
+	if type(entityVar.originalValues[self.name]) == "table" then
+		Logger:BasicDebug("Removing Health Boost %s", entityVar.originalValues[self.name].boost)
+		Osi.RemoveBoosts(entity.Uuid.EntityUuid, entityVar.originalValues[self.name].boost, 0, entity.Uuid.EntityUuid, entity.Uuid.EntityUuid)
+	else
+		Ext.System.ServerStats.CalculationRequests[entity] = Ext.Enums.StatsDirtyFlags.MaxHP
 	end
+end
 
-	entity.Health.MaxHp = entityVar.originalValues[self.name]
-	entity.Health.Hp = math.min(entity.Health.MaxHp, entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * healthPercentage))))
+function HealthMutator:FinalizeMutator(entity)
+	Ext.Timer.WaitFor(200, function()
+		---@type MutatorEntityVar
+		local entityVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME]
 
-	entity:Replicate("Health")
+		if entityVar then
+			local healthPercentage = entityVar.originalValues[self.name].healthPercentage
 
-	Logger:BasicDebug("Reverting max health of %s to %s (current health: %s)",
-		entity.ServerCharacter.Template.Name .. "_" .. entity.Uuid.EntityUuid,
-		originalMaxHp,
-		entity.Health.MaxHp,
-		entity.Health.Hp
-	)
+			if healthPercentage ~= (1 - (entity.Health.Hp / entity.Health.MaxHp)) then
+				Logger:BasicDebug("Manually updating %s (%s) current health of %d to %d, matching the original percentage of %d%%",
+					EntityRecorder:GetEntityName(entity),
+					entity.Uuid.EntityUuid,
+					entity.Health.Hp,
+					entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * healthPercentage))),
+					math.min(100, (1 + healthPercentage) * 100))
 
-	-- Ext.System.ServerStats.CalculationRequests[entity] = Ext.Enums.StatsDirtyFlags.MaxHP
+				entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * healthPercentage)))
+				entity:Replicate("Health")
+			end
+		end
+	end)
 end
 
 ---@return MazzleDocsDocumentation
@@ -596,9 +568,10 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				{
 					type = "Content",
 					text = [[
-This Mutator directly changes the entity.Health MaxHp and HP components so the current HP will change relative to the MaxHp, preventing any full-heal shenanigans - meaning, if the entity's health is 7/10, and the max health is set to 20, the current health will be updated to 14 (70% of 20).
+This Mutator directly applies a `IncreaseMaxHP` boost via `Osi.AddBoosts(entity.Uuid.EntityUuid, "IncreaseMaxHP(flatValue)", entity.Uuid.EntityUuid, entity.Uuid.EntityUuid)` call - this originally just modified the Health component on the entity, but the engine liked to reset the customizations in that component whenever the maxHp needed to be recalculated, so this ensures the desired value both persists through boost updates and includes them in the final result.
+A final calculation is done ~200ms after the boost is applied to update the health percentage to the correct value, based on what their pre-mutation health percentage was, preventing any full-heal shenanigans - meaning, if the entity's health is 7/10, and the max health is set to 20, the current health will be updated to 14 (70% of 20).
 
-If a Static and a Dyanmic Health Mutator in different Mutations make it to the final pool (due to the one lower in the profile order being set to Additive), Lab will apply the Static version first, then the Dynamic version on top of that.]]
+If a Static and a Dyanmic Health Mutator in different Mutations make it to the final pool (due to the one lower in the profile order being set to Composable), Lab will apply the Static version first, then the Dynamic version on top of that.]]
 				},
 				{
 					type = "Separator"
@@ -630,7 +603,7 @@ function HealthMutator:generateChangelog()
 		["1.8.0"] = {
 			type = "Bullet",
 			text = {
-				"Remove a system call in the undo functionality that may have occasionally been giving all entities a heart attack"
+				"Rework the server-side applicaiton, using an IncreaseMaxHP boost instead of direct component changes"
 			}
 		},
 		["1.7.3"] = {

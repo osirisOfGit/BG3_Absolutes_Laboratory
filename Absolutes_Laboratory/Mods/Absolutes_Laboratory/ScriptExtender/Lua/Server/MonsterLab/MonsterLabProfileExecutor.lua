@@ -149,7 +149,7 @@ function MonsterLabProfileExecutor:GetRulesetForEntityVar(entityVar)
 		for rulesetGuid in pairs(rulesetModifiers) do
 			local rulesetDef = MonsterLabConfigurationProxy.rulesets[rulesetGuid]
 			if rulesetDef then
-				Logger:BasicDebug("Checking ruleset %s for %s", rulesetDef.name, entityVar.mlEntityId)
+				Logger:BasicTrace("Checking ruleset %s for %s", rulesetDef.name, entityVar.mlEntityId)
 				local ruleCount = 0
 				for modifierId, modiferValue in pairs(rulesetDef.activeModifiers) do
 					ruleCount = ruleCount + 1
@@ -159,7 +159,7 @@ function MonsterLabProfileExecutor:GetRulesetForEntityVar(entityVar)
 						end
 
 						if not cachedRulesetStates[modifierId] then
-							Logger:BasicDebug("Ruleset modifier %s is not set to %s", Lab_RulesetModifiers[modifierId], modiferValue)
+							Logger:BasicTrace("Ruleset modifier %s is not set to %s", Lab_RulesetModifiers[modifierId], modiferValue)
 							goto next_ruleset
 						end
 					else
@@ -167,7 +167,6 @@ function MonsterLabProfileExecutor:GetRulesetForEntityVar(entityVar)
 						for _, acceptableValue in pairs(modiferValue) do
 							if not cachedRulesetStates[modifierId] or cachedRulesetStates[modifierId][acceptableValue] == nil then
 								cachedRulesetStates[modifierId] = cachedRulesetStates[modifierId] or {}
-								_D(Osi.GetRulesetModifierString(modifierId))
 								cachedRulesetStates[modifierId][acceptableValue] = Osi.CheckRulesetModifierString(modifierId, acceptableValue) == 1
 							end
 
@@ -177,7 +176,7 @@ function MonsterLabProfileExecutor:GetRulesetForEntityVar(entityVar)
 							end
 						end
 						if not matched then
-							Logger:BasicDebug("Ruleset modifier %s is not set to any of %s", Lab_RulesetModifiers[modifierId], modiferValue)
+							Logger:BasicTrace("Ruleset modifier %s is not set to any of %s", Lab_RulesetModifiers[modifierId], modiferValue)
 
 							goto next_ruleset
 						end

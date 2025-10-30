@@ -450,7 +450,7 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 											passiveList.levels[level].linkedProgressions[progressionTableId][defaultPool] = passiveList.levels[level].linkedProgressions
 												[progressionTableId][defaultPool] or {}
 
-											Logger:BasicDebug("Added %s to the default pool %s for later processing", passiveName, defaultPool)
+											Logger:BasicTrace("Added %s to the default pool %s for later processing", passiveName, defaultPool)
 											table.insert(passiveList.levels[level].linkedProgressions[progressionTableId][defaultPool], passiveName)
 										end
 									end
@@ -834,6 +834,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function PassiveListMutator:generateChangelog()
 	return {
+		["1.8.0"] = {
+			type = "Bullet",
+			text = {
+				"Changed the `Added %s to the default pool %s for later processing` DEBUG log to TRACE"
+			}
+		},
 		["1.7.1"] = {
 			type = "Bullet",
 			text = {
