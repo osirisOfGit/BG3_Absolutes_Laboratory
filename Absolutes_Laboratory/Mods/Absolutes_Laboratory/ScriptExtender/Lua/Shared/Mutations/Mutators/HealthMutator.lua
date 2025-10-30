@@ -479,7 +479,7 @@ function HealthMutator:applyMutator(entity, entityVar)
 		---@diagnostic disable-next-line: param-type-mismatch
 		function(entity)
 			local mutationVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME]
-			if mutationVar then
+			if mutationVar and entity:IsAlive() then
 				local firstMutator = (mutationVar.appliedMutators[self.name][1] or mutationVar.appliedMutators[self.name])
 
 				if entity.Health.MaxHp <= (maxHealth * .90) then
@@ -494,7 +494,7 @@ function HealthMutator:applyMutator(entity, entityVar)
 						currentHealthPercentage * 100)
 
 					entity.Health.MaxHp = maxHealth
-					if (1 - (entity.Health.Hp / entity.Health.MaxHp)) ~= currentHealthPercentage then
+					if (entity.Health.Hp / entity.Health.MaxHp) ~= currentHealthPercentage then
 						entity.Health.Hp = entity.Health.MaxHp - math.max(0, math.floor((entity.Health.MaxHp * (1 - currentHealthPercentage))))
 					end
 					entity:Replicate("Health")

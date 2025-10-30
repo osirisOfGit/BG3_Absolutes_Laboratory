@@ -861,6 +861,10 @@ function MonsterLab:buildEncounterView(encounter, parent, encounterMeta)
 				end
 			end
 
+			if not entity.rulesetModifiers[self.activeRuleset] then
+				entity.rulesetModifiers[self.activeRuleset] = TableUtils:DeeplyCopyTable(ConfigurationStructure.DynamicClassDefinitions.monsterLab.rulesetModifiers)
+			end
+
 			local entityGroup = entitySidebar:AddGroup(id)
 			local deleteButton = Styler:ImageButton(entityGroup:AddImageButton("delete" .. id, "ico_red_x", Styler:ScaleFactor({ 16, 16 })))
 			deleteButton.OnClick = function()
@@ -1288,27 +1292,33 @@ right-click to modify or delete that ruleset. The Base ruleset can't be modified
 								return ruleset.activeModifiers[modifierId]
 							end)
 						elseif modifierResource.RulesetModifierType == 3 then
+							---@type ResourceRulesetModifierOption[]
 							local resourceModifierValues = {}
 							for _, modifierValueId in pairs(Ext.StaticData.GetAll("RulesetModifierOption")) do
 								---@type ResourceRulesetModifierOption
 								local rulesetModifierValue = Ext.StaticData.Get(modifierValueId, "RulesetModifierOption")
 								if rulesetModifierValue.Modifier == modifierId then
-									table.insert(resourceModifierValues, rulesetModifierValue.DisplayName:Get())
+									table.insert(resourceModifierValues, rulesetModifierValue)
 								end
 							end
-							table.sort(resourceModifierValues)
+							table.sort(resourceModifierValues, function(a, b)
+								return (a.DisplayName:Get() or a.Name) < (b.DisplayName:Get() or b.Name)
+							end)
 
+							---@type string[]
 							local selectedModifiers = ruleset.activeModifiers[modifierId]
 
 							for i, modifierOption in ipairs(resourceModifierValues) do
-								local box = modifierGroup:AddCheckbox(modifierOption, TableUtils:IndexOf(selectedModifiers, modifierOption) ~= nil)
-								box.IDContext = modifierId
+								local box = modifierGroup:AddCheckbox(modifierOption.DisplayName:Get() or modifierOption.Name,
+									TableUtils:IndexOf(selectedModifiers, modifierOption.Name) ~= nil)
+
+								box.IDContext = modifierOption.Name
 								box.SameLine = i > 1
 								box.OnChange = function()
 									if box.Checked then
-										table.insert(selectedModifiers, modifierOption)
+										table.insert(selectedModifiers, box.IDContext)
 									else
-										selectedModifiers[TableUtils:IndexOf(selectedModifiers, modifierOption)] = nil
+										selectedModifiers[TableUtils:IndexOf(selectedModifiers, box.IDContext)] = nil
 										TableUtils:ReindexNumericTable(selectedModifiers)
 									end
 								end
@@ -1577,9 +1587,11 @@ I genuinely don't know anything about how, when, why, and what values work - I j
 					text = [[
 Rulesets are an advanced bit of customization for each entity within an encounter, for those wanting their encounter difficulties to match the player's settings - you can create rulesets for any combination of BG3's difficulty settings, like enemy power and free first-strikes, and that ruleset will only activate when ALL of its specified criteria are met.
 
+When processing a profile, only rulesets that have been configured for an entity will be considered - this generally always means that all entities in an encounter will share the same ruleset, as they'll be auto-configured with defaults for an existing ruleset, but this ultimately ensures the entity is processed in the context it was configured for.
+
 If two rulesets have the same criteria, one is randomly chosen - if two rulesets have common criteria, the one with more matched criteria will be chosen.
 
-There is always an immutable Base criteria present, allowing all mods creating encounter to have a guaranteed fallback. This ruleset has no criteria, and will always be chosen if no other ruleet qualifies for the campaign the profile is active within.
+There is always an immutable Base criteria present, allowing all mods creating encounters to have a guaranteed fallback. This ruleset has no criteria, and will always be chosen if no other ruleet qualifies for the campaign the profile is active within.
 
 If a difficulty setting is changed by the player, they need only save and reload, and Lab will adjust the spawned encounter to meet the new ruleset, if applicable.]]
 				},

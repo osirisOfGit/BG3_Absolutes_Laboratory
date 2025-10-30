@@ -1444,7 +1444,7 @@ if Ext.IsServer() then
 																	spellList.levels[i].linkedProgressions[progressionTableId][defaultPool] = spellList.levels[i].linkedProgressions
 																		[progressionTableId][defaultPool] or {}
 
-																	Logger:BasicDebug("Added %s to the default pool %s for later processing", spellName, defaultPool)
+																	Logger:BasicTrace("Added %s to the default pool %s for later processing", spellName, defaultPool)
 																	table.insert(spellList.levels[i].linkedProgressions[progressionTableId][defaultPool], spellName)
 																end
 															end
@@ -1761,6 +1761,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function SpellListMutator:generateChangelog()
 	return {
+		["1.8.0"] = {
+			type = "Bullet",
+			text = {
+				"Changed the `Added %s to the default pool %s for later processing` DEBUG log to TRACE"
+			}
+		},
 		["1.7.3"] = {
 			type = "Bullet",
 			text = {
