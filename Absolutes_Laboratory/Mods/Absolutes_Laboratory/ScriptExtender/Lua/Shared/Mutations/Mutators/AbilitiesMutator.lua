@@ -579,7 +579,7 @@ function AbilitiesMutator:applyMutator(entity, entityVar)
 					end
 				end
 				totalScore = math.max(1, totalScore)
-				boostString = boostString .. template:format(abilityId, totalScore - baseScore)
+				boostString = boostString .. template:format(abilityId, totalScore - entity.Stats.Abilities[Ext.Enums.AbilityId[abilityId].Value + 1])
 			end
 		end
 	end
