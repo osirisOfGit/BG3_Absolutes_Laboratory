@@ -19,11 +19,13 @@ Ext.Vars.RegisterModVariable(ModuleUUID, "HasDisabledProfiles", {
 })
 
 MutationProfileManager = {
+	---@type ExtuiTable
+	parentTable = nil,
 	---@type ExtuiGroup
 	selectionParent = nil,
-	---@type ExtuiGroup
+	---@type ExtuiChildWindow
 	userFolderGroup = nil,
-	---@type ExtuiGroup
+	---@type ExtuiChildWindow
 	modFolderGroup = nil,
 	---@type ExtuiGroup
 	profileGroup = nil,
@@ -32,9 +34,6 @@ MutationProfileManager = {
 }
 
 Ext.Require("Client/Mutations/MutationDesigner.lua")
-
----@type MazzleDocsDocumentation
-local Profiles_Docs = {}
 
 ---@type string?
 local activeProfileId
@@ -57,12 +56,12 @@ function MutationProfileManager:init(parent)
 		self.popup = Styler:Popup(parent)
 		self.popup.UserData = "closeOnSubmit"
 
-		local parentTable = Styler:TwoColumnTable(parent, "mutationsMain")
-		parentTable.Borders = false
-		parentTable.Resizable = false
-		parentTable.ColumnDefs[1].Width = 300 * Styler:ScaleFactor()
+		self.parentTable = Styler:TwoColumnTable(parent, "mutationsMain")
+		self.parentTable.Borders = false
+		self.parentTable.Resizable = false
+		self.parentTable.ColumnDefs[1].Width = 300 * Styler:ScaleFactor()
 
-		local row = parentTable:AddRow()
+		local row = self.parentTable:AddRow()
 
 		self.selectionParent = row:AddCell():AddChildWindow("selectionParent")
 
@@ -71,7 +70,8 @@ function MutationProfileManager:init(parent)
 		userMutSep:Tooltip():AddText(
 			"\t Right-click on mutations to edit their details or delete them - use the Manage Folder button to create mutations. Drag and Drop mutations into the profile section to add them to a profile")
 
-		self.userFolderGroup = self.selectionParent:AddGroup("User Folders")
+		self.userFolderGroup = self.selectionParent:AddChildWindow("User Folders")
+		self.userFolderGroup.NoSavedSettings = true
 		self.userFolderGroup.DragDropType = "MutationRules"
 		self.userFolderGroup.OnDragDrop = function(group, dropped)
 			for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
@@ -114,6 +114,7 @@ function MutationProfileManager:init(parent)
 			self.modFolderGroup.OnDragDrop = self.userFolderGroup.OnDragDrop
 		else
 			self.modFolderGroup = self.selectionParent:AddChildWindow("ModFolders")
+			self.modFolderGroup.Visible = false
 		end
 
 		local rightPanel = row:AddCell()
@@ -124,9 +125,9 @@ function MutationProfileManager:init(parent)
 				300 * Styler:ScaleFactor(),
 				function(width)
 					if width then
-						parentTable.ColumnDefs[1].Width = width
+						self.parentTable.ColumnDefs[1].Width = width
 					end
-					return parentTable.ColumnDefs[1].Width
+					return self.parentTable.ColumnDefs[1].Width
 				end,
 				self.selectionParent,
 				function()
@@ -216,12 +217,17 @@ function MutationProfileManager:BuildFolderManager()
 
 	local folders = ConfigurationStructure.config.mutations.folders
 
+	local longestText = 300
+
 	for folderId, folder in TableUtils:OrderedPairs(folders, function(key, value)
 		return value.name
 	end) do
 		local folderHeader = self.userFolderGroup:AddTree(folder.name)
+		folderHeader.SpanFullWidth = true
 		folderHeader.UserData = folderId
 		folderHeader.IDContext = folderId
+
+		longestText = Styler:calculateTextDimensions(folder.name, longestText)
 
 		folderHeader:SetColor("Header", { 1, 1, 1, 0 })
 		if folder.description ~= "" then
@@ -318,6 +324,8 @@ function MutationProfileManager:BuildFolderManager()
 			---@type ExtuiSelectable
 			local mutationSelectable = folderHeader:AddSelectable(("%s%s"):format(mutation.prepPhase and "(P) " or "", mutation.name))
 			mutationSelectable.IDContext = mutationId
+
+			longestText = Styler:calculateTextDimensions(mutation.name, longestText)
 
 			if mutation.description ~= "" then
 				mutationSelectable:Tooltip():AddText("\t " .. mutation.description)
@@ -572,6 +580,9 @@ function MutationProfileManager:BuildFolderManager()
 			}
 		)
 	end
+
+	self.parentTable.ColumnDefs[1].Width = longestText
+	self.userFolderGroup.Size = { 0, self.selectionParent.LastSize[2] / 2 }
 
 	self:BuildModFolders()
 	self:BuildProfileManager()
