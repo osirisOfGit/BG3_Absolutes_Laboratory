@@ -340,12 +340,12 @@ end
 function Styler:ScaleFactor(dimensionalArray)
 	if dimensionalArray then
 		for i, v in ipairs(dimensionalArray) do
-			dimensionalArray[i] = v * (Ext.IMGUI.GetViewportSize()[2] / 1440)
+			dimensionalArray[i] = v * 1 --(Ext.IMGUI.GetViewportSize()[2] / 1440)
 		end
 		return dimensionalArray
 	end
 	-- testing monitor for development is 1440p
-	return Ext.IMGUI.GetViewportSize()[2] / 1440
+	return 1 --Ext.IMGUI.GetViewportSize()[2] / 1440
 end
 
 ---@enum FontSize
