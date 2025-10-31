@@ -526,44 +526,46 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 				end
 			end
 
-			local numRandomPassivesToPick = 0
-			if numRandomPassivesPerLevel[level] then
-				numRandomPassivesToPick = numRandomPassivesPerLevel[level]
-			else
-				local maxLevel = nil
-				for definedLevel, _ in pairs(numRandomPassivesPerLevel) do
-					if definedLevel < level and (not maxLevel or definedLevel > maxLevel) then
-						maxLevel = definedLevel
-					end
-				end
-				if maxLevel then
-					numRandomPassivesToPick = numRandomPassivesPerLevel[maxLevel]
-				end
-			end
-
-			if numRandomPassivesToPick > 0 then
-				Logger:BasicDebug("Giving %s random passives out of %s from level %s",
-					numRandomPassivesToPick,
-					#randomPool,
-					passiveList.useGameLevel and EntityRecorder.Levels[level] or level)
-
-				local passivesToGive = {}
-				if #randomPool <= numRandomPassivesToPick then
-					passivesToGive = randomPool
+			if #randomPool > 0 then
+				local numRandomPassivesToPick = 0
+				if numRandomPassivesPerLevel[level] then
+					numRandomPassivesToPick = numRandomPassivesPerLevel[level]
 				else
-					for _ = 1, numRandomPassivesToPick do
-						local num = math.random(#randomPool)
-						table.insert(passivesToGive, randomPool[num])
-						table.remove(randomPool, num)
+					local maxLevel = nil
+					for definedLevel, _ in pairs(numRandomPassivesPerLevel) do
+						if definedLevel < level and (not maxLevel or definedLevel > maxLevel) then
+							maxLevel = definedLevel
+						end
+					end
+					if maxLevel then
+						numRandomPassivesToPick = numRandomPassivesPerLevel[maxLevel]
 					end
 				end
 
-				for _, passiveId in pairs(passivesToGive) do
-					table.insert(appliedPassives, passiveId)
+				if numRandomPassivesToPick > 0 then
+					Logger:BasicDebug("Giving %s random passives out of %s from level %s",
+						numRandomPassivesToPick,
+						#randomPool,
+						passiveList.useGameLevel and EntityRecorder.Levels[level] or level)
+
+					local passivesToGive = {}
+					if #randomPool <= numRandomPassivesToPick then
+						passivesToGive = randomPool
+					else
+						for _ = 1, numRandomPassivesToPick do
+							local num = math.random(#randomPool)
+							table.insert(passivesToGive, randomPool[num])
+							table.remove(randomPool, num)
+						end
+					end
+
+					for _, passiveId in pairs(passivesToGive) do
+						table.insert(appliedPassives, passiveId)
+					end
+				else
+					Logger:BasicDebug("Skipping level %s for random passive assignment due to configured size being 0",
+						passiveList.useGameLevel and EntityRecorder.Levels[level] or level)
 				end
-			else
-				Logger:BasicDebug("Skipping level %s for random passive assignment due to configured size being 0",
-					passiveList.useGameLevel and EntityRecorder.Levels[level] or level)
 			end
 		end
 	end
@@ -611,7 +613,9 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 	for _, passiveListMutator in pairs(passiveListMutators) do
 		if passiveListMutator.values.passives then
 			for _, passive in pairs(passiveListMutator.values.passives) do
-				table.insert(loosePassivesToApply, passive)
+				if not TableUtils:IndexOf(loosePassivesToApply, passive) then
+					table.insert(loosePassivesToApply, passive)
+				end
 			end
 		end
 

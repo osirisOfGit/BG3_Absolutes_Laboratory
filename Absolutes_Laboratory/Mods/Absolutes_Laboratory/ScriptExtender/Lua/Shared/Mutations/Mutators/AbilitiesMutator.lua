@@ -607,7 +607,9 @@ function AbilitiesMutator:applyMutator(entity, entityVar)
 
 			local totalScore = baseScore
 
-			for level, amountToAdd in TableUtils:OrderedPairs(scores) do
+			for level, amountToAdd in TableUtils:OrderedPairs(scores, function(key)
+				return tonumber(key)
+			end) do
 				level = tonumber(level)
 				if level ~= 1 then
 					if level > entity.EocLevel.Level then
