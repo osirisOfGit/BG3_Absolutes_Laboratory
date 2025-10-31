@@ -36,7 +36,7 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 	Ext.Utils.ProfileBegin("Lab Mutation Profile Execution")
 	local activeProfile = MutationConfigurationProxy.profiles[Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile]
 	if not activeProfile then
-		Logger:BasicDebug("Couldn't find saved profile - stored in memory: %s", Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile)
+		Logger:BasicDebug("Couldn't find saved profile - stored in memory: %s", Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile or "None stored")
 		Ext.Vars.GetModVariables(ModuleUUID).ActiveMutationProfile = nil
 
 		if not Ext.Vars.GetModVariables(ModuleUUID).HasDisabledProfiles then
@@ -280,10 +280,12 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 				---@type EntityHandle
 				local entity = Ext.Entity.Get(entityId)
 
-				---@type MutatorEntityVar
-				local mutatorVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME]
+				if entity then
+					---@type MutatorEntityVar
+					local mutatorVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME]
 
-				MutatorInterface:undoMutator(entity, mutatorVar)
+					MutatorInterface:undoMutator(entity, mutatorVar)
+				end
 			end
 			Logger:BasicInfo("======= Cleared Mutations From %s Entities in %dms =======", counter, Ext.Timer:MonotonicTime() - time)
 
@@ -293,7 +295,8 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 
 	if not success then
 		Logger:BasicError("Unrecoverable error happened while executing the Mutation Profile %s: %s",
-			activeProfile.name .. (activeProfile.modId and string.format(" (from mod %s)", Ext.Mod.GetMod(activeProfile.modId).Info.Name) or ""),
+			(activeProfile and activeProfile.name or "N/A") ..
+			(activeProfile and activeProfile.modId and string.format(" (from mod %s)", Ext.Mod.GetMod(activeProfile.modId).Info.Name) or ""),
 			error)
 		profileExecutorStatus.stage = "Error"
 		profileExecutorStatus.error = error

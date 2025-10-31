@@ -31,10 +31,11 @@ function MazzleDocs:addDocButton(parent, buttonSize)
 
 		---@param componentName string
 		---@param changelogs ({ [string]: MazzleDocsContentItem }|{ [string]: { [string]: MazzleDocsContentItem } })
-		local function buildChangelogForMaster(componentName, changelogs)
+		---@param subTopic string
+		local function buildChangelogForMaster(componentName, changelogs, subTopic)
 			local masterChangelogEntry = {
 				Topic = "Master Changelog",
-				SubTopic = "Mutations",
+				SubTopic = subTopic,
 				content = {
 					{
 						type = "Heading",
@@ -75,9 +76,11 @@ function MazzleDocs:addDocButton(parent, buttonSize)
 			table.insert(document, masterChangelogEntry)
 		end
 
-		buildChangelogForMaster("General", MutationProfileManager:generateChangelog())
-		buildChangelogForMaster("Mutators", MutatorInterface:generateChangelog())
-		buildChangelogForMaster("Selectors", SelectorInterface:generateChangelog())
+		buildChangelogForMaster("General", MutationProfileManager:generateChangelog(), "Mutations")
+		buildChangelogForMaster("Mutators", MutatorInterface:generateChangelog(), "Mutations")
+		buildChangelogForMaster("Selectors", SelectorInterface:generateChangelog(), "Mutations")
+		buildChangelogForMaster("General", MonsterLab:generateChangelog(), "Monster Lab")
+		buildChangelogForMaster("Encounter Designer", EncounterDesigner:generateChangelog(), "Monster Lab")
 
 		self.Create_Mazzle_Docs(document, config)
 	end

@@ -395,10 +395,12 @@ function PassiveListMutator:handleDependencies(export, mutator, removeMissingDep
 end
 
 function PassiveListMutator:undoMutator(entity, mutator, primedEntityVar, reprocessTransient)
-	for _, passiveId in pairs(mutator.originalValues[self.name] or {}) do
-		if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 1 then
-			Logger:BasicDebug("Removing passive %s as it was given by Lab", passiveId)
-			Osi.RemovePassive(entity.Uuid.EntityUuid, passiveId)
+	if next(mutator.originalValues[self.name]) and entity.PassiveContainer then
+		for _, passiveEntity in pairs(entity.PassiveContainer.Passives) do
+			if TableUtils:IndexOf(mutator.originalValues[self.name], passiveEntity.Passive.PassiveId) then
+				Logger:BasicDebug("Removing passive %s as it was given by Lab", passiveEntity.Passive.PassiveId)
+				Osi.RemovePassive(entity.Uuid.EntityUuid, passiveEntity.Passive.PassiveId)
+			end
 		end
 	end
 end
@@ -431,27 +433,30 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 							if progressionLevel.level == level and progressionLevel.passiveLists then
 								for _, passives in pairs(progressionLevel.passiveLists) do
 									for _, passiveName in pairs(passives) do
-										local leveledLists = passiveList.levels and passiveList.levels[level]
-										if not leveledLists
-											or not leveledLists.linkedProgressions
-											or not TableUtils:IndexOf(leveledLists.linkedProgressions[progressionTableId],
-												function(value)
-													return TableUtils:IndexOf(value, passiveName) ~= nil
-												end)
-										then
-											passiveList.levels = passiveList.levels or {}
-											passiveList.levels[level] = passiveList.levels[level] or {}
-											passiveList.levels[level].linkedProgressions = passiveList.levels[level].linkedProgressions or {}
-											passiveList.levels[level].linkedProgressions[progressionTableId] = passiveList.levels[level].linkedProgressions[progressionTableId] or {}
+										if not TableUtils:IndexOf(appliedPassives, passiveName) then
+											local leveledLists = passiveList.levels and passiveList.levels[level]
+											if not leveledLists
+												or not leveledLists.linkedProgressions
+												or not TableUtils:IndexOf(leveledLists.linkedProgressions[progressionTableId],
+													function(value)
+														return TableUtils:IndexOf(value, passiveName) ~= nil
+													end)
+											then
+												passiveList.levels = passiveList.levels or {}
+												passiveList.levels[level] = passiveList.levels[level] or {}
+												passiveList.levels[level].linkedProgressions = passiveList.levels[level].linkedProgressions or {}
+												passiveList.levels[level].linkedProgressions[progressionTableId] = passiveList.levels[level].linkedProgressions[progressionTableId] or
+													{}
 
-											local defaultPool = passiveList.defaultPool or
-												ConfigurationStructure.config.mutations.settings.customLists.defaultPool.passiveLists
+												local defaultPool = passiveList.defaultPool or
+													ConfigurationStructure.config.mutations.settings.customLists.defaultPool.passiveLists
 
-											passiveList.levels[level].linkedProgressions[progressionTableId][defaultPool] = passiveList.levels[level].linkedProgressions
-												[progressionTableId][defaultPool] or {}
+												passiveList.levels[level].linkedProgressions[progressionTableId][defaultPool] = passiveList.levels[level].linkedProgressions
+													[progressionTableId][defaultPool] or {}
 
-											Logger:BasicTrace("Added %s to the default pool %s for later processing", passiveName, defaultPool)
-											table.insert(passiveList.levels[level].linkedProgressions[progressionTableId][defaultPool], passiveName)
+												Logger:BasicTrace("Added %s to the default pool %s for later processing", passiveName, defaultPool)
+												table.insert(passiveList.levels[level].linkedProgressions[progressionTableId][defaultPool], passiveName)
+											end
 										end
 									end
 								end
@@ -467,7 +472,7 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 						if progressionTable then
 							if subLists.guaranteed and next(subLists.guaranteed) then
 								for _, passiveId in pairs(subLists.guaranteed) do
-									if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
+									if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 and not TableUtils:IndexOf(appliedPassives, passiveId) then
 										Logger:BasicDebug("Adding guaranteed passive %s from progression %s (%s - level %s)", passiveId, progressionTableId,
 											progressionTable.name, level)
 
@@ -482,7 +487,7 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 							if subLists.randomized and next(subLists.randomized) then
 								for _, passiveId in pairs(subLists.randomized) do
 									if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
-										if not TableUtils:IndexOf(randomPool, passiveId) then
+										if not TableUtils:IndexOf(appliedPassives, passiveId) and not TableUtils:IndexOf(randomPool, passiveId) then
 											table.insert(randomPool, passiveId)
 										end
 									else
@@ -498,10 +503,11 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 				if leveledLists.manuallySelectedEntries then
 					if leveledLists.manuallySelectedEntries.randomized then
 						for _, passiveId in pairs(leveledLists.manuallySelectedEntries.randomized) do
-							if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
-								if not TableUtils:IndexOf(randomPool, passiveId) then
-									table.insert(randomPool, passiveId)
-								end
+							if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0
+								and not TableUtils:IndexOf(appliedPassives, passiveId)
+								and not TableUtils:IndexOf(randomPool, passiveId)
+							then
+								table.insert(randomPool, passiveId)
 							else
 								Logger:BasicDebug("%s is already present, not adding to the random pool", passiveId)
 							end
@@ -509,7 +515,7 @@ local function applyPassiveLists(entity, levelToUse, passiveList, numRandomPassi
 					end
 					if leveledLists.manuallySelectedEntries.guaranteed and next(leveledLists.manuallySelectedEntries.guaranteed) then
 						for _, passiveId in pairs(leveledLists.manuallySelectedEntries.guaranteed) do
-							if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
+							if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 and not TableUtils:IndexOf(appliedPassives, passiveId) then
 								Logger:BasicDebug("Adding guaranteed passive %s", passiveId)
 								table.insert(appliedPassives, passiveId)
 							else
@@ -641,7 +647,7 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 
 	if next(loosePassivesToApply) then
 		for _, passiveId in pairs(loosePassivesToApply) do
-			if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 then
+			if Osi.HasPassive(entity.Uuid.EntityUuid, passiveId) == 0 and not TableUtils:IndexOf(appliedPassives, passiveId) then
 				Logger:BasicDebug("Adding loose passive %s", passiveId)
 				table.insert(appliedPassives, passiveId)
 			else

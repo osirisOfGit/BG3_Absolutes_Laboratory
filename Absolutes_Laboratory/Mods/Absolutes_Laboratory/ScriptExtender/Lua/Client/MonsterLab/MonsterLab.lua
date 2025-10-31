@@ -1439,7 +1439,7 @@ function MonsterLab:generateDocs()
 				{
 					type = "CallOut",
 					prefix = "Tips",
-					text = "Always right click on a discrete component, like a folder, encounter, ruleset, or entity, to manage them",
+					text = "Always right click on a discrete component, like a folder, encounter, ruleset, or entity, to manage their properties (i.e. edit/delete them)",
 					prefix_color = "Green"
 				} --[[@as MazzleDocsCallOut]],
 				{
@@ -1644,4 +1644,14 @@ The reasoning for this is that while Mutations will affect MonsterLab entities, 
 			}
 		}
 	} --[[@as MazzleDocsDocumentation]]
+end
+
+---@return {[string]: MazzleDocsContentItem}
+function MonsterLab:generateChangelog()
+	return {
+		["1.8.0"] = {
+			type = "Bullet",
+			text = "Initial Release"
+		}
+	} --[[@as {[string]: MazzleDocsContentItem}]]
 end

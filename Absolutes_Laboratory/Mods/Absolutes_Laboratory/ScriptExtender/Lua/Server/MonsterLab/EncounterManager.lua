@@ -401,7 +401,7 @@ function MonsterLabEncounterManager:MutateAllEncounters()
 	Logger:BasicDebug("=========== Starting Mutation Of All Encounters ===========")
 	local success, error = xpcall(function(...)
 		for encounterId, encounter in pairs(allSpawnedEntities) do
-			Logger:BasicDebug("======= Starting Mutation Of Encounter %s =======", encounter.name)
+			Logger:BasicDebug("======= Starting Mutation Of Encounter %s =======", encounter.name or encounterId)
 			for mlEntityId, entity in pairs(encounter.entities) do
 				---@type MutatorEntityVar
 				local entityVar = {
@@ -416,7 +416,7 @@ function MonsterLabEncounterManager:MutateAllEncounters()
 
 				MutationProfileExecutor:compileMutatorsForEntity(entityVar, rulesetRules.mutators, rulesetRules, 9999)
 
-				if entityHandle.Vars.ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME then
+				if entityHandle.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] then
 					MutatorInterface:undoMutator(entityHandle, entityVar)
 
 					Ext.Timer.WaitFor(100, function()
@@ -426,7 +426,7 @@ function MonsterLabEncounterManager:MutateAllEncounters()
 					MutatorInterface:applyMutator(entityHandle, entityVar)
 				end
 			end
-			Logger:BasicDebug("======= Finished Mutation Of Encounter %s =======", encounter.name)
+			Logger:BasicDebug("======= Finished Mutation Of Encounter %s =======", encounter.name or encounterId)
 		end
 	end, debug.traceback)
 

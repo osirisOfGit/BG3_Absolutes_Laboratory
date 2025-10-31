@@ -821,6 +821,7 @@ function EncounterDesigner:manageExtraSettings(parent, encounter, encounterMeta)
 			factionInput.Disabled = true
 
 			pickEntityButton.UserData = true
+			self.designerPickerInfo.Visible = true
 			local tickSub = Ext.Events.Tick:Subscribe(function(e)
 				local entity = Ext.ClientUI.GetPickingHelper(1).Inner.Inner[1].GameObject
 				if entity and entity.ClientCharacter and not entity.Vars.AbsolutesLaboratory_MonsterLab_Entity then
@@ -845,18 +846,33 @@ function EncounterDesigner:manageExtraSettings(parent, encounter, encounterMeta)
 				function(e)
 					if e.Pressed then
 						if e.Button == saveButton then
-							Ext.Events.Tick:Unsubscribe(tickSub)
-							Ext.Events.MouseButtonInput:Unsubscribe(mouseSub)
-							combatGroupId.Disabled = false
 							combatGroupId:OnChange()
-							factionInput.Disabled = false
 							factionInput:OnChange()
+							combatGroupId:OnDeactivate()
+							factionInput:OnDeactivate()
 
 							pickEntityButton.UserData = false
 						else
+							combatGroupId.Text = encounter.combatGroupId
+							factionInput.Text = encounter.faction
 						end
+						self.designerPickerInfo.Visible = false
+						factionInput.Disabled = false
+						combatGroupId.Disabled = false
+						Ext.Events.Tick:Unsubscribe(tickSub)
+						Ext.Events.MouseButtonInput:Unsubscribe(mouseSub)
 					end
 				end)
 		end
 	end
+end
+
+---@return {[string]: MazzleDocsContentItem}
+function EncounterDesigner:generateChangelog()
+	return {
+		["1.8.0"] = {
+			type = "Bullet",
+			text = "Initial Release"
+		}
+	} --[[@as {[string]: MazzleDocsContentItem}]]
 end
