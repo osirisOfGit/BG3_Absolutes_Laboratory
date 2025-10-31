@@ -582,7 +582,9 @@ function MutationProfileManager:BuildFolderManager()
 	end
 
 	self.parentTable.ColumnDefs[1].Width = longestText
-	self.userFolderGroup.Size = { 0, self.selectionParent.LastSize[2] / 2 }
+	if self.modFolderGroup.Visible then
+		self.userFolderGroup.Size = { 0, self.selectionParent.LastSize[2] / 2 }
+	end
 
 	self:BuildModFolders()
 	self:BuildProfileManager()
