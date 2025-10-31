@@ -35,6 +35,7 @@ end
 
 ---@class AbilitiesStaticMutator
 ---@field scores {[AbilityId] : number[]}
+---@field priorities {[number]: number[]}
 
 ---@class AbilitiesMutator : Mutator
 ---@field values (AbilityMutatorValue|AbilitiesStaticMutator)
@@ -66,6 +67,8 @@ function AbilitiesMutator:renderMutator(parent, mutator)
 
 	if mutator.staticMutator then
 		mutator.values.scores = mutator.values.scores or {}
+		mutator.values.priorities = mutator.values.priorities or {}
+
 		self:renderStaticLayout(parent:AddGroup(""), mutator)
 	else
 		mutator.values.dieSettings = mutator.values.dieSettings or {
@@ -82,160 +85,188 @@ end
 ---@param mutator AbilitiesMutator
 function AbilitiesMutator:renderStaticLayout(parent, mutator)
 	Helpers:KillChildren(parent)
-	local abilityTable = parent:AddTable("Abilities", 6)
-	abilityTable.NoSavedSettings = true
-	local row = abilityTable:AddRow()
 
-	for _, abilityId in TableUtils:OrderedPairs(Ext.Enums.AbilityId, function(key, value)
-		return value
-	end, function(key, value)
-		return type(key) == "number" and key > 0 and value ~= "Sentinel"
-	end) do
-		---@cast abilityId string
-		abilityId = tostring(abilityId)
-		local abilityCell = row:AddCell()
-		Styler:CheapTextAlign(abilityId, abilityCell, "Large")
+	---@generic K
+	---@generic V
+	---@param config {[(string|number)]: number[]}
+	---@param iterator fun(): (fun():any,string)
+	local function renderTables(config, iterator)
+		local scoreTable = parent:AddTable(tostring(iterator), 6)
+		scoreTable.NoSavedSettings = true
+		local row = scoreTable:AddRow()
 
-		local inputTable = abilityCell:AddTable(abilityId, 3)
-		inputTable:AddColumn("", "WidthFixed")
-		inputTable.NoSavedSettings = true
+		for _, scoreKey in iterator() do
+			scoreKey = tostring(scoreKey)
+			local scoreColumn = row:AddCell()
+			Styler:CheapTextAlign(scoreKey, scoreColumn, "Large")
 
-		local headerRow = inputTable:AddRow()
-		headerRow:Tooltip():AddText(
-			[[For any level other than 1, Lab will add (compounding on previous levels) the specified amount to the specified Ability score - e.g., if you set Level 3 to add 2 points to Strength, and level 5 to add 1 point, a level 5 entity will receive +3 to Strength. Setting a negative value will instead subtract that amount.
+			local inputTable = scoreColumn:AddTable(scoreKey, 3)
+			inputTable:AddColumn("", "WidthFixed")
+			inputTable.NoSavedSettings = true
+
+			local headerRow = inputTable:AddRow()
+			headerRow:Tooltip():AddText(
+				[[For any level other than 1, Lab will add (compounding on previous levels) the specified amount to the specified Ability score - e.g., if you set Level 3 to add 2 points to Strength or the Primary Ability, and level 5 to add 1 point, a level 5 entity will receive +3 to that ability. Setting a negative value will instead subtract that amount.
 If you specify level 1, that will override the entity's current Ability Score, and will serve as the base for subsequent additions - e.g. setting Strength to 3 at level 1 will result in the entity having 3 strength, if no other levels are specified.
 If level 1 is set to 0 with no other levels specified, then that ability score won't be modified]])
 
-		headerRow.Headers = true
-		headerRow:AddCell()
-		headerRow:AddCell():AddText("Entity Level")
-		headerRow:AddCell():AddText("# To Add (?)")
+			headerRow.Headers = true
+			headerRow:AddCell()
+			headerRow:AddCell():AddText("Entity Level")
+			headerRow:AddCell():AddText("# To Add (?)")
 
-		if not mutator.values.scores[abilityId] or not next(mutator.values.scores[abilityId]) then
-			mutator.values.scores[abilityId] = TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.settings.abilitiesDistributionPresets.Default)
-		end
-
-		local scores = mutator.values.scores[abilityId]
-		for level, amount in TableUtils:OrderedPairs(scores) do
-			local levelRow = inputTable:AddRow()
-
-			local deleteButton = Styler:ImageButton(levelRow:AddCell():AddImageButton("delete" .. level, "ico_red_x", { 16, 16 }))
-			deleteButton.OnClick = function()
-				scores[level] = nil
-				self:renderStaticLayout(parent, mutator)
-			end
-
-			local levelInput = levelRow:AddCell():AddInputInt("##level", level)
-			levelInput.OnChange = function()
-				local val = levelInput.Value[1]
-				if val < 1 or (val ~= level and scores[val]) then
-					Styler:Color(levelInput, "ErrorText")
-				else
-					Styler:Color(levelInput, "DefaultText")
+			if not Ext.Enums.AbilityId[scoreKey] then
+				scoreKey = scoreKey:lower()
+				if scoreKey == "primary" or scoreKey == "secondary" or scoreKey == "tertiary" then
+					scoreKey = scoreKey .. "Stat"
 				end
 			end
 
-			local amountInput = levelRow:AddCell():AddInputInt("##amount", amount)
-
-			amountInput.OnDeactivate = function()
-				scores[level] = amountInput.Value[1]
+			if not config[scoreKey] or not next(config[scoreKey]) then
+				config[scoreKey] = TableUtils:DeeplyCopyTable(ConfigurationStructure.config.mutations.settings.abilitiesDistributionPresets.Default)
 			end
 
-			levelInput.OnDeactivate = function()
-				local val = levelInput.Value[1]
-				if val < 1 or (val ~= level and scores[val]) then
-					levelInput.Value = { level, level, level, level }
-					Styler:Color(levelInput, "DefaultText")
-				elseif val ~= level then
-					scores[val] = amountInput.Value[1]
+			local scores = config[scoreKey]
+			for level, amount in TableUtils:OrderedPairs(scores) do
+				local levelRow = inputTable:AddRow()
+
+				local deleteButton = Styler:ImageButton(levelRow:AddCell():AddImageButton("delete" .. level, "ico_red_x", { 16, 16 }))
+				deleteButton.OnClick = function()
 					scores[level] = nil
 					self:renderStaticLayout(parent, mutator)
 				end
-			end
-		end
 
-		Styler:MiddleAlignedColumnLayout(abilityCell, function(ele)
-			ele:AddButton("+").OnClick = function()
-				mutator.values.scores[abilityId] = mutator.values.scores[abilityId] or {}
-
-				local biggestNumber = 1
-				for level in TableUtils:OrderedPairs(mutator.values.scores[abilityId]) do
-					biggestNumber = level > biggestNumber and level or biggestNumber
+				local levelInput = levelRow:AddCell():AddInputInt("##level", level)
+				levelInput.OnChange = function()
+					local val = levelInput.Value[1]
+					if val < 1 or (val ~= level and scores[val]) then
+						Styler:Color(levelInput, "ErrorText")
+					else
+						Styler:Color(levelInput, "DefaultText")
+					end
 				end
 
-				mutator.values.scores[abilityId][biggestNumber + 1] = 0
+				local amountInput = levelRow:AddCell():AddInputInt("##amount", amount)
 
-				self:renderStaticLayout(parent, mutator)
-			end
+				amountInput.OnDeactivate = function()
+					scores[level] = amountInput.Value[1]
+				end
 
-			local managePresetsButton = ele:AddButton("MP")
-			managePresetsButton.SameLine = true
-			managePresetsButton:Tooltip():AddText("\t Manage your presets for this mutator")
-
-			managePresetsButton.OnClick = function()
-				Helpers:KillChildren(self.popup)
-				self.popup:Open()
-
-				local config = ConfigurationStructure.config.mutations.settings.abilitiesDistributionPresets
-
-				for presetName, scores in TableUtils:OrderedPairs(config) do
-					---@type ExtuiMenu
-					local menu = self.popup:AddMenu(presetName)
-
-					if presetName ~= "Default" then
-						FormBuilder:CreateForm(menu:AddMenu("Edit"), function(formResults)
-								config[formResults.Name] = TableUtils:DeeplyCopyTable(scores)
-								scores.delete = true
-								managePresetsButton:OnClick()
-							end,
-							{
-								{
-									label = "Name",
-									type = "Text",
-									defaultValue = presetName,
-									errorMessageIfEmpty = "Required"
-								}
-							})
-					end
-
-					menu:AddSelectable("Load and overwrite current values").OnClick = function()
-						mutator.values.scores[abilityId].delete = true
-						mutator.values.scores[abilityId] = TableUtils:DeeplyCopyTable(scores)
+				levelInput.OnDeactivate = function()
+					local val = levelInput.Value[1]
+					if val < 1 or (val ~= level and scores[val]) then
+						levelInput.Value = { level, level, level, level }
+						Styler:Color(levelInput, "DefaultText")
+					elseif val ~= level then
+						scores[val] = amountInput.Value[1]
+						scores[level] = nil
 						self:renderStaticLayout(parent, mutator)
 					end
+				end
+			end
 
-					menu:AddSelectable("Save and overwrite this preset with current values").OnClick = function()
-						scores.delete = true
-						config[presetName] = TableUtils:DeeplyCopyTable(mutator.values.scores[abilityId])
+			Styler:MiddleAlignedColumnLayout(scoreColumn, function(ele)
+				ele:AddButton("+").OnClick = function()
+					config[scoreKey] = config[scoreKey] or {}
+
+					local biggestNumber = 1
+					for level in TableUtils:OrderedPairs(config[scoreKey]) do
+						biggestNumber = level > biggestNumber and level or biggestNumber
 					end
 
-					if presetName ~= "Default" then
-						---@param select ExtuiSelectable
-						menu:AddSelectable("Delete This Preset", "DontClosePopups").OnClick = function(select)
-							if select.Label ~= "Delete This Preset" then
-								config[presetName].delete = true
-							else
-								select.DontClosePopups = false
-								select.Label = "Are You Sure?"
-								Styler:Color(select, "ErrorText")
+					config[scoreKey][biggestNumber + 1] = 0
+
+					self:renderStaticLayout(parent, mutator)
+				end
+
+				local managePresetsButton = ele:AddButton("MP")
+				managePresetsButton.SameLine = true
+				managePresetsButton:Tooltip():AddText("\t Manage your presets for this mutator")
+
+				managePresetsButton.OnClick = function()
+					Helpers:KillChildren(self.popup)
+					self.popup:Open()
+
+					local presetConfig = ConfigurationStructure.config.mutations.settings.abilitiesDistributionPresets
+
+					for presetName, scores in TableUtils:OrderedPairs(presetConfig) do
+						---@type ExtuiMenu
+						local menu = self.popup:AddMenu(presetName)
+
+						if presetName ~= "Default" then
+							FormBuilder:CreateForm(menu:AddMenu("Edit"), function(formResults)
+									presetConfig[formResults.Name] = TableUtils:DeeplyCopyTable(scores)
+									scores.delete = true
+									managePresetsButton:OnClick()
+								end,
+								{
+									{
+										label = "Name",
+										type = "Text",
+										defaultValue = presetName,
+										errorMessageIfEmpty = "Required"
+									}
+								})
+						end
+
+						menu:AddSelectable("Load and overwrite current values").OnClick = function()
+							config[scoreKey].delete = true
+							config[scoreKey] = TableUtils:DeeplyCopyTable(scores)
+							self:renderStaticLayout(parent, mutator)
+						end
+
+						menu:AddSelectable("Save and overwrite this preset with current values").OnClick = function()
+							scores.delete = true
+							presetConfig[presetName] = TableUtils:DeeplyCopyTable(config[scoreKey])
+						end
+
+						if presetName ~= "Default" then
+							---@param select ExtuiSelectable
+							menu:AddSelectable("Delete This Preset", "DontClosePopups").OnClick = function(select)
+								if select.Label ~= "Delete This Preset" then
+									presetConfig[presetName].delete = true
+								else
+									select.DontClosePopups = false
+									select.Label = "Are You Sure?"
+									Styler:Color(select, "ErrorText")
+								end
 							end
 						end
 					end
-				end
 
-				FormBuilder:CreateForm(self.popup:AddMenu("Create New Preset"), function(formResults)
-					config[formResults.Name] = {}
-					managePresetsButton:OnClick()
-				end, {
-					{
-						label = "Name",
-						type = "Text",
-						errorMessageIfEmpty = "Required"
-					}
-				})
-			end
-		end)
+					FormBuilder:CreateForm(self.popup:AddMenu("Create New Preset"), function(formResults)
+						presetConfig[formResults.Name] = {}
+						managePresetsButton:OnClick()
+					end, {
+						{
+							label = "Name",
+							type = "Text",
+							errorMessageIfEmpty = "Required"
+						}
+					})
+				end
+			end)
+		end
 	end
+
+	parent:AddSeparatorText("By Ability Id (?)"):Tooltip():AddText(
+		"\t Values defined in this section will apply to the relevant Ability, as long as that ability isn't determined to be one of the priorities set below - i.e. setting values for Strength and for Primary priority will apply the Primary values if Strength is that priority, as determined by the relevant logic detailed in the Priority tooltip")
+
+	renderTables(mutator.values.scores, function()
+		return TableUtils:OrderedPairs(Ext.Enums.AbilityId, function(key, value)
+			return value
+		end, function(key, value)
+			return type(key) == "number" and key > 0 and value ~= "Sentinel"
+		end)
+	end)
+
+	parent:AddSeparatorText("By Priorities (?)"):Tooltip([[
+	Values defined here will override the above when applicable. Priorities are determined by:
+1. The entity will be checked for assigned Spell Lists - if they have been assigned lists that have their own specified priority orders, those will be used as available.
+	If multiple lists are found that have orders, they will be averaged out based on how many levels of the lists they were assigned
+2. The entity's existing stats will be inspected and priority will be inferred by that - the higher the score, the higher the priority. Abilities with identical scores will be randomly assigned the appropriate priorities]])
+
+	renderTables(mutator.values.priorities, function() return ipairs({ "Primary", "Secondary", "Tertiary", "Quaternary", "Quinary", "Senary" }) end)
 end
 
 ---@param parent ExtuiTreeParent
@@ -418,6 +449,98 @@ function AbilitiesMutator:applyMutator(entity, entityVar)
 	local boostString = ""
 	local template = "Ability(%s,%d);"
 
+	---@param existingPriorities AbilityPriorities
+	---@return AbilityPriorities
+	local function determinePriorities(existingPriorities)
+		if not existingPriorities.primaryStat or not existingPriorities.secondaryStat or not existingPriorities.tertiaryStat then
+			if entityVar.appliedMutators[SpellListMutator.name] and entityVar.appliedMutators[SpellListMutator.name].appliedLists then
+				---@type {[Guid]: number}
+				local appliedSpellLists = entityVar.appliedMutators[SpellListMutator.name].appliedLists
+
+				local lastSpellListId = nil
+
+				for spellListId, levelsAssigned in TableUtils:OrderedPairs(appliedSpellLists, function(_, levelsAssigned)
+					-- Sorting descending?
+					return levelsAssigned * -1
+				end) do
+					local spellList = MutationConfigurationProxy.lists.spellLists[spellListId]
+					spellList = spellList.__real or spellList
+
+					if spellList.abilityPriorities then
+						if not lastSpellListId then
+							lastSpellListId = spellListId
+							for category, ability in pairs(spellList.abilityPriorities) do
+								if existingPriorities[category] and not TableUtils:IndexOf(existingPriorities, ability) then
+									existingPriorities[category] = ability
+								end
+							end
+							Logger:BasicDebug("List %s is the highest leveled list assigned (at %s) - using it as the base", spellList.name, levelsAssigned)
+						else
+							local lastAssignedListId = lastSpellListId
+							for category, ability in pairs(spellList.abilityPriorities) do
+								if not existingPriorities[category] and not TableUtils:IndexOf(existingPriorities, ability) then
+									Logger:BasicDebug("Assigned ability priority %s to %s due to %s having it set when the previous list did not",
+										category,
+										ability,
+										spellList.name)
+									lastSpellListId = spellListId
+									existingPriorities[category] = ability
+								end
+							end
+							if (appliedSpellLists[spellListId] / appliedSpellLists[lastAssignedListId]) >= .6 then
+								Logger:BasicDebug("Spell list %s is %s%% of list %s's level - averaging out score priority",
+									spellList.name,
+									(appliedSpellLists[spellListId] / appliedSpellLists[lastAssignedListId]) * 100,
+									MutationConfigurationProxy.lists.spellLists[lastAssignedListId].name)
+
+								if not TableUtils:IndexOf(existingPriorities, spellList.abilityPriorities.primaryStat) then
+									existingPriorities.tertiaryStat = spellList.abilityPriorities.primaryStat
+									Logger:BasicDebug("Assigned %s to the tertiary ability as it's %s's primary ability",
+										existingPriorities.tertiaryStat,
+										spellList.name)
+								elseif existingPriorities.tertiaryStat == spellList.abilityPriorities.primaryStat then
+									existingPriorities.tertiaryStat = existingPriorities.secondaryStat
+									existingPriorities.secondaryStat = spellList.abilityPriorities.primaryStat
+
+									Logger:BasicDebug("Swapped %s from the tertiary to the secondary ability as it's %s's primary ability",
+										existingPriorities.secondaryStat,
+										spellList.name)
+								end
+								-- We found the next closest to the highest spell list, good enough to not play swap-a-rama for super low list levels
+								break
+							end
+						end
+					end
+				end
+
+				Logger:BasicDebug("Ability priorities after being determined by spell lists: %s", existingPriorities)
+			end
+		end
+
+		for abilityIndex in TableUtils:OrderedPairs(entity.Stats.Abilities, function(key, value)
+			return value * -1
+		end) do
+			local ability = tostring(Ext.Enums.AbilityId[abilityIndex - 1])
+			if not TableUtils:IndexOf(existingPriorities, ability) then
+				if not existingPriorities.primaryStat then
+					existingPriorities.primaryStat = ability
+				elseif not existingPriorities.secondaryStat then
+					existingPriorities.secondaryStat = ability
+				elseif not existingPriorities.tertiaryStat then
+					existingPriorities.tertiaryStat = ability
+				elseif not existingPriorities.quaternary then
+					existingPriorities.quaternary = ability
+				elseif not existingPriorities.quinary then
+					existingPriorities.quinary = ability
+				elseif not existingPriorities.senary then
+					existingPriorities.senary = ability
+				end
+			end
+		end
+
+		return existingPriorities
+	end
+
 	if mutator.staticMutator == false then
 		for _ = 1, 6 do
 			---@type number[]
@@ -452,134 +575,71 @@ function AbilitiesMutator:applyMutator(entity, entityVar)
 		Logger:BasicDebug("Rolled values before assignment: %s", rolledScores)
 
 		---@type AbilityPriorities
-		local abilities = {}
+		local abilityPriorities = {}
 
 		if mutator.values.overriddenAbilityPriorities then
 			local override = mutator.values.overriddenAbilityPriorities
-			abilities = TableUtils:DeeplyCopyTable(override)
+			abilityPriorities = TableUtils:DeeplyCopyTable(override)
 
 			Logger:BasicDebug("Overridden Ability Priorities are: %s", override)
 		end
 
-		if not abilities.primaryStat or not abilities.secondaryStat or not abilities.tertiaryStat then
-			if entityVar.appliedMutators[SpellListMutator.name] and entityVar.appliedMutators[SpellListMutator.name].appliedLists then
-				---@type {[Guid]: number}
-				local appliedSpellLists = entityVar.appliedMutators[SpellListMutator.name].appliedLists
+		determinePriorities(abilityPriorities)
 
-				local lastSpellListId = nil
-
-				for spellListId, levelsAssigned in TableUtils:OrderedPairs(appliedSpellLists, function(_, levelsAssigned)
-					-- Sorting descending?
-					return levelsAssigned * -1
-				end) do
-					local spellList = MutationConfigurationProxy.lists.spellLists[spellListId]
-					spellList = spellList.__real or spellList
-
-					if spellList.abilityPriorities then
-						if not lastSpellListId then
-							lastSpellListId = spellListId
-							for category, ability in pairs(spellList.abilityPriorities) do
-								if abilities[category] and not TableUtils:IndexOf(abilities, ability) then
-									abilities[category] = ability
-								end
-							end
-							Logger:BasicDebug("List %s is the highest leveled list assigned (at %s) - using it as the base", spellList.name, levelsAssigned)
-						else
-							local lastAssignedListId = lastSpellListId
-							for category, ability in pairs(spellList.abilityPriorities) do
-								if not abilities[category] and not TableUtils:IndexOf(abilities, ability) then
-									Logger:BasicDebug("Assigned ability priority %s to %s due to %s having it set when the previous list did not",
-										category,
-										ability,
-										spellList.name)
-									lastSpellListId = spellListId
-									abilities[category] = ability
-								end
-							end
-							if (appliedSpellLists[spellListId] / appliedSpellLists[lastAssignedListId]) >= .6 then
-								Logger:BasicDebug("Spell list %s is %s%% of list %s's level - averaging out score priority",
-									spellList.name,
-									(appliedSpellLists[spellListId] / appliedSpellLists[lastAssignedListId]) * 100,
-									MutationConfigurationProxy.lists.spellLists[lastAssignedListId].name)
-
-								if not TableUtils:IndexOf(abilities, spellList.abilityPriorities.primaryStat) then
-									abilities.tertiaryStat = spellList.abilityPriorities.primaryStat
-									Logger:BasicDebug("Assigned %s to the tertiary ability as it's %s's primary ability",
-										abilities.tertiaryStat,
-										spellList.name)
-								elseif abilities.tertiaryStat == spellList.abilityPriorities.primaryStat then
-									abilities.tertiaryStat = abilities.secondaryStat
-									abilities.secondaryStat = spellList.abilityPriorities.primaryStat
-
-									Logger:BasicDebug("Swapped %s from the tertiary to the secondary ability as it's %s's primary ability",
-										abilities.secondaryStat,
-										spellList.name)
-								end
-								-- We found the next closest to the highest spell list, good enough to not play swap-a-rama for super low list levels
-								break
-							end
-						end
-					end
-				end
-
-				Logger:BasicDebug("Ability priorities after being determined by spell lists: %s", abilities)
-			end
-		end
-
-		for abilityIndex in TableUtils:OrderedPairs(entity.Stats.Abilities, function(key, value)
-			return value * -1
-		end) do
-			local ability = tostring(Ext.Enums.AbilityId[abilityIndex - 1])
-			if not TableUtils:IndexOf(abilities, ability) then
-				if not abilities.primaryStat then
-					abilities.primaryStat = ability
-				elseif not abilities.secondaryStat then
-					abilities.secondaryStat = ability
-				elseif not abilities.tertiaryStat then
-					abilities.tertiaryStat = ability
-				elseif not abilities.fourth then
-					abilities.fourth = ability
-				elseif not abilities.fifth then
-					abilities.fifth = ability
-				elseif not abilities.sixth then
-					abilities.sixth = ability
-				end
-			end
-		end
-
-		Logger:BasicDebug("Final ability score priorities: %s", abilities)
+		Logger:BasicDebug("Final ability score priorities: %s", abilityPriorities)
 
 		local categories = { "primaryStat", "secondaryStat", "tertiaryStat", "fourth", "fifth", "sixth" }
 		local bonuses = { 2, 1, 0, 0, 0, 0 }
 
 		for i, category in ipairs(categories) do
-			local abilityId = abilities[category]
+			local abilityId = abilityPriorities[category]
 			if abilityId then
 				boostString = boostString ..
 					string.format(template, abilityId, (rolledScores[i] - entity.Stats.Abilities[Ext.Enums.AbilityId[abilityId].Value + 1]) + bonuses[i])
 			end
 		end
 	else
+		---@type AbilityPriorities
+		local abilityPriorities = determinePriorities({})
+
+		local function computeBoostString(scores, abilityId)
+			local baseScore = (scores[1] and scores[1] > 0 and scores[1]) or entity.Stats.Abilities[Ext.Enums.AbilityId[abilityId].Value + 1]
+
+			local totalScore = baseScore
+
+			for level, amountToAdd in TableUtils:OrderedPairs(scores) do
+				level = tonumber(level)
+				if level ~= 1 then
+					if level > entity.EocLevel.Level then
+						break
+					else
+						totalScore = totalScore + amountToAdd
+					end
+				end
+			end
+			totalScore = math.max(1, totalScore)
+			return template:format(abilityId, totalScore - entity.Stats.Abilities[Ext.Enums.AbilityId[abilityId].Value + 1])
+		end
+
+		---@type {[AbilityId] : boolean}
+		local abilityBoosts = {}
+
+		for priority, abilityId in pairs(abilityPriorities) do
+			if mutator.values.priorities[priority] then
+				local scores = mutator.values.priorities[priority]
+				if (TableUtils:CountElements(scores) > 1 and TableUtils:IndexOf(scores, function(value) return value ~= 0 end)) or not scores[1] or scores[1] ~= 0 then
+					Logger:BasicDebug("Setting %s based on the defined values for priority %s", abilityId, priority)
+					abilityBoosts[abilityId] = true
+					boostString = boostString .. computeBoostString(scores, abilityId)
+				end
+			end
+		end
+
 		for abilityId, scores in TableUtils:OrderedPairs(mutator.values.scores, function(key, value)
 			return Ext.Enums.AbilityId[key]
 		end) do
-			if TableUtils:CountElements(scores) > 1 or not scores[1] or scores[1] ~= 0 then
-				local baseScore = (scores[1] and scores[1] > 0 and scores[1]) or entity.Stats.Abilities[Ext.Enums.AbilityId[abilityId].Value + 1]
-
-				local totalScore = baseScore
-
-				for level, amountToAdd in TableUtils:OrderedPairs(scores) do
-					level = tonumber(level)
-					if level ~= 1 then
-						if level > entity.EocLevel.Level then
-							break
-						else
-							totalScore = totalScore + amountToAdd
-						end
-					end
-				end
-				totalScore = math.max(1, totalScore)
-				boostString = boostString .. template:format(abilityId, totalScore - entity.Stats.Abilities[Ext.Enums.AbilityId[abilityId].Value + 1])
+			if not abilityBoosts[abilityId] and (TableUtils:CountElements(scores) > 1 or not scores[1] or scores[1] ~= 0) then
+				boostString = boostString .. computeBoostString(scores, abilityId)
 			end
 		end
 	end
@@ -668,7 +728,7 @@ When determining which Abilities get the highest scores, the following is done i
 
 Priorities 4/5/6 currently can't be set by the user, as that seemed superfluous to me, but open to changing it if necessary.
 
-If the Static variant is used, then the behavior is as described in the tooltips.
+If the Static variant is used, then the behavior is as described in the tooltips. The Priorities are deteremined the same way as above, just without step 1.
 
 Both variants set their values via the `Osi.AddBoosts` function, constructing an `Ability(%s,%d)` expression for each ability.]]
 				},
