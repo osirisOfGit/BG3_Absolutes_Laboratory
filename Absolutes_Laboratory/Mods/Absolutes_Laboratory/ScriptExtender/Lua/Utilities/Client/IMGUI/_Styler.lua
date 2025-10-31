@@ -9,7 +9,8 @@ function Styler:DynamicLabelTree(tree)
 	tree.SpanFullWidth = true
 
 	return tree, function(count)
-		tree.Label = label .. (count > 0 and (" - " .. count .. " " .. (Translator.translationTable["selected"] and Translator:translate("selected") or "selected")) or "") .. "###" .. label
+		tree.Label = label ..
+		(count > 0 and (" - " .. count .. " " .. (Translator.translationTable["selected"] and Translator:translate("selected") or "selected")) or "") .. "###" .. label
 	end
 end
 
@@ -396,11 +397,14 @@ Styler.Colours = {
 	ErrorText = function(text)
 		text:SetColor("Text", { 1, 0.02, 0, 1 })
 	end,
+	DefaultText = function(text)
+		text:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
+	end
 }
 
 ---@generic Ele : ExtuiStyledRenderable
 ---@param element Ele
----@param property string|"PlainLink"|"ActiveButton"|"DisabledButton"|"ErrorText"
+---@param property string|"PlainLink"|"ActiveButton"|"DisabledButton"|"ErrorText"|"DefaultText"
 ---@param color number[]?
 ---@return Ele
 function Styler:Color(element, property, color)
