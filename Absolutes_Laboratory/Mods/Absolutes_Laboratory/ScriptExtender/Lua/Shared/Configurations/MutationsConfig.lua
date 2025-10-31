@@ -28,6 +28,12 @@ ConfigurationStructure.config.mutations.settings = {
 		["Default"] = {
 			[1] = 1
 		}
+	},
+	---@type {[string]: number[]}
+	abilitiesDistributionPresets = {
+		["Default"] = {
+			[1] = 0
+		}
 	}
 }
 
