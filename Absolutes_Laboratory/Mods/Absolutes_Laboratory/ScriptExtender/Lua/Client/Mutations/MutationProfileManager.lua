@@ -1763,6 +1763,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function MutationProfileManager:generateChangelog()
 	return {
+		["1.8.1"] = {
+			type = "Bullet",
+			text = {
+				"Some minor performance/QOL cleanup in the Profile Executor"
+			}
+		},
 		["1.8.0"] = {
 			type = "Bullet",
 			text = {

@@ -132,7 +132,6 @@ function MutatorInterface:undoMutator(entity, entityVar, primedEntityVar, reproc
 	local entityName = EntityRecorder:GetEntityName(entity)
 	Ext.Utils.ProfileBegin("Lab Profiles - Undoing Mutators on " .. entityName)
 	if entityVar then
-		local componentsToListenTo = {}
 		local time = Ext.Timer:MonotonicTime()
 
 		Logger:BasicDebug("=========================== STARTING UNDO FOR %s_%s ===========================",
@@ -151,14 +150,6 @@ function MutatorInterface:undoMutator(entity, entityVar, primedEntityVar, reproc
 				local success, error = xpcall(function(...)
 					Ext.Utils.ProfileBegin(("Lab Profiles - Undoing %s Mutator On %s"):format(mutatorName, entityName))
 					mut:undoMutator(entity, entityVar, primedEntityVar, reprocessTransient)
-
-					if next(mut.affectedComponents) then
-						for _, component in pairs(mut.affectedComponents) do
-							if not TableUtils:IndexOf(componentsToListenTo, component) then
-								table.insert(componentsToListenTo, component)
-							end
-						end
-					end
 
 					Ext.Utils.ProfileEnd(("Lab Profiles - Undoing %s Mutator On %s"):format(mutatorName, entityName))
 				end, debug.traceback)
@@ -182,7 +173,6 @@ function MutatorInterface:undoMutator(entity, entityVar, primedEntityVar, reproc
 			entity.Uuid.EntityUuid,
 			Ext.Timer:MonotonicTime() - time)
 
-		entity.Vars.Absolutes_Laboratory_Undone_Components = componentsToListenTo
 	end
 	entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = nil
 	Ext.Utils.ProfileEnd("Lab Profiles - Undoing Mutators on " .. entityName)

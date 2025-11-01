@@ -639,12 +639,18 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function ClassesAndSubclassesMutator:generateChangelog()
 	return {
+		["1.8.1"] = {
+			type = "Bullet",
+			text = {
+				"Fixes an error when a class in the config isn't present in the game",
+			}
+		},
 		["1.7.0"] = {
 			type = "Bullet",
 			text = {
-				"Sligtly widens inputs and makes sure UI elements scale appropriately",
+				"Slightly widens inputs and makes sure UI elements scale appropriately",
 				"Changes from Transient to _not_ transient, allowing Lab to undo the changes itself"
 			}
-		} --[[@as MazzleDocsContentItem]]
-	}
+		}
+	} --[[@as {[string]: MazzleDocsContentItem}]]
 end

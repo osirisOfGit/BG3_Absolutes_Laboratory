@@ -1,8 +1,4 @@
 ProgressionsMutator = MutatorInterface:new("Progressions")
-ProgressionsMutator.affectedComponents = {
-	"ProgressionContainer",
-	"ProgressionMeta"
-}
 
 function ProgressionsMutator:priority()
 	return self:recordPriority(SpellListMutator:priority() + 1)

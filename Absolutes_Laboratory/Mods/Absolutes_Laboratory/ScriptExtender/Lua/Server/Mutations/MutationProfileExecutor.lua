@@ -22,6 +22,8 @@ MutationProfileExecutor = {}
 
 local mutatedEntities = {}
 
+local executingLock = false
+
 function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 	local specifiedEntities = { ... }
 
@@ -30,6 +32,13 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 		Logger:BasicInfo("Recorder is currently running - skipping Mutations")
 		return
 	end
+
+	if executingLock then
+		Logger:BasicDebug("Mutation Profile is already executing - duplication came from %s", debug.traceback())
+		return
+	end
+
+	executingLock = true
 
 	Logger.mode = "timer"
 
@@ -112,6 +121,8 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 					profileExecutorStatus.stage = "Complete"
 					profileExecutorStatus.timeElapsed = (Ext.Timer:MonotonicTime() - time)
 					broadcastStatus()
+					executingLock = false
+					Logger.mode = "buffer"
 				else
 					tickCounter = tickCounter + 1
 					for entityId, funct in pairs(entitiesToProcess) do
@@ -290,6 +301,8 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 			Logger:BasicInfo("======= Cleared Mutations From %s Entities in %dms =======", counter, Ext.Timer:MonotonicTime() - time)
 
 			MonsterLabEncounterManager:MutateAllEncounters()
+			Logger.mode = "buffer"
+			executingLock = false
 		end
 	end, debug.traceback)
 
@@ -303,9 +316,11 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 		broadcastStatus()
 
 		MonsterLabEncounterManager:MutateAllEncounters()
+
+		Logger.mode = "buffer"
+		executingLock = false
 	end
 	Ext.Utils.ProfileEnd("Lab Mutation Profile Execution")
-	Logger.mode = "buffer"
 end
 
 ---@param entityVar MutatorEntityVar

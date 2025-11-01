@@ -1,10 +1,11 @@
+---@class LevelMutatorClass : MutatorInterface
 LevelMutator = MutatorInterface:new("Character Level")
-LevelMutator.affectedComponents = {
-	"Health",
-	"EocLevel"
-}
 function LevelMutator:priority()
 	return self:recordPriority(1)
+end
+
+function LevelMutator:canBeAdditive()
+	return true
 end
 
 function LevelMutator:handleDependencies()
@@ -23,6 +24,7 @@ end
 ---@class LevelModifier
 ---@field base LevelRandomModifier?
 ---@field xpReward {[string]: LevelRandomModifier}?
+---@field offsetBasePerPartyMember number?
 
 ---@class LevelThresholdRequirement
 ---@field comparator ">"|">="|"<"|"<="
@@ -116,6 +118,18 @@ end
 ---@param modifiers LevelModifier
 function LevelMutator:renderModifiers(parent, modifiers)
 	Helpers:KillChildren(parent)
+
+	parent:AddSeparator()
+
+	modifiers.offsetBasePerPartyMember = modifiers.offsetBasePerPartyMember or 0
+	parent:AddText("When the Party Size > 1, for each party member + follower, increase base value by (?)"):Tooltip():AddText(
+		"\t Excludes Summons; this accounts for the mod Sit This One Out 2, so any party members that won't join combat are excluded from the calculation")
+	local partyMemberIncreaseInput = parent:AddInputInt("", modifiers.offsetBasePerPartyMember)
+	partyMemberIncreaseInput.SameLine = true
+	partyMemberIncreaseInput.ItemWidth = 80
+	partyMemberIncreaseInput.OnChange = function()
+		modifiers.offsetBasePerPartyMember = partyMemberIncreaseInput.Value[1]
+	end
 
 	parent:AddText("Level can be randomly set to: ( ? )"):Tooltip():AddText(
 		"\t If both of the below are set to 0, affected entities will just have the value defined above used - otherwise, that value will be randomly +/- by the defined amounts")
@@ -233,152 +247,240 @@ Setting the min/max offset will offset the overall min/max in the same way
 	end
 end
 
-function LevelMutator:undoMutator(entity, entityVar)
-	Logger:BasicDebug("Reset to %s", entityVar.originalValues[self.name])
-	entity.AvailableLevel.Level = entityVar.originalValues[self.name]
-	entity.EocLevel.Level = entity.AvailableLevel.Level
-end
-
-local xpRewardList = {}
-
----@param mutatorModifier {[string]: LevelRandomModifier}
----@param xpRewardId string
----@return LevelRandomModifier?
-local function calculateXPRewardLevelModifier(mutatorModifier, xpRewardId)
-	if not next(xpRewardList) then
-		for _, xpReward in ipairs(Ext.StaticData.GetAll("ExperienceReward")) do
-			---@type ResourceExperienceRewards
-			local xpRewardResource = Ext.StaticData.Get(xpReward, "ExperienceReward")
-			if xpRewardResource.LevelSource > 0 then
-				table.insert(xpRewardList, xpReward)
-			end
-		end
+if Ext.IsServer() then
+	function LevelMutator:undoMutator(entity, entityVar)
+		Logger:BasicDebug("Reset to %s", entityVar.originalValues[self.name])
+		entity.AvailableLevel.Level = entityVar.originalValues[self.name]
+		entity.EocLevel.Level = entity.AvailableLevel.Level
 	end
 
-	local xMod = mutatorModifier[xpRewardId]
-	if not xMod and TableUtils:IndexOf(xpRewardList, xpRewardId) then
-		for i = TableUtils:IndexOf(xpRewardList, xpRewardId) - 1, 0, -1 do
-			xMod = mutatorModifier[xpRewardList[i]]
-			if xMod then
+	local xpRewardList = {}
+
+	---@param mutatorModifier {[string]: LevelRandomModifier}
+	---@param xpRewardId string
+	---@return LevelRandomModifier?
+	local function calculateXPRewardLevelModifier(mutatorModifier, xpRewardId)
+		if not next(xpRewardList) then
+			for _, xpReward in ipairs(Ext.StaticData.GetAll("ExperienceReward")) do
+				---@type ResourceExperienceRewards
+				local xpRewardResource = Ext.StaticData.Get(xpReward, "ExperienceReward")
+				if xpRewardResource.LevelSource > 0 then
+					table.insert(xpRewardList, xpReward)
+				end
+			end
+		end
+
+		local xMod = mutatorModifier[xpRewardId]
+		if not xMod and TableUtils:IndexOf(xpRewardList, xpRewardId) then
+			for i = TableUtils:IndexOf(xpRewardList, xpRewardId) - 1, 0, -1 do
+				xMod = mutatorModifier[xpRewardList[i]]
+				if xMod then
+					break
+				end
+			end
+		end
+
+		return xMod
+	end
+
+	local levelUpSubscription
+
+	function LevelMutator:applyMutator(entity, entityVar)
+		local levelMutators = entityVar.appliedMutators[self.name]
+		if not levelMutators[1] then
+			levelMutators = { levelMutators }
+		end
+		---@cast levelMutators LevelMutator[]
+
+		local function calculateHighestPlayerLevel()
+			local targetLevel = 1
+			for _, playerTable in pairs(Osi.DB_Players:Get(nil)) do
+				local player = playerTable[1]
+
+				---@type EntityHandle
+				local playerEntity = Ext.Entity.Get(player)
+
+				if playerEntity.EocLevel.Level > targetLevel then
+					targetLevel = playerEntity.EocLevel.Level
+				end
+			end
+			return targetLevel
+		end
+
+		for l = #levelMutators, 1, -1 do
+			local mutator = levelMutators[l]
+
+			local levelThreshold = mutator.levelThreshold
+			local targetLevel = levelThreshold.relativeToPlayer and (calculateHighestPlayerLevel() + levelThreshold.level) or levelThreshold.level
+
+			local entityPasses = false
+			if levelThreshold.comparator == ">" then
+				entityPasses = entity.EocLevel.Level > targetLevel
+			elseif levelThreshold.comparator == ">=" then
+				entityPasses = entity.EocLevel.Level >= targetLevel
+			elseif levelThreshold.comparator == "<" then
+				entityPasses = entity.EocLevel.Level < targetLevel
+			elseif levelThreshold.comparator == "<=" then
+				entityPasses = entity.EocLevel.Level <= targetLevel
+			end
+
+			if not entityPasses then
+				Logger:BasicDebug("Entity's level of %s is NOT %s the target level of %s%s - checking next mutator", entity.EocLevel.Level, levelThreshold.comparator, targetLevel,
+					levelThreshold.relativeToPlayer and " (calculated relative to the player's level)" or "")
+			else
+				entityVar.originalValues[self.name] = entity.EocLevel.Level
+
+				Logger:BasicDebug("Entity's level of %s is %s the target level of %s%s", entity.EocLevel.Level, levelThreshold.comparator, targetLevel,
+					levelThreshold.relativeToPlayer and " (calculated relative to the player's level)" or "")
+
+				---@type Character
+				local charStat = Ext.Stats.Get(entity.Data.StatsId)
+
+				local baseLevel = mutator.values
+
+				local offsetBasePerPartyMember = mutator.modifiers.offsetBasePerPartyMember
+				if offsetBasePerPartyMember and offsetBasePerPartyMember > 0 then
+					self:RegisterListeners()
+					local amountOfPartyMembers = -1
+					for _, playerDB in TableUtils:CombinedPairs(Osi.DB_PartyFollowers:Get(nil), Osi.DB_Players:Get(nil)) do
+						local player = playerDB[1]
+						if (Osi.HasActiveStatus(player, "SITOUT_ONCOMBATSTART_APPLIER_TECHNICAL") == 0
+								and Osi.HasActiveStatus(player, "SITOUT_HUSH_STATUS") == 0
+								and Osi.HasActiveStatus(player, "SITOUT_VANISH_STATUS_APPLIER") == 0)
+							or Osi.HasActiveStatus(player, "SITOUT_ALWAYS_FIGHT_STATUS") == 1
+						then
+							amountOfPartyMembers = amountOfPartyMembers + 1
+						else
+							Logger:BasicTrace("Party Member %s has a SitOut status - excluding", player)
+						end
+					end
+					if amountOfPartyMembers > 0 then
+						Logger:BasicDebug("There are %d active, non-sitout party members (excluding host's starting character), increasing base by %d", amountOfPartyMembers,
+							amountOfPartyMembers * offsetBasePerPartyMember)
+						baseLevel = baseLevel + (amountOfPartyMembers * offsetBasePerPartyMember)
+					end
+				end
+
+				local minBelow = mutator.modifiers.base and mutator.modifiers.base.minimumBelow or 0
+				local maxAbove = mutator.modifiers.base and mutator.modifiers.base.maximumAbove or 0
+
+				if charStat.XPReward and mutator.modifiers.xpReward then
+					---@type LevelRandomModifier?
+					local xPRewardMod
+					xPRewardMod = calculateXPRewardLevelModifier(mutator.modifiers.xpReward, charStat.XPReward)
+					if xPRewardMod then
+						baseLevel = baseLevel + (xPRewardMod.offsetBase or 0)
+						minBelow = baseLevel + (xPRewardMod.minimumBelow or 0)
+						maxAbove = baseLevel + (xPRewardMod.maximumAbove or 0)
+					end
+					if Logger:IsLogLevelEnabled(Logger.PrintTypes.DEBUG) then
+						Logger:BasicDebug("XPReward is %s, resulting modifier is %s", charStat.XPReward, xPRewardMod or "[Appropriate Modifier Not Found]")
+					end
+				end
+
+				Logger:BasicDebug("Base level above the %s level is %s (post XPReward + PartyMember calculation)", mutator.usePlayerLevel and "player" or "entity", baseLevel)
+
+				local useMin
+				if minBelow ~= 0 and maxAbove ~= 0 then
+					useMin = math.random(0, 1) == 0
+				elseif minBelow ~= 0 then
+					useMin = true
+				elseif maxAbove ~= 0 then
+					useMin = false
+				end
+
+				if useMin ~= nil then
+					if useMin then
+						Logger:BasicDebug("Subtracting a random value between 0 and %s from the base value %s", minBelow, baseLevel)
+						baseLevel = baseLevel - (math.random(0, minBelow))
+					else
+						Logger:BasicDebug("Adding a random value between 0 and %s to the base value %s", maxAbove, baseLevel)
+						baseLevel = baseLevel + (math.random(0, maxAbove))
+					end
+				end
+
+				local targetLevel = mutator.usePlayerLevel and 1 or entity.EocLevel.Level
+				if mutator.usePlayerLevel then
+					targetLevel = calculateHighestPlayerLevel()
+					Logger:BasicDebug("Highest player level is %s", targetLevel)
+				else
+					Logger:BasicDebug("Current entity level is %s", targetLevel)
+				end
+
+				if not levelUpSubscription and mutator.usePlayerLevel then
+					---@diagnostic disable-next-line: param-type-mismatch
+					levelUpSubscription = Ext.Entity.OnChange("EocLevel", function()
+						Logger:BasicInfo("A levelup mutator is registered and a player just gained enough XP to level up - rerunning mutations")
+						MutationProfileExecutor:ExecuteProfile(true)
+					end, Ext.Entity.Get(Osi.GetHostCharacter()))
+				end
+
+				entity.AvailableLevel.Level = math.max(1, targetLevel + baseLevel)
+				entity.EocLevel.Level = entity.AvailableLevel.Level
+				Logger:BasicDebug("Changed level from %s to %s", entityVar.originalValues[self.name], entity.AvailableLevel.Level)
+
 				break
 			end
 		end
-	end
 
-	return xMod
-end
-
-local levelUpSubscription
-
-function LevelMutator:applyMutator(entity, entityVar)
-	local function calculateHighestPlayerLevel()
-		local targetLevel = 1
-		for _, playerTable in pairs(Osi.DB_Players:Get(nil)) do
-			local player = playerTable[1]
-
-			---@type EntityHandle
-			local playerEntity = Ext.Entity.Get(player)
-
-			if playerEntity.EocLevel.Level > targetLevel then
-				targetLevel = playerEntity.EocLevel.Level
-			end
-		end
-		return targetLevel
-	end
-	entityVar.originalValues[self.name] = entity.EocLevel.Level
-
-	---@type LevelMutator
-	local mutator = entityVar.appliedMutators[self.name]
-
-	local levelThreshold = mutator.levelThreshold
-	local targetLevel = levelThreshold.relativeToPlayer and (calculateHighestPlayerLevel() + levelThreshold.level) or levelThreshold.level
-
-	local entityPasses = false
-	if levelThreshold.comparator == ">" then
-		entityPasses = entity.EocLevel.Level > targetLevel
-	elseif levelThreshold.comparator == ">=" then
-		entityPasses = entity.EocLevel.Level >= targetLevel
-	elseif levelThreshold.comparator == "<" then
-		entityPasses = entity.EocLevel.Level < targetLevel
-	elseif levelThreshold.comparator == "<=" then
-		entityPasses = entity.EocLevel.Level <= targetLevel
-	end
-
-	if not entityPasses then
-		Logger:BasicDebug("Entity's level of %s is NOT %s the target level of %s%s", entity.EocLevel.Level, levelThreshold.comparator, targetLevel,
-			levelThreshold.relativeToPlayer and " (calculated relative to the player's level)" or "")
-		return
-	else
-		Logger:BasicDebug("Entity's level of %s is %s the target level of %s%s", entity.EocLevel.Level, levelThreshold.comparator, targetLevel,
-			levelThreshold.relativeToPlayer and " (calculated relative to the player's level)" or "")
-	end
-
-	---@type Character
-	local charStat = Ext.Stats.Get(entity.Data.StatsId)
-
-	local baseLevel = mutator.values
-	local minBelow = mutator.modifiers.base and mutator.modifiers.base.minimumBelow or 0
-	local maxAbove = mutator.modifiers.base and mutator.modifiers.base.maximumAbove or 0
-
-	if charStat.XPReward and mutator.modifiers.xpReward then
-		---@type LevelRandomModifier?
-		local xPRewardMod
-		xPRewardMod = calculateXPRewardLevelModifier(mutator.modifiers.xpReward, charStat.XPReward)
-		if xPRewardMod then
-			baseLevel = baseLevel + (xPRewardMod.offsetBase or 0)
-			minBelow = baseLevel + (xPRewardMod.minimumBelow or 0)
-			maxAbove = baseLevel + (xPRewardMod.maximumAbove or 0)
-		end
-		if Logger:IsLogLevelEnabled(Logger.PrintTypes.DEBUG) then
-			Logger:BasicDebug("XPReward is %s, resulting modifier is %s", charStat.XPReward, xPRewardMod or "[Appropriate Modifier Not Found]")
+		if not entityVar.originalValues[self.name] then
+			Logger:BasicDebug("No level mutators applied")
 		end
 	end
 
-	Logger:BasicDebug("Base level above the %s level is %s (post XPReward calculation)", mutator.usePlayerLevel and "player" or "entity", baseLevel)
-
-	local useMin
-	if minBelow ~= 0 and maxAbove ~= 0 then
-		useMin = math.random(0, 1) == 0
-	elseif minBelow ~= 0 then
-		useMin = true
-	elseif maxAbove ~= 0 then
-		useMin = false
+	function LevelMutator:FinalizeMutator(entity)
+		entity:Replicate("AvailableLevel")
+		entity:Replicate("EocLevel")
 	end
 
-	if useMin ~= nil then
-		if useMin then
-			Logger:BasicDebug("Subtracting a random value between 0 and %s from the base value %s", minBelow, baseLevel)
-			baseLevel = baseLevel - (math.random(0, minBelow))
-		else
-			Logger:BasicDebug("Adding a random value between 0 and %s to the base value %s", maxAbove, baseLevel)
-			baseLevel = baseLevel + (math.random(0, maxAbove))
+	local isInCamp = false
+	local changedPartyMembers = false
+	local isRegistered = false
+	function LevelMutator:RegisterListeners()
+		if not isRegistered then
+			isRegistered = true
+			Ext.Osiris.RegisterListener("TeleportedToCamp", 1, "after", function(character)
+				if Osi.IsInPartyWith(character, Osi.GetHostCharacter()) == 1 then
+					isInCamp = true
+				end
+			end)
+
+			Ext.Osiris.RegisterListener("LongRestStarted", 0, "after", function()
+				isInCamp = true
+			end)
+
+			Ext.Osiris.RegisterListener("TeleportedFromCamp", 1, "after", function(character)
+				isInCamp = false
+				if changedPartyMembers then
+					Logger:BasicDebug("Party members changed and the player just left camp, rerunning profile")
+					MutationProfileExecutor:ExecuteProfile(true)
+					changedPartyMembers = false
+				end
+			end)
+
+			Ext.Osiris.RegisterListener("CharacterLeftParty", 1, "after", function(character)
+				if (Osi.IsSummon(character) == 0) then
+					if not isInCamp then
+						Logger:BasicDebug("Character %s (%s) left the party, rerunning profile", EntityRecorder:GetEntityName(Ext.Entity.Get(character)), character)
+						MutationProfileExecutor:ExecuteProfile(true)
+					else
+						changedPartyMembers = true
+					end
+				end
+			end)
+
+			Ext.Osiris.RegisterListener("CharacterJoinedParty", 1, "after", function(character)
+				if (Osi.IsPartyFollower(character) == 1 or Osi.IsPlayer(character) == 1) then
+					if not isInCamp then
+						Logger:BasicDebug("Character %s (%s) joined the party, rerunning profile", EntityRecorder:GetEntityName(Ext.Entity.Get(character)), character)
+						MutationProfileExecutor:ExecuteProfile(true)
+					else
+						changedPartyMembers = true
+					end
+				end
+			end)
 		end
 	end
-
-	local targetLevel = mutator.usePlayerLevel and 1 or entity.EocLevel.Level
-	if mutator.usePlayerLevel then
-		targetLevel = calculateHighestPlayerLevel()
-		Logger:BasicDebug("Highest player level is %s", targetLevel)
-	else
-		Logger:BasicDebug("Current entity level is %s", targetLevel)
-	end
-
-	if not levelUpSubscription and mutator.usePlayerLevel then
-		---@diagnostic disable-next-line: param-type-mismatch
-		levelUpSubscription = Ext.Entity.OnChange("EocLevel", function()
-			Logger:BasicInfo("A levelup mutator is registered and a player just gained enough XP to level up - rerunning mutations")
-			MutationProfileExecutor:ExecuteProfile(true)
-		end, Ext.Entity.Get(Osi.GetHostCharacter()))
-	end
-
-	entity.AvailableLevel.Level = math.max(1, targetLevel + baseLevel)
-	entity.EocLevel.Level = entity.AvailableLevel.Level
-	Logger:BasicDebug("Changed level from %s to %s", entityVar.originalValues[self.name], entity.AvailableLevel.Level)
-end
-
-function LevelMutator:FinalizeMutator(entity)
-	entity:Replicate("AvailableLevel")
-	entity:Replicate("EocLevel")
 end
 
 ---@return MazzleDocsDocumentation
@@ -402,7 +504,7 @@ function LevelMutator:generateDocs()
 					text = [[
 Dependency On: None
 Transient: No
-Composable: No]]
+Composable: Yes]]
 				} --[[@as MazzleDocsCallOut]],
 				{
 					type = "Separator"
@@ -431,6 +533,7 @@ The 'Entity' mentioned throughout refers strictly to the Entity being mutated - 
 The mutator is laid out as follows:
 
 Level Threshold - this represents a condition on the Mutator, separate from the selector, allowing you to design a Mutation that changes the bell curve of the selected entity's levels to match your intended experience.
+This also serves as a filter when this mutator is composed with others - they are processed last->first (bottom to top in the context of a profile), and the first mutator whose level threshold applies to the entity is the one that will be used - the rest will be skipped
 
 Base Level - this is the non-random value to set the entity to, which becomes the new 'base' and is referenced in the rest of the Mutator.
 If this is configured to be relative to the highest-leveled player (separate from the threshold), it's considered 'Dynamic', otherwise it's 'Static'
@@ -449,7 +552,15 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 					text = [[
 This Mutator directly changes the AvailableLevel and EocLevel components on the Entity (somehow this is not transient behavior)
 
-If the Base level is calculated relative to the Players's level (threshold is not relevant here), then a Component listener will be set on the host of the party - when the host levels up and exits the Character Level Up screen, the Profile will completely re-executed as if the game had been saved and reloaded (which does mean that entities that previously didn't meet the threshold could meet it now)]]
+If the Base level is calculated relative to the Players's level (threshold is not relevant here), then a Component listener will be set on the host of the party - when the host levels up and exits the Character Level Up screen, the Profile will completely re-executed as if the game had been saved and reloaded (which does mean that entities that previously didn't meet the threshold could meet it now)
+
+For party size calculations, only party members and followers (not summons) other than the host's character are counted - for compatibility with Sit This One Out 2, the following checks are done on each party member to see if they will join combat:
+if (Osi.HasActiveStatus(char, "SITOUT_ONCOMBATSTART_APPLIER_TECHNICAL") == 0
+		and Osi.HasActiveStatus(char, "SITOUT_HUSH_STATUS") == 0
+		and Osi.HasActiveStatus(char, "SITOUT_VANISH_STATUS_APPLIER") == 0)
+	or Osi.HasActiveStatus(char, "SITOUT_ALWAYS_FIGHT_STATUS") == 1
+	
+Additionally, when a mutator with a party-size calculator is run, OSI Event listeners will be registered to re-execute the profile whenever a party member/follower leaves or joins - if these events happen in camp, then the execution will be deferred until they leave to prevent any dialogue locks and constant execution.]]
 				},
 				{
 					type = "Separator"
@@ -479,19 +590,26 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function LevelMutator:generateChangelog()
 	return {
+		["1.8.1"] = {
+			type = "Bullet",
+			text = {
+				"Makes this mutator composable, using the last mutator in the profile that passes the Level Threshold check",
+				"Adds an option to increase the base level for each party member + follower, excluding summons"
+			}
+		},
 		["1.7.0"] = {
 			type = "Bullet",
 			text = {
 				"Changes the on level up behavior to trigger when the EocLevel component changes instead of the AvailableLevel component, preventing it from firing mid-combat",
 				"Use EocLevel for all player-centric calculations"
 			}
-		} --[[@as MazzleDocsContentItem]],
+		},
 		["1.6.0"] = {
 			type = "Bullet",
 			text = {
 				"Adds Level Thresholds",
 				"Adds option to base the static increase/decrease on the entity's level, not the player's level"
 			}
-		} --[[@as MazzleDocsContentItem]]
-	}
+		}
+	} --[[@as {[string]: MazzleDocsContentItem}]]
 end
