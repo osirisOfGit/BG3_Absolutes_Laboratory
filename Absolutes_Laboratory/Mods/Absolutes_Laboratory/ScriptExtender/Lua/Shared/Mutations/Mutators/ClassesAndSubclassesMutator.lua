@@ -114,90 +114,92 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 			for classId, levelPercentage in TableUtils:OrderedPairs(classConditionalGroup.classIds, function(_, value)
 				return value
 			end) do
-				local groupRow = groupTable:AddRow()
-
-				local name = self.translationMap[classId]
 				---@type ResourceClassDescription
 				local class = Ext.StaticData.Get(classId, "ClassDescription")
 
-				if self.translationMap[class.ParentGuid] then
-					name = self.translationMap[class.ParentGuid] .. " - " .. name
-				end
+				if class then
+					local groupRow = groupTable:AddRow()
 
-				local classCell = groupRow:AddCell()
-				local deleteClass = Styler:ImageButton(classCell:AddImageButton("delete" .. classId, "ico_red_x", { 16, 16 }))
-				deleteClass.OnClick = function()
-					classConditionalGroup.classIds[classId] = nil
-					if TableUtils:CountElements(classConditionalGroup.classIds) ~= 0 then
-						for otherID, otherLevelPercentage in pairs(classConditionalGroup.classIds) do
-							if levelPercentage + otherLevelPercentage <= 100 then
-								classConditionalGroup.classIds[otherID] = otherLevelPercentage + levelPercentage
-								break
+					local name = self.translationMap[classId]
+					if self.translationMap[class.ParentGuid] then
+						name = self.translationMap[class.ParentGuid] .. " - " .. name
+					end
+
+					local classCell = groupRow:AddCell()
+					local deleteClass = Styler:ImageButton(classCell:AddImageButton("delete" .. classId, "ico_red_x", { 16, 16 }))
+					deleteClass.OnClick = function()
+						classConditionalGroup.classIds[classId] = nil
+						if TableUtils:CountElements(classConditionalGroup.classIds) ~= 0 then
+							for otherID, otherLevelPercentage in pairs(classConditionalGroup.classIds) do
+								if levelPercentage + otherLevelPercentage <= 100 then
+									classConditionalGroup.classIds[otherID] = otherLevelPercentage + levelPercentage
+									break
+								end
 							end
+						else
+							classConditionalGroup.classIds.delete = true
 						end
+
+						self:renderMutator(parent, mutator)
+					end
+
+					Styler:HyperlinkText(classCell, name, function(parent)
+						ResourceManager:RenderDisplayWindow(Ext.StaticData.Get(classId, "ClassDescription"), parent)
+					end).SameLine = true
+
+					local levelPercentageInput = groupRow:AddCell():AddInputInt("%", levelPercentage)
+					levelPercentageInput.IDContext = classId
+					levelPercentageInput.UserData = classId
+					levelPercentageInput.ItemWidth = Styler:ScaleFactor() * 80
+					levelPercentageInput.SameLine = true
+
+					if TableUtils:CountElements(classConditionalGroup.classIds) == 1 then
+						levelPercentageInput.Disabled = true
 					else
-						classConditionalGroup.classIds.delete = true
-					end
-
-					self:renderMutator(parent, mutator)
-				end
-
-				Styler:HyperlinkText(classCell, name, function(parent)
-					ResourceManager:RenderDisplayWindow(Ext.StaticData.Get(classId, "ClassDescription"), parent)
-				end).SameLine = true
-
-				local levelPercentageInput = groupRow:AddCell():AddInputInt("%", levelPercentage)
-				levelPercentageInput.IDContext = classId
-				levelPercentageInput.UserData = classId
-				levelPercentageInput.ItemWidth = Styler:ScaleFactor() * 80
-				levelPercentageInput.SameLine = true
-
-				if TableUtils:CountElements(classConditionalGroup.classIds) == 1 then
-					levelPercentageInput.Disabled = true
-				else
-					levelPercentageInput.OnChange = function()
-						local total = levelPercentageInput.Value[1]
-						for _, childRow in pairs(groupTable.Children) do
-							local input = childRow.Children[2].Children[1]
-							if input.UserData and input.UserData ~= classId then
-								---@cast input ExtuiInputInt
-								total = total + input.Value[1]
-							end
-						end
-
-						if total ~= 100 then
-							errorText.Visible = true
-						else
-							errorText.Visible = false
-						end
-					end
-
-					levelPercentageInput.OnDeactivate = function()
-						if levelPercentageInput.Value[1] < 0 then
-							levelPercentageInput.Value = { 0, 0, 0, 0 }
-						end
-
-						local total = levelPercentageInput.Value[1]
-						for _, childRow in pairs(groupTable.Children) do
-							local input = childRow.Children[2].Children[1]
-							if input.UserData and input.UserData ~= classId then
-								---@cast input ExtuiInputInt
-								total = total + input.Value[1]
-							end
-						end
-
-						if total ~= 100 then
-							errorText.Visible = true
-						else
+						levelPercentageInput.OnChange = function()
+							local total = levelPercentageInput.Value[1]
 							for _, childRow in pairs(groupTable.Children) do
 								local input = childRow.Children[2].Children[1]
-								if input.UserData then
+								if input.UserData and input.UserData ~= classId then
 									---@cast input ExtuiInputInt
-									classConditionalGroup.classIds[input.UserData] = input.Value[1]
+									total = total + input.Value[1]
 								end
 							end
 
-							self:renderMutator(parent, mutator)
+							if total ~= 100 then
+								errorText.Visible = true
+							else
+								errorText.Visible = false
+							end
+						end
+
+						levelPercentageInput.OnDeactivate = function()
+							if levelPercentageInput.Value[1] < 0 then
+								levelPercentageInput.Value = { 0, 0, 0, 0 }
+							end
+
+							local total = levelPercentageInput.Value[1]
+							for _, childRow in pairs(groupTable.Children) do
+								local input = childRow.Children[2].Children[1]
+								if input.UserData and input.UserData ~= classId then
+									---@cast input ExtuiInputInt
+									total = total + input.Value[1]
+								end
+							end
+
+							if total ~= 100 then
+								errorText.Visible = true
+							else
+								for _, childRow in pairs(groupTable.Children) do
+									local input = childRow.Children[2].Children[1]
+									if input.UserData then
+										---@cast input ExtuiInputInt
+										classConditionalGroup.classIds[input.UserData] = input.Value[1]
+									end
+								end
+
+								self:renderMutator(parent, mutator)
+							end
 						end
 					end
 				end
