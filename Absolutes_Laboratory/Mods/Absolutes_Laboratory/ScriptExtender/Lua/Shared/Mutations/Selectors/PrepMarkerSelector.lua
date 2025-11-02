@@ -78,41 +78,43 @@ function PrepMarkerSelector:predicate(selector)
 		local appliedCategories = {}
 		for i, mProfileRule in ipairs(activeProfile.prepPhaseMutations) do
 			local mutation = MutationConfigurationProxy.folders[mProfileRule.mutationFolderId].mutations[mProfileRule.mutationId]
-			mutation = mutation._real or mutation
+			if not mutation then
+				mutation = mutation._real or mutation
 
-			---@type PrepMarkerCategory[]
-			local markerMutator = mutation.mutators[1].values or {}
-			for _, category in ipairs(markerMutator) do
-				if TableUtils:IndexOf(selector.criteriaValue, category) then
-					if not cachedSelectors[mProfileRule.mutationFolderId] then
-						cachedSelectors[mProfileRule.mutationFolderId] = {}
-					end
-					if not cachedSelectors[mProfileRule.mutationFolderId][mProfileRule.mutationId] then
-						cachedSelectors[mProfileRule.mutationFolderId][mProfileRule.mutationId] = SelectorInterface:createComposedPredicate(mutation.selectors)
-					end
+				---@type PrepMarkerCategory[]
+				local markerMutator = mutation.mutators[1].values or {}
+				for _, category in ipairs(markerMutator) do
+					if TableUtils:IndexOf(selector.criteriaValue, category) then
+						if not cachedSelectors[mProfileRule.mutationFolderId] then
+							cachedSelectors[mProfileRule.mutationFolderId] = {}
+						end
+						if not cachedSelectors[mProfileRule.mutationFolderId][mProfileRule.mutationId] then
+							cachedSelectors[mProfileRule.mutationFolderId][mProfileRule.mutationId] = SelectorInterface:createComposedPredicate(mutation.selectors)
+						end
 
-					if cachedSelectors[mProfileRule.mutationFolderId][mProfileRule.mutationId]:Test(entity) then
-						for _, mutator in pairs(mutation.mutators) do
-							if mProfileRule.additive then
-								if appliedCategories[1] then
-									table.insert(appliedCategories, mutator.values)
+						if cachedSelectors[mProfileRule.mutationFolderId][mProfileRule.mutationId]:Test(entity) then
+							for _, mutator in pairs(mutation.mutators) do
+								if mProfileRule.additive then
+									if appliedCategories[1] then
+										table.insert(appliedCategories, mutator.values)
+									else
+										appliedCategories = { TableUtils:DeeplyCopyTable(appliedCategories), mutator.values }
+									end
+									if entityVar then
+										entityVar.appliedMutators[mutator.targetProperty] = mutator
+										entityVar.appliedMutatorsPath[mutator.targetProperty][i] = mProfileRule
+									end
 								else
-									appliedCategories = { TableUtils:DeeplyCopyTable(appliedCategories), mutator.values }
-								end
-								if entityVar then
-									entityVar.appliedMutators[mutator.targetProperty] = mutator
-									entityVar.appliedMutatorsPath[mutator.targetProperty][i] = mProfileRule
-								end
-							else
-								appliedCategories = mutator.values._real or mutator.values
-								if entityVar then
-									entityVar.appliedMutators[mutator.targetProperty] = mutator
-									entityVar.appliedMutatorsPath[mutator.targetProperty] = { [i] = mProfileRule }
+									appliedCategories = mutator.values._real or mutator.values
+									if entityVar then
+										entityVar.appliedMutators[mutator.targetProperty] = mutator
+										entityVar.appliedMutatorsPath[mutator.targetProperty] = { [i] = mProfileRule }
+									end
 								end
 							end
 						end
+						goto next
 					end
-					goto next
 				end
 			end
 			::next::

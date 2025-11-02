@@ -1649,6 +1649,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function MonsterLab:generateChangelog()
 	return {
+		["1.8.1"] = {
+			type = "Bullet",
+			text = {
+				"Fix NPE when there's never been an active ML profile executed"
+			}
+		},
 		["1.8.0"] = {
 			type = "Bullet",
 			text = "Initial Release"

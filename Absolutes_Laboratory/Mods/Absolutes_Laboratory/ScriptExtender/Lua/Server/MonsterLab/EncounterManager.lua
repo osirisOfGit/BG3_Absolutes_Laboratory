@@ -400,7 +400,7 @@ function MonsterLabEncounterManager:MutateAllEncounters()
 	Ext.Utils.ProfileBegin("Monster Lab Mutate All Entities")
 	Logger:BasicDebug("=========== Starting Mutation Of All Encounters ===========")
 	local success, error = xpcall(function(...)
-		for encounterId, encounter in pairs(allSpawnedEntities) do
+		for encounterId, encounter in pairs(allSpawnedEntities or {}) do
 			Logger:BasicDebug("======= Starting Mutation Of Encounter %s =======", encounter.name or encounterId)
 			for mlEntityId, entity in pairs(encounter.entities) do
 				---@type MutatorEntityVar

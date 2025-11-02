@@ -158,7 +158,7 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 				templateDisplay:AddDummy(38, 32).SameLine = true
 			end
 
-			Styler:HyperlinkText(templateDisplay, self.translationMap[templateCriteria.id], function(parent)
+			Styler:HyperlinkText(templateDisplay, self.translationMap[templateCriteria.id] or templateCriteria.id, function(parent)
 				ResourceManager:RenderDisplayWindow(Ext.Template.GetTemplate(templateCriteria.id), parent)
 			end, true).SameLine = true
 		end
