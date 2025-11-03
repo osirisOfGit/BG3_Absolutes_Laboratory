@@ -290,32 +290,39 @@ function MutationProfileManager:BuildFolderManager()
 			)
 		end
 
-		folderPopup:AddSelectable("Delete Folder (and Mutations)").OnClick = function()
-			folder.delete = true
+		---@param select ExtuiSelectable
+		folderPopup:AddSelectable("Delete Folder (and Mutations)", "DontClosePopups").OnClick = function(select)
+			if select.Label ~= "Delete Folder (and Mutations)" then
+				folder.delete = true
 
-			for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
-				local largestIndex = 0
+				for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
+					local largestIndex = 0
 
-				local toDelete = {}
-				for i, mutRule in TableUtils:OrderedPairs(profile.mutationRules) do
-					largestIndex = i > largestIndex and i or largestIndex
+					local toDelete = {}
+					for i, mutRule in TableUtils:OrderedPairs(profile.mutationRules) do
+						largestIndex = i > largestIndex and i or largestIndex
 
-					if mutRule.mutationFolderId == folderId then
-						toDelete[#toDelete + 1] = i - #toDelete
-					end
-				end
-
-				for _, indexToDelete in ipairs(toDelete) do
-					for x = indexToDelete, largestIndex do
-						if profile.mutationRules[x] then
-							profile.mutationRules[x].delete = true
+						if mutRule.mutationFolderId == folderId then
+							toDelete[#toDelete + 1] = i - #toDelete
 						end
-						profile.mutationRules[x] = TableUtils:DeeplyCopyTable(profile.mutationRules._real[x + 1])
+					end
+
+					for _, indexToDelete in ipairs(toDelete) do
+						for x = indexToDelete, largestIndex do
+							if profile.mutationRules[x] then
+								profile.mutationRules[x].delete = true
+							end
+							profile.mutationRules[x] = TableUtils:DeeplyCopyTable(profile.mutationRules._real[x + 1])
+						end
 					end
 				end
-			end
 
-			self:BuildFolderManager()
+				self:BuildFolderManager()
+			else
+				select.Label = "Are You Sure?"
+				Styler:Color(select, "ErrorText")
+				select.DontClosePopups = false
+			end
 		end
 
 		for mutationId, mutation in TableUtils:OrderedPairs(folder.mutations, function(key, value)
@@ -1766,7 +1773,8 @@ function MutationProfileManager:generateChangelog()
 		["1.8.1"] = {
 			type = "Bullet",
 			text = {
-				"Some minor performance/QOL cleanup in the Profile Executor"
+				"Some minor performance/QOL cleanup in the Profile Executor",
+				"Add confirmation behavior when deleting a folder"
 			}
 		},
 		["1.8.0"] = {
