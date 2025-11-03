@@ -2154,6 +2154,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function ListDesignerBaseClass:generateChangelog()
 	return {
+		["1.8.1"] = {
+			type = "Bullet",
+			text = {
+				"Fix error when a linked list doesn't exist, purging it from the config",
+			}
+		},
 		["1.7.1"] = {
 			type = "Bullet",
 			text = {
