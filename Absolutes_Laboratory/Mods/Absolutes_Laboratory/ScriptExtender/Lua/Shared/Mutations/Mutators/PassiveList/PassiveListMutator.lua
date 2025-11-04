@@ -751,23 +751,25 @@ end
 
 function PassiveListMutator:FinalizeMutator(entity)
 	Ext.Timer.WaitFor(500, function()
-		local plmVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME].originalValues[self.name]
-		local passiveIndex = {}
-		local removedPassives = {}
-		for _, passiveEntity in pairs(entity.PassiveContainer.Passives) do
-			if passiveEntity.Passive.Type == "Script" and TableUtils:IndexOf(plmVar, passiveEntity.Passive.PassiveId) then
-				if not passiveIndex[passiveEntity.Passive.PassiveId] then
-					passiveIndex[passiveEntity.Passive.PassiveId] = 1
-				else
-					removedPassives[passiveEntity.Passive.PassiveId] = (removedPassives[passiveEntity.Passive.PassiveId] or 0) + 1
-					Ext.System.ServerPassive.RemovePassives[passiveEntity] = true
+		if entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] then
+			local plmVar = entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME].originalValues[self.name]
+			local passiveIndex = {}
+			local removedPassives = {}
+			for _, passiveEntity in pairs(entity.PassiveContainer.Passives) do
+				if passiveEntity.Passive.Type == "Script" and TableUtils:IndexOf(plmVar, passiveEntity.Passive.PassiveId) then
+					if not passiveIndex[passiveEntity.Passive.PassiveId] then
+						passiveIndex[passiveEntity.Passive.PassiveId] = 1
+					else
+						removedPassives[passiveEntity.Passive.PassiveId] = (removedPassives[passiveEntity.Passive.PassiveId] or 0) + 1
+						Ext.System.ServerPassive.RemovePassives[passiveEntity] = true
+					end
 				end
 			end
-		end
 
-		if next(removedPassives) then
-			Logger:BasicDebug("Removed the following passives from %s (%s) due to being duplicated somehow:\n%s", EntityRecorder:GetEntityName(entity), entity.Uuid.EntityUuid,
-				removedPassives)
+			if next(removedPassives) then
+				Logger:BasicDebug("Removed the following passives from %s (%s) due to being duplicated somehow:\n%s", EntityRecorder:GetEntityName(entity), entity.Uuid.EntityUuid,
+					removedPassives)
+			end
 		end
 	end)
 end
