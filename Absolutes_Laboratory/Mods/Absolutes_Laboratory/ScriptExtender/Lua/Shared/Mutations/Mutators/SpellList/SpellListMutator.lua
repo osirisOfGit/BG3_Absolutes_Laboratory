@@ -1188,7 +1188,6 @@ if Ext.IsServer() then
 	end
 
 	function SpellListMutator:applyMutator(entity, entityVar)
-		ListConfigurationManager:buildProgressionIndex()
 		---@type EsvSpellSpellSystem
 		local spellSystem = Ext.System.ServerSpell
 

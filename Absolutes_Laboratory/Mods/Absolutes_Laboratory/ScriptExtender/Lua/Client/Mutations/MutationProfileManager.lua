@@ -1773,7 +1773,8 @@ function MutationProfileManager:generateChangelog()
 		["1.8.2"] = {
 			type = "Bullet",
 			text = {
-				"Fixed some runtime errors when exporting a profile that has non-existent mutators"
+				"Fixed some runtime errors when exporting a profile that has non-existent mutators",
+				"Server: Swaps from bulk indexing to lazy-loading the Progression indexing for Spell + Passive List Mutators, resulting in a meaningful performance increase especially for profiles with limited lists"
 			}
 		},
 		["1.8.1"] = {

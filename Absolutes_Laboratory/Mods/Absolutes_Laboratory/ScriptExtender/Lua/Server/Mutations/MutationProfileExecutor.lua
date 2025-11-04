@@ -281,7 +281,6 @@ function MutationProfileExecutor:ExecuteProfile(rerunTransient, ...)
 
 			Ext.OnNextTick(function(e)
 				checkCompletion()
-				ListConfigurationManager:buildProgressionIndex()
 			end)
 		else
 			local time = Ext.Timer:MonotonicTime()
