@@ -1130,21 +1130,23 @@ if Ext.IsServer() then
 						---@type SpellData
 						local spell = Ext.Stats.Get(spellName)
 
-						addSpells[#addSpells + 1] = {
-							PrepareType = "AlwaysPrepared",
-							SpellId = {
-								OriginatorPrototype = spellName,
-								SourceType = "SpellSet2",
-								Source = ModuleUUID
-							},
-							PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
-							SpellCastingAbility = entity.Stats.SpellCastingAbility,
-							CooldownType = Ext.Enums.SpellCooldownType[Ext.Enums.SpellCooldownType[CooldownType[spell.Cooldown]]]
-						}
+						if spell then
+							addSpells[#addSpells + 1] = {
+								PrepareType = "AlwaysPrepared",
+								SpellId = {
+									OriginatorPrototype = spellName,
+									SourceType = "SpellSet2",
+									Source = ModuleUUID
+								},
+								PreferredCastingResource = "d136c5d9-0ff0-43da-acce-a74a07f8d6bf",
+								SpellCastingAbility = entity.Stats.SpellCastingAbility,
+								CooldownType = Ext.Enums.SpellCooldownType[Ext.Enums.SpellCooldownType[CooldownType[spell.Cooldown]]]
+							}
 
-						origValues.addedSpells = origValues.addedSpells or {}
-						table.insert(origValues.addedSpells, spellName)
-						Logger:BasicDebug("Added guaranteed spell %s", spellName)
+							origValues.addedSpells = origValues.addedSpells or {}
+							table.insert(origValues.addedSpells, spellName)
+							Logger:BasicDebug("Added guaranteed spell %s", spellName)
+						end
 					end
 				elseif subListName == "onDeathOnly" then
 					entity.Vars[SPELL_MUTATOR_ON_DEATH] = entity.Vars[SPELL_MUTATOR_ON_DEATH] or {}
@@ -1761,6 +1763,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function SpellListMutator:generateChangelog()
 	return {
+		["1.8.2"] = {
+			type = "Bullet",
+			text = {
+				"Fixes error if a spell in a list doesn't exist"
+			}
+		},
 		["1.8.0"] = {
 			type = "Bullet",
 			text = {

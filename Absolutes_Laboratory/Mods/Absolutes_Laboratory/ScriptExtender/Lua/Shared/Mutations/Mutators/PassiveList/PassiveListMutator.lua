@@ -626,7 +626,7 @@ function PassiveListMutator:applyMutator(entity, entityVar)
 					passiveList = passiveList.__real or passiveList
 					if passiveList.spellListDependencies and next(passiveList.spellListDependencies) then
 						for _, spellListDependency in ipairs(passiveList.spellListDependencies) do
-							if entityVar.appliedMutators[SpellListMutator.name] and entityVar.appliedMutators[SpellListMutator.name].appliedLists[spellListDependency] then
+							if entityVar.appliedMutators[SpellListMutator.name] and entityVar.appliedMutators[SpellListMutator.name].appliedLists and entityVar.appliedMutators[SpellListMutator.name].appliedLists[spellListDependency] then
 								if not usingListsWithSpellListDeps then
 									passiveListsPool = {}
 									usingListsWithSpellListDeps = true
@@ -766,7 +766,8 @@ function PassiveListMutator:FinalizeMutator(entity)
 		end
 
 		if next(removedPassives) then
-			Logger:BasicDebug("Removed the following passives from %s (%s) due to being duplicated somehow:\n%s", EntityRecorder:GetEntityName(entity), entity.Uuid.EntityUuid, removedPassives)
+			Logger:BasicDebug("Removed the following passives from %s (%s) due to being duplicated somehow:\n%s", EntityRecorder:GetEntityName(entity), entity.Uuid.EntityUuid,
+				removedPassives)
 		end
 	end)
 end
@@ -866,6 +867,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function PassiveListMutator:generateChangelog()
 	return {
+		["1.8.2"] = {
+			type = "Bullet",
+			text = {
+				"Fixes error if something went wrong while applying a Spell list mutator to an entity"
+			}
+		},
 		["1.8.0"] = {
 			type = "Bullet",
 			text = {
