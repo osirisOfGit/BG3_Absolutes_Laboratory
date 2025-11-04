@@ -268,19 +268,21 @@ function MutationExternalProfileUtility:exportProfile(forMod, ...)
 				end
 
 				---@type Mutation
-				local mutation = TableUtils:DeeplyCopyTable(folder.modId and folder.mutations[mutationRule.mutationId] or folder.mutations[mutationRule.mutationId]._real)
+				local mutation = TableUtils:DeeplyCopyTable(folder.mutations[mutationRule.mutationId])
 
-				export.folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId] = mutation
+				if mutation then
+					export.folders[mutationRule.mutationFolderId].mutations[mutationRule.mutationId] = mutation
 
-				for _, selector in ipairs(mutation.selectors) do
-					if type(selector) == "table" then
-						---@cast selector Selector
-						SelectorInterface:handleDependencies(export, selector)
+					for _, selector in ipairs(mutation.selectors) do
+						if type(selector) == "table" then
+							---@cast selector Selector
+							SelectorInterface:handleDependencies(export, selector)
+						end
 					end
-				end
 
-				for _, mutator in ipairs(mutation.mutators) do
-					MutatorInterface:handleDependencies(export, mutator)
+					for _, mutator in ipairs(mutation.mutators) do
+						MutatorInterface:handleDependencies(export, mutator)
+					end
 				end
 			else
 				local name, author, version = Helpers:BuildModFields(folder.modId)

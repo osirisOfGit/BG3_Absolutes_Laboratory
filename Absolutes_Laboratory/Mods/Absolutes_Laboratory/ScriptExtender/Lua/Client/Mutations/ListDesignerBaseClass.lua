@@ -2154,6 +2154,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function ListDesignerBaseClass:generateChangelog()
 	return {
+		["1.8.2"] = {
+			type = "Bullet",
+			text = {
+				"Fix error borne from purging data from an array when iterating said array",
+			}
+		},
 		["1.8.1"] = {
 			type = "Bullet",
 			text = {

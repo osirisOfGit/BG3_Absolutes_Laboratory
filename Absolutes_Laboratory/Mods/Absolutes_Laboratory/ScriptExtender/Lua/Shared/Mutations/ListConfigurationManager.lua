@@ -367,10 +367,6 @@ function ListConfigurationManager:HandleDependences(export, mutator, lists, remo
 									if not next(sublists._real or sublists) then
 										sublists.delete = true
 										levelSubList.linkedProgressions[progressionTableId] = nil
-										if not next(levelSubList.linkedProgressions._real or levelSubList.linkedProgressions) then
-											levelSubList.linkedProgressions.delete = true
-											levelSubList.linkedProgressions = nil
-										end
 										goto nextProgression
 									end
 

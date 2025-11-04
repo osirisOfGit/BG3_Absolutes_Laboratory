@@ -1770,6 +1770,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function MutationProfileManager:generateChangelog()
 	return {
+		["1.8.2"] = {
+			type = "Bullet",
+			text = {
+				"Fixed some runtime errors when exporting a profile that has non-existent mutators"
+			}
+		},
 		["1.8.1"] = {
 			type = "Bullet",
 			text = {
