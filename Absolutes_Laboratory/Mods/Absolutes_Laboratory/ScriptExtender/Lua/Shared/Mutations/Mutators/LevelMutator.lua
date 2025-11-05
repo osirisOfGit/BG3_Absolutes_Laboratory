@@ -29,6 +29,7 @@ end
 ---@field base LevelRandomModifier?
 ---@field xpReward {[string]: LevelRandomModifier}?
 ---@field offsetBasePerPartyMember number?
+---@field basePartySize number
 
 ---@class LevelThresholdRequirement
 ---@field comparator ">"|">="|"<"|"<="
@@ -126,11 +127,26 @@ function LevelMutator:renderModifiers(parent, modifiers)
 	parent:AddSeparator()
 
 	modifiers.offsetBasePerPartyMember = modifiers.offsetBasePerPartyMember or 0
-	parent:AddText("When the Party Size > 1, for each party member + follower, increase base value by (?)"):Tooltip():AddText(
-		"\t Excludes Summons; this accounts for the mod Sit This One Out 2, so any party members that won't join combat are excluded from the calculation")
+	modifiers.basePartySize = modifiers.basePartySize or 1
+
+	parent:AddText("When the Party Size is more than ")
+	local basePartySize = parent:AddInputInt("", modifiers.basePartySize)
+	basePartySize.SameLine = true
+	basePartySize.ItemWidth = 30
+	basePartySize.OnChange = function()
+		if basePartySize.Value[1] < 1 then
+			basePartySize.Value = { 1, 1, 1, 1 }
+		end
+		modifiers.basePartySize = basePartySize.Value[1]
+	end
+
+	local secondText = parent:AddText(", for each party member + follower, increase base value by (?)")
+	secondText.SameLine = true
+	secondText:Tooltip():AddText(
+		"\t Excludes Summons; this accounts for the mod Sit This One Out 2, so any party members that won't join combat are excluded from the calculation.\nIf the active party size is less than the specified base size, the specified base offset will be subtracted from the base, instead of added to.")
 	local partyMemberIncreaseInput = parent:AddInputInt("", modifiers.offsetBasePerPartyMember)
 	partyMemberIncreaseInput.SameLine = true
-	partyMemberIncreaseInput.ItemWidth = 80
+	partyMemberIncreaseInput.ItemWidth = 30
 	partyMemberIncreaseInput.OnChange = function()
 		modifiers.offsetBasePerPartyMember = partyMemberIncreaseInput.Value[1]
 	end
@@ -344,8 +360,10 @@ if Ext.IsServer() then
 
 				local offsetBasePerPartyMember = mutator.modifiers.offsetBasePerPartyMember
 				if offsetBasePerPartyMember and offsetBasePerPartyMember > 0 then
+					mutator.modifiers.basePartySize = mutator.modifiers.basePartySize or 1
+
 					self:RegisterListeners()
-					local amountOfPartyMembers = -1
+					local amountOfPartyMembers = 0
 					for _, playerDB in TableUtils:CombinedPairs(Osi.DB_PartyFollowers:Get(nil), Osi.DB_Players:Get(nil)) do
 						local player = playerDB[1]
 						if (Osi.HasActiveStatus(player, "SITOUT_ONCOMBATSTART_APPLIER_TECHNICAL") == 0
@@ -358,10 +376,20 @@ if Ext.IsServer() then
 							Logger:BasicTrace("Party Member %s has a SitOut status - excluding", player)
 						end
 					end
-					if amountOfPartyMembers > 0 then
-						Logger:BasicDebug("There are %d active, non-sitout party members (excluding host's starting character), increasing base by %d", amountOfPartyMembers,
+					amountOfPartyMembers = amountOfPartyMembers - mutator.modifiers.basePartySize
+
+					if amountOfPartyMembers ~= 0 then
+						if amountOfPartyMembers < 0 then
+							offsetBasePerPartyMember = offsetBasePerPartyMember
+						end
+
+						Logger:BasicDebug(
+							"There are %d active, non-sitout party members (excluding host's starting character), compared to the base party size of %d, adding %d to the base level",
+							amountOfPartyMembers,
+							mutator.modifiers.basePartySize,
 							amountOfPartyMembers * offsetBasePerPartyMember)
-						baseLevel = baseLevel + (amountOfPartyMembers * offsetBasePerPartyMember)
+
+						baseLevel = baseLevel + (math.abs(amountOfPartyMembers) * offsetBasePerPartyMember)
 					end
 				end
 
@@ -594,6 +622,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function LevelMutator:generateChangelog()
 	return {
+		["1.8.2"] = {
+			type = "Bullet",
+			text = {
+				"Adds ability to specify what the base party size should be for party-based scaling"
+			}
+		},
 		["1.8.1"] = {
 			type = "Bullet",
 			text = {
