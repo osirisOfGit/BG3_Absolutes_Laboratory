@@ -763,9 +763,3 @@ function MazzleDocsAPI.OnWindowResize(window, callback_id, callback) end
 ---@param options? MazzleDocsRenderOptions Optional rendering options
 ---@return table widgets Table of created widgets keyed by widget_id (for widgets that have IDs)
 function MazzleDocsAPI.RenderContent(container, content_table, options) end
-
--- Global API Access
--- Usage: Mods.Mazzle_Docs.API.Get("MyMod", "MyDocs", "my_widget")
-Mods = Mods or {}
-Mods.Mazzle_Docs = Mods.Mazzle_Docs or {}
-Mods.Mazzle_Docs.API = MazzleDocsAPI

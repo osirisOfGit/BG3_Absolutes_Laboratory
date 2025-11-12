@@ -442,13 +442,15 @@ function HealthMutator:applyMutator(entity, entityVar)
 
 			local gameLevelMod = entity.Level and calculateGameLevelModifier(mutator.modifiers["GameLevel"], entity.Level.LevelName) or 0
 			local characterMod = calculateCharacterLevelModifier(mutator.modifiers["CharacterLevel"], entity.AvailableLevel.Level)
+
 			local baseHp = percentageToAdd > 0 and percentageToAdd or entity.Health.MaxHp
 			local dynamicPercentage = (mutator.values + (characterMod + gameLevelMod + xPRewardMod)) / 100
 
-			percentageToAdd = percentageToAdd + (baseHp + math.floor(baseHp * dynamicPercentage))
+			percentageToAdd = baseHp + math.floor(baseHp * dynamicPercentage)
 
 			Logger:BasicDebug(
-				"Dynamic calculation will increase max health by %s%% to a value of %d (base: %s%%, character: %s%%, gameLevel: %s%%, xpReward: %s%%)",
+				"Dynamic calculation will increase max health of %d by %s%% to a value of %d (base: %s%%, character: %s%%, gameLevel: %s%%, xpReward: %s%%)",
+				baseHp,
 				(mutator.values + (characterMod + gameLevelMod + xPRewardMod)),
 				percentageToAdd,
 				mutator.values,
