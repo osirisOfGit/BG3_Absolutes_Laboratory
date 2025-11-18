@@ -618,6 +618,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function LevelMutator:generateChangelog()
 	return {
+		["1.8.4"] = {
+			type = "Bullet",
+			text = {
+				"Fix party-based scaling math when size of the party is below the base"
+			}
+		},
 		["1.8.2"] = {
 			type = "Bullet",
 			text = {
