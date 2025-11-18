@@ -232,6 +232,10 @@ function RaceSelector:predicate(selector)
 			else
 				---@type ResourceRace
 				local raceResource = Ext.StaticData.Get(race, "Race")
+				if not raceResource then
+					Logger:BasicError("Race UUID %s could not be laoded by SE - dunno why", race or "(WAS NIL)")
+					return false
+				end
 				return raceResource.ParentGuid == criteriaValue.RaceId
 			end
 		else

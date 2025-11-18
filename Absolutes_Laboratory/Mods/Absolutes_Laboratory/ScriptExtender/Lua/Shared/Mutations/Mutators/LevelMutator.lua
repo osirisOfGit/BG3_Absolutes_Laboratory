@@ -379,17 +379,13 @@ if Ext.IsServer() then
 					amountOfPartyMembers = amountOfPartyMembers - mutator.modifiers.basePartySize
 
 					if amountOfPartyMembers ~= 0 then
-						if amountOfPartyMembers < 0 then
-							offsetBasePerPartyMember = offsetBasePerPartyMember
-						end
-
 						Logger:BasicDebug(
 							"There are %d active, non-sitout party members (excluding host's starting character), compared to the base party size of %d, adding %d to the base level",
 							amountOfPartyMembers,
 							mutator.modifiers.basePartySize,
 							amountOfPartyMembers * offsetBasePerPartyMember)
 
-						baseLevel = baseLevel + (math.abs(amountOfPartyMembers) * offsetBasePerPartyMember)
+						baseLevel = math.max(1, baseLevel + (amountOfPartyMembers * offsetBasePerPartyMember))
 					end
 				end
 
