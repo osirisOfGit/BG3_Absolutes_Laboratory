@@ -385,7 +385,7 @@ if Ext.IsServer() then
 							mutator.modifiers.basePartySize,
 							amountOfPartyMembers * offsetBasePerPartyMember)
 
-						baseLevel = math.max(1, baseLevel + (amountOfPartyMembers * offsetBasePerPartyMember))
+						baseLevel = baseLevel + (amountOfPartyMembers * offsetBasePerPartyMember)
 					end
 				end
 
