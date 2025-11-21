@@ -13,17 +13,17 @@ end
 MutationConfigurationProxy = {
 	profiles = setmetatable({}, {
 		__index = function(t, k)
-			return MutationModProxy.ModProxy.profiles[k] or mutationsConfig.mutations.profiles[k]
+			return mutationsConfig.mutations.profiles[k] or MutationModProxy.ModProxy.profiles[k]
 		end
 	}),
 	folders = setmetatable({}, {
 		__index = function(t, k)
-			return MutationModProxy.ModProxy.folders[k] or mutationsConfig.mutations.folders[k]
+			return mutationsConfig.mutations.folders[k] or MutationModProxy.ModProxy.folders[k]
 		end
 	}),
 	prepPhaseMarkers = setmetatable({}, {
 		__index = function(t, k)
-			return MutationModProxy.ModProxy.prepPhaseMarkers[k] or mutationsConfig.mutations.prepPhaseMarkers[k]
+			return mutationsConfig.mutations.prepPhaseMarkers[k] or MutationModProxy.ModProxy.prepPhaseMarkers[k]
 		end,
 		__pairs = function(t)
 			---@type {[Guid]: PrepMarkerCategory}
@@ -47,7 +47,7 @@ MutationConfigurationProxy = {
 	lists = {
 		spellLists = setmetatable({}, {
 			__index = function(t, k)
-				return MutationModProxy.ModProxy.lists.spellLists[k] or mutationsConfig.mutations.lists.spellLists[k]
+				return mutationsConfig.mutations.lists.spellLists[k] or MutationModProxy.ModProxy.lists.spellLists[k]
 			end,
 			__pairs = function(t)
 				---@type {[Guid]: CustomList}
@@ -70,7 +70,7 @@ MutationConfigurationProxy = {
 		}),
 		passiveLists = setmetatable({}, {
 			__index = function(t, k)
-				return MutationModProxy.ModProxy.lists.passiveLists[k] or mutationsConfig.mutations.lists.passiveLists[k]
+				return mutationsConfig.mutations.lists.passiveLists[k] or MutationModProxy.ModProxy.lists.passiveLists[k]
 			end,
 			__pairs = function(t)
 				---@type {[Guid]: CustomList}
@@ -93,7 +93,7 @@ MutationConfigurationProxy = {
 		}),
 		statusLists = setmetatable({}, {
 			__index = function(t, k)
-				return MutationModProxy.ModProxy.lists.statusLists[k] or mutationsConfig.mutations.lists.statusLists[k]
+				return mutationsConfig.mutations.lists.statusLists[k] or MutationModProxy.ModProxy.lists.statusLists[k]
 			end,
 			__pairs = function(t)
 				---@type {[Guid]: CustomList}
@@ -116,7 +116,7 @@ MutationConfigurationProxy = {
 		}),
 		entryReplacerDictionary = setmetatable({}, {
 			__index = function(t, k)
-				return MutationModProxy.ModProxy.lists.entryReplacerDictionary[k]
+				return mutationsConfig.mutations.lists.entryReplacerDictionary[k] or MutationModProxy.ModProxy.lists.entryReplacerDictionary[k]
 			end
 		}),
 	}

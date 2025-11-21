@@ -637,6 +637,10 @@ Using entity level will use the entity's character level, post Character Level M
 		defaultCombo.SameLine = true
 		defaultCombo.WidthFitPreview = true
 
+		if self.activeList.defaultPool and not self.activeList.modId then
+			self.activeList.defaultPool = nil
+		end
+
 		local opts = {}
 		local index
 		for group in TableUtils:OrderedPairs(self.subListIndex) do
@@ -2154,6 +2158,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function ListDesignerBaseClass:generateChangelog()
 	return {
+		["1.8.4"] = {
+			type = "Bullet",
+			text = {
+				"Fix problem with default pools when manually importing someone else's export",
+			}
+		},
 		["1.8.2"] = {
 			type = "Bullet",
 			text = {
