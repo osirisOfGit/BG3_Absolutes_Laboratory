@@ -312,7 +312,7 @@ function MutationExternalProfileUtility:exportProfile(forMod, ...)
 	end
 
 	FileUtils:SaveTableToFile("ExportedProfiles/Mutations/" .. names .. ".json", {
-		["mutations"] = export
+		["mutations"] = Helpers:ClearLeftoverDeleteCommands(export)
 	})
 end
 
@@ -332,7 +332,8 @@ local window
 ---@return { [string]: DependencyFailure[] }? failedDependencies
 ---@return fun()? dependencyWindow
 function MutationExternalProfileUtility:importProfile(export)
-	local importedMutations = TableUtils:DeeplyCopyTable(export["mutations"])
+	local importedMutations = TableUtils:DeeplyCopyTable(Helpers:ClearLeftoverDeleteCommands(export)["mutations"])
+
 	local mutationConfig = ConfigurationStructure.config.mutations
 
 	local modCache, failedDependencies = self:ValidateMutations(mutationConfig)

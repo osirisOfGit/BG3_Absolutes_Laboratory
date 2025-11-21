@@ -1770,6 +1770,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function MutationProfileManager:generateChangelog()
 	return {
+		["1.8.4"] = {
+			type = "Bullet",
+			text = {
+				"Fix mutations that somehow had internal proxy-specific fields in them from exporting/importing those fields, which caused undesirable behavior"
+			}
+		},
 		["1.8.2"] = {
 			type = "Bullet",
 			text = {

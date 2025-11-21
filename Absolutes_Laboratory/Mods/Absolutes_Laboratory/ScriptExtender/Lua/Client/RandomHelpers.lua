@@ -112,6 +112,20 @@ function Helpers:BuildModFields(modId)
 	end
 end
 
+---@generic T : table
+---@param tbl T
+---@return T
+function Helpers:ClearLeftoverDeleteCommands(tbl)
+	for key, value in pairs(tbl) do
+		if key == "delete" then
+			tbl[key] = nil
+		elseif type(value) == "table" then
+			self:ClearLeftoverDeleteCommands(value)
+		end
+	end
+	return tbl
+end
+
 Translator:RegisterTranslation({
 	["From mod '%s' by '%s'"] = "hb46981c098c145978bd8daa53a1453aeb9c0",
 	["Originally from mod '%s' by '%s'"] = "h1d4bb3618c794d8bb495a19db4fd9a52325e",
