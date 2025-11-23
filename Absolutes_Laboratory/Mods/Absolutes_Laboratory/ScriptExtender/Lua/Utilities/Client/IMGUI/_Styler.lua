@@ -99,7 +99,7 @@ function Styler:SelectableText(parent, id, text)
 	local inputText = parent:AddInputText("##" .. (id or text), tostring(text))
 	inputText.AutoSelectAll = true
 	inputText.ItemReadOnly = true
-	inputText.SizeHint = { #text * 15, 0 }
+	inputText.SizeHint = {self:calculateTextDimensions(text)}
 	inputText:SetColor("FrameBg", { 1, 1, 1, 0 })
 	return inputText
 end

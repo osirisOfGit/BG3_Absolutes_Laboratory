@@ -1773,7 +1773,9 @@ function MutationProfileManager:generateChangelog()
 		["1.8.4"] = {
 			type = "Bullet",
 			text = {
-				"Fix mutations that somehow had internal proxy-specific fields in them from exporting/importing those fields, which caused undesirable behavior"
+				"Fix mutations that somehow had internal proxy-specific fields in them from exporting/importing those fields, which caused undesirable behavior",
+				"Adds Priority information to the Mutators in the generated Mermaid Diagram",
+				"Fixes Diagram Generation Popup in the Mutations tab in the Inspector not having the correct height, giving the impression no diagram was generated"
 			}
 		},
 		["1.8.2"] = {

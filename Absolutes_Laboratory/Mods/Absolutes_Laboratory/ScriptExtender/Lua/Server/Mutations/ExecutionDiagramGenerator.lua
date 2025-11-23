@@ -99,7 +99,7 @@ class Entity entityNode]]
 			for _, mutator in pairs(mutation.mutators) do
 				local noSpaceName = mutator.targetProperty:gsub("%s", "")
 				local mutatorName = stateName .. "mutator" .. noSpaceName
-				ruleEntry = ruleEntry .. ("\t\t%s: %s\n"):format(mutatorName, mutator.targetProperty)
+				ruleEntry = ruleEntry .. ("\t\t%s: %s (Priority %d)\n"):format(mutatorName, mutator.targetProperty, MutatorInterface.registeredMutators[mutator.targetProperty]:priority())
 
 				if entityVar.appliedMutators[mutator.targetProperty]
 					and mProfileRule.additive

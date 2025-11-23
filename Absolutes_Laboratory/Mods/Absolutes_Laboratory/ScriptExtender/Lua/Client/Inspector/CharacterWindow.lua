@@ -87,9 +87,10 @@ function CharacterWindow:BuildWindow(parent, id)
 	Game may freeze for a few moments when copying the resulting text - wait until it unfreezes, the text will be in your clipboard.
 	If successful, the result will also be in %localappdata%\Larian Studios\Baldur's Gate 3\Script Extender\Absolutes_Laboratory\DiagramOutputs\[entityName]-[last chars of entityId].txt]])
 				button.OnClick = function()
-					popup:Open()
-					Helpers:KillChildren(popup)
 					Channels.GenerateMutationDiagram:RequestToServer(entity.Uuid.EntityUuid, function(data)
+						Helpers:KillChildren(popup)
+						popup:Open()
+
 						local text = Styler:SelectableText(popup, "diagram", data.error or data.result)
 						if data.error then
 							Styler:Color(text, "ErrorText")

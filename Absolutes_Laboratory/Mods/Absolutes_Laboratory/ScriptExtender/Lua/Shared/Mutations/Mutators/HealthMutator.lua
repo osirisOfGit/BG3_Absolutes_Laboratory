@@ -1,11 +1,12 @@
 ---@class HealthMutatorClass : MutatorInterface
 HealthMutator = MutatorInterface:new("Health")
 HealthMutator.affectedComponents = {
-	"Health",
+	"BoostsContainer",
+	"Health"
 }
 
 function HealthMutator:priority()
-	return self:recordPriority(LevelMutator:priority() + 1)
+	return self:recordPriority(ClassesAndSubclassesMutator:priority() + BoostsMutator:priority())
 end
 
 function HealthMutator:Transient()
@@ -524,7 +525,7 @@ function HealthMutator:generateDocs()
 					prefix = "",
 					prefix_color = "Yellow",
 					text = [[
-Dependency On: Level Mutator
+Dependency On: Level Mutator (but runs after Boosts and (Sub)Classes Mutators to try and ensure some predictability with all the other factors)
 Transient: No
 Composable: Static Overwrites Static, Dynamic Overwrites Dynamic. Static is always applied first]]
 				} --[[@as MazzleDocsCallOut]],
@@ -602,6 +603,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function HealthMutator:generateChangelog()
 	return {
+		["1.8.4"] = {
+			type = "Bullet",
+			text = {
+				"Decreases the priority to run after (Sub)Classes and Boosts Mutators, to try and help with predictability"
+			}
+		},
 		["1.8.0"] = {
 			type = "Bullet",
 			text = {
