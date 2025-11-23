@@ -48,10 +48,26 @@ function CharacterInspector:LaunchIndependentWindow()
 	end
 end
 
+---@param parent ExtuiTreeParent
 function CharacterInspector:init(parent)
 	self.parent = parent
 
 	EntityRecorder:BuildButton(parent)
+
+	local searchButton = parent:AddButton("Search Entities")
+	searchButton.SameLine = true
+	local searchGroup = parent:AddGroup("Search Section")
+	searchGroup.Visible = false
+	searchButton.OnClick = function()
+		if searchGroup.Visible then
+			searchGroup.Visible = false
+			Helpers:KillChildren(searchGroup)
+			self:buildOutTree()
+		else
+			searchGroup.Visible = true
+			self:searchSection(searchGroup)
+		end
+	end
 
 	self.selectionTreeCell = parent:AddChildWindow("selectionTree")
 	self.selectionTreeCell.ChildAlwaysAutoResize = true
@@ -67,12 +83,115 @@ function CharacterInspector:init(parent)
 	self:buildOutTree()
 end
 
+---@param parent ExtuiTreeParent
+function CharacterInspector:searchSection(parent)
+	local clearResultsButton = parent:AddButton("Clear Results and Filters")
+	clearResultsButton.Visible = false
+
+	local searchTable = Styler:TwoColumnTable(parent, "Search")
+	searchTable.Resizable = false
+	searchTable.Borders = false
+
+	clearResultsButton.OnClick = function()
+		for _, rowChild in pairs(searchTable.Children) do
+			for _, cellChild in pairs(rowChild.Children) do
+				for _, inputEle in pairs(cellChild.Children) do
+					if inputEle.UserData then
+						inputEle.Text = ""
+					end
+				end
+			end
+		end
+
+		self:buildOutTree()
+	end
+
+	local row = searchTable:AddRow()
+
+	local timer
+	local function filterRecords()
+		if timer then
+			Ext.Timer.Cancel(timer)
+		end
+		timer = Ext.Timer.WaitFor(300, function()
+			---@type InspectorFilter
+			local filters = {}
+
+			for _, rowChild in pairs(searchTable.Children) do
+				for _, cellChild in pairs(rowChild.Children) do
+					for _, inputEle in pairs(cellChild.Children) do
+						---@cast inputEle ExtuiInputText
+						if inputEle.UserData and #inputEle.Text > 1 then
+							filters[inputEle.UserData] = inputEle.Text
+						end
+					end
+				end
+			end
+
+			if next(filters) then
+				clearResultsButton.Visible = true
+				self:buildOutTree(filters)
+			else
+				clearResultsButton.Visible = false
+				self:buildOutTree()
+			end
+			timer = nil
+		end)
+	end
+
+	row:AddCell():AddText("Display Name")
+	local nameFilter = row:AddCell():AddInputText("##name")
+	nameFilter.SameLine = true
+	nameFilter.UserData = "Name"
+	nameFilter.OnChange = filterRecords
+
+	row:AddCell():AddText("Entity UUID")
+	local uuidFilter = row:AddCell():AddInputText("##uuid")
+	uuidFilter.SameLine = true
+	uuidFilter.UserData = "Id"
+	uuidFilter.OnChange = filterRecords
+
+	row:AddCell():AddText("Character Template (?)"):Tooltip():AddText("Can specify the UUID or the internal name (not the display name)")
+	local templateFilter = row:AddCell():AddInputText("##template")
+	templateFilter.SameLine = true
+	templateFilter.UserData = "Template"
+	templateFilter.OnChange = filterRecords
+
+	row:AddCell():AddText("Character Stat Name")
+	local statFilter = row:AddCell():AddInputText("##stat")
+	statFilter.SameLine = true
+	statFilter.UserData = "Stat"
+	statFilter.OnChange = filterRecords
+
+	row:AddCell():AddText("Race (?)"):Tooltip():AddText("Can specify the UUID or the internal name (not the display name)")
+	local raceFilter = row:AddCell():AddInputText("##race")
+	raceFilter.SameLine = true
+	raceFilter.UserData = "Race"
+	raceFilter.OnChange = filterRecords
+
+	row:AddCell():AddText("Combat Group UUID")
+	local combatGroup = row:AddCell():AddInputText("##combatGroup")
+	combatGroup.SameLine = true
+	combatGroup.UserData = "CombatGroupId"
+	combatGroup.OnChange = filterRecords
+end
+
 ---@type ExtuiSelectable?
 local selectedSelectable
 
 ---@type string?
 local lastLevelName
-function CharacterInspector:buildOutTree()
+
+---@class InspectorFilter
+---@field Name string?
+---@field Id string?
+---@field Stat string?
+---@field Template string?
+---@field Race string?
+---@field CombatGroupId string?
+
+---@param filter InspectorFilter?
+function CharacterInspector:buildOutTree(filter)
 	local selectedID = selectedSelectable and selectedSelectable.UserData
 	selectedSelectable = nil
 	Helpers:KillChildren(self.selectionTreeCell)
@@ -96,6 +215,8 @@ function CharacterInspector:buildOutTree()
 				selectedSelectable.Selected = false
 			end
 			selectedSelectable = selectable
+
+			lastLevelName = parent.Label
 
 			Helpers:KillChildren(self.configCell)
 
@@ -122,8 +243,41 @@ function CharacterInspector:buildOutTree()
 			lastLevelName = levelName
 			for entityId in TableUtils:OrderedPairs(entities, function(key)
 				return entities[key].Name
+			end, function(key, record)
+				if filter then
+					for filterKey, filterValue in pairs(filter) do
+						if not record[filterKey]:lower():find(filterValue:lower()) then
+							---@type string?
+							local newValue
+							if filterKey == "Template" then
+								---@type CharacterTemplate
+								local charTemplate = Ext.Template.GetTemplate(record.Template)
+								if charTemplate then
+									newValue = charTemplate.Name
+								end
+							elseif filterKey == "Race" then
+								---@type ResourceRace
+								local race = Ext.StaticData.Get(record.Race, "Race")
+								if race then
+									newValue = race.Name
+								end
+							end
+
+							if newValue and newValue:lower():find(filterValue:lower()) then
+								goto continue
+							end
+							return false
+						end
+						::continue::
+					end
+				end
+				return true
 			end) do
 				buildSelectable(levelTree, entityId, entities[entityId].Name)
+			end
+
+			if #levelTree.Children == 0 then
+				levelTree.Visible = false
 			end
 		end
 
@@ -132,8 +286,8 @@ function CharacterInspector:buildOutTree()
 			selectedSelectable = nil
 		end
 
-		levelTree:SetOpen(levelName == lastLevelName, "Always")
-		if levelName == lastLevelName then
+		levelTree:SetOpen(filter ~= nil or levelName == lastLevelName, "Always")
+		if filter or levelName == lastLevelName then
 			levelTree:OnExpand()
 		end
 	end

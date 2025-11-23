@@ -33,15 +33,15 @@ EntityRecorder.Levels = {
 
 ---@class EntityRecord
 ---@field Abilities {[string]: number}
----@field Faction Faction
+---@field Faction Guid
 ---@field Icon string
 ---@field Id Guid
 ---@field LevelName string
 ---@field Name string
 ---@field Size number
 ---@field Passives string[]
----@field Progressions ProgressionTableId[]
----@field Race RaceUUID
+---@field Progressions Guid[]
+---@field Race Guid
 ---@field Stat string
 ---@field Tags TAG[]
 ---@field Template GUIDSTRING
@@ -110,19 +110,18 @@ if Ext.IsClient() then
 	---@param parent ExtuiTreeParent
 	function EntityRecorder:BuildButton(parent)
 		if Ext.ClientNet.IsHost() then
-			local indexAllEntities = parent:AddButton("Scan All Living Entities Across All Levels")
+			local indexAllEntities = parent:AddButton("Scan All Living Entities Across All Levels (DO ON NEW GAME) (?)")
 			indexAllEntities:Tooltip():AddText([[
 	 This will teleport you to each level in the game and record all the entities loaded onto the server for that level
 You only need to do this once or after you install mods that would add new entities - a local file will be written containing the results.
 A save will be initiated first so you can load back to it - this MAY spoil different parts of the game, but if you're using this mod, you should be fine with that.
-Don't reload, restart, or otherwise mess with the game until the process is completed.
-		]])
+Don't reload, restart, or otherwise mess with the game until the process is completed.]])
 
 			indexAllEntities.OnClick = function()
 				Channels.InitiateRecording:SendToServer({})
 			end
 
-			local scanLevelEntities = parent:AddButton("Scan For Created Entities")
+			local scanLevelEntities = parent:AddButton("Scan For Created Entities (?)")
 			scanLevelEntities.SameLine = true
 			scanLevelEntities:Tooltip():AddText("\t Scans for newly created entities in the level - these will not be recorded to the underlying file cache.")
 
