@@ -91,7 +91,7 @@ function CharacterInspector:searchSection(parent)
 	clearResultsButton.Visible = false
 
 	local pickEntityButton = Styler:ImageButton(parent:AddImageButton("PickBaseCoords", "Spell_Divination_TrueStrike", Styler:ScaleFactor({ 48, 48 })))
-	pickEntityButton.SameLine = true
+	pickEntityButton.SameLine = clearResultsButton.Visible
 	pickEntityButton:Tooltip():AddText(
 		"\t After clicking this button, press any button on your mouse while hovering over an entity to show them in the Inspector. Hovering will prefill the filter fields.")
 
@@ -142,6 +142,7 @@ function CharacterInspector:searchSection(parent)
 				clearResultsButton.Visible = false
 				self:buildOutTree()
 			end
+			pickEntityButton.SameLine = clearResultsButton.Visible
 			timer = nil
 		end)
 	end
