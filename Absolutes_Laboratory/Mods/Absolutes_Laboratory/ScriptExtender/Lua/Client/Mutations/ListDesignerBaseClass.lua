@@ -340,26 +340,26 @@ function ListDesignerBaseClass:buildModLists(activeListId)
 		if next(modLists) then
 			self.listSection:AddSeparatorText("Mod-Added Lists"):SetStyle("SeparatorTextAlign", 0.5)
 
-			for modId, spellLists in TableUtils:OrderedPairs(modLists, function(key)
+			for modId, lists in TableUtils:OrderedPairs(modLists, function(key)
 				return Ext.Mod.GetMod(key).Info.Name
 			end) do
 				self.listSection:AddSeparatorText(Ext.Mod.GetMod(modId).Info.Name)
 
-				for _, guid in TableUtils:OrderedPairs(spellLists, function(_, value)
+				for _, guid in TableUtils:OrderedPairs(lists, function(_, value)
 					return MutationModProxy.ModProxy.lists[self.configKey][value].name
 				end) do
 					local list = MutationModProxy.ModProxy.lists[self.configKey][guid]
 					list.useGameLevel = list.useGameLevel or false
 
 					---@type ExtuiSelectable
-					local spellListSelect = self.listSection:AddSelectable(list.name)
-					spellListSelect.IDContext = guid
-					spellListSelect.UserData = guid
+					local listSelect = self.listSection:AddSelectable(list.name)
+					listSelect.IDContext = guid .. modId
+					listSelect.UserData = guid
 					if list.description and list.description ~= "" then
-						spellListSelect:Tooltip():AddText("\t " .. list.description)
+						listSelect:Tooltip():AddText("\t " .. list.description)
 					end
 
-					spellListSelect.OnRightClick = function()
+					listSelect.OnRightClick = function()
 						Helpers:KillChildren(self.popup)
 						self.popup:Open()
 
@@ -382,14 +382,14 @@ function ListDesignerBaseClass:buildModLists(activeListId)
 						end
 					end
 
-					spellListSelect.OnClick = function()
+					listSelect.OnClick = function()
 						if self.activeListHandle then
 							self.activeListHandle.Selected = false
 						end
 						self.designerSection.Visible = true
 						self.designerSection.Children[1]:OnClick()
 
-						self.activeListHandle = spellListSelect
+						self.activeListHandle = listSelect
 						self.activeList = list
 
 						self:buildBrowser()
@@ -397,8 +397,8 @@ function ListDesignerBaseClass:buildModLists(activeListId)
 					end
 
 					if guid == activeListId then
-						spellListSelect.Selected = true
-						spellListSelect:OnClick()
+						listSelect.Selected = true
+						listSelect:OnClick()
 					end
 				end
 			end
@@ -894,7 +894,7 @@ end
 ---@param progressionTableId string?
 function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, level, progressionTableId)
 	local entryListGroup = parentGroup:AddGroup(progressionTableId or tostring(level))
-	local subListsClone = TableUtils:DeeplyCopyTable(subLists._real or subLists)
+	local subListsClone = TableUtils:DeeplyCopyTable(subLists)
 	if progressionTableId then
 		if ListConfigurationManager.progressionIndex[progressionTableId] then
 			Styler:ScaledFont(entryListGroup:AddSeparatorText(ListConfigurationManager.progressionIndex[progressionTableId].name), "Big"):SetStyle("SeparatorTextAlign", 0.05)
@@ -950,10 +950,22 @@ function ListDesignerBaseClass:buildEntryListFromSubList(parentGroup, subLists, 
 	if useIcons and self.settings.showSeperatorsInMain then
 		buildProgressionSubList(self.activeList.defaultPool or self.settings.defaultPool[self.configKey], listForGroupFunc)
 		for subListName, subList in pairs(subListsClone) do
-			buildProgressionSubList(subListName, listForGroupFunc)
-			for _, entry in pairs(subList) do
-				table.insert(listForGroupFunc, entry)
+			for key, entry in pairs(subList) do
+				if not progressionTableId
+					or (not self.activeList.blacklistSameEntriesInHigherProgressionLevels or not ListConfigurationManager:hasSameEntryInLowerLevel(progressionTableId, level, entry, self.configKey))
+				then
+					table.insert(listForGroupFunc, entry)
+				else
+					subList[key] = nil
+					if subLists[subListName]._real then
+						subLists[subListName][key] = nil
+						if not next(subLists[subListName]._real) then
+							subLists[subListName].delete = true
+						end
+					end
+				end
 			end
+			buildProgressionSubList(subListName, listForGroupFunc)
 		end
 		local success, childParent = pcall(function() return row.Children[1].Children[1] end)
 		local parentContainer = success and childParent or row.Children[1]
@@ -2162,6 +2174,7 @@ function ListDesignerBaseClass:generateChangelog()
 			type = "Bullet",
 			text = {
 				"Fix problem with default pools when manually importing someone else's export",
+				"Fix Dedupe logic not accounting for higher-level progression entries that aren't in the default pool"
 			}
 		},
 		["1.8.2"] = {
