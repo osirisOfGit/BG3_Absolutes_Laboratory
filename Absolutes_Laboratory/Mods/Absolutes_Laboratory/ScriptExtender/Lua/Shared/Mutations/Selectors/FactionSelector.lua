@@ -222,7 +222,7 @@ function FactionSelector:renderSelector(parent, existingSelector)
 	buildSelects()
 
 	factionSelectInput.OnChange = function()
-		buildSelects(string.upper(factionSelectInput.Text))
+		buildSelects(Helpers:SanitizeStringForFind(factionSelectInput.Text):upper())
 	end
 	updateFunc(#existingSelector.criteriaValue)
 end

@@ -139,7 +139,7 @@ function PassiveSelector:renderSelector(parent, existingSelector)
 	buildSelects()
 
 	passiveSelectInput.OnChange = function()
-		buildSelects(string.upper(passiveSelectInput.Text))
+		buildSelects(Helpers:SanitizeStringForFind(passiveSelectInput.Text):upper())
 	end
 	updateFunc(#existingSelector.criteriaValue)
 end

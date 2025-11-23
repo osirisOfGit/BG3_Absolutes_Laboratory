@@ -452,12 +452,18 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function SelectorInterface:generateChangelog()
 	return {
+		["1.8.4"] = {
+			type = "Bullet",
+			text = {
+				"Sanitizes input strings where necessary to fix search behavior"
+			}
+		},
 		["1.7.0"] = {
 			type = "Bullet",
 			text = {
 				"Fixes a bug when deleting the first selector in a chain"
 			}
-		} --[[@as MazzleDocsContentItem]],
+		},
 		["1.6.0"] = {
 			type = "Bullet",
 			text = {
@@ -470,6 +476,6 @@ function SelectorInterface:generateChangelog()
 				"Fix all selectors that use a search box so already selected items will render with a highlight",
 				"Fix a bug that would break the selector list if you clicked on \"Add a Selector\", didn't choose anything, then clicked it again",
 			}
-		} --[[@as MazzleDocsContentItem]]
-	}
+		}
+	} --[[@as {[string]: MazzleDocsContentItem}]]
 end

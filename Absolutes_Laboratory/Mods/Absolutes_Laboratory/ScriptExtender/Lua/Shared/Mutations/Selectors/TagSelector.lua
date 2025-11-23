@@ -114,7 +114,7 @@ function TagSelector:renderSelector(parent, existingSelector)
 	buildSelects()
 
 	tagSelectInput.OnChange = function()
-		buildSelects(string.upper(tagSelectInput.Text))
+		buildSelects(Helpers:SanitizeStringForFind(tagSelectInput.Text):upper())
 	end
 end
 

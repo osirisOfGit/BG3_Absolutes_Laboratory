@@ -111,7 +111,7 @@ function EntitySelector:renderSelector(parent, existingSelector)
 	buildSelects()
 
 	entitySelectInput.OnChange = function()
-		buildSelects(string.upper(entitySelectInput.Text))
+		buildSelects(Helpers:SanitizeStringForFind(entitySelectInput.Text):upper())
 	end
 	updateFunc(#existingSelector.criteriaValue)
 end

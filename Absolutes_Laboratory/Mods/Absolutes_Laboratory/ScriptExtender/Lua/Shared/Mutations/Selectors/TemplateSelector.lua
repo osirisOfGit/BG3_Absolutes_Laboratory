@@ -173,13 +173,13 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 	local function buildSelects(filter)
 		Helpers:KillChildren(templateGroup)
 		if filter and #filter >= 3 then
-			for _, template in ipairs(templates) do
+			for _, template in ipairs(self.templates) do
 				if not (filter and #filter > 0)
-					or string.upper(translationMap[template]):find(filter)
+					or string.upper(self.translationMap[template]):find(filter)
 					or string.upper(template):find(filter)
 				then
 					---@type ExtuiSelectable
-					local select = templateGroup:AddSelectable(translationMap[template] .. "##select")
+					local select = templateGroup:AddSelectable(self.translationMap[template] .. "##select")
 					select.UserData = template
 					select.Selected = TableUtils:IndexOf(existingSelector.criteriaValue, function(value)
 						return value.id == template
@@ -229,7 +229,7 @@ function TemplateSelector:renderSelector(parent, existingSelector)
 	buildSelects()
 
 	templateSelectInput.OnChange = function()
-		buildSelects(string.upper(templateSelectInput.Text))
+		buildSelects(Helpers:SanitizeStringForFind(templateSelectInput.Text):upper())
 	end
 	updateFunc(#existingSelector.criteriaValue)
 end
