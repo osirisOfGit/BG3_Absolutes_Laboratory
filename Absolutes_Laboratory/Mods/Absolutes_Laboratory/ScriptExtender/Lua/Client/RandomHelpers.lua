@@ -112,6 +112,13 @@ function Helpers:BuildModFields(modId)
 	end
 end
 
+---@param s string
+---@return string
+function Helpers:SanitizeStringForFind(s)
+	-- Magic chars in Lua patterns: ( ) . % + - * ? [ ^ $
+	return (s:gsub("([%(%)%.%%%+%-%*%?%[%^%$])", "%%%1"))
+end
+
 ---@generic T : table
 ---@param tbl T
 ---@return T

@@ -54,7 +54,8 @@ function CharacterInspector:init(parent)
 
 	EntityRecorder:BuildButton(parent)
 
-	local searchButton = parent:AddButton("Search Entities")
+	local searchButton = parent:AddButton("Search Entities (?)")
+	searchButton:Tooltip():AddText("\t Click to toggle the Search section - closing a section will clear all filters, but your current selected entity will be preserved")
 	searchButton.SameLine = true
 	local searchGroup = parent:AddGroup("Search Section")
 	searchGroup.Visible = false
@@ -86,7 +87,13 @@ end
 ---@param parent ExtuiTreeParent
 function CharacterInspector:searchSection(parent)
 	local clearResultsButton = parent:AddButton("Clear Results and Filters")
+	clearResultsButton:Tooltip():AddText("\t Clicking the Search button will also do this, and hide this section")
 	clearResultsButton.Visible = false
+
+	local pickEntityButton = Styler:ImageButton(parent:AddImageButton("PickBaseCoords", "Spell_Divination_TrueStrike", Styler:ScaleFactor({ 48, 48 })))
+	pickEntityButton.SameLine = true
+	pickEntityButton:Tooltip():AddText(
+		"\t After clicking this button, press any button on your mouse while hovering over an entity to show them in the Inspector. Hovering will prefill the filter fields.")
 
 	local searchTable = Styler:TwoColumnTable(parent, "Search")
 	searchTable.Resizable = false
@@ -122,7 +129,7 @@ function CharacterInspector:searchSection(parent)
 					for _, inputEle in pairs(cellChild.Children) do
 						---@cast inputEle ExtuiInputText
 						if inputEle.UserData and #inputEle.Text > 1 then
-							filters[inputEle.UserData] = inputEle.Text
+							filters[inputEle.UserData] = Helpers:SanitizeStringForFind(inputEle.Text:lower())
 						end
 					end
 				end
@@ -137,6 +144,61 @@ function CharacterInspector:searchSection(parent)
 			end
 			timer = nil
 		end)
+	end
+
+
+	pickEntityButton.OnClick = function()
+		local lastEntity
+		local tickSub = Ext.Events.Tick:Subscribe(function(e)
+			local entity = Ext.ClientUI.GetPickingHelper(1).Inner.Inner[1].GameObject
+			if entity and entity.ClientCharacter then
+				if lastEntity ~= entity.Uuid.EntityUuid
+					and not entity.Vars.AbsolutesLaboratory_MonsterLab_Entity
+					and EntityRecorder:GetEntity(entity.Uuid.EntityUuid)
+				then
+					lastEntity = entity.Uuid.EntityUuid
+					local entityRecord = EntityRecorder:GetEntity(entity.Uuid.EntityUuid)
+
+					for _, rowChild in pairs(searchTable.Children) do
+						for _, cellChild in pairs(rowChild.Children) do
+							for _, inputEle in pairs(cellChild.Children) do
+								if inputEle.UserData then
+									inputEle.Text = entityRecord[inputEle.UserData]
+								end
+							end
+						end
+					end
+				end
+			else
+				if lastEntity then
+					for _, rowChild in pairs(searchTable.Children) do
+						for _, cellChild in pairs(rowChild.Children) do
+							for _, inputEle in pairs(cellChild.Children) do
+								if inputEle.UserData then
+									inputEle.Text = ""
+								end
+							end
+						end
+					end
+					lastEntity = nil
+				end
+			end
+		end)
+
+		local mouseSub
+		mouseSub = Ext.Events.MouseButtonInput:Subscribe(
+		---@param e EclLuaMouseButtonEvent
+			function(e)
+				if e.Pressed then
+					Ext.Events.Tick:Unsubscribe(tickSub)
+					Ext.Events.MouseButtonInput:Unsubscribe(mouseSub)
+					if lastEntity then
+						self:buildOutTree({
+							Id = Helpers:SanitizeStringForFind(lastEntity):lower()
+						})
+					end
+				end
+			end)
 	end
 
 	row:AddCell():AddText("Display Name")
@@ -246,7 +308,7 @@ function CharacterInspector:buildOutTree(filter)
 			end, function(key, record)
 				if filter then
 					for filterKey, filterValue in pairs(filter) do
-						if not record[filterKey]:lower():find(filterValue:lower()) then
+						if not record[filterKey]:lower():find(filterValue) then
 							---@type string?
 							local newValue
 							if filterKey == "Template" then
@@ -263,7 +325,7 @@ function CharacterInspector:buildOutTree(filter)
 								end
 							end
 
-							if newValue and newValue:lower():find(filterValue:lower()) then
+							if newValue and newValue:lower():find(filterValue) then
 								goto continue
 							end
 							return false
