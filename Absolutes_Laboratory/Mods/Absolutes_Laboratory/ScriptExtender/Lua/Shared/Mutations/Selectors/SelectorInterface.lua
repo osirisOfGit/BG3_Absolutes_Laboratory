@@ -452,6 +452,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function SelectorInterface:generateChangelog()
 	return {
+		["1.8.5"] = {
+			type = "Bullet",
+			text = {
+				"Fixes PrepMarkerSelector not accounting for skipped indexes in the Prep Marker Profile List"
+			}
+		},
 		["1.8.4"] = {
 			type = "Bullet",
 			text = {

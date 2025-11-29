@@ -76,14 +76,14 @@ function PrepMarkerSelector:predicate(selector)
 
 	return function(entity, entityVar)
 		local appliedCategories = {}
-		for i, mProfileRule in ipairs(activeProfile.prepPhaseMutations) do
+		for i, mProfileRule in TableUtils:OrderedPairs(activeProfile.prepPhaseMutations) do
 			local mutation = MutationConfigurationProxy.folders[mProfileRule.mutationFolderId].mutations[mProfileRule.mutationId]
 			if mutation then
 				mutation = mutation._real or mutation
 
 				---@type PrepMarkerCategory[]
 				local markerMutator = mutation.mutators[1].values or {}
-				for _, category in ipairs(markerMutator) do
+				for _, category in TableUtils:OrderedPairs(markerMutator) do
 					if TableUtils:IndexOf(selector.criteriaValue, category) then
 						if not cachedSelectors[mProfileRule.mutationFolderId] then
 							cachedSelectors[mProfileRule.mutationFolderId] = {}

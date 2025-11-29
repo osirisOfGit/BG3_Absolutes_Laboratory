@@ -73,11 +73,17 @@ function ConfigurationStructure:generate_recursive_metatable(proxy_table, real_t
 							real_table[key]))
 						-- Accounting for setting a table that has tables in one assignment operation
 						for child_key, child_value in pairs(value) do
-							if type(child_key) == "string" and tonumber(child_key) then
-								child_key = tonumber(child_key)
-							end
-							if type(child_value) == "table" then
-								proxy_table[key][child_key] = child_value
+							if child_key == "delete" then
+								real_table[key] = nil
+								rawset(proxy_table, key, nil)
+								break
+							else
+								if type(child_key) == "string" and tonumber(child_key) then
+									child_key = tonumber(child_key)
+								end
+								if type(child_value) == "table" then
+									proxy_table[key][child_key] = child_value
+								end
 							end
 						end
 					end

@@ -403,17 +403,23 @@ function MonsterLab:buildProfileView()
 					---@type ML_CombatGroup[]
 					local combatGroups = {}
 
-					for _, profileEncounter in pairs(profile.encounters) do
+					for k, profileEncounter in pairs(profile.encounters) do
 						local encounter = self.config.folders[profileEncounter.folderId]
 							and self.config.folders[profileEncounter.folderId].encounters[profileEncounter.encounterId]
 
-						if encounter and encounter.gameLevel == level then
-							table.insert(combatGroups, {
-								profileEncounter = profileEncounter,
-								encounter = encounter
-							})
+						if encounter then
+							if encounter.gameLevel == level then
+								table.insert(combatGroups, {
+									profileEncounter = profileEncounter,
+									encounter = encounter
+								})
+							end
+						else
+							profileEncounter.delete = true
+							profile.encounters[k] = nil
 						end
 					end
+					TableUtils:ReindexNumericTable(profile.encounters)
 
 					local maxRowSize = math.floor(cardsWindow.LastSize[1] / (Styler:ScaleFactor() * 300))
 					local entriesPerColumn = math.floor(TableUtils:CountElements(combatGroups) / maxRowSize)
