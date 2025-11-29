@@ -589,9 +589,6 @@ function MutationProfileManager:BuildFolderManager()
 	end
 
 	self.parentTable.ColumnDefs[1].Width = longestText
-	if self.modFolderGroup.Visible then
-		self.userFolderGroup.Size = { 0, self.selectionParent.LastSize[2] / 2 }
-	end
 
 	self:BuildModFolders()
 	self:BuildProfileManager()
@@ -767,6 +764,8 @@ function MutationProfileManager:BuildModFolders()
 				end
 			end
 		end
+
+		self.userFolderGroup.Size = { 0, self.selectionParent.LastSize[2] / 2 }
 	end
 end
 
@@ -1770,6 +1769,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function MutationProfileManager:generateChangelog()
 	return {
+		["1.9.0"] = {
+			type = "Bullet",
+			text = {
+				"Execute a Ext.System.ServerStats.ReloadStats system call when all undo operations are complete for an entity, ensuring _all_ base values are reset to their intended Vanilla values",
+			}
+		},
 		["1.8.4"] = {
 			type = "Bullet",
 			text = {

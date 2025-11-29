@@ -185,6 +185,8 @@ function MutatorInterface:undoMutator(entity, entityVar, primedEntityVar, reproc
 
 		entity.Vars.Absolutes_Laboratory_Undone_Components = componentsToListenTo
 	end
+
+	Ext.System.ServerStats.ReloadStats[entity] = true
 	entity.Vars[ABSOLUTES_LABORATORY_MUTATIONS_VAR_NAME] = nil
 	Ext.Utils.ProfileEnd("Lab Profiles - Undoing Mutators on " .. entityName)
 end

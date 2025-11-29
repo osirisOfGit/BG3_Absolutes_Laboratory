@@ -20,6 +20,7 @@ ClassDescriptionProxy.fieldsToParse = {
 	"ParentGuid",
 	"PrimaryAbility",
 	"ProgressionTableUUID",
+	"ResourceUUID",
 	"SomaticEquipmentSet",
 	"SoundClassType",
 	"SpellCastingAbility",

@@ -17,6 +17,47 @@ function ClassesAndSubclassesMutator:Transient()
 	return false
 end
 
+if Ext.IsClient() then
+	Ext.Events.StatsLoaded:Subscribe(function(e)
+		local variants = ConfigurationStructure.config.mutations.settings.classesAndSubclassesDefaultVariants
+		for _, classDescId in TableUtils:OrderedPairs(Ext.StaticData.GetAll("ClassDescription"), function(key, value)
+			---@type ResourceClassDescription
+			local classDesc = Ext.StaticData.Get(value, "ClassDescription")
+
+			return classDesc.ParentGuid == "" and 0 or 1
+		end) do
+			if not variants.vanillaToVariants[classDescId] or not Ext.StaticData.Get(variants.vanillaToVariants[classDescId], "ClassDescription") then
+				---@type ResourceClassDescription
+				local classDescription = Ext.StaticData.Get(classDescId, "ClassDescription")
+
+				---@type ResourceClassDescription
+				local newClassDesc = Ext.StaticData.Create("ClassDescription", variants.vanillaToVariants[classDescId])
+
+				---@type ResourceClassDescription
+				local classDescCopy = Ext.Types.Serialize(classDescription)
+				classDescCopy.ResourceUUID = newClassDesc.ResourceUUID
+				classDescCopy.BaseHp = 0
+				classDescCopy.HpPerLevel = 0
+				classDescCopy.DisplayName.Handle.Handle = "Lab_Variant_" .. classDescCopy.ResourceUUID .. "_Name"
+
+				if variants.vanillaToVariants[classDescCopy.ParentGuid] then
+					classDescCopy.ParentGuid = variants.vanillaToVariants[classDescCopy.ParentGuid]
+				end
+
+				Ext.Loca.UpdateTranslatedString(classDescCopy.DisplayName.Handle.Handle, classDescription.DisplayName:Get() .. " (NPC)")
+
+				Ext.Types.Unserialize(newClassDesc, classDescCopy)
+
+				if not variants.vanillaToVariants[classDescId] then
+					variants.vanillaToVariants[classDescId] = classDescCopy.ResourceUUID
+					variants.nameGuidMap[classDescription.Name] = classDescId
+				end
+			end
+		end
+	end)
+end
+
+
 ---@class ClassAbilityOverrides
 ---@field rangedAttackAbility AbilityId
 ---@field spellCastingAbility AbilityId
@@ -40,7 +81,7 @@ ClassesAndSubclassesMutator.translationMap = {}
 
 function ClassesAndSubclassesMutator:initClassIndex()
 	if not next(self.classesAndSubclasses) then
-		for _, classId in pairs(Ext.StaticData.GetAll("ClassDescription")) do
+		for _, classId in pairs(ConfigurationStructure.config.mutations.settings.classesAndSubclassesDefaultVariants.vanillaToVariants) do
 			---@type ResourceClassDescription
 			local class = Ext.StaticData.Get(classId, "ClassDescription")
 
@@ -76,6 +117,8 @@ function ClassesAndSubclassesMutator:renderMutator(parent, mutator)
 	classTable.Resizable = false
 	classTable.Borders = false
 	classTable.BordersH = true
+
+	local variantConfig = ConfigurationStructure.config.mutations.settings.classesAndSubclassesDefaultVariants
 
 	for i, classConditionalGroup in ipairs(mutator.values) do
 		local row = classTable:AddRow()
@@ -114,6 +157,12 @@ All %s in this group must add up to 100% - input is disabled if there is only 1 
 			for classId, levelPercentage in TableUtils:OrderedPairs(classConditionalGroup.classIds, function(_, value)
 				return value
 			end) do
+				classId = variantConfig.vanillaToVariants[classId] or classId
+
+				if not TableUtils:IndexOf(variantConfig.vanillaToVariants, classId) then
+					classId = variantConfig.nameGuidMap[Ext.StaticData.Get(classId, "ClassDescription").Name]
+				end
+
 				---@type ResourceClassDescription
 				local class = Ext.StaticData.Get(classId, "ClassDescription")
 
@@ -375,8 +424,13 @@ function ClassesAndSubclassesMutator:handleDependencies(_, mutator, removeMissin
 		return
 	end
 	local classesIndex = Ext.StaticData.GetSources("ClassDescription")
+
+	local variantConfig = ConfigurationStructure.config.mutations.settings.classesAndSubclassesDefaultVariants
+
 	for c, classGroup in pairs(mutator.values) do
 		for classId in pairs(classGroup.classIds) do
+			classId = TableUtils:IndexOf(variantConfig.vanillaToVariants, classId) or classId
+
 			---@type ResourceClassDescription
 			local class = Ext.StaticData.Get(classId, "ClassDescription")
 			if not class then
@@ -455,6 +509,8 @@ function ClassesAndSubclassesMutator:applyMutator(entity, entityVar)
 	---@type ClassesConditionalGroup[]
 	local chosenClassGroups = {}
 
+	local variantConfig = ConfigurationStructure.config.mutations.settings.classesAndSubclassesDefaultVariants
+
 	for _, classesMutator in TableUtils:OrderedPairs(classesMutators) do
 		for _, classConditonal in TableUtils:OrderedPairs(classesMutator.values) do
 			if classConditonal.numberOfSpellLists and classConditonal.numberOfSpellLists > 0 then
@@ -499,6 +555,12 @@ function ClassesAndSubclassesMutator:applyMutator(entity, entityVar)
 			local classesLeft = TableUtils:CountElements(classGroup.classIds)
 			local classLevelsLeft = entity.AvailableLevel.Level
 			for classId, levelPercentage in pairs(classGroup.classIds) do
+				classId = variantConfig.vanillaToVariants[classId] or classId
+
+				if not TableUtils:IndexOf(variantConfig.vanillaToVariants, classId) then
+					classId = variantConfig.nameGuidMap[Ext.StaticData.Get(classId, "ClassDescription").Name]
+				end
+
 				---@type ResourceClassDescription
 				local class = Ext.StaticData.Get(classId, "ClassDescription")
 				if class then
@@ -607,10 +669,32 @@ Still, it's good flavour, useful in those cases, and a valuable dependency for t
 					text = [[
 The mutator is laid out as follows:
 
-Class Groups: Configured on the left hand side, this section contains a list of classes that should _all_ be assigned to the entity, adding up to 100% of the entity's Level (per the EocLevel component).
-You can add multiple subclasses from one main class, but if you add the Main class you won't be allowed to add any subclasses from it.
+----
 
-Modifiers: On the right hand side you'll find two modifiers:
+Class Groups: Configured on the left hand side, this section contains a list of classes that should _all_ be assigned to the entity, adding up to 100% of the entity's Level (per the EocLevel component).
+You can add multiple subclasses from one main class, but if you add the Main class you won't be allowed to add any subclasses from it.]]
+				},
+				{
+					type = "CallOut",
+					prefix = "NPC Class Variants",
+					color = "Green",
+					prefix_color = "Green",
+					text =
+					[[Lab dynamically creates NPC Variants of all (Sub)Classes to assign to entities that _must_ be used - the only difference between these and their source definitions is that the BaseHp and HpPerLevel properties are zeroed out, preventing any Health modifications.]]
+				} --[[@as MazzleDocsCallOut]],
+				{
+					type = "Content",
+					text = [[
+The reasoning for the variants is: Classes defined in the underlying game files are given BaseHp and HpPerLevel properties, which increase the entity's HP by the respective calculations.
+
+This is problematic for Lab's purposes as those calculations don't actually execute when the class component is updated, or when HP properties are requested; the only identified trigger was when a MaxHP boost was applied to the entity, which, guess what, really messed with the HealthMutator math, leading to confusing an undesirable results.
+
+To solve this, the NPC (Sub)Class variants are dynamically created every time the game is started/an honour-ruleset save is loaded for the first time since startup (and their ResourceUUIDs stored to the config, for consistency), and Lab handles mapping between the source and the variants.
+This means when exporting your profile, you'll be exporting the Source Classes so the proper mod dependencies can be recorded, and using the Variant Classes when importing/executing these mutators (with Lab ensuring that Class mutators that were created by different authors using the same Class Mod use the same Variant).
+
+----
+
+Modifiers Section: On the right hand side you'll find two modifiers:
 
 	Spell List Dependencies - this is a simple dependency that stats the entity must have been assigned at least 1 level of the specific amount of lists from the dependency pool - for example, you can specify that the group should only apply if the entity had the Bard AND Wizard spell lists applied, _or_ the Bard OR the Wizard lists, allowing for precise multi-class control.
 	
@@ -629,7 +713,7 @@ The rest of the Mutator UI is explained via tooltips to avoid duplicated info an
 				{
 					type = "Content",
 					text =
-					[[When setting the classes, the `Classes.Classes` component is overwritten entirely; any specific Abilities overwrite their respective Stat component property: SpellCastingAbility, RangedAttackAbility, UnarmedAttackAbility. ]]
+					[[When setting the classes, the `Classes.Classes` component is overwritten entirely; any specified Abilities overwrite their respective Stat component property: SpellCastingAbility, RangedAttackAbility, UnarmedAttackAbility. ]]
 				}
 			}
 		}
@@ -639,6 +723,12 @@ end
 ---@return {[string]: MazzleDocsContentItem}
 function ClassesAndSubclassesMutator:generateChangelog()
 	return {
+		["1.9.0"] = {
+			type = "Bullet",
+			text = {
+				"Introduces NPC variants of all Classes that wipe out BaseHp and HpPerLevel properties, allowing for consistency and predictability in Health behavior (backwards compatible, Lab handles internal mapping)",
+			}
+		},
 		["1.8.1"] = {
 			type = "Bullet",
 			text = {
