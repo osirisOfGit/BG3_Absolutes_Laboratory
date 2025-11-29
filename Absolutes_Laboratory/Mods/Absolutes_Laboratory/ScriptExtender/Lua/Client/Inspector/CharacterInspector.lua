@@ -62,24 +62,28 @@ function CharacterInspector:init(parent)
 	searchButton.OnClick = function()
 		if searchGroup.Visible then
 			searchGroup.Visible = false
-			Helpers:KillChildren(searchGroup)
 			self:buildOutTree()
+			self.selectionTreeCell.Size = { self.selectionTreeCell.Size[1], 0 }
+			self.configCell.Size = { 0, 0 }
 		else
 			searchGroup.Visible = true
+			Helpers:KillChildren(searchGroup)
 			self:searchSection(searchGroup)
+			self.selectionTreeCell.Size = self.selectionTreeCell.LastSize
+			self.configCell.Size = { 0, self.configCell.LastSize[2] }
 		end
 	end
 
 	self.selectionTreeCell = parent:AddChildWindow("selectionTree")
-	self.selectionTreeCell.ChildAlwaysAutoResize = true
 	self.selectionTreeCell.Size = { 400 * Styler:ScaleFactor(), 0 }
+	self.selectionTreeCell.NoSavedSettings = true
+	self.selectionTreeCell.AlwaysAutoResize = false
 
 	self.configCell = parent:AddChildWindow("configCell")
-	self.configCell.AlwaysHorizontalScrollbar = true
+	self.configCell.Size = { 0, 0 }
+	self.configCell.AlwaysAutoResize = false
 	self.configCell.SameLine = true
 	self.configCell.NoSavedSettings = true
-	self.configCell.AlwaysAutoResize = true
-	self.configCell.ChildAlwaysAutoResize = true
 
 	self:buildOutTree()
 end
@@ -309,7 +313,9 @@ function CharacterInspector:buildOutTree(filter)
 			end, function(key, record)
 				if filter then
 					for filterKey, filterValue in pairs(filter) do
-						if not record[filterKey]:lower():find(filterValue) then
+						if not record[filterKey] then
+							return false
+						elseif not record[filterKey]:lower():find(filterValue) then
 							---@type string?
 							local newValue
 							if filterKey == "Template" then
