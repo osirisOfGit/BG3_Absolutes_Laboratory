@@ -125,8 +125,13 @@ function TableUtils:OrderedPairs(t, keyTransformFunc, filter)
 		local keyA = keyTransformFunc and keyTransformFunc(a, t[a]) or a
 		local keyB = keyTransformFunc and keyTransformFunc(b, t[b]) or b
 		if type(keyA) ~= type(keyB) then
-			keyA = tostring(keyA)
-			keyB = tostring(keyB)
+			if tonumber(keyA) and tonumber(keyB) then
+				keyA = tonumber(keyA)
+				keyB = tonumber(keyB)
+			else
+				keyA = tostring(keyA)
+				keyB = tostring(keyB)
+			end
 		end
 		return keyA < keyB
 	end)
@@ -167,8 +172,8 @@ end
 ---@return T
 function TableUtils:ReindexNumericTable(tbl)
 	local values = {}
-	for k, value in pairs(tbl) do
-		table.insert(values, value)
+	for k, value in TableUtils:OrderedPairs(tbl) do
+		table.insert(values, value._real or value)
 		if type(tbl[k]) == "table" then
 			tbl[k].delete = true
 		end
@@ -225,7 +230,7 @@ function TableUtils:CountElements(tbl)
 		return 0
 	end
 	local count = 0
-	for _, _ in pairs(tbl) do
+	for _, _ in pairs(tbl._real or tbl) do
 		count = count + 1
 	end
 	return count

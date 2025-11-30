@@ -1139,6 +1139,7 @@ end
 local prepHide = false
 local mainHide = false
 
+
 local activeMutation
 ---@param lastMutationActive string?
 function MutationProfileManager:BuildRuleManager(lastMutationActive)
@@ -1154,35 +1155,9 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 		return
 	end
 
-	local numOfMutations = 0
-	local numOfPrepMutations = 0
-	for _, mutationFolder in pairs(ConfigurationStructure.config.mutations.folders) do
-		for _, mutation in pairs(mutationFolder.mutations) do
-			if not mutation.prepPhase then
-				numOfMutations = numOfMutations + 1
-			else
-				numOfPrepMutations = numOfPrepMutations + 1
-			end
-		end
-	end
-
-	for _, modCache in pairs(MutationModProxy.ModProxy.folders) do
-		---@cast modCache +LocalModCache
-
-		for folderId in pairs(modCache.folders) do
-			for _, mutation in pairs(MutationModProxy.ModProxy.folders[folderId].mutations) do
-				if not mutation.prepPhase then
-					numOfMutations = numOfMutations + 1
-				else
-					numOfPrepMutations = numOfPrepMutations + 1
-				end
-			end
-		end
-	end
-
 	local longestTextWidth = Styler:ScaleFactor() * 400
 
-	local function buildSlots(numOfMutations, prepPhase)
+	local function buildSlots(prepPhase)
 		if prepPhase then
 			self.rulesOrderGroup:AddSeparatorText("Prep Mutations"):SetStyle("SeparatorTextAlign", 0.5)
 		else
@@ -1214,7 +1189,10 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 		end
 
 		local rulesToUse = prepPhase and activeProfile.prepPhaseMutations or activeProfile.mutationRules
-		for counter = 1, numOfMutations do
+
+		TableUtils:ReindexNumericTable(rulesToUse)
+
+		for counter = 1, TableUtils:CountElements(rulesToUse) + 1 do
 			local row = group:AddGroup("MutationGroup" .. counter .. (prepPhase and "prep" or "main"))
 
 			row.UserData = counter
@@ -1223,34 +1201,38 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 				---@param row ExtuiGroup
 				---@param dropped ExtuiSelectable|ExtuiButton
 				row.OnDragDrop = function(row, dropped)
-					if tonumber(dropped.ParentElement.UserData) then
-						local ruleToCopyOver = TableUtils:DeeplyCopyTable(rulesToUse[dropped.ParentElement.UserData]._real)
-						rulesToUse[dropped.ParentElement.UserData].delete = true
+					---@type number?
+					local droppedIndex = tonumber(dropped.ParentElement.UserData)
 
-						if rulesToUse[row.UserData] then
-							rulesToUse[dropped.ParentElement.UserData] = rulesToUse[row.UserData]._real
-							rulesToUse[row.UserData].delete = true
-						end
-
-						rulesToUse[row.UserData] = ruleToCopyOver
-					else
+					if not droppedIndex then
 						dropped:SetColor("Text", { 0.86, 0.79, 0.68, 0.28 })
 						dropped.CanDrag = false
+					end
 
-						if rulesToUse[row.UserData] then
-							for i = numOfMutations, tonumber(row.UserData), -1 do
-								if rulesToUse[i] then
-									rulesToUse[i + 1] = TableUtils:DeeplyCopyTable(rulesToUse[i]._real)
-									rulesToUse[i].delete = true
-								end
+					for i = TableUtils:CountElements(rulesToUse), row.UserData + 1, -1 do
+						if rulesToUse[i] then
+							if droppedIndex ~= i then
+								rulesToUse[i + 1] = TableUtils:DeeplyCopyTable(rulesToUse[i])
+							end
+
+							rulesToUse[i].delete = true
+						end
+					end
+
+					rulesToUse[row.UserData + 1] = TableUtils:DeeplyCopyTable(droppedIndex
+						and rulesToUse[droppedIndex]
+						or dropped.UserData)
+
+					if droppedIndex and droppedIndex < row.UserData then
+						rulesToUse[droppedIndex].delete = true
+
+						for i = droppedIndex, row.UserData - 1, 1 do
+							if not rulesToUse[i] then
+								rulesToUse[i] = TableUtils:DeeplyCopyTable(rulesToUse[i + 1])
+
+								rulesToUse[i + 1].delete = true
 							end
 						end
-
-						rulesToUse[row.UserData] = {
-							additive = dropped.UserData.additive,
-							mutationFolderId = dropped.UserData.mutationFolderId,
-							mutationId = dropped.UserData.mutationId,
-						}
 					end
 
 					self:BuildRuleManager(activeMutationView and activeMutationView.Label)
@@ -1300,32 +1282,18 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 					end
 				else
 					orderNumberInput.OnDeactivate = function()
-						if orderNumberInput.Value[1] ~= row.UserData then
-							if orderNumberInput.Value[1] <= counter and orderNumberInput.Value[1] > 0 then
-								if rulesToUse[orderNumberInput.Value[1]] then
-									local ruletoRemove = rulesToUse[orderNumberInput.Value[1]]
-
-									for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
-										---@cast ele ExtuiCollapsingHeader
-										if ele.UserData == ruletoRemove.mutationFolderId then
-											for _, mutation in pairs(ele.Children) do
-												---@cast mutation ExtuiSelectable
-
-												if mutation.UserData and mutation.UserData.mutationId == ruletoRemove.mutationId then
-													mutation.SelectableDisabled = false
-													goto continue
-												end
-											end
-										end
-									end
-									::continue::
-
-									ruletoRemove.delete = true
+						if rulesToUse[row.UserData]
+							and orderNumberInput.Value[1] ~= row.UserData
+							and orderNumberInput.Value[1] > 0
+						then
+							for i = TableUtils:CountElements(rulesToUse) + 1, tonumber(orderNumberInput.Value[1]), -1 do
+								if rulesToUse[i] then
+									rulesToUse[i + 1] = TableUtils:DeeplyCopyTable(rulesToUse[i])
+									rulesToUse[i].delete = true
 								end
-
-								rulesToUse[orderNumberInput.Value[1]] = mutationRule._real
-								mutationRule.delete = true
 							end
+
+							rulesToUse[orderNumberInput.Value[1]] = TableUtils:DeeplyCopyTable(rulesToUse[row.UserData])
 
 							self:BuildRuleManager(activeMutationView and activeMutationView.Label)
 						end
@@ -1464,8 +1432,8 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 		end
 	end
 
-	buildSlots(numOfPrepMutations, true)
-	buildSlots(numOfMutations)
+	buildSlots(true)
+	buildSlots()
 
 	self.profileRulesParent.ColumnDefs[1].Width = math.max(300 * Styler:ScaleFactor(), longestTextWidth)
 	self.profileRulesParent.UserData = self.profileRulesParent.ColumnDefs[1].Width
