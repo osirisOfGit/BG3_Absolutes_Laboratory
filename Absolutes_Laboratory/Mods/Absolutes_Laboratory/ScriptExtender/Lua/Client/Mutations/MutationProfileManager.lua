@@ -1287,14 +1287,28 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 							and orderNumberInput.Value[1] ~= row.UserData
 							and orderNumberInput.Value[1] > 0
 						then
-							for i = TableUtils:CountElements(rulesToUse) + 1, tonumber(orderNumberInput.Value[1]), -1 do
-								if rulesToUse[i] then
-									rulesToUse[i + 1] = TableUtils:DeeplyCopyTable(rulesToUse[i])
-									rulesToUse[i].delete = true
-								end
-							end
+							local rule = TableUtils:DeeplyCopyTable(rulesToUse[row.UserData])
 
-							rulesToUse[orderNumberInput.Value[1]] = TableUtils:DeeplyCopyTable(rulesToUse[row.UserData])
+							rulesToUse[row.UserData].delete = true
+
+							if row.UserData < orderNumberInput.Value[1] then
+								for i = row.UserData, orderNumberInput.Value[1] - 1, 1 do
+									if rulesToUse[i + 1] then
+										rulesToUse[i] = TableUtils:DeeplyCopyTable(rulesToUse[i + 1])
+										rulesToUse[i + 1].delete = true
+									end
+								end
+								rulesToUse[orderNumberInput.Value[1]] = rule
+							else
+								for i = row.UserData, orderNumberInput.Value[1], -1 do
+									if rulesToUse[i] then
+										rulesToUse[i + 1] = TableUtils:DeeplyCopyTable(rulesToUse[i])
+										rulesToUse[i].delete = true
+									end
+								end
+
+								rulesToUse[orderNumberInput.Value[1]] = rule
+							end
 
 							self:BuildRuleManager(activeMutationView and activeMutationView.Label)
 						end
@@ -1741,7 +1755,9 @@ function MutationProfileManager:generateChangelog()
 		["1.9.0"] = {
 			type = "Bullet",
 			text = {
-				"Execute a Ext.System.ServerStats.ReloadStats system call when all undo operations are complete for an entity, ensuring _all_ base values are reset to their intended Vanilla values",
+				"Execute a Ext.System.ServerStats.ReloadStats system call when all undo operations are complete for an entity, ensuring _all_ base values are reset to their intended Vanilla values",,
+				"Remove Swapping behavior when drop/dropping rules into a Profile - will just move existing rules up/down as appropriate",
+				"Fully fix reordering rules by specifying the rule number in the input"
 			}
 		},
 		["1.8.4"] = {
