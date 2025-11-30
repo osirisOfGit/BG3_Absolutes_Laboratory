@@ -19,6 +19,15 @@ MutationConfigurationProxy = {
 	folders = setmetatable({}, {
 		__index = function(t, k)
 			return mutationsConfig.mutations.folders[k] or MutationModProxy.ModProxy.folders[k]
+		end,
+		__pairs = function(t)
+			local combined = {}
+
+			for id, profile in TableUtils:CombinedPairs(MutationModProxy.ModProxy.folders, mutationsConfig.mutations.folders) do
+				combined[id] = profile
+			end
+
+			return pairs(combined)
 		end
 	}),
 	prepPhaseMarkers = setmetatable({}, {

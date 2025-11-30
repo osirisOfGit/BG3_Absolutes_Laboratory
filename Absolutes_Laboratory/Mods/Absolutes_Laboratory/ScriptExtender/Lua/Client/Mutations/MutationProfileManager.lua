@@ -24,9 +24,7 @@ MutationProfileManager = {
 	---@type ExtuiGroup
 	selectionParent = nil,
 	---@type ExtuiChildWindow
-	userFolderGroup = nil,
-	---@type ExtuiChildWindow
-	modFolderGroup = nil,
+	selectionParent = nil,
 	---@type ExtuiGroup
 	profileGroup = nil,
 	---@type ExtuiPopup
@@ -52,7 +50,7 @@ local activeMutationView
 
 ---@param parent ExtuiTreeParent
 function MutationProfileManager:init(parent)
-	if not self.userFolderGroup then
+	if not self.parentTable then
 		self.popup = Styler:Popup(parent)
 		self.popup.UserData = "closeOnSubmit"
 
@@ -64,57 +62,43 @@ function MutationProfileManager:init(parent)
 		local row = self.parentTable:AddRow()
 
 		self.selectionParent = row:AddCell():AddChildWindow("selectionParent")
+		self.selectionParent.NoSavedSettings = true
+		self.selectionParent.DragDropType = "MutationRules"
+		self.selectionParent.OnDragDrop = function(group, dropped)
+			for _, modSection in pairs(self.selectionParent.Children) do
+				---@cast modSection ExtuiGroup
+				for _, mutationGroup in pairs(modSection.Children) do
+					---@cast mutationGroup ExtuiGroup
+					if mutationGroup.UserData == dropped.UserData.mutationFolderId then
+						for _, mutation in pairs(mutationGroup.Children) do
+							---@cast mutation ExtuiSelectable
 
-		local userMutSep = self.selectionParent:AddSeparatorText("Your Mutations ( ? )")
-		userMutSep:SetStyle("SeparatorTextAlign", 0.5)
-		userMutSep:Tooltip():AddText(
-			"\t Right-click on mutations to edit their details or delete them - use the Manage Folder button to create mutations. Drag and Drop mutations into the profile section to add them to a profile")
+							if mutation.UserData and mutation.UserData.mutationId == dropped.UserData.mutationId then
+								mutation.CanDrag = true
+								mutation:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
 
-		self.userFolderGroup = self.selectionParent:AddChildWindow("User Folders")
-		self.userFolderGroup.NoSavedSettings = true
-		self.userFolderGroup.DragDropType = "MutationRules"
-		self.userFolderGroup.OnDragDrop = function(group, dropped)
-			for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
-				---@cast ele ExtuiTree
-				if ele.UserData == dropped.UserData.mutationFolderId then
-					for _, mutation in pairs(ele.Children) do
-						---@cast mutation ExtuiSelectable
-
-						if mutation.UserData and mutation.UserData.mutationId == dropped.UserData.mutationId then
-							mutation.CanDrag = true
-							mutation:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
-
-							for _, mutationRule in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles[activeProfileId].mutationRules) do
-								if mutationRule.mutationId == dropped.UserData.mutationId and mutationRule.mutationFolderId == dropped.UserData.mutationFolderId then
-									mutationRule.delete = true
-									break
+								for _, mutationRule in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles[activeProfileId].mutationRules) do
+									if mutationRule.mutationId == dropped.UserData.mutationId and mutationRule.mutationFolderId == dropped.UserData.mutationFolderId then
+										mutationRule.delete = true
+										break
+									end
 								end
-							end
 
-							for _, mutationRule in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles[activeProfileId].prepPhaseMutations) do
-								if mutationRule.mutationId == dropped.UserData.mutationId and mutationRule.mutationFolderId == dropped.UserData.mutationFolderId then
-									mutationRule.delete = true
-									break
+								for _, mutationRule in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles[activeProfileId].prepPhaseMutations) do
+									if mutationRule.mutationId == dropped.UserData.mutationId and mutationRule.mutationFolderId == dropped.UserData.mutationFolderId then
+										mutationRule.delete = true
+										break
+									end
 								end
-							end
 
-							activeMutationView = nil
-							self:BuildRuleManager()
-							return
+								activeMutationView = nil
+								self:BuildRuleManager()
+								return
+							end
 						end
 					end
 				end
 			end
-		end
-
-		if MutationModProxy.ModProxy.folders() > 0 then
-			self.selectionParent:AddSeparatorText("Mod-Added Mutations"):SetStyle("SeparatorTextAlign", 0.5)
-			self.modFolderGroup = self.selectionParent:AddChildWindow("ModFolders")
-			self.modFolderGroup.DragDropType = "MutationRules"
-			self.modFolderGroup.OnDragDrop = self.userFolderGroup.OnDragDrop
-		else
-			self.modFolderGroup = self.selectionParent:AddChildWindow("ModFolders")
-			self.modFolderGroup.Visible = false
 		end
 
 		local rightPanel = row:AddCell()
@@ -213,115 +197,151 @@ end
 function MutationProfileManager:BuildFolderManager()
 	activeMutationView = nil
 
-	Helpers:KillChildren(self.userFolderGroup)
-
-	local folders = ConfigurationStructure.config.mutations.folders
+	Helpers:KillChildren(self.selectionParent)
 
 	local longestText = 300
 
-	for folderId, folder in TableUtils:OrderedPairs(folders, function(key, value)
-		return value.name
+	local groups = { ["User"] = self.selectionParent:AddGroup("user") }
+
+	local userSep = groups["User"]:AddSeparatorText("Your Mutations (?)")
+	userSep:SetStyle("SeparatorTextAlign", 0.05)
+	userSep:Tooltip():AddText(
+		"\t Right-click on folders or mutations under any user or mod section to manage them. Drag and Drop mutations into the profile section to add them to a profile")
+
+	for folderId, folder in TableUtils:OrderedPairs(MutationConfigurationProxy.folders, function(key, value)
+		return not value.modId and ("1" .. value.name) or ("2" .. Ext.Mod.GetMod(value.modId).Info.Name .. value.name)
 	end) do
-		local folderHeader = self.userFolderGroup:AddTree(folder.name)
-		folderHeader.SpanFullWidth = true
-		folderHeader.UserData = folderId
-		folderHeader.IDContext = folderId
-
-		longestText = Styler:calculateTextDimensions(folder.name, longestText)
-
-		folderHeader:SetColor("Header", { 1, 1, 1, 0 })
-		if folder.description ~= "" then
-			folderHeader:Tooltip():AddText("\t " .. folder.description)
+		local parent = groups[folder.modId or "User"]
+		if not parent then
+			groups[folder.modId] = self.selectionParent:AddGroup(folder.modId)
+			parent = groups[folder.modId]
+			parent:AddSeparatorText(Ext.Mod.GetMod(folder.modId).Info.Name):SetStyle("SeparatorTextAlign", 0.05)
 		end
 
-		local folderPopup = folderHeader:AddPopup(folderId)
-		folderPopup:AddSelectable("Create a Mutation").OnClick = function(selectable)
+		local folderSelect = Styler:ScaledFont(parent:AddTree(folder.name), "Big")
+		folderSelect.IDContext = folderId
+		folderSelect:SetOpen(false, "Always")
+		folderSelect.SpanFullWidth = true
+		if folder.description and folder.description ~= "" then
+			folderSelect:Tooltip():AddText("\t " .. folder.description)
+		end
+
+		parent:AddDummy(50, 0)
+
+		local mutationGroup = parent:AddGroup("mutations")
+		mutationGroup.UserData = folderId
+		mutationGroup.SameLine = true
+		mutationGroup.Visible = false
+
+		folderSelect.OnClick = function()
+			mutationGroup.Visible = not mutationGroup.Visible
+		end
+
+		folderSelect.OnRightClick = function()
 			Helpers:KillChildren(self.popup)
 			self.popup:Open()
 
-			FormBuilder:CreateForm(self.popup, function(formResults)
-					folder.mutations[FormBuilder:generateGUID()] = {
-						name = formResults.Name,
-						description = formResults.Description,
-						selectors = {},
-						mutators = {}
-					} --[[@as Mutation]]
+			if not folder.modId then
+				FormBuilder:CreateForm(self.popup:AddMenu("Create a Mutation"), function(formResults)
+						folder.mutations[FormBuilder:generateGUID()] = {
+							name = formResults.Name,
+							description = formResults.Description,
+							selectors = {},
+							mutators = {}
+						} --[[@as Mutation]]
 
-					self:BuildFolderManager()
-				end,
-				{
+						self:BuildFolderManager()
+					end,
 					{
-						label = "Name",
-						type = "Text",
-						errorMessageIfEmpty = "Required Field"
-					},
-					{
-						label = "Description",
-						type = "Multiline"
+						{
+							label = "Name",
+							type = "Text",
+							errorMessageIfEmpty = "Required Field"
+						},
+						{
+							label = "Description",
+							type = "Multiline"
+						}
 					}
-				}
-			)
-		end
+				)
 
-		---@param selectable ExtuiSelectable
-		folderPopup:AddSelectable("Edit Details").OnClick = function(selectable)
-			Helpers:KillChildren(self.popup)
-			self.popup:Open()
+				---@param selectable ExtuiSelectable
+				FormBuilder:CreateForm(self.popup:AddMenu("Edit Details"), function(formResults)
+						folder.name = formResults.Name
+						folder.description = formResults.Description
 
-			FormBuilder:CreateForm(self.popup, function(formResults)
-					folder.name = formResults.Name
-					folder.description = formResults.Description
-
-					self:BuildFolderManager()
-				end,
-				{
+						self:BuildFolderManager()
+					end,
 					{
-						label = "Name",
-						type = "Text",
-						errorMessageIfEmpty = "Required Field",
-						defaultValue = folder.name
-					},
-					{
-						label = "Description",
-						type = "Multiline",
-						defaultValue = folder.description
+						{
+							label = "Name",
+							type = "Text",
+							errorMessageIfEmpty = "Required Field",
+							defaultValue = folder.name
+						},
+						{
+							label = "Description",
+							type = "Multiline",
+							defaultValue = folder.description
+						}
 					}
-				}
-			)
-		end
+				)
+			end
 
-		---@param select ExtuiSelectable
-		folderPopup:AddSelectable("Delete Folder (and Mutations)", "DontClosePopups").OnClick = function(select)
-			if select.Label ~= "Delete Folder (and Mutations)" then
-				folder.delete = true
+			self.popup:AddSelectable("Copy Folder").OnClick = function()
+				local folderCopy = {
+					name = TableUtils:IndexOf(ConfigurationStructure.config.mutations.folders, function(value)
+							return value.name == folder.name
+						end)
+						and (folder.name .. " (COPY)")
+						or folder.name,
+					description = folder.description,
+					mutations = TableUtils:DeeplyCopyTable(folder.mutations)
+				} --[[@as MutationFolder]]
 
-				for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
-					local largestIndex = 0
-
-					local toDelete = {}
-					for i, mutRule in TableUtils:OrderedPairs(profile.mutationRules) do
-						largestIndex = i > largestIndex and i or largestIndex
-
-						if mutRule.mutationFolderId == folderId then
-							toDelete[#toDelete + 1] = i - #toDelete
-						end
-					end
-
-					for _, indexToDelete in ipairs(toDelete) do
-						for x = indexToDelete, largestIndex do
-							if profile.mutationRules[x] then
-								profile.mutationRules[x].delete = true
-							end
-							profile.mutationRules[x] = TableUtils:DeeplyCopyTable(profile.mutationRules._real[x + 1])
-						end
-					end
+				for _, mutation in pairs(folderCopy.mutations) do
+					mutation.modId = nil
 				end
 
+				ConfigurationStructure.config.mutations.folders[FormBuilder:generateGUID()] = folderCopy
 				self:BuildFolderManager()
-			else
-				select.Label = "Are You Sure?"
-				Styler:Color(select, "ErrorText")
-				select.DontClosePopups = false
+			end
+
+			if not folder.modId then
+				---@param select ExtuiSelectable
+				self.popup:AddSelectable("Delete Folder (and Mutations)", "DontClosePopups").OnClick = function(select)
+					if select.Label ~= "Delete Folder (and Mutations)" then
+						folder.delete = true
+
+						for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
+							local largestIndex = 0
+
+							local toDelete = {}
+							for i, mutRule in TableUtils:OrderedPairs(profile.mutationRules) do
+								largestIndex = i > largestIndex and i or largestIndex
+
+								if mutRule.mutationFolderId == folderId then
+									toDelete[#toDelete + 1] = i - #toDelete
+								end
+							end
+
+							for _, indexToDelete in ipairs(toDelete) do
+								for x = indexToDelete, largestIndex do
+									if profile.mutationRules[x] then
+										profile.mutationRules[x].delete = true
+									end
+									profile.mutationRules[x] = TableUtils:DeeplyCopyTable(profile.mutationRules._real[x + 1])
+								end
+							end
+						end
+
+						self:BuildFolderManager()
+					else
+						select.Label = "Are You Sure?"
+						Styler:Color(select, "ErrorText")
+						select.DontClosePopups = false
+					end
+				end
 			end
 		end
 
@@ -329,7 +349,7 @@ function MutationProfileManager:BuildFolderManager()
 			return value.name
 		end) do
 			---@type ExtuiSelectable
-			local mutationSelectable = folderHeader:AddSelectable(("%s%s"):format(mutation.prepPhase and "(P) " or "", mutation.name))
+			local mutationSelectable = parent:AddSelectable(mutation.name)
 			mutationSelectable.IDContext = mutationId
 
 			longestText = Styler:calculateTextDimensions(mutation.name, longestText)
@@ -344,61 +364,60 @@ function MutationProfileManager:BuildFolderManager()
 				mutationId = mutationId
 			}
 
-			local mutationPopup = folderHeader:AddPopup(mutationId)
+			mutationSelectable.OnRightClick = function()
+				Helpers:KillChildren(self.popup)
+				self.popup:Open()
 
-			local function buildPopup()
-				Helpers:KillChildren(mutationPopup)
-				mutationPopup:AddSelectable("Copy").OnClick = function()
-					---@type Mutation
-					local mut = TableUtils:DeeplyCopyTable(mutation._real)
-					mut.name = mut.name .. " (COPY)"
+				if not folder.modId then
+					self.popup:AddSelectable("Copy").OnClick = function()
+						---@type Mutation
+						local mut = TableUtils:DeeplyCopyTable(mutation)
+						mut.name = mut.name .. " (COPY)"
 
-					folder.mutations[FormBuilder:generateGUID()] = mut
-					self:BuildFolderManager()
-				end
+						folder.mutations[FormBuilder:generateGUID()] = mut
+						self:BuildFolderManager()
+					end
 
-				---@type ExtuiSelectable
-				local select = mutationPopup:AddSelectable(mutation.prepPhase and "Unmark As Prep Mutation (?)" or "Mark As Prep Mutation (?)", "DontClosePopups")
-				select:Tooltip():AddText(
-					"\t A Prep Mutation is a mutation that is run before all others, assigning specified categories to the selected entities so they can be reused by Selectors in main mutations, greatly simplifying regular mutators. Prep mutations are marked via (P) in their button name")
-				select.OnClick = function()
-					mutation.prepPhase = not mutation.prepPhase
-					mutation.mutators.delete = true
-					mutation.mutators = mutation.prepPhase and { {
-							targetProperty = "Prep Phase Marker"
-						} --[[@as Mutator]] }
-						or {}
+					---@type ExtuiSelectable
+					local select = self.popup:AddSelectable(mutation.prepPhase and "Unmark As Prep Mutation (?)" or "Mark As Prep Mutation (?)", "DontClosePopups")
+					select:Tooltip():AddText(
+						"\t A Prep Mutation is a mutation that is run before all others, assigning specified categories to the selected entities so they can be reused by Selectors in main mutations, greatly simplifying regular mutators. Prep mutations are marked via (P) in their button name")
+					select.OnClick = function()
+						mutation.prepPhase = not mutation.prepPhase
+						mutation.mutators.delete = true
+						mutation.mutators = mutation.prepPhase and { {
+								targetProperty = "Prep Phase Marker"
+							} --[[@as Mutator]] }
+							or {}
 
-					mutationSelectable.Label = ("%s%s"):format(mutation.prepPhase and "(P) " or "", mutation.name)
+						mutationSelectable.Label = ("%s%s"):format(mutation.prepPhase and "(P) " or "", mutation.name)
 
-					if not mutation.prepPhase then
-						for _, mutationRule in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles[activeProfileId].prepPhaseMutations) do
-							if mutationRule.mutationId == mutationSelectable.UserData.mutationId and mutationRule.mutationFolderId == mutationSelectable.UserData.mutationFolderId then
-								mutationRule.delete = true
-								break
+						if not mutation.prepPhase then
+							for _, mutationRule in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles[activeProfileId].prepPhaseMutations) do
+								if mutationRule.mutationId == mutationSelectable.UserData.mutationId and mutationRule.mutationFolderId == mutationSelectable.UserData.mutationFolderId then
+									mutationRule.delete = true
+									break
+								end
+							end
+						else
+							for _, mutationRule in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles[activeProfileId].mutationRules) do
+								if mutationRule.mutationId == mutationSelectable.UserData.mutationId and mutationRule.mutationFolderId == mutationSelectable.UserData.mutationFolderId then
+									mutationRule.delete = true
+									break
+								end
 							end
 						end
-					else
-						for _, mutationRule in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles[activeProfileId].mutationRules) do
-							if mutationRule.mutationId == mutationSelectable.UserData.mutationId and mutationRule.mutationFolderId == mutationSelectable.UserData.mutationFolderId then
-								mutationRule.delete = true
-								break
-							end
-						end
-					end
-					mutationSelectable:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
+						mutationSelectable:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
 
-					mutationSelectable:OnClick()
-					for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
-						TableUtils:ReindexNumericTable(profile.mutationRules)
-						TableUtils:ReindexNumericTable(profile.prepPhaseMutations)
+						mutationSelectable:OnClick()
+						for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
+							TableUtils:ReindexNumericTable(profile.mutationRules)
+							TableUtils:ReindexNumericTable(profile.prepPhaseMutations)
+						end
+						self:BuildFolderManager()
 					end
-					self:BuildFolderManager()
-				end
-				mutationPopup:AddSelectable("Edit Details").OnClick = function()
-					Helpers:KillChildren(self.popup)
-					self.popup:Open()
-					FormBuilder:CreateForm(self.popup, function(formResults)
+
+					FormBuilder:CreateForm(self.popup:AddMenu("Edit Details"), function(formResults)
 							mutation.name = formResults.Name
 							mutation.description = formResults.Description
 
@@ -418,6 +437,89 @@ function MutationProfileManager:BuildFolderManager()
 							}
 						}
 					)
+
+					if TableUtils:CountElements(ConfigurationStructure.config.mutations.folders) > 1 then
+						---@type ExtuiMenu
+						local moveMenu = self.popup:AddMenu("Move To Folder")
+
+						for otherfolderId, otherFolder in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.folders, function(key, value)
+							return value.name
+						end) do
+							if otherfolderId ~= folderId then
+								moveMenu:AddSelectable(otherFolder.name).OnClick = function()
+									otherFolder.mutations[mutationId] = mutation._real
+									mutation.delete = true
+									for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
+										for _, mutRule in TableUtils:OrderedPairs(profile.mutationRules) do
+											if mutRule.mutationFolderId == folderId and mutRule.mutationId == mutationId then
+												mutRule.mutationFolderId = otherfolderId
+											end
+										end
+										TableUtils:ReindexNumericTable(profile.mutationRules)
+									end
+									self:BuildFolderManager()
+								end
+							end
+						end
+					end
+				end
+
+				if folder.modId then
+					---@type ExtuiMenu
+					local copyMenu = self.popup:AddMenu("Copy Mutation To Folder")
+
+					local mut = TableUtils:DeeplyCopyTable(mutation)
+					mut.modId = nil
+
+					for _, userFolder in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.folders, function(_, userFolder)
+						return userFolder.name
+					end) do
+						copyMenu:AddSelectable(userFolder.name).OnClick = function()
+							if TableUtils:IndexOf(userFolder.mutations, function(value)
+									return value.name == mut.name
+								end)
+							then
+								mut.name = mut.name .. " (COPY)"
+							end
+
+							userFolder.mutations[FormBuilder:generateGUID()] = mut
+							self:BuildFolderManager()
+						end
+					end
+
+					copyMenu:AddSelectable("Use Mod's Folder Name").OnClick = function()
+						local folderCopy = {
+							name = TableUtils:IndexOf(ConfigurationStructure.config.mutations.folders, function(value)
+									return value.name == folder.name
+								end)
+								and (folder.name .. " (COPY)")
+								or folder.name,
+							description = folder.description,
+							mutations = { [FormBuilder:generateGUID()] = mut }
+						} --[[@as MutationFolder]]
+
+						ConfigurationStructure.config.mutations.folders[FormBuilder:generateGUID()] = folderCopy
+						self:BuildFolderManager()
+					end
+
+					self.popup:AddSelectable("Copy Whole Folder").OnClick = function()
+						local folderCopy = {
+							name = TableUtils:IndexOf(ConfigurationStructure.config.mutations.folders, function(value)
+									return value.name == folder.name
+								end)
+								and (folder.name .. " (COPY)")
+								or folder.name,
+							description = folder.description,
+							mutations = TableUtils:DeeplyCopyTable(folder.mutations)
+						} --[[@as MutationFolder]]
+
+						for _, mutation in pairs(folderCopy.mutations) do
+							mutation.modId = nil
+						end
+
+						ConfigurationStructure.config.mutations.folders[FormBuilder:generateGUID()] = folderCopy
+						self:BuildFolderManager()
+					end
 				end
 
 				if activeProfileId and not MutationConfigurationProxy.profiles[activeProfileId].modId then
@@ -426,7 +528,7 @@ function MutationProfileManager:BuildFolderManager()
 					end)
 					if index then
 						---@param select ExtuiSelectable
-						mutationPopup:AddSelectable("Remove From Active Profile", "DontClosePopups").OnClick = function(select)
+						self.popup:AddSelectable("Remove From Active Profile", "DontClosePopups").OnClick = function(select)
 							if select.Label ~= "Remove From Active Profile" then
 								MutationConfigurationProxy.profiles[activeProfileId].mutationRules[index].delete = true
 								self:BuildFolderManager()
@@ -439,69 +541,43 @@ function MutationProfileManager:BuildFolderManager()
 					end
 				end
 
-				---@param selectable ExtuiSelectable
-				mutationPopup:AddSelectable("Delete", "DontClosePopups").OnClick = function(selectable)
-					if selectable.Label ~= "Delete" then
-						mutation.delete = true
 
-						for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
-							local largestIndex = 0
+				if not folder.modId then
+					---@param selectable ExtuiSelectable
+					self.popup:AddSelectable("Delete", "DontClosePopups").OnClick = function(selectable)
+						if selectable.Label ~= "Delete" then
+							mutation.delete = true
 
-							local toDelete = {}
-							for i, mutRule in TableUtils:OrderedPairs(profile.mutationRules) do
-								largestIndex = i > largestIndex and i or largestIndex
+							for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
+								local largestIndex = 0
 
-								if mutRule.mutationFolderId == folderId and mutRule.mutationId == mutationId then
-									toDelete[#toDelete + 1] = i - #toDelete
-								end
-							end
+								local toDelete = {}
+								for i, mutRule in TableUtils:OrderedPairs(profile.mutationRules) do
+									largestIndex = i > largestIndex and i or largestIndex
 
-							for _, indexToDelete in ipairs(toDelete) do
-								for x = indexToDelete, largestIndex do
-									if profile.mutationRules[x] then
-										profile.mutationRules[x].delete = true
+									if mutRule.mutationFolderId == folderId and mutRule.mutationId == mutationId then
+										toDelete[#toDelete + 1] = i - #toDelete
 									end
-									profile.mutationRules[x] = TableUtils:DeeplyCopyTable(profile.mutationRules._real[x + 1])
 								end
-							end
-						end
 
-						self:BuildFolderManager()
-					else
-						selectable.Label = "Are You Sure? This Will Delete From All Profiles"
-						Styler:Color(selectable, "ErrorText")
-					end
-				end
-
-				if TableUtils:CountElements(folders) > 1 then
-					local movePopup = mutationPopup:AddPopup(mutationId .. "Move")
-					for otherfolderId, otherFolder in TableUtils:OrderedPairs(folders, function(key, value)
-						return value.name
-					end) do
-						if otherfolderId ~= folderId then
-							movePopup:AddSelectable(otherFolder.name).OnClick = function()
-								otherFolder.mutations[mutationId] = mutation._real
-								mutation.delete = true
-								for _, profile in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.profiles) do
-									for _, mutRule in TableUtils:OrderedPairs(profile.mutationRules) do
-										if mutRule.mutationFolderId == folderId and mutRule.mutationId == mutationId then
-											mutRule.mutationFolderId = otherfolderId
+								for _, indexToDelete in ipairs(toDelete) do
+									for x = indexToDelete, largestIndex do
+										if profile.mutationRules[x] then
+											profile.mutationRules[x].delete = true
 										end
+										profile.mutationRules[x] = TableUtils:DeeplyCopyTable(profile.mutationRules._real[x + 1])
 									end
 								end
-								self:BuildFolderManager()
+								TableUtils:ReindexNumericTable(profile.mutationRules)
 							end
+
+							self:BuildFolderManager()
+						else
+							selectable.Label = "Are You Sure? This Will Delete From All Profiles"
+							Styler:Color(selectable, "ErrorText")
 						end
 					end
-					mutationPopup:AddSelectable("Move To Folder", "DontClosePopups").OnClick = function()
-						movePopup:Open()
-					end
 				end
-			end
-
-			mutationSelectable.OnRightClick = function()
-				mutationPopup:Open()
-				buildPopup()
 			end
 			mutationSelectable.OnClick = function()
 				Helpers:KillChildren(self.mutationDesigner)
@@ -541,22 +617,12 @@ function MutationProfileManager:BuildFolderManager()
 				end
 			end
 		end
-
-		---@type ExtuiSelectable
-		local manageFolderButton = folderHeader:AddSelectable("Manage Folder##" .. folderId)
-		manageFolderButton:SetStyle("SelectableTextAlign", 0.5)
-
-		manageFolderButton.OnClick = function()
-			manageFolderButton.Selected = false
-			folderPopup:Open()
-		end
-
-		self.userFolderGroup:AddNewLine()
 	end
-	self.userFolderGroup:AddNewLine()
+
+	self.selectionParent:AddNewLine()
 
 	---@type ExtuiSelectable
-	local createFolderButton = self.userFolderGroup:AddSelectable("Create Folder")
+	local createFolderButton = self.selectionParent:AddSelectable("Create Folder")
 	createFolderButton:SetStyle("SelectableTextAlign", 0.5)
 
 	createFolderButton.OnClick = function()
@@ -590,183 +656,7 @@ function MutationProfileManager:BuildFolderManager()
 
 	self.parentTable.ColumnDefs[1].Width = longestText
 
-	self:BuildModFolders()
 	self:BuildProfileManager()
-end
-
-function MutationProfileManager:BuildModFolders()
-	if MutationModProxy.ModProxy.folders() > 0 then
-		Helpers:KillChildren(self.modFolderGroup)
-
-		---@type {[string]: {[Guid]: string}}
-		local modFolders = {}
-
-		for modId, modCache in pairs(MutationModProxy.ModProxy.folders) do
-			---@cast modCache +LocalModCache
-
-			local modInfo = Ext.Mod.GetMod(modId).Info
-			if next(modCache.folders) then
-				modFolders[modInfo.Name] = modCache.folders
-			end
-		end
-
-		local modPopup = self.modFolderGroup:AddPopup("modPopup")
-
-		for modName, folders in TableUtils:OrderedPairs(modFolders) do
-			self.modFolderGroup:AddSeparatorText(modName)
-
-			for folderId in TableUtils:OrderedPairs(folders, function(_, folderName)
-				return folderName
-			end) do
-				local folder = MutationModProxy.ModProxy.folders[folderId]
-
-				local folderHeader = self.modFolderGroup:AddTree(folder.name)
-				folderHeader.IDContext = folderId
-				folderHeader.UserData = folderId
-				folderHeader:SetColor("Header", { 1, 1, 1, 0 })
-				if folder.description ~= "" then
-					folderHeader:Tooltip():AddText("\t " .. folder.description)
-				end
-
-				for mutationId, mutation in TableUtils:OrderedPairs(folder.mutations, function(_, value)
-					return value.name
-				end) do
-					---@type ExtuiSelectable
-					local mutationSelectable = folderHeader:AddSelectable(("%s%s"):format(mutation.prepPhase and "(P) " or "", mutation.name))
-					if mutation.description ~= "" then
-						mutationSelectable:Tooltip():AddText("\t " .. mutation.description)
-					end
-					mutationSelectable.CanDrag = true
-					mutationSelectable.DragDropType = mutation.prepPhase and "PrepMutationRules" or "MutationRules"
-					mutationSelectable.UserData = {
-						mutationFolderId = folderId,
-						mutationId = mutationId
-					}
-
-					---@param selectable ExtuiSelectable
-					---@param preview ExtuiTreeParent
-					mutationSelectable.OnDragStart = function(selectable, preview)
-						preview:AddText(selectable.Label)
-					end
-
-					if activeProfileId and MutationConfigurationProxy.profiles[activeProfileId] then
-						local profile = MutationConfigurationProxy.profiles[activeProfileId]
-						if TableUtils:IndexOf(profile.mutationRules, function(mutationRule)
-								return mutationRule.mutationFolderId == folderId and mutationRule.mutationId == mutationId
-							end)
-							or TableUtils:IndexOf(profile.prepPhaseMutations or {}, function(mutationRule)
-								return mutationRule.mutationFolderId == folderId and mutationRule.mutationId == mutationId
-							end)
-						then
-							mutationSelectable:SetColor("Text", { 0.86, 0.79, 0.68, 0.28 })
-							mutationSelectable.CanDrag = false
-						end
-					end
-
-					mutationSelectable.OnRightClick = function()
-						modPopup:Open()
-						Helpers:KillChildren(modPopup)
-
-						---@type ExtuiMenu
-						local copyMenu = modPopup:AddMenu("Copy Mutation To Folder")
-
-						local mut = TableUtils:DeeplyCopyTable(mutation)
-						mut.modId = nil
-
-						for _, userFolder in TableUtils:OrderedPairs(ConfigurationStructure.config.mutations.folders, function(_, userFolder)
-							return userFolder.name
-						end) do
-							copyMenu:AddSelectable(userFolder.name).OnClick = function()
-								if TableUtils:IndexOf(userFolder.mutations, function(value)
-										return value.name == mut.name
-									end)
-								then
-									mut.name = mut.name .. " (COPY)"
-								end
-
-								userFolder.mutations[FormBuilder:generateGUID()] = mut
-								self:BuildFolderManager()
-							end
-						end
-
-						copyMenu:AddSelectable("Use Mod's Folder Name").OnClick = function()
-							local folderCopy = {
-								name = TableUtils:IndexOf(ConfigurationStructure.config.mutations.folders, function(value)
-										return value.name == folder.name
-									end)
-									and (folder.name .. " (COPY)")
-									or folder.name,
-								description = folder.description,
-								mutations = { [FormBuilder:generateGUID()] = mut }
-							} --[[@as MutationFolder]]
-
-							ConfigurationStructure.config.mutations.folders[FormBuilder:generateGUID()] = folderCopy
-							self:BuildFolderManager()
-						end
-
-						modPopup:AddSelectable("Copy Whole Folder").OnClick = function()
-							local folderCopy = {
-								name = TableUtils:IndexOf(ConfigurationStructure.config.mutations.folders, function(value)
-										return value.name == folder.name
-									end)
-									and (folder.name .. " (COPY)")
-									or folder.name,
-								description = folder.description,
-								mutations = TableUtils:DeeplyCopyTable(folder.mutations)
-							} --[[@as MutationFolder]]
-
-							for _, mutation in pairs(folderCopy.mutations) do
-								mutation.modId = nil
-							end
-
-							ConfigurationStructure.config.mutations.folders[FormBuilder:generateGUID()] = folderCopy
-							self:BuildFolderManager()
-						end
-
-						if activeProfileId and not MutationConfigurationProxy.profiles[activeProfileId].modId then
-							local index = TableUtils:IndexOf(MutationConfigurationProxy.profiles[activeProfileId].mutationRules, function(value)
-								return value.mutationFolderId == folderId and value.mutationId == mutationId
-							end)
-							---@param select ExtuiSelectable
-							modPopup:AddSelectable("Remove From Active Profile", "DontClosePopups").OnClick = function(select)
-								if select.Label ~= "Remove From Active Profile" then
-									MutationConfigurationProxy.profiles[activeProfileId].mutationRules[index].delete = true
-									self:BuildProfileManager()
-									mutationSelectable.CanDrag = true
-									mutationSelectable:SetColor("Text", { 0.86, 0.79, 0.68, 0.78 })
-								else
-									select.Label = "Are You Sure?"
-									Styler:Color(select, "ErrorText")
-									select.DontClosePopups = false
-								end
-							end
-						end
-					end
-					mutationSelectable.OnClick = function()
-						Helpers:KillChildren(self.mutationDesigner)
-
-						if activeMutationView then
-							if activeMutationView.Handle then
-								-- https://github.com/Norbyte/bg3se/blob/f8b982125c6c1997ceab2d65cfaa3c1a04908ea6/BG3Extender/Extender/Client/IMGUI/IMGUI.cpp#L1901C34-L1901C60
-								activeMutationView:SetColor("Button", { 0.46, 0.40, 0.29, 0.5 })
-							end
-							activeMutationView = nil
-						end
-
-						Styler:MiddleAlignedColumnLayout(self.mutationDesigner, function(ele)
-							Styler:CheapTextAlign(folder.name .. "/" .. mutation.name, ele, "Big")
-							Styler:CheapTextAlign(mutation.description, ele)
-
-							Styler:CheapTextAlign("(" .. modName .. ")", ele)
-						end).SameLine = true
-						MutationDesigner:RenderMutationManager(self.mutationDesigner:AddGroup("designer"), mutation)
-					end
-				end
-			end
-		end
-
-		self.userFolderGroup.Size = { 0, self.selectionParent.LastSize[2] / 2 }
-	end
 end
 
 local triedOnce
@@ -1348,20 +1238,21 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 					---@param preview ExtuiTreeParent
 					mutationButton.OnDragStart = function(button, preview)
 						preview:AddText(button.Label)
-						self.userFolderGroup.DragDropType = prepPhase and "PrepMutationRules" or "MutationRules"
-						self.modFolderGroup.DragDropType = prepPhase and "PrepMutationRules" or "MutationRules"
+						self.selectionParent.DragDropType = prepPhase and "PrepMutationRules" or "MutationRules"
 					end
 
 					mutationButton.OnRightClick = function()
-						for _, ele in TableUtils:CombinedPairs(self.userFolderGroup.Children, self.modFolderGroup.Children) do
-							---@cast ele ExtuiCollapsingHeader
-							if ele.UserData == mutationRule.mutationFolderId then
-								for _, mutation in pairs(ele.Children) do
-									---@cast mutation ExtuiSelectable
+						for _, modSection in pairs(self.selectionParent.Children) do
+							---@cast modSection ExtuiGroup
+							for _, folderGroup in pairs(modSection.Children) do
+								if folderGroup.UserData and folderGroup.UserData == mutationRule.mutationFolderId then
+									for _, mutation in pairs(modSection.Children) do
+										---@cast mutation ExtuiSelectable
 
-									if mutation.UserData and mutation.UserData.mutationId == mutationRule.mutationId then
-										mutation:OnRightClick()
-										return
+										if mutation.UserData and mutation.UserData.mutationId == mutationRule.mutationId then
+											mutation:OnRightClick()
+											return
+										end
 									end
 								end
 							end
@@ -1755,7 +1646,7 @@ function MutationProfileManager:generateChangelog()
 		["1.9.0"] = {
 			type = "Bullet",
 			text = {
-				"Execute a Ext.System.ServerStats.ReloadStats system call when all undo operations are complete for an entity, ensuring _all_ base values are reset to their intended Vanilla values",,
+				"Execute a Ext.System.ServerStats.ReloadStats system call when all undo operations are complete for an entity, ensuring _all_ base values are reset to their intended Vanilla values",
 				"Remove Swapping behavior when drop/dropping rules into a Profile - will just move existing rules up/down as appropriate",
 				"Fully fix reordering rules by specifying the rule number in the input"
 			}
