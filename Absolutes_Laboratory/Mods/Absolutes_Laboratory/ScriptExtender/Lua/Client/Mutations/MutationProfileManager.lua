@@ -1204,35 +1204,36 @@ function MutationProfileManager:BuildRuleManager(lastMutationActive)
 					---@type number?
 					local droppedIndex = tonumber(dropped.ParentElement.UserData)
 
-					if not droppedIndex then
-						dropped:SetColor("Text", { 0.86, 0.79, 0.68, 0.28 })
-						dropped.CanDrag = false
-					end
-
-					for i = TableUtils:CountElements(rulesToUse), row.UserData + 1, -1 do
-						if rulesToUse[i] then
-							if droppedIndex ~= i then
-								rulesToUse[i + 1] = TableUtils:DeeplyCopyTable(rulesToUse[i])
-							end
-
-							rulesToUse[i].delete = true
-						end
-					end
-
-					rulesToUse[row.UserData + 1] = TableUtils:DeeplyCopyTable(droppedIndex
+					local rule = TableUtils:DeeplyCopyTable(droppedIndex
 						and rulesToUse[droppedIndex]
 						or dropped.UserData)
 
-					if droppedIndex and droppedIndex < row.UserData then
+					if not droppedIndex then
+						dropped:SetColor("Text", { 0.86, 0.79, 0.68, 0.28 })
+						dropped.CanDrag = false
+					else
 						rulesToUse[droppedIndex].delete = true
+					end
 
+					droppedIndex = droppedIndex or TableUtils:CountElements(rulesToUse)
+
+					if droppedIndex < row.UserData then
 						for i = droppedIndex, row.UserData - 1, 1 do
-							if not rulesToUse[i] then
+							if rulesToUse[i + 1] then
 								rulesToUse[i] = TableUtils:DeeplyCopyTable(rulesToUse[i + 1])
-
 								rulesToUse[i + 1].delete = true
 							end
 						end
+						rulesToUse[row.UserData] = rule
+					else
+						for i = droppedIndex, row.UserData, -1 do
+							if rulesToUse[i] then
+								rulesToUse[i + 1] = TableUtils:DeeplyCopyTable(rulesToUse[i])
+								rulesToUse[i].delete = true
+							end
+						end
+
+						rulesToUse[row.UserData] = rule
 					end
 
 					self:BuildRuleManager(activeMutationView and activeMutationView.Label)
